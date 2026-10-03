@@ -1,6 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
     <!--
       CA1716: 'Option' and 'Option<T>' conflict with Visual Basic's reserved keyword 'Option'.
       These names are intentional — 'Option' is the canonical functional-programming monad name,

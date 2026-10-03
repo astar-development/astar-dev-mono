@@ -1,4 +1,4 @@
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.OneDriveSyncClient.TestsUnit.Domain;
 

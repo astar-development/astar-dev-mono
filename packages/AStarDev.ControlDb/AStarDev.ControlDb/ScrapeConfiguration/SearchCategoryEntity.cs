@@ -27,13 +27,16 @@ public sealed class SearchCategoryEntity : AuditableEntity
     /// <summary>Whether this category should be included in the scraping process.</summary>
     public bool IncludeInSearch { get; set; } = true;
 
-    /// <summary>
-    ///   Whether this category defines a famous person. This flag can be used to prioritize or filter categories based on their significance or popularity.
-    /// </summary>
+    /// <summary>Whether this category defines a famous person. This flag can be used to prioritize or filter categories based on their significance or popularity.</summary>
     public bool IsFamous { get; set; }
 
-    /// <summary>
-    ///  Whether this category defines the internet classification. This flag can be used to determine if the category is relevant for internet-based searches or operations.
-    /// </summary>
+    /// <summary>Whether this category defines the internet classification. This flag can be used to determine if the category is relevant for internet-based searches or operations.</summary>
     public bool IsInternet { get; set; }
+
+    /// <summary>Records the outcome of a completed scrape of this category, so an unchanged category can be skipped next time.</summary>
+    /// <param name="lastKnownImageCount">The number of images observed for this category.</param>
+    /// <param name="lastPageVisited">The last page visited.</param>
+    /// <param name="totalPages">The total number of pages available.</param>
+    public void RecordScrapeProgress(int lastKnownImageCount, int lastPageVisited, int totalPages)
+        => (LastKnownImageCount, LastPageVisited, TotalPages) = (lastKnownImageCount, lastPageVisited, totalPages);
 }

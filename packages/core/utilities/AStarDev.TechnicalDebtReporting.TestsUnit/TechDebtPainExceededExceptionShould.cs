@@ -1,7 +1,7 @@
-// using AStar.Dev.Technical.Debt.Reporting;
+// using AStarDev.TechnicalDebtReporting;
 // using JetBrains.Annotations;
 
-// namespace AStar.Dev.Technical.Debt.Reporting;
+namespace AStarDev.TechnicalDebtReporting.TestsUnit;
 
 // [TestSubject(typeof(TechDebtPainExceededException))]
 // public class TechDebtPainExceededExceptionShould
@@ -10,3 +10,9 @@
 //     public void ExtendExceptionAsExpected()
 //         => new TechDebtPainExceededException().ShouldBeAssignableTo<Exception>();
 // }
+
+public class TechDebtPainExceededExceptionShould
+{
+    [Fact]
+    public void PlaceHolderTest() => true.ShouldBeTrue();
+}

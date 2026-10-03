@@ -4,7 +4,13 @@
     <TargetFramework>netstandard2.0</TargetFramework>
 	  <Nullable>enable</Nullable>
 	  <LangVersion>latest</LangVersion>
+        <Description>Attribute types shared between AStarDev.SourceGenerators and its consumers.</Description>
         <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageTags>source-generator;attributes;astartools</PackageTags>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
+
+  <ItemGroup>
+  </ItemGroup>
 
 </Project>

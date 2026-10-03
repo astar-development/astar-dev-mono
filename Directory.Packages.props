@@ -55,7 +55,7 @@
     <PackageVersion Include="AStarDev.LoggingOTel" Version="0.1.0" />
     <PackageVersion Include="AStarDev.SourceGenerators" Version="0.1.14" />
     <PackageVersion Include="AStarDev.Utilities" Version="0.2.1" />
-    <PackageVersion Include="AStar.Dev.Technical.Debt.Reporting" Version="0.2.1" />
+    <PackageVersion Include="AStarDev.TechnicalDebtReporting" Version="0.2.1" />
     <PackageVersion Include="Dapper" Version="2.1.86" />
     <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.12" />
   </ItemGroup>
@@ -195,6 +195,7 @@
     <PackageVersion Include="Stripe.net" Version="52.4.2" />
   </ItemGroup>
   <ItemGroup Label="Testing">
+    <PackageVersion Include="Microsoft.Testing.Platform.MSBuild" Version="2.4.0" />
     <PackageVersion Include="bunit" Version="2.11.3" />
     <PackageVersion Include="Microsoft.Playwright" Version="1.62.0" />
     <PackageVersion Include="coverlet.collector" Version="10.0.1" />
@@ -203,8 +204,7 @@
     <PackageVersion Include="NSubstitute" Version="6.2.0" />
     <PackageVersion Include="NSubstitute.Analyzers.CSharp" Version="1.0.17" />
     <PackageVersion Include="xunit.v3" Version="3.2.2" />
-    <PackageVersion Include="xunit.v3.mtp-v1" Version="3.2.2" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.0" />
+    <PackageVersion Include="xunit.v3.mtp-v2" Version="3.2.2" />
     <PackageVersion Include="Bogus" Version="35.6.1" />
     <PackageVersion Include="Respawn" Version="6.2.1" />
     <PackageVersion Include="Microsoft.Reactive.Testing" Version="6.0.1" />

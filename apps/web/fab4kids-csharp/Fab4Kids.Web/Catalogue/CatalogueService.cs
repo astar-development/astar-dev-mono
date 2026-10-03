@@ -1,5 +1,5 @@
 using System.Text.Json;
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 using AStarDev.Utilities;
 using Fab4Kids.Web.Catalogue.Serialization;
 

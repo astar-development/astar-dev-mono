@@ -1,8 +1,6 @@
 namespace AStarDev.Utilities;
 
-/// <summary>
-/// Provides methods to retrieve application-specific paths for data storage, logs, and user files based on the operating system.
-/// </summary>
+/// <summary>Provides methods to retrieve application-specific paths for data storage, logs, and user files based on the operating system.</summary>
 public static class ApplicationPathsProvider
 {
     /// <param name="applicationName"></param>
@@ -10,22 +8,16 @@ public static class ApplicationPathsProvider
     extension(string applicationName)
 #pragma warning restore CA1034
     {
-        /// <summary>
-        ///
-        /// </summary>
-        /// <returns></returns>
+        /// <summary>Gets the application-specific data directory.</summary>
+        /// <returns>The path to the application-specific data directory.</returns>
         public string ApplicationDirectory() => GetPlatformDataDirectory(applicationName);
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <returns></returns>
+        /// <summary>Gets the application-specific logs directory.</summary>
+        /// <returns>The path to the application-specific logs directory.</returns>
         public string LogsDirectory() => ResolveLogsDirectory(applicationName);
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <returns></returns>
+        /// <summary>Gets the application-specific user directory.</summary>
+        /// <returns>The path to the application-specific user directory.</returns>
         public string UserDirectory() => ResolveUsersDirectory(applicationName);
     }
 
@@ -49,19 +41,19 @@ public static class ApplicationPathsProvider
 
     private static string GetPlatformDataDirectory(string applicationName)
     {
-        string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        string Home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
         string directory = OperatingSystem.IsWindows()
             ? Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                 applicationName)
-            : SetNonWindowsPath(applicationName, home);
+            : SetNonWindowsPath(applicationName, Home);
         _ = Directory.CreateDirectory(directory);
 
         return directory;
     }
 
-    private static string SetNonWindowsPath(string applicationName, string home) => OperatingSystem.IsMacOS()
-                    ? Path.Combine(home, "Library", "Application Support", applicationName)
-                    : Path.Combine(home, ".config", applicationName);
+    private static string SetNonWindowsPath(string applicationName, string Home) => OperatingSystem.IsMacOS()
+                    ? Path.Combine(Home, "Library", "Application Support", applicationName)
+                    : Path.Combine(Home, ".config", applicationName);
 }

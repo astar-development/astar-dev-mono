@@ -5,9 +5,9 @@
 ## What Changes
 
 - Add `AStarDev.SourceGenerators` + `AStarDev.SourceGeneratorAttributes` project references to `AStarDev.OneDriveSyncClient.csproj`
-- Introduce `AccountId` as `[StrongId(typeof(string))]` partial record struct
-- Introduce `OneDriveFolderId` as `[StrongId(typeof(string))]` partial record struct
-- Introduce `OneDriveItemId` as `[StrongId(typeof(string))]` partial record struct
+- Introduce `AccountId` as `[StrongType(typeof(string))]` partial record struct
+- Introduce `OneDriveFolderId` as `[StrongType(typeof(string))]` partial record struct
+- Introduce `OneDriveItemId` as `[StrongType(typeof(string))]` partial record struct
 - Introduce `LocalSyncPath` as an immutable value-object record wrapping a validated string path
 - Replace all primitive usages in entities, model classes, repository interfaces/implementations, EF configurations, and ViewModels
 - Add EF Core value converters for all new types (SQLite persists underlying `string`)
@@ -17,7 +17,7 @@
 
 ### New Capabilities
 
-- `strongly-typed-ids`: Introduce `AccountId`, `OneDriveFolderId`, and `OneDriveItemId` strongly-typed identifier structs via `[StrongId(typeof(string))]` and wire them through entities, repositories, and domain models.
+- `strongly-typed-ids`: Introduce `AccountId`, `OneDriveFolderId`, and `OneDriveItemId` strongly-typed identifier structs via `[StrongType(typeof(string))]` and wire them through entities, repositories, and domain models.
 - `local-sync-path-value-object`: Introduce `LocalSyncPath` immutable record with validated construction; replaces raw `string` in `AccountEntity` and `OneDriveAccount`.
 
 ### Modified Capabilities

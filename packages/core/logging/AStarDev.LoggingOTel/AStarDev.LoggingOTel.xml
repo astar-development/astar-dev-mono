@@ -73,26 +73,28 @@
                 when a connection string is configured, to Azure Monitor (Application Insights).
             </summary>
         </member>
-        <member name="M:AStarDev.LoggingOTel.OTelLoggingConfigurator.ConfigureOTelLogging(Microsoft.Extensions.Logging.ILoggingBuilder,Microsoft.Extensions.Configuration.IConfigurationRoot,System.String)">
+        <member name="M:AStarDev.LoggingOTel.OTelLoggingConfigurator.ConfigureOTelLogging(Microsoft.Extensions.Logging.ILoggingBuilder,Microsoft.Extensions.Configuration.IConfigurationRoot,System.String,System.String)">
             <summary>
-                The <see cref="M:AStarDev.LoggingOTel.OTelLoggingConfigurator.ConfigureOTelLogging(Microsoft.Extensions.Logging.ILoggingBuilder,Microsoft.Extensions.Configuration.IConfigurationRoot,System.String)" /> method wires up OpenTelemetry
+                The <see cref="M:AStarDev.LoggingOTel.OTelLoggingConfigurator.ConfigureOTelLogging(Microsoft.Extensions.Logging.ILoggingBuilder,Microsoft.Extensions.Configuration.IConfigurationRoot,System.String,System.String)" /> method wires up OpenTelemetry
                 logging: console output plus an Azure Monitor log exporter when a connection string is configured.
             </summary>
             <param name="loggingBuilder">The logging builder to configure.</param>
             <param name="configuration">The configuration providing the Azure Monitor connection string.</param>
             <param name="connectionStringConfigurationKey">The configuration key holding the Azure Monitor connection string.</param>
+            <param name="serviceName">The <c>service.name</c> reported on every log record (the cloud role name in Azure Monitor); when empty, the SDK default <c>unknown_service:&lt;process&gt;</c> is kept.</param>
             <returns>The original instance of <see cref="T:Microsoft.Extensions.Logging.ILoggingBuilder" /> for further method chaining.</returns>
         </member>
-        <member name="M:AStarDev.LoggingOTel.OTelLoggingConfigurator.ConfigureOTelLogging(Microsoft.Extensions.Logging.ILoggingBuilder,Microsoft.Extensions.Configuration.IConfigurationRoot,AStarDev.LoggingOTel.LogViewer.InMemoryLogProcessor,System.String)">
+        <member name="M:AStarDev.LoggingOTel.OTelLoggingConfigurator.ConfigureOTelLogging(Microsoft.Extensions.Logging.ILoggingBuilder,Microsoft.Extensions.Configuration.IConfigurationRoot,AStarDev.LoggingOTel.LogViewer.InMemoryLogProcessor,System.String,System.String)">
             <summary>
-                The <see cref="M:AStarDev.LoggingOTel.OTelLoggingConfigurator.ConfigureOTelLogging(Microsoft.Extensions.Logging.ILoggingBuilder,Microsoft.Extensions.Configuration.IConfigurationRoot,AStarDev.LoggingOTel.LogViewer.InMemoryLogProcessor,System.String)" /> method wires up
-                OpenTelemetry logging the same way as <see cref="M:AStarDev.LoggingOTel.OTelLoggingConfigurator.ConfigureOTelLogging(Microsoft.Extensions.Logging.ILoggingBuilder,Microsoft.Extensions.Configuration.IConfigurationRoot,System.String)" />,
+                The <see cref="M:AStarDev.LoggingOTel.OTelLoggingConfigurator.ConfigureOTelLogging(Microsoft.Extensions.Logging.ILoggingBuilder,Microsoft.Extensions.Configuration.IConfigurationRoot,AStarDev.LoggingOTel.LogViewer.InMemoryLogProcessor,System.String,System.String)" /> method wires up
+                OpenTelemetry logging the same way as <see cref="M:AStarDev.LoggingOTel.OTelLoggingConfigurator.ConfigureOTelLogging(Microsoft.Extensions.Logging.ILoggingBuilder,Microsoft.Extensions.Configuration.IConfigurationRoot,System.String,System.String)" />,
                 additionally routing log records to the supplied <see cref="T:AStarDev.LoggingOTel.LogViewer.InMemoryLogProcessor"/>.
             </summary>
             <param name="loggingBuilder">The logging builder to configure.</param>
             <param name="configuration">The configuration providing the Azure Monitor connection string.</param>
             <param name="inMemoryLogProcessor">The in-memory processor to additionally route log records to.</param>
             <param name="connectionStringConfigurationKey">The configuration key holding the Azure Monitor connection string.</param>
+            <param name="serviceName">The <c>service.name</c> reported on every log record (the cloud role name in Azure Monitor); when empty, the SDK default <c>unknown_service:&lt;process&gt;</c> is kept.</param>
             <returns>The original instance of <see cref="T:Microsoft.Extensions.Logging.ILoggingBuilder" /> for further method chaining.</returns>
         </member>
         <member name="T:System.Text.RegularExpressions.Generated.EmailRegex_0">

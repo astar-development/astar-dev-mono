@@ -6,8 +6,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Velopack;
-using ApplicationMessages = AStar.Dev.Logging.Extensions.ApplicationMessages;
-using LogMessage = AStar.Dev.Logging.Extensions.LogMessage;
+using ApplicationMessages = AStarDev.LoggingExtensions.ApplicationMessages;
+using LogMessage = AStarDev.LoggingExtensions.LogMessage;
 
 namespace AStarDev.OneDriveSyncClient;
 

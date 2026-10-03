@@ -1,0 +1,15 @@
+{
+  "id": {
+    "value": "00000000-0000-0000-0000-000000000000"
+  },
+  "wallhavenTagId": 123,
+  "name": "landscape",
+  "alias": "landscapes",
+  "categoryId": 1,
+  "category": "Nature",
+  "purity": "sfw",
+  "ignoreImage": false,
+  "isName": false,
+  "isFamous": false,
+  "fileTags": []
+}

@@ -1,4 +1,4 @@
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 using AStarDev.Web.CaseStudies;
 
 namespace AStarDev.Web.TestsUnit.CaseStudies;

@@ -1,13 +1,9 @@
-namespace AStar.Dev.Logging.Extensions;
+namespace AStarDev.LoggingExtensions;
 
-/// <summary>
-///     Provides configuration settings for the logging extensions.
-/// </summary>
+/// <summary>Provides configuration settings for the logging extensions.</summary>
 public static class Configuration
 {
-    /// <summary>
-    ///     Gets the default filename for the external logging settings configuration file.
-    /// </summary>
+    /// <summary>Gets the default filename for the external logging settings configuration file.</summary>
     /// <remarks>
     ///     The value returned by <c>ExternalSettingsFile</c> is a constant string representing
     ///     the filename used to store external logging configuration settings. This property

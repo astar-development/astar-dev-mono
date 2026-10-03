@@ -11,8 +11,7 @@
     },
     "emailAddress": "user@example.com",
     "username": "username",
-    "password": "password",
-    "sessionCookie": "session-cookie"
+    "apiKey": "apiKey"
   },
   "searchConfiguration": {
     "id": {
@@ -23,24 +22,8 @@
     },
     "searchTerm": "search-config",
     "maxResults": 10,
-    "baseUrl": "https://example.com",
-    "apiKey": "",
     "searchCategories": [],
-    "searchString": "",
-    "topWallpapers": "",
-    "searchStringPrefix": "",
-    "searchStringSuffix": "",
-    "subscriptions": "",
-    "imagePauseInSeconds": 0,
-    "startingPageNumber": 0,
-    "totalPages": 0,
-    "subscriptionsStartingPageNumber": 0,
-    "subscriptionsTotalPages": 0,
-    "topWallpapersStartingPageNumber": 0,
-    "topWallpapersTotalPages": 0,
-    "loginUrl": "https://example.com/login",
-    "useHeadless": false,
-    "slowMotionDelay": null,
+    "personCategories": [],
     "createdAt": "<date>",
     "updatedAt": "<date>"
   },
@@ -51,10 +34,28 @@
     "scrapeConfigurationEntityId": {
       "value": "00000000-0000-0000-0000-000000000000"
     },
-    "rootDirectory": "scrape-directory",
-    "baseSaveDirectory": "base-save-directory",
-    "baseDirectory": "base-directory",
-    "baseDirectoryFamous": "base-directory-famous",
+    "rootDirectory": "root-save-directory",
+    "rootDirectoryFamous": "root-directory-famous",
     "subDirectoryName": "sub-directory-name"
-  }
+  },
+  "baseUrl": "https://example.com/scrape",
+  "apiKey": "scrape-api-key",
+  "searchString": "search-string",
+  "topWallpapers": "top-wallpapers",
+  "hotWallpapers": "hot-wallpapers",
+  "searchStringPrefix": "prefix-",
+  "searchStringSuffix": "-suffix",
+  "subscriptions": "subscriptions",
+  "imagePauseInSeconds": 5,
+  "startingPageNumber": 1,
+  "totalPages": 20,
+  "subscriptionsStartingPageNumber": 2,
+  "subscriptionsTotalPages": 30,
+  "topWallpapersStartingPageNumber": 3,
+  "topWallpapersTotalPages": 40,
+  "hotWallpapersStartingPageNumber": 4,
+  "hotWallpapersTotalPages": 50,
+  "loginUrl": "https://example.com/scrape/login",
+  "useHeadless": true,
+  "slowMotionDelay": 250
 }

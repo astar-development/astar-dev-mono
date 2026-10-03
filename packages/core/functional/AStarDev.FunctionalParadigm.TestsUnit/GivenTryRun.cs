@@ -1,4 +1,4 @@
-namespace AStar.Dev.FunctionalParadigm.TestsUnit;
+namespace AStarDev.FunctionalParadigm.TestsUnit;
 
 public sealed class GivenTryRun
 {
@@ -39,25 +39,5 @@ public sealed class GivenTryRun
         Task<int> Operation() => Task.FromCanceled<int>(cts.Token);
 
         await Should.ThrowAsync<OperationCanceledException>(() => Try.RunAsync(Operation));
-    }
-
-    [Fact]
-    public void when_cancellation_token_is_already_cancelled_then_operation_canceled_exception_propagates()
-    {
-        using var cts = new CancellationTokenSource();
-        cts.Cancel();
-
-        Should.Throw<OperationCanceledException>(() => Try.Run(() => 1, cts.Token));
-    }
-
-    [Fact]
-    public void when_cancellation_token_is_not_cancelled_then_operation_result_is_captured()
-    {
-        using var cts = new CancellationTokenSource();
-
-        var actual = Try.Run(() => 7, cts.Token);
-
-        actual.ShouldBeOfType<Success<int>>();
-        actual.ShouldBe(new Success<int>(7));
     }
 }

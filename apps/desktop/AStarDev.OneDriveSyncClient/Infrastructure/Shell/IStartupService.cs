@@ -1,4 +1,4 @@
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 using AStarDev.OneDriveSyncClient.Accounts;
 
 namespace AStarDev.OneDriveSyncClient.Infrastructure.Shell;

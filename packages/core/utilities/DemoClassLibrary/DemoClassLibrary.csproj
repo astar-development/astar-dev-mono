@@ -3,10 +3,11 @@
     <PropertyGroup>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\AStar.Dev.Technical.Debt.Reporting\AStar.Dev.Technical.Debt.Reporting.csproj" />
+      <ProjectReference Include="../AStarDev.TechnicalDebtReporting/AStarDev.TechnicalDebtReporting.csproj" />
     </ItemGroup>
 
 </Project>

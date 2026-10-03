@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace AStar.Dev.Logging.Extensions;
+namespace AStarDev.LoggingExtensions;
 
 /// <summary>
 ///     Provides an implementation of <see cref="ILoggerAstar{T}" /> that integrates application telemetry tracking

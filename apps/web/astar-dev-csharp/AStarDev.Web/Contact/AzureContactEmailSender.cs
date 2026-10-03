@@ -1,6 +1,6 @@
 using System.Text.Encodings.Web;
-using AStar.Dev.FunctionalParadigm;
-using AStar.Dev.Logging.Extensions;
+using AStarDev.FunctionalParadigm;
+using AStarDev.LoggingExtensions;
 using Azure;
 using Azure.Communication.Email;
 using Microsoft.Extensions.Options;
@@ -10,14 +10,14 @@ namespace AStarDev.Web.Contact;
 /// <inheritdoc cref="IContactEmailSender"/>
 public sealed class AzureContactEmailSender(IOptions<ContactFormOptions> options, ILogger<AzureContactEmailSender> logger, EmailClient? emailClient = null) : IContactEmailSender
 {
-    public Task<Result<UnitFp, string>> SendAsync(ContactMessage message, CancellationToken cancellationToken)
+    public Task<Result<Unit, string>> SendAsync(ContactMessage message, CancellationToken cancellationToken)
     {
         var settings = options.Value;
         if (emailClient is null || string.IsNullOrWhiteSpace(settings.FromAddress) || string.IsNullOrWhiteSpace(settings.ToAddress))
         {
             LogMessage.Error(logger, "Contact form email is not configured (missing connection string, from address, or to address).");
 
-            return Task.FromResult<Result<UnitFp, string>>("Something went wrong. Please try again later.");
+            return Task.FromResult<Result<Unit, string>>("Something went wrong. Please try again later.");
         }
 
         return Try.RunAsync(async () =>
@@ -27,7 +27,7 @@ public sealed class AzureContactEmailSender(IOptions<ContactFormOptions> options
             if (message.SendCopy)
                 await SendCopyToSenderAsync(emailClient, message, settings.FromAddress, cancellationToken);
 
-            return UnitFp.Instance;
+            return Unit.Instance;
         }, cancellationToken).ToResultAsync(ex =>
         {
             LogMessage.LogException(logger, nameof(AzureContactEmailSender), ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);

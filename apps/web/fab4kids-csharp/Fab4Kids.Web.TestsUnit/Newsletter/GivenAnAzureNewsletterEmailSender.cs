@@ -1,4 +1,4 @@
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 using Azure;
 using Azure.Communication.Email;
 using Fab4Kids.Web.Newsletter;

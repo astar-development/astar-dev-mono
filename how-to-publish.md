@@ -52,8 +52,8 @@ Fails fast if no `.csproj` matches the tagged package name — check the name is
 Tag format: `onedrive-sync-v{version}`.
 
 ```bash
-git tag onedrive-sync-v1.0.2
-git push origin onedrive-sync-v1.0.2
+git tag onedrive-sync-v1.0.3
+git push origin onedrive-sync-v1.0.3
 ```
 
 Prerelease: `git tag onedrive-sync-v0.35.0-rc.1`

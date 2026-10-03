@@ -4,10 +4,6 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
-        <RootNamespace>AStar.Dev.Technical.Debt.Reporting</RootNamespace>
-        <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
-        <AnalysisLevel>latest-recommended</AnalysisLevel>
-        <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
@@ -22,11 +18,7 @@
         <PackageReference Include="JetBrains.Annotations" />
         <PackageReference Include="Shouldly" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" />
-        <PackageReference Include="xunit.v3.mtp-v1" />
-        <PackageReference Include="xunit.runner.visualstudio">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
+    <PackageReference Include="xunit.v3.mtp-v2" />
     </ItemGroup>
 
     <ItemGroup>

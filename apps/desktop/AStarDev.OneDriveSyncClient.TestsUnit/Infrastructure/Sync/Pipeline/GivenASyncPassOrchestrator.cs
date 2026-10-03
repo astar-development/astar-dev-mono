@@ -1,5 +1,5 @@
 using System.Collections.Concurrent;
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 using AStarDev.OneDriveSyncClient.Accounts;
 using AStarDev.OneDriveSyncClient.Data.Repositories;
 using AStarDev.OneDriveSyncClient.Infrastructure.ApplicationConfiguration;
@@ -228,6 +228,34 @@ public sealed class GivenASyncPassOrchestrator
     }
 
     [Fact]
+    public async Task when_sync_starts_then_local_deletion_runs_before_remote_folder_registration()
+    {
+        SetupDeepSyncPrerequisites();
+        var observedOperations = new List<string>();
+        _remoteFolderEnumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<Action<string>?>(), Arg.Any<CancellationToken>())
+            .Returns(new SingleItemStream(DeltaItemFactory.CreateFolder(new OneDriveItemId("folder-1"), new DriveId("drive-1"), Option.None<OneDriveFolderId>(), ItemPathFactory.Create("folder", "/Documents/folder"), VersionInfoFactory.Create(Option.None<string>(), Option.None<string>()))));
+        _downloadJobBuilder.BuildOneAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<DeltaItem>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<ConcurrentDictionary<string, SyncedItemEntity>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<IReadOnlyList<FileClassificationCategory>>(), Arg.Any<CancellationToken>())
+            .Returns(_ =>
+            {
+                observedOperations.Add("remote-folder-registration");
+                return (SyncJob?)null;
+            });
+        _localDeletionDetector.DetectAndApplyAsync(Arg.Any<AccountId>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<ConcurrentDictionary<string, SyncedItemEntity>>(), Arg.Any<CancellationToken>())
+            .Returns(_ =>
+            {
+                observedOperations.Add("local-deletion");
+                return Task.CompletedTask;
+            });
+
+        var sut = CreateSut();
+        var account = CreateAccount();
+
+        await sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
+
+        observedOperations.ShouldBe(["local-deletion", "remote-folder-registration"]);
+    }
+
+    [Fact]
     public async Task when_no_jobs_exist_then_job_executor_is_not_called()
     {
         SetupDeepSyncPrerequisites();
@@ -263,7 +291,7 @@ public sealed class GivenASyncPassOrchestrator
     }
 
     [Fact]
-    public async Task when_enumeration_succeeds_then_progress_includes_detecting_remote_deletions_before_local_changes()
+    public async Task when_enumeration_succeeds_then_progress_includes_detecting_local_changes_before_remote_deletions()
     {
         SetupDeepSyncPrerequisites();
 
@@ -275,7 +303,7 @@ public sealed class GivenASyncPassOrchestrator
 
         progressMessages.ShouldContain("Sync.DetectingRemoteDeletions");
         progressMessages.ShouldContain("Sync.DetectingLocalChanges");
-        progressMessages.IndexOf("Sync.DetectingRemoteDeletions").ShouldBeLessThan(progressMessages.IndexOf("Sync.DetectingLocalChanges"));
+        progressMessages.IndexOf("Sync.DetectingLocalChanges").ShouldBeLessThan(progressMessages.IndexOf("Sync.DetectingRemoteDeletions"));
     }
 
     [Fact]

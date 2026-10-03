@@ -1,5 +1,5 @@
 using AStar.Dev.Infrastructure.FilesDb.Models;
-using AStar.Dev.Technical.Debt.Reporting;
+using AStarDev.TechnicalDebtReporting;
 using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.Infrastructure.FilesDb.Data;

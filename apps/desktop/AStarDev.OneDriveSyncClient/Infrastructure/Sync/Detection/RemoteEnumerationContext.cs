@@ -6,6 +6,8 @@ namespace AStarDev.OneDriveSyncClient.Infrastructure.Sync.Detection;
 /// <summary>Mutable state populated by <see cref="IRemoteFolderEnumerator"/> during streaming; safe to read after the stream is exhausted.</summary>
 public sealed class RemoteEnumerationContext
 {
+    internal bool IsInitialized { get; set; }
+
     /// <summary>True when no sync rules are configured for the account.</summary>
     public bool HadNoRules { get; internal set; }
 

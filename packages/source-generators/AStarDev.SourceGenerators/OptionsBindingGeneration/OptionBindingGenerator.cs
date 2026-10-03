@@ -4,16 +4,15 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace AStarDev.SourceGenerators.OptionsBindingGeneration;
 
 /// <summary>
-///   The <see cref="OptionsBindingGenerator" /> class is a source generator that produces code for registering options classes annotated with the <see cref="AStarDev.SourceGeneratorAttributes.AutoRegisterOptionsAttribute" />.
+///   The <see cref="OptionsBindingGenerator" /> class is a source generator that produces code for registering options classes annotated with the <see cref="SourceGeneratorAttributes.AutoRegisterOptionsAttribute" />.
 /// </summary>
 [Generator]
-[System.Diagnostics.CodeAnalysis.SuppressMessage("MicrosoftCodeAnalysisCorrectness", "RS1038:Compiler extensions should be implemented in assemblies with compiler-provided references", Justification = "<Pending>")]
 public sealed partial class OptionsBindingGenerator : IIncrementalGenerator
 {
     private const string AttrFqn = "AStarDev.SourceGeneratorAttributes.AutoRegisterOptionsAttribute";
 
     /// <summary>
-    ///  The <see cref="Initialize" /> method is called by the compiler to register the source generation steps. It sets up a syntax provider to find all classes or structs annotated with the <see cref="AStarDev.SourceGeneratorAttributes.AutoRegisterOptionsAttribute" /> and generates source code for them.
+    ///  The <see cref="Initialize" /> method is called by the compiler to register the source generation steps. It sets up a syntax provider to find all classes or structs annotated with the <see cref="SourceGeneratorAttributes.AutoRegisterOptionsAttribute" /> and generates source code for them.
     /// </summary>
     /// <param name="context"></param>
     public void Initialize(IncrementalGeneratorInitializationContext context)
@@ -31,6 +30,20 @@ public sealed partial class OptionsBindingGenerator : IIncrementalGenerator
             {
                 if (info == null)
                     continue;
+
+                if (info.IsGeneric)
+                {
+                    spc.ReportDiagnostic(Diagnostic.Create(
+                        new DiagnosticDescriptor(
+                            id: "ASTAROPT002",
+                            title: "Generic Options Type",
+                            messageFormat: $"Options class '{info.TypeName}' is generic (or nested in a generic type); generic options types cannot be registered automatically. Register a closed type instead.",
+                            category: "AStarDev.SourceGenerators",
+                            DiagnosticSeverity.Error,
+                            isEnabledByDefault: true),
+                        info.Location));
+                    continue;
+                }
 
                 if (string.IsNullOrWhiteSpace(info.SectionName))
                 {
@@ -53,7 +66,7 @@ public sealed partial class OptionsBindingGenerator : IIncrementalGenerator
             if (validTypes.Count == 0)
                 return;
             string code = OptionsBindingCodeGenerator.Generate(validTypes);
-            spc.AddSource("AutoOptionsRegistrationExtensions.g.cs", code);
+            spc.AddSource("AutoOptionsRegistrationExtensions.generated.cs", code);
         });
     }
 
@@ -62,40 +75,49 @@ public sealed partial class OptionsBindingGenerator : IIncrementalGenerator
         if (ctx.TargetSymbol is not INamedTypeSymbol typeSymbol)
             return null;
         string typeName = typeSymbol.Name;
-        string? ns = typeSymbol.ContainingNamespace?.ToDisplayString();
-        string fullTypeName = ns != null ? string.Concat(ns, ".", typeName) : typeName;
+        string fullTypeName = typeSymbol.ToDisplayString();
+        bool isGeneric = IsOrIsNestedInGenericType(typeSymbol);
         string? sectionName = null;
         var attr = typeSymbol.GetAttributes().FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == AttrFqn);
         if (attr is { ConstructorArguments.Length: > 0 } && attr.ConstructorArguments[0].Value is string s && !string.IsNullOrWhiteSpace(s))
             sectionName = s;
         else if (ctx.Attributes.Length > 0)
-        {
-            // Fallback: parse from syntax
-            var attrSyntax = ctx.Attributes[0].ApplicationSyntaxReference?.GetSyntax() as AttributeSyntax;
-            if (attrSyntax?.ArgumentList?.Arguments.Count > 0)
-            {
-                var expr = attrSyntax.ArgumentList.Arguments[0].Expression;
-                if (expr is LiteralExpressionSyntax { Token.Value: string literalValue }) sectionName = literalValue;
-            }
-        }
+            sectionName = FallbackToParsingFromSyntax(ctx, sectionName);
 
         return !string.IsNullOrWhiteSpace(sectionName)
-            ? new OptionsTypeInfo(typeName, fullTypeName, sectionName!, ctx.TargetNode.GetLocation())
-            : ExtractSectionNameFromMembers(ctx, typeSymbol, sectionName, typeName, fullTypeName);
+            ? new OptionsTypeInfo(typeName, fullTypeName, sectionName!, ctx.TargetNode.GetLocation(), isGeneric)
+            : ExtractSectionNameFromMembers(ctx, typeSymbol, sectionName, typeName, fullTypeName, isGeneric);
     }
 
-    private static OptionsTypeInfo? ExtractSectionNameFromMembers(GeneratorAttributeSyntaxContext ctx, INamedTypeSymbol typeSymbol, string? sectionName, string typeName, string fullTypeName)
+    private static bool IsOrIsNestedInGenericType(INamedTypeSymbol typeSymbol)
+        => typeSymbol.IsGenericType || (typeSymbol.ContainingType is { } containingType && IsOrIsNestedInGenericType(containingType));
+
+    private static string? FallbackToParsingFromSyntax(GeneratorAttributeSyntaxContext ctx, string? sectionName)
+    {
+        var attrSyntax = ctx.Attributes[0].ApplicationSyntaxReference?.GetSyntax() as AttributeSyntax;
+        if (attrSyntax?.ArgumentList?.Arguments.Count > 0)
+        {
+            var expr = attrSyntax.ArgumentList.Arguments[0].Expression;
+            if (expr is LiteralExpressionSyntax { Token.Value: string literalValue }) sectionName = literalValue;
+        }
+
+        return sectionName;
+    }
+
+    private static OptionsTypeInfo? ExtractSectionNameFromMembers(GeneratorAttributeSyntaxContext ctx, INamedTypeSymbol typeSymbol, string? sectionName, string typeName, string fullTypeName, bool isGeneric)
     {
         foreach (var member in typeSymbol.GetMembers())
         {
             if (member is not IFieldSymbol { IsStatic: true, IsConst: true, Name: "SectionName" } field || field.Type.SpecialType != SpecialType.System_String ||
                field.ConstantValue is not string val || string.IsNullOrWhiteSpace(val))
+            {
                 continue;
+            }
 
             sectionName = val;
             break;
         }
 
-        return new OptionsTypeInfo(typeName, fullTypeName, sectionName ?? string.Empty, ctx.TargetNode.GetLocation());
+        return new OptionsTypeInfo(typeName, fullTypeName, sectionName ?? string.Empty, ctx.TargetNode.GetLocation(), isGeneric);
     }
 }

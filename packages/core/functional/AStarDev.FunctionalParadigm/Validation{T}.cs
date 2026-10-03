@@ -1,4 +1,4 @@
-namespace AStar.Dev.FunctionalParadigm;
+namespace AStarDev.FunctionalParadigm;
 
 /// <summary>
 ///     Represents the outcome of a validation that may either succeed with a
@@ -8,12 +8,8 @@ namespace AStar.Dev.FunctionalParadigm;
 /// <typeparam name="T">The type of the validated value.</typeparam>
 public abstract record Validation<T>;
 
-/// <summary>
-///     Represents a successful <see cref="Validation{T}" /> carrying the validated value.
-/// </summary>
+/// <summary>Represents a successful <see cref="Validation{T}" /> carrying the validated value.</summary>
 public sealed record Valid<T>(T Value) : Validation<T>;
 
-/// <summary>
-///     Represents a failed <see cref="Validation{T}" /> carrying the accumulated validation errors.
-/// </summary>
+/// <summary>Represents a failed <see cref="Validation{T}" /> carrying the accumulated validation errors.</summary>
 public sealed record Invalid<T>(IReadOnlyList<ValidationError> Errors) : Validation<T>;

@@ -140,8 +140,5 @@ public sealed class GivenAnInMemoryLogProcessor
     }
 
     [Fact]
-    public void when_default_capacity_is_inspected_then_value_is_500()
-    {
-        InMemoryLogProcessor.DefaultCapacity.ShouldBe(500);
-    }
+    public void when_default_capacity_is_inspected_then_value_is_500() => InMemoryLogProcessor.DefaultCapacity.ShouldBe(500);
 }

@@ -1,9 +1,6 @@
-namespace AStar.Dev.FunctionalParadigm;
+namespace AStarDev.FunctionalParadigm;
 
-/// <summary>
-///     Bridges throwing operations into <see cref="Exceptional{T}" />, capturing thrown exceptions into a
-///     <see cref="Failure{T}" /> instead of letting them propagate.
-/// </summary>
+/// <summary>Bridges throwing operations into <see cref="Exceptional{T}" />, capturing thrown exceptions into a <see cref="Failure{T}" /> instead of letting them propagate.</summary>
 /// <remarks>
 ///     <see cref="OperationCanceledException" /> (including <see cref="TaskCanceledException" />) is never
 ///     captured — it always rethrows, so <see cref="CancellationToken.ThrowIfCancellationRequested" /> semantics
@@ -12,10 +9,7 @@ namespace AStar.Dev.FunctionalParadigm;
 #pragma warning disable CA1031 // Do not catch general exception types - this is the point of the methods
 public static class Try
 {
-    /// <summary>
-    ///     Runs the specified operation, capturing any thrown exception (other than
-    ///     <see cref="OperationCanceledException" />) into a <see cref="Failure{T}" />.
-    /// </summary>
+    /// <summary>Runs the specified operation, capturing any thrown exception (other than <see cref="OperationCanceledException" />) into a <see cref="Failure{T}" />.</summary>
     public static Exceptional<T> Run<T>(Func<T> operation)
     {
         try
@@ -32,22 +26,7 @@ public static class Try
         }
     }
 
-    /// <summary>
-    ///     Runs the specified operation, throwing immediately if <paramref name="cancellationToken" /> is
-    ///     cancelled, and otherwise capturing any thrown exception (other than
-    ///     <see cref="OperationCanceledException" />) into a <see cref="Failure{T}" />.
-    /// </summary>
-    public static Exceptional<T> Run<T>(Func<T> operation, CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-
-        return Run(operation);
-    }
-
-    /// <summary>
-    ///     Runs the specified asynchronous operation, capturing any thrown exception (other than
-    ///     <see cref="OperationCanceledException" />) into a <see cref="Failure{T}" />.
-    /// </summary>
+    /// <summary>Runs the specified asynchronous operation, capturing any thrown exception (other than <see cref="OperationCanceledException" />) into a <see cref="Failure{T}" />.</summary>
     public static async Task<Exceptional<T>> RunAsync<T>(Func<Task<T>> operation)
     {
         try
@@ -78,9 +57,7 @@ public static class Try
         return await RunAsync(operation).ConfigureAwait(false);
     }
 
-    /// <summary>
-    ///    Runs the specified operation, executing <paramref name="finallyAction" /> after the operation completes,
-    /// </summary>
+    /// <summary>Runs the specified operation, executing <paramref name="finallyAction" /> after the operation completes,</summary>
     /// <typeparam name="T">The type of the result.</typeparam>
     /// <param name="result">The result of the operation.</param>
     /// <param name="finallyAction">The action to execute after the operation completes.</param>

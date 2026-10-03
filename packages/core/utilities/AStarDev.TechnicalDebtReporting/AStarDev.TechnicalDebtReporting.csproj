@@ -16,12 +16,6 @@
         <PackageTags>AStar</PackageTags>
     </PropertyGroup>
 
-    <ItemGroup>
-
-
-
-    </ItemGroup>
-
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
         <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
         <NoWarn>1701;1702;</NoWarn>
@@ -31,5 +25,8 @@
         <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
         <NoWarn>1701;1702;</NoWarn>
     </PropertyGroup>
+
+    <ItemGroup>
+    </ItemGroup>
 
 </Project>

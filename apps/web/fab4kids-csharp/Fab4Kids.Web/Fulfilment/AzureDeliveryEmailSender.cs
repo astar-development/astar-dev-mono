@@ -1,5 +1,5 @@
-using AStar.Dev.FunctionalParadigm;
-using AStar.Dev.Logging.Extensions;
+using AStarDev.FunctionalParadigm;
+using AStarDev.LoggingExtensions;
 using Azure;
 using Azure.Communication.Email;
 using Microsoft.Extensions.Options;
@@ -9,14 +9,14 @@ namespace Fab4Kids.Web.Fulfilment;
 /// <inheritdoc cref="IDeliveryEmailSender"/>
 public sealed class AzureDeliveryEmailSender(IOptions<FulfilmentOptions> options, ILogger<AzureDeliveryEmailSender> logger, EmailClient? emailClient = null) : IDeliveryEmailSender
 {
-    public Task<Result<UnitFp, string>> SendAsync(string toAddress, string orderReference, IReadOnlyList<DeliveryLink> links, CancellationToken cancellationToken)
+    public Task<Result<Unit, string>> SendAsync(string toAddress, string orderReference, IReadOnlyList<DeliveryLink> links, CancellationToken cancellationToken)
     {
         var settings = options.Value;
         if (emailClient is null || string.IsNullOrWhiteSpace(settings.FromAddress))
         {
             LogMessage.Error(logger, "Delivery email is not configured (missing connection string or from address).");
 
-            return Task.FromResult(Result.Failure<UnitFp, string>("Something went wrong sending your download links."));
+            return Task.FromResult(Result.Failure<Unit, string>("Something went wrong sending your download links."));
         }
 
         return Try.RunAsync(async () =>
@@ -26,7 +26,7 @@ public sealed class AzureDeliveryEmailSender(IOptions<FulfilmentOptions> options
 
             await emailClient.SendAsync(WaitUntil.Completed, emailMessage, cancellationToken);
 
-            return UnitFp.Instance;
+            return Unit.Instance;
         }, cancellationToken).ToResultAsync(ex =>
         {
             LogMessage.LogException(logger, nameof(AzureDeliveryEmailSender), ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);

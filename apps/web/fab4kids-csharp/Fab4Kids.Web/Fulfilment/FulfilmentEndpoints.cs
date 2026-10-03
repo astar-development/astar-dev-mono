@@ -1,4 +1,4 @@
-using AStar.Dev.Logging.Extensions;
+using AStarDev.LoggingExtensions;
 using Microsoft.Extensions.Options;
 using Stripe;
 using Stripe.Checkout;

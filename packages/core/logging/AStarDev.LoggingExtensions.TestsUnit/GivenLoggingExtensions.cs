@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace AStar.Dev.Logging.Extensions.TestsUnit;
+namespace AStarDev.LoggingExtensions.TestsUnit;
 
 public sealed class GivenLoggingExtensions
 {

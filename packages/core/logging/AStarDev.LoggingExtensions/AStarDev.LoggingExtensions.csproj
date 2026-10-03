@@ -1,22 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
-    </PropertyGroup>
-
-    <PropertyGroup>
         <Description>This package contains extension methods designed to add OpenTelemetry logging, tracing, and metrics, exported to Azure Monitor (Application Insights), to the project. The logging is opinionated but the configuration can be overridden.</Description>
         <DocumentationFile>$(AssemblyName).xml</DocumentationFile>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <IsPackable>true</IsPackable>
-        <PackageId>AStar.Dev.Logging.Extensions</PackageId>
+        <PackageId>AStarDev.LoggingExtensions</PackageId>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
-        <PackageReleaseNotes>Migrate from Serilog + classic Application Insights SDK to OpenTelemetry + Azure Monitor OTel Distro (App Insights V3 path)</PackageReleaseNotes>
+        <PackageReleaseNotes>
+        v0.2.0 feat: key-point logging and a local log file
+        v0.1.2 chore: enforce code style in build repo-wide
+        v0.1.1 chore: solution cleanup - namespaces, XML doc formatting, test folder alignment
+        v0.1.0 Rename infrastructure/ to packages/ and add fully automatic NuGet release pipeline
+        v0.1.0 Migrate from Serilog + classic Application Insights SDK to OpenTelemetry + Azure Monitor OTel Distro (App Insights V3 path)
+        </PackageReleaseNotes>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
         <PackageTags>Logging Application Insights OpenTelemetry LoggerMessage Templates</PackageTags>
         <PackageProjectUrl>https://github.com/astar-development/astar-dev-mono/tree/main/packages/core/logging</PackageProjectUrl>
-        <Title>AStar.Dev.Logging.Extensions</Title>
+        <Title>AStarDev.LoggingExtensions</Title>
         <NoWarn>$(NoWarn);CA1724;CA1062</NoWarn>
     </PropertyGroup>
 
@@ -26,6 +28,9 @@
 
     <ItemGroup>
       <ProjectReference Include="../../utilities/AStarDev.Utilities/AStarDev.Utilities.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
     </ItemGroup>
 
 </Project>

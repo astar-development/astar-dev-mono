@@ -1,6 +1,7 @@
 using System.IO.Abstractions;
 using System.Reactive;
-using AStar.Dev.FunctionalParadigm;
+using Unit = System.Reactive.Unit;
+using AStarDev.FunctionalParadigm;
 using AStarDev.OneDriveSyncClient.Infrastructure.Http;
 using AStarDev.OneDriveSyncClient.Infrastructure.Logging;
 using Microsoft.Extensions.Logging;

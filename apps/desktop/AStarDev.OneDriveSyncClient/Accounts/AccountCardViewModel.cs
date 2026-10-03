@@ -1,4 +1,4 @@
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync;
 using AStarDev.OneDriveSyncClient.Localization;
 using AStarDev.Utilities;
@@ -137,10 +137,10 @@ public sealed partial class AccountCardViewModel : ObservableObject
 
     private string GetLastSyncText(TimeSpan elapsed)
     {
-        if (elapsed.IsJustNow()) return GetJustNowText();
-        if (elapsed.IsMinutesAgo()) return GetMinutesAgoText(elapsed);
-        if (elapsed.IsHoursAgo()) return GetHoursAgoText(elapsed);
-        if (elapsed.IsYesterday()) return GetYesterdayText();
+        if (elapsed.IsJustNow) return GetJustNowText();
+        if (elapsed.IsMinutesAgo) return GetMinutesAgoText(elapsed);
+        if (elapsed.IsHoursAgo) return GetHoursAgoText(elapsed);
+        if (elapsed.IsYesterday) return GetYesterdayText();
 
         return GetDaysAgoText(elapsed);
     }

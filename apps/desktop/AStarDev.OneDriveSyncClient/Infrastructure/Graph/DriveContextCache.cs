@@ -1,5 +1,5 @@
 using System.Collections.Concurrent;
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Domain;
 using Microsoft.Graph;
 

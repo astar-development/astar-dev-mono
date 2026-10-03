@@ -1,5 +1,5 @@
-using AStar.Dev.FunctionalParadigm;
-using AStar.Dev.Logging.Extensions;
+using AStarDev.FunctionalParadigm;
+using AStarDev.LoggingExtensions;
 using Azure;
 using Azure.Communication.Email;
 using Microsoft.Extensions.Options;
@@ -9,14 +9,14 @@ namespace Fab4Kids.Web.Newsletter;
 /// <inheritdoc cref="INewsletterEmailSender"/>
 public sealed class AzureNewsletterEmailSender(IOptions<NewsletterOptions> options, ILogger<AzureNewsletterEmailSender> logger, EmailClient? emailClient = null) : INewsletterEmailSender
 {
-    public Task<Result<UnitFp, string>> SendAsync(NewsletterSubscriber subscriber, CancellationToken cancellationToken)
+    public Task<Result<Unit, string>> SendAsync(NewsletterSubscriber subscriber, CancellationToken cancellationToken)
     {
         var settings = options.Value;
         if (emailClient is null || string.IsNullOrWhiteSpace(settings.FromAddress))
         {
             LogMessage.Error(logger, "Newsletter confirmation email is not configured (missing connection string or from address).");
 
-            return Task.FromResult<Result<UnitFp, string>>("Something went wrong sending your confirmation email.");
+            return Task.FromResult<Result<Unit, string>>("Something went wrong sending your confirmation email.");
         }
 
         return Try.RunAsync(async () =>
@@ -29,7 +29,7 @@ public sealed class AzureNewsletterEmailSender(IOptions<NewsletterOptions> optio
 
             await emailClient.SendAsync(WaitUntil.Completed, emailMessage, cancellationToken);
 
-            return UnitFp.Instance;
+            return Unit.Instance;
         }, cancellationToken).ToResultAsync(ex =>
         {
             LogMessage.LogException(logger, nameof(AzureNewsletterEmailSender), ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);

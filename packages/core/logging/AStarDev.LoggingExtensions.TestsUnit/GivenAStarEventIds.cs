@@ -1,4 +1,4 @@
-namespace AStar.Dev.Logging.Extensions.TestsUnit;
+namespace AStarDev.LoggingExtensions.TestsUnit;
 
 [TestSubject(typeof(AStarEventIds))]
 public sealed class GivenAStarEventIds

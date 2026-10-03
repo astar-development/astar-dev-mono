@@ -1,6 +1,6 @@
 using System.Net;
 using System.Text;
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Jobs;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;

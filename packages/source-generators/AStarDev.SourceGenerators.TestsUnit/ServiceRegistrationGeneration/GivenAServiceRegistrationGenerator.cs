@@ -1,4 +1,5 @@
 using AStarDev.SourceGenerators.ServiceRegistrationGeneration;
+using AStarDev.SourceGenerators.TestsUnit.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -18,11 +19,20 @@ public sealed class GivenAServiceRegistrationGenerator
                                                    Transient
                                                }
 
+                                               public enum Layer
+                                               {
+                                                   Application,
+                                                   Domain,
+                                                   Infrastructure,
+                                                   Miscellaneous
+                                               }
+
                                                [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
                                                public sealed class AutoRegisterServiceAttribute : Attribute
                                                {
-                                                   public AutoRegisterServiceAttribute(ServiceLifetime lifetime = ServiceLifetime.Scoped) { Lifetime = lifetime; }
+                                                   public AutoRegisterServiceAttribute(ServiceLifetime lifetime = ServiceLifetime.Scoped, Layer layer = Layer.Miscellaneous) { Lifetime = lifetime; Layer = layer; }
                                                    public ServiceLifetime Lifetime { get; }
+                                                   public Layer Layer { get; }
                                                    public Type? As { get; set; }
                                                    public bool AsSelf { get; set; } = false;
                                                }
@@ -30,22 +40,20 @@ public sealed class GivenAServiceRegistrationGenerator
 
                                            """;
 
+    private static readonly MetadataReference[] TrustedPlatformReferences =
+    [
+        .. ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator).Select(path => MetadataReference.CreateFromFile(path)),
+        MetadataReference.CreateFromFile(typeof(Microsoft.Extensions.DependencyInjection.IServiceCollection).Assembly.Location)
+    ];
+
     private static CSharpCompilation CreateCompilation(string input)
-    {
-        var diReference = MetadataReference.CreateFromFile(typeof(Microsoft.Extensions.DependencyInjection.IServiceCollection).Assembly.Location);
-        return CSharpCompilation.Create("TestAssembly",
+        => CSharpCompilation.Create("TestAssembly",
             [
                 CSharpSyntaxTree.ParseText(AttributeSource),
                 CSharpSyntaxTree.ParseText(input)
             ],
-            [
-                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(Attribute).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(System.Runtime.AssemblyTargetedPatchBandAttribute).Assembly.Location),
-                diReference
-            ],
+            TrustedPlatformReferences,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-    }
 
     [Fact]
     public void when_a_class_has_a_single_interface_then_it_is_registered_with_default_scoped_lifetime()
@@ -77,11 +85,20 @@ public sealed class GivenAServiceRegistrationGenerator
 
                       namespace TestNamespace;
 
+                      /// <summary>Generated extension methods for registering services annotated with <see cref="AStarDev.SourceGeneratorAttributes.AutoRegisterServiceAttribute" />.</summary>
                       public static class GeneratedServiceCollectionExtensions
                       {
-                          public static IServiceCollection AddAnnotatedServices(this IServiceCollection services)
+                          /// <summary>Registers all services annotated with <see cref="AStarDev.SourceGeneratorAttributes.AutoRegisterServiceAttribute" /> for the Miscellaneous layer.</summary>
+                          public static IServiceCollection AddMiscellaneousServices(this IServiceCollection services)
                           {
                               services.AddScoped<global::TestNamespace.IFoo, global::TestNamespace.Foo>();
+                              return services;
+                          }
+
+                          /// <summary>Registers all annotated services for every layer that has at least one registration.</summary>
+                          public static IServiceCollection AddAnnotatedServices(this IServiceCollection services)
+                          {
+                              services.AddMiscellaneousServices();
                               return services;
                           }
                       }
@@ -118,11 +135,20 @@ public sealed class GivenAServiceRegistrationGenerator
 
                       namespace TestNamespace;
 
+                      /// <summary>Generated extension methods for registering services annotated with <see cref="AStarDev.SourceGeneratorAttributes.AutoRegisterServiceAttribute" />.</summary>
                       public static class GeneratedServiceCollectionExtensions
                       {
-                          public static IServiceCollection AddAnnotatedServices(this IServiceCollection services)
+                          /// <summary>Registers all services annotated with <see cref="AStarDev.SourceGeneratorAttributes.AutoRegisterServiceAttribute" /> for the Miscellaneous layer.</summary>
+                          public static IServiceCollection AddMiscellaneousServices(this IServiceCollection services)
                           {
                               services.AddSingleton<global::TestNamespace.IFoo, global::TestNamespace.Foo>();
+                              return services;
+                          }
+
+                          /// <summary>Registers all annotated services for every layer that has at least one registration.</summary>
+                          public static IServiceCollection AddAnnotatedServices(this IServiceCollection services)
+                          {
+                              services.AddMiscellaneousServices();
                               return services;
                           }
                       }
@@ -159,12 +185,21 @@ public sealed class GivenAServiceRegistrationGenerator
 
                       namespace TestNamespace;
 
+                      /// <summary>Generated extension methods for registering services annotated with <see cref="AStarDev.SourceGeneratorAttributes.AutoRegisterServiceAttribute" />.</summary>
                       public static class GeneratedServiceCollectionExtensions
                       {
-                          public static IServiceCollection AddAnnotatedServices(this IServiceCollection services)
+                          /// <summary>Registers all services annotated with <see cref="AStarDev.SourceGeneratorAttributes.AutoRegisterServiceAttribute" /> for the Miscellaneous layer.</summary>
+                          public static IServiceCollection AddMiscellaneousServices(this IServiceCollection services)
                           {
                               services.AddScoped<global::TestNamespace.IFoo, global::TestNamespace.Foo>();
                               services.AddScoped<global::TestNamespace.Foo>();
+                              return services;
+                          }
+
+                          /// <summary>Registers all annotated services for every layer that has at least one registration.</summary>
+                          public static IServiceCollection AddAnnotatedServices(this IServiceCollection services)
+                          {
+                              services.AddMiscellaneousServices();
                               return services;
                           }
                       }
@@ -203,11 +238,20 @@ public sealed class GivenAServiceRegistrationGenerator
 
                       namespace TestNamespace;
 
+                      /// <summary>Generated extension methods for registering services annotated with <see cref="AStarDev.SourceGeneratorAttributes.AutoRegisterServiceAttribute" />.</summary>
                       public static class GeneratedServiceCollectionExtensions
                       {
-                          public static IServiceCollection AddAnnotatedServices(this IServiceCollection services)
+                          /// <summary>Registers all services annotated with <see cref="AStarDev.SourceGeneratorAttributes.AutoRegisterServiceAttribute" /> for the Miscellaneous layer.</summary>
+                          public static IServiceCollection AddMiscellaneousServices(this IServiceCollection services)
                           {
                               services.AddScoped<global::TestNamespace.IBar, global::TestNamespace.Foo>();
+                              return services;
+                          }
+
+                          /// <summary>Registers all annotated services for every layer that has at least one registration.</summary>
+                          public static IServiceCollection AddAnnotatedServices(this IServiceCollection services)
+                          {
+                              services.AddMiscellaneousServices();
                               return services;
                           }
                       }
@@ -243,11 +287,20 @@ public sealed class GivenAServiceRegistrationGenerator
 
                       namespace TestNamespace;
 
+                      /// <summary>Generated extension methods for registering services annotated with <see cref="AStarDev.SourceGeneratorAttributes.AutoRegisterServiceAttribute" />.</summary>
                       public static class GeneratedServiceCollectionExtensions
                       {
-                          public static IServiceCollection AddAnnotatedServices(this IServiceCollection services)
+                          /// <summary>Registers all services annotated with <see cref="AStarDev.SourceGeneratorAttributes.AutoRegisterServiceAttribute" /> for the Miscellaneous layer.</summary>
+                          public static IServiceCollection AddMiscellaneousServices(this IServiceCollection services)
                           {
                               services.AddScoped<global::TestNamespace.Foo>();
+                              return services;
+                          }
+
+                          /// <summary>Registers all annotated services for every layer that has at least one registration.</summary>
+                          public static IServiceCollection AddAnnotatedServices(this IServiceCollection services)
+                          {
+                              services.AddMiscellaneousServices();
                               return services;
                           }
                       }
@@ -341,5 +394,397 @@ public sealed class GivenAServiceRegistrationGenerator
 
             text.ShouldNotContain("Foo");
         }
+    }
+
+    [Fact]
+    public void when_a_class_has_no_layer_specified_then_it_is_registered_under_add_miscellaneous_services()
+    {
+        const string input = """
+                             using AStarDev.SourceGeneratorAttributes;
+
+                             namespace TestNamespace
+                             {
+                                 public interface IFoo { }
+
+                                 [AutoRegisterService]
+                                 public class Foo : IFoo { }
+                             }
+
+                             """;
+        var compilation = CreateCompilation(input);
+        var generator = new ServiceRegistrationGenerator();
+        var driver = CSharpGeneratorDriver.Create(generator);
+        driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
+        var result = driver.GetRunResult();
+        var generated = result.Results.SelectMany(r => r.GeneratedSources).FirstOrDefault(x => x.HintName.Contains("ServiceCollectionExtensions", StringComparison.Ordinal));
+        string text = generated.SourceText.ToString();
+
+        text.ShouldContain("AddMiscellaneousServices");
+    }
+
+    [Fact]
+    public void when_classes_span_multiple_layers_then_each_layer_gets_its_own_registration_method()
+    {
+        const string input = """
+                             using AStarDev.SourceGeneratorAttributes;
+
+                             namespace TestNamespace
+                             {
+                                 public interface IFoo { }
+                                 public interface IBar { }
+                                 public interface IBaz { }
+
+                                 [AutoRegisterService(layer: Layer.Application)]
+                                 public class Foo : IFoo { }
+
+                                 [AutoRegisterService(layer: Layer.Domain)]
+                                 public class Bar : IBar { }
+
+                                 [AutoRegisterService(layer: Layer.Infrastructure)]
+                                 public class Baz : IBaz { }
+                             }
+
+                             """;
+        var compilation = CreateCompilation(input);
+        var generator = new ServiceRegistrationGenerator();
+        var driver = CSharpGeneratorDriver.Create(generator);
+        driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
+        var result = driver.GetRunResult();
+        var generated = result.Results.SelectMany(r => r.GeneratedSources).FirstOrDefault(x => x.HintName.Contains("ServiceCollectionExtensions", StringComparison.Ordinal));
+        generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
+        string text = generated.SourceText.ToString();
+
+        text.ShouldBe("""
+                      // <auto-generated/>
+                      using Microsoft.Extensions.DependencyInjection;
+
+                      namespace TestNamespace;
+
+                      /// <summary>Generated extension methods for registering services annotated with <see cref="AStarDev.SourceGeneratorAttributes.AutoRegisterServiceAttribute" />.</summary>
+                      public static class GeneratedServiceCollectionExtensions
+                      {
+                          /// <summary>Registers all services annotated with <see cref="AStarDev.SourceGeneratorAttributes.AutoRegisterServiceAttribute" /> for the Application layer.</summary>
+                          public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+                          {
+                              services.AddScoped<global::TestNamespace.IFoo, global::TestNamespace.Foo>();
+                              return services;
+                          }
+
+                          /// <summary>Registers all services annotated with <see cref="AStarDev.SourceGeneratorAttributes.AutoRegisterServiceAttribute" /> for the Domain layer.</summary>
+                          public static IServiceCollection AddDomainServices(this IServiceCollection services)
+                          {
+                              services.AddScoped<global::TestNamespace.IBar, global::TestNamespace.Bar>();
+                              return services;
+                          }
+
+                          /// <summary>Registers all services annotated with <see cref="AStarDev.SourceGeneratorAttributes.AutoRegisterServiceAttribute" /> for the Infrastructure layer.</summary>
+                          public static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
+                          {
+                              services.AddScoped<global::TestNamespace.IBaz, global::TestNamespace.Baz>();
+                              return services;
+                          }
+
+                          /// <summary>Registers all annotated services for every layer that has at least one registration.</summary>
+                          public static IServiceCollection AddAnnotatedServices(this IServiceCollection services)
+                          {
+                              services.AddApplicationServices();
+                              services.AddDomainServices();
+                              services.AddInfrastructureServices();
+                              return services;
+                          }
+                      }
+
+                      """);
+    }
+
+    private static (CSharpCompilation Compilation, GeneratorDriverRunResult Result) RunGenerator(string input)
+    {
+        var compilation = CreateCompilation(input);
+
+        return (compilation, GeneratorRunHelpers.Run(new ServiceRegistrationGenerator(), compilation));
+    }
+
+    private static string GeneratedText(GeneratorDriverRunResult result) => GeneratorRunHelpers.GeneratedSources(result).Single().SourceText.ToString();
+
+    [Fact]
+    public void when_services_are_registered_then_the_generated_code_compiles_and_has_well_formed_documentation()
+    {
+        const string input = """
+                             using AStarDev.SourceGeneratorAttributes;
+                             namespace TestNamespace
+                             {
+                                 public interface IFoo { }
+
+                                 [AutoRegisterService(layer: Layer.Application)]
+                                 public class Foo : IFoo { }
+                             }
+                             """;
+
+        var (compilation, result) = RunGenerator(input);
+
+        GeneratorRunHelpers.CompilationErrorsInGeneratedCode(compilation, result).ShouldBeEmpty();
+        GeneratorRunHelpers.DocumentationDiagnostics(compilation, GeneratedText(result)).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void when_a_class_has_transient_lifetime_then_it_is_registered_as_transient()
+    {
+        const string input = """
+                             using AStarDev.SourceGeneratorAttributes;
+                             namespace TestNamespace
+                             {
+                                 public interface IFoo { }
+
+                                 [AutoRegisterService(ServiceLifetime.Transient)]
+                                 public class Foo : IFoo { }
+                             }
+                             """;
+
+        var (_, result) = RunGenerator(input);
+
+        GeneratedText(result).ShouldContain("services.AddTransient<global::TestNamespace.IFoo, global::TestNamespace.Foo>();");
+    }
+
+    [Fact]
+    public void when_a_class_is_in_the_global_namespace_then_the_generated_namespace_is_valid()
+    {
+        const string input = """
+                             using AStarDev.SourceGeneratorAttributes;
+
+                             public interface IFoo { }
+
+                             [AutoRegisterService]
+                             public class Foo : IFoo { }
+                             """;
+
+        var (compilation, result) = RunGenerator(input);
+
+        string text = GeneratedText(result);
+        text.ShouldNotContain("namespace ;");
+        text.ShouldContain("services.AddScoped<global::IFoo, global::Foo>();");
+        GeneratorRunHelpers.CompilationErrorsInGeneratedCode(compilation, result).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void when_several_classes_share_a_layer_then_they_are_registered_in_one_method_in_declaration_order()
+    {
+        const string input = """
+                             using AStarDev.SourceGeneratorAttributes;
+                             namespace TestNamespace
+                             {
+                                 public interface IFoo { }
+                                 public interface IBar { }
+
+                                 [AutoRegisterService(layer: Layer.Domain)]
+                                 public class Foo : IFoo { }
+
+                                 [AutoRegisterService(ServiceLifetime.Singleton, Layer.Domain)]
+                                 public class Bar : IBar { }
+                             }
+                             """;
+
+        var (_, result) = RunGenerator(input);
+
+        string text = GeneratedText(result);
+        text.Split("AddDomainServices(this", StringSplitOptions.None).Length.ShouldBe(2);
+        int fooIndex = text.IndexOf("AddScoped<global::TestNamespace.IFoo, global::TestNamespace.Foo>", StringComparison.Ordinal);
+        int barIndex = text.IndexOf("AddSingleton<global::TestNamespace.IBar, global::TestNamespace.Bar>", StringComparison.Ordinal);
+        fooIndex.ShouldBeGreaterThan(-1);
+        barIndex.ShouldBeGreaterThan(fooIndex);
+    }
+
+    [Fact]
+    public void when_only_one_layer_is_used_then_the_umbrella_method_calls_only_that_layer()
+    {
+        const string input = """
+                             using AStarDev.SourceGeneratorAttributes;
+                             namespace TestNamespace
+                             {
+                                 public interface IFoo { }
+
+                                 [AutoRegisterService(layer: Layer.Infrastructure)]
+                                 public class Foo : IFoo { }
+                             }
+                             """;
+
+        var (_, result) = RunGenerator(input);
+
+        string text = GeneratedText(result);
+        text.ShouldContain("services.AddInfrastructureServices();");
+        text.ShouldNotContain("AddApplicationServices");
+        text.ShouldNotContain("AddDomainServices");
+        text.ShouldNotContain("AddMiscellaneousServices");
+    }
+
+    [Fact]
+    public void when_a_class_has_an_explicit_as_type_and_as_self_then_both_are_registered()
+    {
+        const string input = """
+                             using AStarDev.SourceGeneratorAttributes;
+                             namespace TestNamespace
+                             {
+                                 public interface IFoo { }
+                                 public interface IBar { }
+
+                                 [AutoRegisterService(As = typeof(IBar), AsSelf = true)]
+                                 public class Foo : IFoo, IBar { }
+                             }
+                             """;
+
+        var (_, result) = RunGenerator(input);
+
+        string text = GeneratedText(result);
+        text.ShouldContain("services.AddScoped<global::TestNamespace.IBar, global::TestNamespace.Foo>();");
+        text.ShouldContain("services.AddScoped<global::TestNamespace.Foo>();");
+        text.ShouldNotContain("IFoo");
+    }
+
+    [Fact]
+    public void when_a_class_implements_one_interface_and_idisposable_then_the_other_interface_is_inferred()
+    {
+        const string input = """
+                             using System;
+                             using AStarDev.SourceGeneratorAttributes;
+                             namespace TestNamespace
+                             {
+                                 public interface IFoo { }
+
+                                 [AutoRegisterService]
+                                 public class Foo : IFoo, IDisposable { public void Dispose() { } }
+                             }
+                             """;
+
+        var (_, result) = RunGenerator(input);
+
+        GeneratedText(result).ShouldContain("services.AddScoped<global::TestNamespace.IFoo, global::TestNamespace.Foo>();");
+    }
+
+    [Fact]
+    public void when_a_class_only_implements_idisposable_then_it_is_not_registered()
+    {
+        const string input = """
+                             using System;
+                             using AStarDev.SourceGeneratorAttributes;
+                             namespace TestNamespace
+                             {
+                                 [AutoRegisterService]
+                                 public class Foo : IDisposable { public void Dispose() { } }
+                             }
+                             """;
+
+        var (_, result) = RunGenerator(input);
+
+        GeneratorRunHelpers.GeneratedSources(result).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void when_a_class_only_implements_a_generic_interface_then_it_is_not_registered()
+    {
+        const string input = """
+                             using AStarDev.SourceGeneratorAttributes;
+                             namespace TestNamespace
+                             {
+                                 public interface IFoo<T> { }
+
+                                 [AutoRegisterService]
+                                 public class Foo : IFoo<int> { }
+                             }
+                             """;
+
+        var (_, result) = RunGenerator(input);
+
+        GeneratorRunHelpers.GeneratedSources(result).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void when_a_class_only_implements_an_internal_interface_then_it_is_not_registered()
+    {
+        const string input = """
+                             using AStarDev.SourceGeneratorAttributes;
+                             namespace TestNamespace
+                             {
+                                 internal interface IFoo { }
+
+                                 [AutoRegisterService]
+                                 public class Foo : IFoo { }
+                             }
+                             """;
+
+        var (_, result) = RunGenerator(input);
+
+        GeneratorRunHelpers.GeneratedSources(result).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void when_the_interface_is_implemented_by_a_base_class_then_it_is_inferred()
+    {
+        const string input = """
+                             using AStarDev.SourceGeneratorAttributes;
+                             namespace TestNamespace
+                             {
+                                 public interface IFoo { }
+                                 public class FooBase : IFoo { }
+
+                                 [AutoRegisterService]
+                                 public class Foo : FooBase { }
+                             }
+                             """;
+
+        var (_, result) = RunGenerator(input);
+
+        GeneratedText(result).ShouldContain("services.AddScoped<global::TestNamespace.IFoo, global::TestNamespace.Foo>();");
+    }
+
+    [Fact]
+    public void when_a_class_has_only_unrelated_attributes_then_it_is_not_registered()
+    {
+        const string input = """
+                             using System;
+                             namespace TestNamespace
+                             {
+                                 public interface IFoo { }
+
+                                 [Obsolete]
+                                 public class Foo : IFoo { }
+                             }
+                             """;
+
+        var (_, result) = RunGenerator(input);
+
+        GeneratorRunHelpers.GeneratedSources(result).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void when_a_valid_and_an_invalid_class_are_mixed_then_only_the_valid_class_is_registered()
+    {
+        const string input = """
+                             using AStarDev.SourceGeneratorAttributes;
+                             namespace TestNamespace
+                             {
+                                 public interface IFoo { }
+                                 public interface IBar { }
+
+                                 [AutoRegisterService]
+                                 public class Foo : IFoo { }
+
+                                 [AutoRegisterService]
+                                 public abstract class Bar : IBar { }
+                             }
+                             """;
+
+        var (_, result) = RunGenerator(input);
+
+        string text = GeneratedText(result);
+        text.ShouldContain("global::TestNamespace.Foo");
+        text.ShouldNotContain("Bar");
+    }
+
+    [Fact]
+    public void when_the_compilation_has_no_annotated_classes_then_nothing_is_generated_and_no_diagnostics_are_reported()
+    {
+        var (_, result) = RunGenerator("namespace TestNamespace { public class Plain { } }");
+
+        GeneratorRunHelpers.GeneratedSources(result).ShouldBeEmpty();
+        result.Diagnostics.ShouldBeEmpty();
     }
 }

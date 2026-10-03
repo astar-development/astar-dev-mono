@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace AStar.Dev.FunctionalParadigm.TestsUnit;
+namespace AStarDev.FunctionalParadigm.TestsUnit;
 
 public sealed class GivenExceptionalTaskChaining
 {

@@ -1,0 +1,91 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="AStarDev.ScraperPlaying.UI.RootSettingsEditor">
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" Margin="12" ColumnSpacing="16" RowSpacing="8">
+      <TextBlock Grid.Row="0" Grid.Column="0" Text="Base URL" VerticalAlignment="Center" />
+      <ContentControl Grid.Row="0" Grid.Column="1" HorizontalAlignment="Left">
+        <TextBox x:Name="BaseUrlBox" MinWidth="360" />
+      </ContentControl>
+      <TextBlock Grid.Row="1" Grid.Column="0" Text="Login URL" VerticalAlignment="Center" />
+      <ContentControl Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left">
+        <TextBox x:Name="LoginUrlBox" MinWidth="360" />
+      </ContentControl>
+      <TextBlock Grid.Row="2" Grid.Column="0" Text="API key" VerticalAlignment="Center" />
+      <ContentControl Grid.Row="2" Grid.Column="1" HorizontalAlignment="Left">
+        <StackPanel Orientation="Horizontal" Spacing="12">
+          <TextBox x:Name="ApiKeyBox" MinWidth="360" PasswordChar="●" RevealPassword="{Binding #ShowApiKeyCheckBox.IsChecked}" />
+          <CheckBox x:Name="ShowApiKeyCheckBox" Content="Show" />
+        </StackPanel>
+      </ContentControl>
+      <TextBlock Grid.Row="3" Grid.Column="0" Text="Search string" VerticalAlignment="Center" />
+      <ContentControl Grid.Row="3" Grid.Column="1" HorizontalAlignment="Left">
+        <TextBox x:Name="SearchStringBox" MinWidth="360" />
+      </ContentControl>
+      <TextBlock Grid.Row="4" Grid.Column="0" Text="Search string prefix" VerticalAlignment="Center" />
+      <ContentControl Grid.Row="4" Grid.Column="1" HorizontalAlignment="Left">
+        <TextBox x:Name="SearchStringPrefixBox" MinWidth="360" />
+      </ContentControl>
+      <TextBlock Grid.Row="5" Grid.Column="0" Text="Search string suffix" VerticalAlignment="Center" />
+      <ContentControl Grid.Row="5" Grid.Column="1" HorizontalAlignment="Left">
+        <TextBox x:Name="SearchStringSuffixBox" MinWidth="360" />
+      </ContentControl>
+      <TextBlock Grid.Row="6" Grid.Column="0" Text="Top wallpapers" VerticalAlignment="Center" />
+      <ContentControl Grid.Row="6" Grid.Column="1" HorizontalAlignment="Left">
+        <TextBox x:Name="TopWallpapersBox" MinWidth="360" />
+      </ContentControl>
+      <TextBlock Grid.Row="7" Grid.Column="0" Text="Hot wallpapers" VerticalAlignment="Center" />
+      <ContentControl Grid.Row="7" Grid.Column="1" HorizontalAlignment="Left">
+        <TextBox x:Name="HotWallpapersBox" MinWidth="360" />
+      </ContentControl>
+      <TextBlock Grid.Row="8" Grid.Column="0" Text="Subscriptions" VerticalAlignment="Center" />
+      <ContentControl Grid.Row="8" Grid.Column="1" HorizontalAlignment="Left">
+        <TextBox x:Name="SubscriptionsBox" MinWidth="360" />
+      </ContentControl>
+      <TextBlock Grid.Row="9" Grid.Column="0" Text="Image pause (seconds)" VerticalAlignment="Center" />
+      <ContentControl Grid.Row="9" Grid.Column="1" HorizontalAlignment="Left">
+        <NumericUpDown x:Name="ImagePauseInSecondsBox" Minimum="0" Increment="1" FormatString="0" MinWidth="160" HorizontalAlignment="Left" />
+      </ContentControl>
+      <TextBlock Grid.Row="10" Grid.Column="0" Text="Starting page" VerticalAlignment="Center" />
+      <ContentControl Grid.Row="10" Grid.Column="1" HorizontalAlignment="Left">
+        <NumericUpDown x:Name="StartingPageNumberBox" Minimum="0" Increment="1" FormatString="0" MinWidth="160" HorizontalAlignment="Left" />
+      </ContentControl>
+      <TextBlock Grid.Row="11" Grid.Column="0" Text="Total pages" VerticalAlignment="Center" />
+      <ContentControl Grid.Row="11" Grid.Column="1" HorizontalAlignment="Left">
+        <NumericUpDown x:Name="TotalPagesBox" Minimum="0" Increment="1" FormatString="0" MinWidth="160" HorizontalAlignment="Left" />
+      </ContentControl>
+      <TextBlock Grid.Row="12" Grid.Column="0" Text="Subscriptions starting page" VerticalAlignment="Center" />
+      <ContentControl Grid.Row="12" Grid.Column="1" HorizontalAlignment="Left">
+        <NumericUpDown x:Name="SubscriptionsStartingPageNumberBox" Minimum="0" Increment="1" FormatString="0" MinWidth="160" HorizontalAlignment="Left" />
+      </ContentControl>
+      <TextBlock Grid.Row="13" Grid.Column="0" Text="Subscriptions total pages" VerticalAlignment="Center" />
+      <ContentControl Grid.Row="13" Grid.Column="1" HorizontalAlignment="Left">
+        <NumericUpDown x:Name="SubscriptionsTotalPagesBox" Minimum="0" Increment="1" FormatString="0" MinWidth="160" HorizontalAlignment="Left" />
+      </ContentControl>
+      <TextBlock Grid.Row="14" Grid.Column="0" Text="Top wallpapers starting page" VerticalAlignment="Center" />
+      <ContentControl Grid.Row="14" Grid.Column="1" HorizontalAlignment="Left">
+        <NumericUpDown x:Name="TopWallpapersStartingPageNumberBox" Minimum="0" Increment="1" FormatString="0" MinWidth="160" HorizontalAlignment="Left" />
+      </ContentControl>
+      <TextBlock Grid.Row="15" Grid.Column="0" Text="Top wallpapers total pages" VerticalAlignment="Center" />
+      <ContentControl Grid.Row="15" Grid.Column="1" HorizontalAlignment="Left">
+        <NumericUpDown x:Name="TopWallpapersTotalPagesBox" Minimum="0" Increment="1" FormatString="0" MinWidth="160" HorizontalAlignment="Left" />
+      </ContentControl>
+      <TextBlock Grid.Row="16" Grid.Column="0" Text="Hot wallpapers starting page" VerticalAlignment="Center" />
+      <ContentControl Grid.Row="16" Grid.Column="1" HorizontalAlignment="Left">
+        <NumericUpDown x:Name="HotWallpapersStartingPageNumberBox" Minimum="0" Increment="1" FormatString="0" MinWidth="160" HorizontalAlignment="Left" />
+      </ContentControl>
+      <TextBlock Grid.Row="17" Grid.Column="0" Text="Hot wallpapers total pages" VerticalAlignment="Center" />
+      <ContentControl Grid.Row="17" Grid.Column="1" HorizontalAlignment="Left">
+        <NumericUpDown x:Name="HotWallpapersTotalPagesBox" Minimum="0" Increment="1" FormatString="0" MinWidth="160" HorizontalAlignment="Left" />
+      </ContentControl>
+      <TextBlock Grid.Row="18" Grid.Column="0" Text="Headless browser" VerticalAlignment="Center" />
+      <ContentControl Grid.Row="18" Grid.Column="1" HorizontalAlignment="Left">
+        <CheckBox x:Name="UseHeadlessCheckBox" />
+      </ContentControl>
+      <TextBlock Grid.Row="19" Grid.Column="0" Text="Slow motion delay (ms, blank for none)" VerticalAlignment="Center" />
+      <ContentControl Grid.Row="19" Grid.Column="1" HorizontalAlignment="Left">
+        <NumericUpDown x:Name="SlowMotionDelayBox" Minimum="0" Increment="50" FormatString="0.##" MinWidth="160" HorizontalAlignment="Left" />
+      </ContentControl>
+    </Grid>
+  </ScrollViewer>
+</UserControl>

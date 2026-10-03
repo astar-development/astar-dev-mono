@@ -6,9 +6,9 @@
 
 ## 2. Strongly-Typed ID Value Objects
 
-- [x] 2.1 Create `Domain/AccountId.cs` — `[StrongId(typeof(string))] partial record struct AccountId`
-- [x] 2.2 Create `Domain/OneDriveFolderId.cs` — `[StrongId(typeof(string))] partial record struct OneDriveFolderId`
-- [x] 2.3 Create `Domain/OneDriveItemId.cs` — `[StrongId(typeof(string))] partial record struct OneDriveItemId`
+- [x] 2.1 Create `Domain/AccountId.cs` — `[StrongType(typeof(string))] partial record struct AccountId`
+- [x] 2.2 Create `Domain/OneDriveFolderId.cs` — `[StrongType(typeof(string))] partial record struct OneDriveFolderId`
+- [x] 2.3 Create `Domain/OneDriveItemId.cs` — `[StrongType(typeof(string))] partial record struct OneDriveItemId`
 
 ## 3. LocalSyncPath Value Object
 

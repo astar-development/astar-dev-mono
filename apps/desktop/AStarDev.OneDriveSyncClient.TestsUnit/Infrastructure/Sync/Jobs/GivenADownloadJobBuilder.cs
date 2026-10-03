@@ -1,5 +1,5 @@
 using System.Collections.Concurrent;
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 using AStarDev.OneDriveSyncClient.Accounts;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Jobs;
 using Microsoft.Extensions.Logging;

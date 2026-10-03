@@ -1,26 +1,27 @@
-using AStarDev.ControlDb.Files;
+using AStarDev.ControlDb.FileDetail;
+using AStarDev.EFCoreSqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AStarDev.ControlDb.Configurations.Files;
 
-/// <summary>
-/// Represents the configuration for the ImageDetailEntity in the database context.
-/// </summary>
-public class ImageDetailEntityConfiguration : IEntityTypeConfiguration<ImageDetailEntity>
+/// <summary>EF Core configuration for <see cref="ImageDetailEntity"/>.</summary>
+public sealed class ImageDetailEntityConfiguration : IEntityTypeConfiguration<ImageDetailEntity>
 {
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public void Configure(EntityTypeBuilder<ImageDetailEntity> builder)
     {
-        builder.ToTable("ImageDetails");
-        builder.Property(d => d.Id).ValueGeneratedOnAdd();
-        builder.Property(d => d.Id).HasConversion(id => id.Value, value => new ImageDetailId(value));
-        builder.Property(d => d.FileEntityId).HasConversion(id => id.Value, value => new FileId(value));
-        builder.HasKey(d => d.Id);
+        _ = builder.ToTable("ImageDetail");
+        _ = builder.HasKey(image => image.Id);
+        _ = builder.Property(image => image.Id).ValueGeneratedOnAdd();
+        _ = builder.Property(image => image.Id).HasConversion(imageId => imageId.Value, guid => new ImageId(guid));
+        _ = builder.Property(image => image.Id).HasValueGenerator((_, _) => new StrongGuidIdValueGenerator<ImageId>(value => new ImageId(value)));
+        _ = builder.Property(image => image.FileId).HasConversion(fileId => fileId.Value, guid => new FileId(guid));
 
-        builder.HasOne<FileEntity>()
-            .WithOne(fileEntity => fileEntity.ImageDetail)
-            .HasForeignKey<ImageDetailEntity>(imageDetail => imageDetail.FileEntityId)
-            .HasPrincipalKey<FileEntity>(fileEntity => fileEntity.Id);
+        _ = builder.HasOne(image => image.FileDetail)
+            .WithOne(file => file.ImageDetail)
+            .HasForeignKey<ImageDetailEntity>(image => image.FileId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

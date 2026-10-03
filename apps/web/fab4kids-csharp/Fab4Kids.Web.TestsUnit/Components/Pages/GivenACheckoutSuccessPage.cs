@@ -1,4 +1,4 @@
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 using Bunit;
 using Fab4Kids.Web.Checkout;
 using Fab4Kids.Web.Components.Pages;

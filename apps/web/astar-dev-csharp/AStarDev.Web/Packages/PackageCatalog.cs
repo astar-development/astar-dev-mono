@@ -15,7 +15,7 @@ public static class PackageCatalog
         PackageCategoryFactory.Create(
             "Core Utilities",
             "Foundational patterns and extension methods for .NET projects",
-            ["AStarDev.Utilities", "AStar.Dev.Functional.Extensions", "AStar.Dev.Technical.Debt.Reporting"]),
+            ["AStarDev.Utilities", "AStar.Dev.Functional.Extensions", "AStarDev.TechnicalDebtReporting"]),
         PackageCategoryFactory.Create(
             "Infrastructure & Observability",
             "Logging, health checks, and infrastructure cross-cutting concerns",

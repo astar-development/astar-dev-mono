@@ -1,4 +1,4 @@
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace AStar.Dev.Infrastructure.FilesDb.Data;

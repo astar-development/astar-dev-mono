@@ -1,5 +1,5 @@
 using System.IO.Abstractions;
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Domain;
 
 namespace AStar.Dev.Infrastructure.AppDb.Entities;

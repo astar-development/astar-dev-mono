@@ -111,6 +111,9 @@ public static partial class OneDriveSyncClientMessages
     [LoggerMessage(EventId = 2400, Level = LogLevel.Information, Message = "[LocalDeletionDetector] Local file deleted — removing remote: {Path}")]
     public static partial void LocalDeletionDetectorDeleted(ILogger logger, string path);
 
+    [LoggerMessage(EventId = 2404, Level = LogLevel.Information, Message = "[LocalDeletionDetector] Local folder deleted — removing remote: {Path}")]
+    public static partial void LocalDeletionDetectorFolderDeleted(ILogger logger, string path);
+
     /// <summary>Logs deleted remote item.</summary>
     [LoggerMessage(EventId = 2401, Level = LogLevel.Debug, Message = "[LocalDeletionDetector] Deleted remote item {RemoteId}")]
     public static partial void LocalDeletionDetectorRemoteDeleted(ILogger logger, string remoteId);

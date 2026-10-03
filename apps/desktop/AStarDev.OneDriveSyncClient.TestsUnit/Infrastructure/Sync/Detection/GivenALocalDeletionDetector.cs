@@ -1,5 +1,5 @@
 using System.Collections.Concurrent;
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 using AStarDev.OneDriveSyncClient.Data.Repositories;
 using AStarDev.OneDriveSyncClient.Infrastructure.Graph;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Detection;
@@ -91,7 +91,7 @@ public sealed class GivenALocalDeletionDetector
     }
 
     [Fact]
-    public async Task when_synced_item_is_a_folder_then_it_is_skipped()
+    public async Task when_local_folder_is_missing_then_remote_folder_and_tracking_record_are_deleted()
     {
         var mockFileSystem = new MockFileSystem();
         var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>
@@ -103,7 +103,8 @@ public sealed class GivenALocalDeletionDetector
 
         await sut.DetectAndApplyAsync(_accountId, tokenFactory, syncedItems, TestContext.Current.CancellationToken);
 
-        await _graphService.DidNotReceive().DeleteItemAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await _graphService.Received(1).DeleteItemAsync(Arg.Is("user-1"), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Is("folder-1"), Arg.Any<CancellationToken>());
+        await _syncedItemRepository.Received(1).DeleteManyByRemoteIdAsync(Arg.Is(_accountId), Arg.Is<IReadOnlyList<OneDriveItemId>>(ids => ids.Count == 1 && ids[0].Value == "folder-1"), Arg.Any<CancellationToken>());
     }
 
     [Fact]

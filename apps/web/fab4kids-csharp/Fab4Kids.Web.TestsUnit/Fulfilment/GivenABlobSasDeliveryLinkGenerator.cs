@@ -1,5 +1,5 @@
 using System.Globalization;
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 using Azure.Storage;
 using Azure.Storage.Blobs;
 using Fab4Kids.Web.Fulfilment;

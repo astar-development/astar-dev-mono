@@ -1,0 +1,59 @@
+<Window Icon="/Assets/astar.png"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:AStarDev.ScraperPlaying.UI"
+        x:Class="AStarDev.ScraperPlaying.UI.MainWindow"
+        Title="AStarDev Scraper Playing"
+        Width="1800"
+        Height="800"
+        MinWidth="480"
+        MinHeight="320">
+  <Grid RowDefinitions="Auto,*">
+    <Menu Grid.Row="0" Margin="5,5,0,0">
+      <MenuItem Header="_File">
+        <MenuItem Header="_Edit">
+          <MenuItem x:Name="EditConfigurationMenuItem" Header="_Configuration" Click="EditConfiguration" />
+          <MenuItem x:Name="EditTagsMenuItem" Header="_Tags" Click="EditTags" />
+        </MenuItem>
+        <Separator />
+        <MenuItem x:Name="ImportConfigurationMenuItem" Header="_Import Configuration" Click="ImportConfiguration" />
+        <MenuItem x:Name="ExportConfigurationMenuItem" Header="_Export Configuration" Click="ExportConfiguration" />
+        <MenuItem x:Name="ExportConfigurationWithApiKeysMenuItem" Header="Export Configuration with API _Keys" Click="ExportConfigurationWithApiKeys" />
+        <Separator />
+        <MenuItem x:Name="ClearDownloadsMenuItem" Header="_Clear Downloads" Click="ClearDownloads" />
+        <Separator />
+        <MenuItem Header="E_xit" Click="Exit" />
+      </MenuItem>
+    </Menu>
+    <Grid Grid.Row="1" RowDefinitions="Auto,Auto,*" Margin="32">
+      <TextBlock Text="AStarDev Scraper Playing"
+                 FontSize="28"
+                 FontWeight="SemiBold" />
+      <StackPanel Grid.Row="1"
+                  Orientation="Horizontal"
+                  HorizontalAlignment="Center"
+                  Spacing="12"
+                  Margin="0,24,0,0">
+        <Button x:Name="RunScraperButton" Content="Run Scraper" Click="RunScraper" />
+        <Button x:Name="CancelButton" Content="Cancel" Click="CancelOperation" IsEnabled="False" />
+        <ToggleSwitch x:Name="HotWallpapersSwitch" OnContent="Hot Wallpapers" OffContent="Hot Wallpapers" IsChecked="True" />
+        <ToggleSwitch x:Name="TopWallpapersSwitch" OnContent="Top Wallpapers" OffContent="Top Wallpapers" IsChecked="True" />
+        <ToggleSwitch x:Name="CategoriesSwitch" OnContent="Categories" OffContent="Categories" IsChecked="True" />
+      </StackPanel>
+      <Grid Grid.Row="2"
+            ColumnDefinitions="*,*"
+            ColumnSpacing="24"
+            Margin="0,24,0,0">
+        <Border Grid.Column="0"
+                Padding="24"
+                Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                CornerRadius="8">
+          <ScrollViewer x:Name="StatusScrollViewer" VerticalScrollBarVisibility="Auto">
+            <TextBlock Text="Ready for action." x:Name="StatusTextBlock" TextWrapping="Wrap" FontSize="12" />
+          </ScrollViewer>
+        </Border>
+        <local:ImagePreviewPanel x:Name="ImagePreview" Grid.Column="1" />
+      </Grid>
+    </Grid>
+  </Grid>
+</Window>

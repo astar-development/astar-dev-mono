@@ -5,25 +5,25 @@ namespace AStarDev.SourceGenerators.TestsUnit.Utilities;
 
 internal static class CompilationHelpers
 {
-    private const string StrongIdAttributeSource = """
+    private const string StrongTypeAttributeSource = """
                                                    using System;
                                                    namespace AStarDev.SourceGeneratorAttributes {
-                                                       public sealed class StrongIdAttribute(Type? idType = null) : Attribute
+                                                       public sealed class StrongTypeAttribute(Type? idType = null) : Attribute
                                                        {
-                                                           /// <summary>
-                                                           /// The type of the ID property (e.g., typeof(Guid), typeof(int)).
-                                                           /// </summary>
+                                                           /// <summary>The type of the ID property (e.g., typeof(Guid), typeof(int)).</summary>
                                                            public Type IdType { get; } = idType ?? typeof(Guid);
                                                        }
                                                    }
                                                    """;
     private const string AutoRegisterOptionsAttributeSource = """
+                                                              using System;
+
                                                               namespace AStarDev.SourceGeneratorAttributes;
 
                                                               [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = false, AllowMultiple = false)]
                                                               public class AutoRegisterOptionsAttribute : Attribute
                                                               {
-                                                                  public AutoRegisterOptionsAttribute(string sectionName)
+                                                                  public AutoRegisterOptionsAttribute(string? sectionName = null)
                                                                   {
                                                                       SectionName = sectionName;
                                                                   }
@@ -40,7 +40,7 @@ internal static class CompilationHelpers
     public static CSharpCompilation CreateCompilation(string input)
         => CSharpCompilation.Create("TestAssembly",
             [
-                CSharpSyntaxTree.ParseText(StrongIdAttributeSource),
+                CSharpSyntaxTree.ParseText(StrongTypeAttributeSource),
                 CSharpSyntaxTree.ParseText(AutoRegisterOptionsAttributeSource),
                 CSharpSyntaxTree.ParseText(input)
             ],

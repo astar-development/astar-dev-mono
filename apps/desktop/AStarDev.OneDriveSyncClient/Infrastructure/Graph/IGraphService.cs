@@ -1,5 +1,6 @@
 using System.Reactive;
-using AStar.Dev.FunctionalParadigm;
+using Unit = System.Reactive.Unit;
+using AStarDev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Domain;
 
 namespace AStarDev.OneDriveSyncClient.Infrastructure.Graph;

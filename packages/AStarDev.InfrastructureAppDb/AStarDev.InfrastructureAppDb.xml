@@ -225,37 +225,37 @@
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.DeltaItem">
             <summary>Represents a single item returned from the Microsoft Graph drive API.</summary>
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.DeltaItem.#ctor(AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId,AStar.Dev.Infrastructure.AppDb.Domain.DriveId,AStar.Dev.FunctionalParadigm.Option{AStar.Dev.Infrastructure.AppDb.Domain.OneDriveFolderId},AStar.Dev.Infrastructure.AppDb.Domain.ItemPath)">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.DeltaItem.#ctor(AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId,AStar.Dev.Infrastructure.AppDb.Domain.DriveId,AStarDev.FunctionalParadigm.Option{AStar.Dev.Infrastructure.AppDb.Domain.OneDriveFolderId},AStar.Dev.Infrastructure.AppDb.Domain.ItemPath)">
             <summary>Represents a single item returned from the Microsoft Graph drive API.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.FileDeltaItem">
             <summary>Represents a file item returned from the Microsoft Graph drive API.</summary>
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.FileDeltaItem.#ctor(AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId,AStar.Dev.Infrastructure.AppDb.Domain.DriveId,AStar.Dev.FunctionalParadigm.Option{AStar.Dev.Infrastructure.AppDb.Domain.OneDriveFolderId},AStar.Dev.Infrastructure.AppDb.Domain.ItemPath,System.Int64,AStar.Dev.FunctionalParadigm.Option{System.DateTimeOffset},AStar.Dev.FunctionalParadigm.Option{System.String},AStar.Dev.Infrastructure.AppDb.Entities.VersionInfo)">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.FileDeltaItem.#ctor(AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId,AStar.Dev.Infrastructure.AppDb.Domain.DriveId,AStarDev.FunctionalParadigm.Option{AStar.Dev.Infrastructure.AppDb.Domain.OneDriveFolderId},AStar.Dev.Infrastructure.AppDb.Domain.ItemPath,System.Int64,AStarDev.FunctionalParadigm.Option{System.DateTimeOffset},AStarDev.FunctionalParadigm.Option{System.String},AStar.Dev.Infrastructure.AppDb.Entities.VersionInfo)">
             <summary>Represents a file item returned from the Microsoft Graph drive API.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.FolderDeltaItem">
             <summary>Represents a folder item returned from the Microsoft Graph drive API.</summary>
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.FolderDeltaItem.#ctor(AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId,AStar.Dev.Infrastructure.AppDb.Domain.DriveId,AStar.Dev.FunctionalParadigm.Option{AStar.Dev.Infrastructure.AppDb.Domain.OneDriveFolderId},AStar.Dev.Infrastructure.AppDb.Domain.ItemPath,AStar.Dev.Infrastructure.AppDb.Entities.VersionInfo)">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.FolderDeltaItem.#ctor(AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId,AStar.Dev.Infrastructure.AppDb.Domain.DriveId,AStarDev.FunctionalParadigm.Option{AStar.Dev.Infrastructure.AppDb.Domain.OneDriveFolderId},AStar.Dev.Infrastructure.AppDb.Domain.ItemPath,AStar.Dev.Infrastructure.AppDb.Entities.VersionInfo)">
             <summary>Represents a folder item returned from the Microsoft Graph drive API.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.DeletedDeltaItem">
             <summary>Represents an item that has been deleted remotely, as reported by the Microsoft Graph delta API.</summary>
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.DeletedDeltaItem.#ctor(AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId,AStar.Dev.Infrastructure.AppDb.Domain.DriveId,AStar.Dev.FunctionalParadigm.Option{AStar.Dev.Infrastructure.AppDb.Domain.OneDriveFolderId},AStar.Dev.Infrastructure.AppDb.Domain.ItemPath)">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.DeletedDeltaItem.#ctor(AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId,AStar.Dev.Infrastructure.AppDb.Domain.DriveId,AStarDev.FunctionalParadigm.Option{AStar.Dev.Infrastructure.AppDb.Domain.OneDriveFolderId},AStar.Dev.Infrastructure.AppDb.Domain.ItemPath)">
             <summary>Represents an item that has been deleted remotely, as reported by the Microsoft Graph delta API.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.DeltaItemFactory">
             <summary>Factory for <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.DeltaItem"/> and its derived types.</summary>
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.DeltaItemFactory.CreateFile(AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId,AStar.Dev.Infrastructure.AppDb.Domain.DriveId,AStar.Dev.FunctionalParadigm.Option{AStar.Dev.Infrastructure.AppDb.Domain.OneDriveFolderId},AStar.Dev.Infrastructure.AppDb.Domain.ItemPath,System.Int64,AStar.Dev.FunctionalParadigm.Option{System.DateTimeOffset},AStar.Dev.FunctionalParadigm.Option{System.String},AStar.Dev.Infrastructure.AppDb.Entities.VersionInfo)">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.DeltaItemFactory.CreateFile(AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId,AStar.Dev.Infrastructure.AppDb.Domain.DriveId,AStarDev.FunctionalParadigm.Option{AStar.Dev.Infrastructure.AppDb.Domain.OneDriveFolderId},AStar.Dev.Infrastructure.AppDb.Domain.ItemPath,System.Int64,AStarDev.FunctionalParadigm.Option{System.DateTimeOffset},AStarDev.FunctionalParadigm.Option{System.String},AStar.Dev.Infrastructure.AppDb.Entities.VersionInfo)">
             <summary>Creates a <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.FileDeltaItem"/>.</summary>
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.DeltaItemFactory.CreateFolder(AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId,AStar.Dev.Infrastructure.AppDb.Domain.DriveId,AStar.Dev.FunctionalParadigm.Option{AStar.Dev.Infrastructure.AppDb.Domain.OneDriveFolderId},AStar.Dev.Infrastructure.AppDb.Domain.ItemPath,AStar.Dev.Infrastructure.AppDb.Entities.VersionInfo)">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.DeltaItemFactory.CreateFolder(AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId,AStar.Dev.Infrastructure.AppDb.Domain.DriveId,AStarDev.FunctionalParadigm.Option{AStar.Dev.Infrastructure.AppDb.Domain.OneDriveFolderId},AStar.Dev.Infrastructure.AppDb.Domain.ItemPath,AStar.Dev.Infrastructure.AppDb.Entities.VersionInfo)">
             <summary>Creates a <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.FolderDeltaItem"/>.</summary>
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.DeltaItemFactory.CreateDeleted(AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId,AStar.Dev.Infrastructure.AppDb.Domain.DriveId,AStar.Dev.FunctionalParadigm.Option{AStar.Dev.Infrastructure.AppDb.Domain.OneDriveFolderId},AStar.Dev.Infrastructure.AppDb.Domain.ItemPath)">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.DeltaItemFactory.CreateDeleted(AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId,AStar.Dev.Infrastructure.AppDb.Domain.DriveId,AStarDev.FunctionalParadigm.Option{AStar.Dev.Infrastructure.AppDb.Domain.OneDriveFolderId},AStar.Dev.Infrastructure.AppDb.Domain.ItemPath)">
             <summary>Creates a <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.DeletedDeltaItem"/>.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.DeltaResult">
@@ -264,7 +264,7 @@
             <param name="NextDeltaLink">The delta link to resume from on the next sync pass, when available.</param>
             <param name="HasMorePages">Whether additional pages are available beyond this one.</param>
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.DeltaResult.#ctor(System.Collections.Generic.IReadOnlyList{AStar.Dev.Infrastructure.AppDb.Domain.DeltaItem},AStar.Dev.FunctionalParadigm.Option{System.String},System.Boolean)">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.DeltaResult.#ctor(System.Collections.Generic.IReadOnlyList{AStar.Dev.Infrastructure.AppDb.Domain.DeltaItem},AStarDev.FunctionalParadigm.Option{System.String},System.Boolean)">
             <summary>A page of items returned from a Microsoft Graph delta query.</summary>
             <param name="Items">The items returned in this page.</param>
             <param name="NextDeltaLink">The delta link to resume from on the next sync pass, when available.</param>
@@ -285,7 +285,7 @@
             <param name="Name">The display name of the folder.</param>
             <param name="ParentId">The remote identifier of the parent folder, when the folder is not the drive root.</param>
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.DriveFolder.#ctor(System.String,System.String,AStar.Dev.FunctionalParadigm.Option{System.String})">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.DriveFolder.#ctor(System.String,System.String,AStarDev.FunctionalParadigm.Option{System.String})">
             <summary>Represents a folder on a OneDrive as returned by the Microsoft Graph API.</summary>
             <param name="Id">The remote identifier of the folder.</param>
             <param name="Name">The display name of the folder.</param>
@@ -315,7 +315,7 @@
             <summary>Factory for <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.DriveId"/>.</summary>
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.DriveIdFactory.Create(System.String)">
-            <summary>Creates an <see cref="T:AStar.Dev.FunctionalParadigm.Option`1"/> of <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.DriveId"/> from a string. Returns <see cref="T:AStar.Dev.FunctionalParadigm.Option`1.None"/> when the value is null or empty.</summary>
+            <summary>Creates an <see cref="T:AStarDev.FunctionalParadigm.Option`1"/> of <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.DriveId"/> from a string. Returns <see cref="T:AStarDev.FunctionalParadigm.Option`1.None"/> when the value is null or empty.</summary>
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Domain.DriveIdFactory.Empty">
             <summary>An empty <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.DriveId"/> option representing the absence of a drive ID.</summary>
@@ -323,7 +323,7 @@
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassification">
             <summary>Represents the classification tags derived from a synced file's remote path.</summary>
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.FileClassification.#ctor(System.String,AStar.Dev.FunctionalParadigm.Option{System.String},AStar.Dev.FunctionalParadigm.Option{System.String},System.Boolean,System.Boolean)">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.FileClassification.#ctor(System.String,AStarDev.FunctionalParadigm.Option{System.String},AStarDev.FunctionalParadigm.Option{System.String},System.Boolean,System.Boolean)">
             <summary>Represents the classification tags derived from a synced file's remote path.</summary>
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Domain.FileClassification.TagName">
@@ -332,13 +332,13 @@
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategory">
             <summary>A named category node in the file classification hierarchy (Level 1+).</summary>
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategory.#ctor(AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId,System.String,System.Int32,System.Boolean,System.Boolean,AStar.Dev.FunctionalParadigm.Option{AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId},System.Boolean)">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategory.#ctor(AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId,System.String,System.Int32,System.Boolean,System.Boolean,AStarDev.FunctionalParadigm.Option{AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId},System.Boolean)">
             <summary>A named category node in the file classification hierarchy (Level 1+).</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryFactory">
             <summary>Factory for <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategory"/>.</summary>
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryFactory.Create(AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId,System.String,System.Int32,System.Boolean,System.Boolean,AStar.Dev.FunctionalParadigm.Option{AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId},System.Boolean)">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryFactory.Create(AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId,System.String,System.Int32,System.Boolean,System.Boolean,AStarDev.FunctionalParadigm.Option{AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId},System.Boolean)">
             <summary>Creates a <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategory"/> with validation.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationCategoryId">
@@ -370,7 +370,7 @@
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationFactory">
             <summary>Factory for <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassification"/>.</summary>
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationFactory.Create(System.String,AStar.Dev.FunctionalParadigm.Option{System.String},AStar.Dev.FunctionalParadigm.Option{System.String},System.Boolean,System.Boolean)">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationFactory.Create(System.String,AStarDev.FunctionalParadigm.Option{System.String},AStarDev.FunctionalParadigm.Option{System.String},System.Boolean,System.Boolean)">
             <summary>Creates a <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassification"/> with the specified levels. If level1 is null or empty/whitespace, defaults to "Unclassified".</summary>
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationFactory.CreateUnclassified">
@@ -379,7 +379,7 @@
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationKeyword">
             <summary>A keyword used to match file paths against a classification rule.</summary>
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationKeyword.#ctor(System.String,AStar.Dev.FunctionalParadigm.Option{System.Boolean},AStar.Dev.FunctionalParadigm.Option{System.Boolean})">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationKeyword.#ctor(System.String,AStarDev.FunctionalParadigm.Option{System.Boolean},AStarDev.FunctionalParadigm.Option{System.Boolean})">
             <summary>A keyword used to match file paths against a classification rule.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationKeywordEntry">
@@ -397,7 +397,7 @@
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationKeywordFactory">
             <summary>Factory for <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationKeyword"/>.</summary>
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationKeywordFactory.Create(System.String,AStar.Dev.FunctionalParadigm.Option{System.Boolean},AStar.Dev.FunctionalParadigm.Option{System.Boolean})">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationKeywordFactory.Create(System.String,AStarDev.FunctionalParadigm.Option{System.Boolean},AStarDev.FunctionalParadigm.Option{System.Boolean})">
             <summary>Creates a <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassificationKeyword"/> with validation.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassifier">
@@ -421,12 +421,12 @@
             <summary>Derives a <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassification"/> from a full remote file path.</summary>
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.IFileAutoCategorisor.Categorise(System.String)">
-            <summary>Derives a <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassification"/> from a full remote file path, or <see cref="M:AStar.Dev.FunctionalParadigm.Option.None``1"/> when no meaningful classification can be determined.</summary>
+            <summary>Derives a <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.FileClassification"/> from a full remote file path, or <see cref="M:AStarDev.FunctionalParadigm.Option.None``1"/> when no meaningful classification can be determined.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.ItemPath">
             <inheritdoc />
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.ItemPath.#ctor(System.String,AStar.Dev.FunctionalParadigm.Option{System.String})">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.ItemPath.#ctor(System.String,AStarDev.FunctionalParadigm.Option{System.String})">
             <inheritdoc />
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Domain.ItemPath.EffectivePath">
@@ -438,7 +438,7 @@
         <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.ItemPathFactory.Create(System.String)">
             <summary>Creates an <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.ItemPath"/> with no relative path.</summary>
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.ItemPathFactory.Create(System.String,AStar.Dev.FunctionalParadigm.Option{System.String})">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.ItemPathFactory.Create(System.String,AStarDev.FunctionalParadigm.Option{System.String})">
             <summary>Creates an <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.ItemPath"/> with the given name and relative path.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.Level1Deriver">
@@ -621,7 +621,7 @@
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.SyncFileMetadata">
             <summary>Remote file attributes captured at the time the sync job was queued.</summary>
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.SyncFileMetadata.#ctor(System.Int64,System.DateTimeOffset,AStar.Dev.FunctionalParadigm.Option{AStar.Dev.Infrastructure.AppDb.Entities.VersionInfo})">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.SyncFileMetadata.#ctor(System.Int64,System.DateTimeOffset,AStarDev.FunctionalParadigm.Option{AStar.Dev.Infrastructure.AppDb.Entities.VersionInfo})">
             <summary>Remote file attributes captured at the time the sync job was queued.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.SyncFileMetadataFactory">
@@ -630,7 +630,7 @@
         <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.SyncFileMetadataFactory.Create(System.Int64,System.DateTimeOffset)">
             <summary>Creates a <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.SyncFileMetadata"/> with no version information.</summary>
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.SyncFileMetadataFactory.Create(System.Int64,System.DateTimeOffset,AStar.Dev.FunctionalParadigm.Option{AStar.Dev.Infrastructure.AppDb.Entities.VersionInfo})">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.SyncFileMetadataFactory.Create(System.Int64,System.DateTimeOffset,AStarDev.FunctionalParadigm.Option{AStar.Dev.Infrastructure.AppDb.Entities.VersionInfo})">
             <summary>Creates a <see cref="T:AStar.Dev.Infrastructure.AppDb.Domain.SyncFileMetadata"/> with the given file attributes and version information.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.SyncFileTarget">
@@ -660,13 +660,13 @@
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.DownloadSyncJob">
             <summary>Download a remote file to the local path.</summary>
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.DownloadSyncJob.#ctor(AStar.Dev.Infrastructure.AppDb.Domain.RemoteItemRef,AStar.Dev.Infrastructure.AppDb.Domain.SyncFileTarget,AStar.Dev.Infrastructure.AppDb.Domain.SyncFileMetadata,AStar.Dev.Infrastructure.AppDb.Domain.SyncJobStatus,AStar.Dev.FunctionalParadigm.Option{System.String})">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.DownloadSyncJob.#ctor(AStar.Dev.Infrastructure.AppDb.Domain.RemoteItemRef,AStar.Dev.Infrastructure.AppDb.Domain.SyncFileTarget,AStar.Dev.Infrastructure.AppDb.Domain.SyncFileMetadata,AStar.Dev.Infrastructure.AppDb.Domain.SyncJobStatus,AStarDev.FunctionalParadigm.Option{System.String})">
             <summary>Download a remote file to the local path.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.UploadSyncJob">
             <summary>Upload a local file to OneDrive.</summary>
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.UploadSyncJob.#ctor(AStar.Dev.Infrastructure.AppDb.Domain.RemoteItemRef,AStar.Dev.Infrastructure.AppDb.Domain.SyncFileTarget,AStar.Dev.Infrastructure.AppDb.Domain.SyncFileMetadata,AStar.Dev.Infrastructure.AppDb.Domain.SyncJobStatus,AStar.Dev.FunctionalParadigm.Option{System.String})">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.UploadSyncJob.#ctor(AStar.Dev.Infrastructure.AppDb.Domain.RemoteItemRef,AStar.Dev.Infrastructure.AppDb.Domain.SyncFileTarget,AStar.Dev.Infrastructure.AppDb.Domain.SyncFileMetadata,AStar.Dev.Infrastructure.AppDb.Domain.SyncJobStatus,AStarDev.FunctionalParadigm.Option{System.String})">
             <summary>Upload a local file to OneDrive.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.DeleteSyncJob">
@@ -687,7 +687,7 @@
         <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.SyncJobExtensions.Fail(AStar.Dev.Infrastructure.AppDb.Domain.SyncJob,System.String)">
             <summary>Returns a copy of <paramref name="job"/> transitioned to <see cref="F:AStar.Dev.Infrastructure.AppDb.Entities.SyncJobState.Failed"/> with the supplied nullable error message.</summary>
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.SyncJobExtensions.Fail(AStar.Dev.Infrastructure.AppDb.Domain.SyncJob,AStar.Dev.FunctionalParadigm.Option{System.String})">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.SyncJobExtensions.Fail(AStar.Dev.Infrastructure.AppDb.Domain.SyncJob,AStarDev.FunctionalParadigm.Option{System.String})">
             <summary>Returns a copy of <paramref name="job"/> transitioned to <see cref="F:AStar.Dev.Infrastructure.AppDb.Entities.SyncJobState.Failed"/> with the given error message.</summary>
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Domain.SyncJobFactory">
@@ -696,7 +696,7 @@
         <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.SyncJobFactory.CreateDownload(AStar.Dev.Infrastructure.AppDb.Domain.RemoteItemRef,AStar.Dev.Infrastructure.AppDb.Domain.SyncFileTarget,AStar.Dev.Infrastructure.AppDb.Domain.SyncFileMetadata)">
             <inheritdoc cref="T:AStar.Dev.Infrastructure.AppDb.Domain.DownloadSyncJob"/>
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.SyncJobFactory.CreateDownload(AStar.Dev.Infrastructure.AppDb.Domain.RemoteItemRef,AStar.Dev.Infrastructure.AppDb.Domain.SyncFileTarget,AStar.Dev.Infrastructure.AppDb.Domain.SyncFileMetadata,AStar.Dev.FunctionalParadigm.Option{System.String})">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.SyncJobFactory.CreateDownload(AStar.Dev.Infrastructure.AppDb.Domain.RemoteItemRef,AStar.Dev.Infrastructure.AppDb.Domain.SyncFileTarget,AStar.Dev.Infrastructure.AppDb.Domain.SyncFileMetadata,AStarDev.FunctionalParadigm.Option{System.String})">
             <inheritdoc cref="T:AStar.Dev.Infrastructure.AppDb.Domain.DownloadSyncJob"/>
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.SyncJobFactory.CreateUpload(AStar.Dev.Infrastructure.AppDb.Domain.RemoteItemRef,AStar.Dev.Infrastructure.AppDb.Domain.SyncFileTarget,AStar.Dev.Infrastructure.AppDb.Domain.SyncFileMetadata)">
@@ -772,16 +772,16 @@
         <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.TokenAnalyser.ExtractPersonName(System.String)">
             <summary>
                 Attempts to extract a two-word person name from a file-name string.
-                Returns <see cref="T:AStar.Dev.FunctionalParadigm.Option`1.Some" /> with the title-cased name when found,
-                or <see cref="T:AStar.Dev.FunctionalParadigm.Option`1.None" /> when no candidate pair is detected.
+                Returns <see cref="T:AStarDev.FunctionalParadigm.Option`1.Some" /> with the title-cased name when found,
+                or <see cref="T:AStarDev.FunctionalParadigm.Option`1.None" /> when no candidate pair is detected.
             </summary>
             <param name="text">The raw file name (may include extension and path separators).</param>
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.Domain.TokenAnalyser.ExtractColourPhrase(System.Collections.Generic.IReadOnlyList{System.String})">
             <summary>
                 Attempts to identify a colour phrase from an already-tokenised, stop-word-filtered token list.
-                Returns <see cref="T:AStar.Dev.FunctionalParadigm.Option`1.Some" /> containing either a bare colour or a colour-noun compound,
-                or <see cref="T:AStar.Dev.FunctionalParadigm.Option`1.None" /> when no colour token is present.
+                Returns <see cref="T:AStarDev.FunctionalParadigm.Option`1.Some" /> containing either a bare colour or a colour-noun compound,
+                or <see cref="T:AStarDev.FunctionalParadigm.Option`1.None" /> when no colour token is present.
             </summary>
             <param name="tokens">Lower-case, stop-word-filtered tokens derived from a file-name stem.</param>
         </member>
@@ -1886,7 +1886,7 @@
             <param name="ETag">The ETag for the item.</param>
             <param name="CTag">The CTag for the item.</param>
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.VersionInfo.#ctor(AStar.Dev.FunctionalParadigm.Option{System.String},AStar.Dev.FunctionalParadigm.Option{System.String})">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.VersionInfo.#ctor(AStarDev.FunctionalParadigm.Option{System.String},AStarDev.FunctionalParadigm.Option{System.String})">
             <summary>
             Represents version information for a OneDrive item, including ETag and CTag values.
             The ETag tracks content changes; the CTag tracks metadata changes.
@@ -1906,7 +1906,7 @@
             Factory for creating instances of <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.VersionInfo"/>.
             </summary>
         </member>
-        <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.VersionInfoFactory.Create(AStar.Dev.FunctionalParadigm.Option{System.String},AStar.Dev.FunctionalParadigm.Option{System.String})">
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Entities.VersionInfoFactory.Create(AStarDev.FunctionalParadigm.Option{System.String},AStarDev.FunctionalParadigm.Option{System.String})">
             <summary>Creates a new instance of <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.VersionInfo"/> with the provided ETag and CTag values.</summary>
             <param name="eTag">The ETag for the item, or None if not available.</param>
             <param name="cTag">The CTag for the item, or None if not available.</param>
@@ -2021,13 +2021,13 @@
             <summary>Converts a nullable <see cref="T:System.Decimal"/> to and from a nullable integral cents representation.</summary>
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.SqliteTypeConverters.OptionStringToNullableString">
-            <summary>Converts an <see cref="T:AStar.Dev.FunctionalParadigm.Option`1"/> of <see cref="T:System.String"/> to and from a nullable string.</summary>
+            <summary>Converts an <see cref="T:AStarDev.FunctionalParadigm.Option`1"/> of <see cref="T:System.String"/> to and from a nullable string.</summary>
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.SqliteTypeConverters.OptionDateTimeOffsetToNullableTicks">
-            <summary>Converts an <see cref="T:AStar.Dev.FunctionalParadigm.Option`1"/> of <see cref="T:System.DateTimeOffset"/> to and from nullable UTC ticks.</summary>
+            <summary>Converts an <see cref="T:AStarDev.FunctionalParadigm.Option`1"/> of <see cref="T:System.DateTimeOffset"/> to and from nullable UTC ticks.</summary>
         </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.SqliteTypeConverters.OptionConflictPolicyToNullableInt">
-            <summary>Converts an <see cref="T:AStar.Dev.FunctionalParadigm.Option`1"/> of <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.ConflictPolicy"/> to and from a nullable integer.</summary>
+            <summary>Converts an <see cref="T:AStarDev.FunctionalParadigm.Option`1"/> of <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.ConflictPolicy"/> to and from a nullable integer.</summary>
         </member>
         <member name="T:AStarDev.InfrastructureAppDb.Entities.SearchCategoryEntity">
             <summary>Tracks scraping progress for a single search category.</summary>

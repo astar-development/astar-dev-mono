@@ -1,4 +1,4 @@
-namespace AStar.Dev.FunctionalParadigm.TestsUnit;
+namespace AStarDev.FunctionalParadigm.TestsUnit;
 
 public sealed class GivenMatchAsync
 {

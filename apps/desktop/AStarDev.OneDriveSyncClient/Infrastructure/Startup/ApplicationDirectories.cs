@@ -2,7 +2,7 @@ using System.IO.Abstractions;
 using AStar.Dev.OneDriveSyncClient.Infrastructure.Startup;
 using AStarDev.Utilities;
 using Microsoft.Extensions.Logging;
-using LogMessage = AStar.Dev.Logging.Extensions.LogMessage;
+using LogMessage = AStarDev.LoggingExtensions.LogMessage;
 
 namespace AStarDev.OneDriveSyncClient.Infrastructure.Startup;
 

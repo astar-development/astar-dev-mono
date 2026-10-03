@@ -1,4 +1,4 @@
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 using Fab4Kids.Web.Checkout;
 using Microsoft.AspNetCore.Components;
 

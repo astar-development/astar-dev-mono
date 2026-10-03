@@ -22,6 +22,6 @@ public class GivenAPackageCatalog
     {
         var category = PackageCatalog.Categories.Single(c => c.Name == "Core Utilities");
 
-        category.PackageIds.ShouldBe(["AStarDev.Utilities", "AStar.Dev.Functional.Extensions", "AStar.Dev.Technical.Debt.Reporting"]);
+        category.PackageIds.ShouldBe(["AStarDev.Utilities", "AStar.Dev.Functional.Extensions", "AStarDev.TechnicalDebtReporting"]);
     }
 }

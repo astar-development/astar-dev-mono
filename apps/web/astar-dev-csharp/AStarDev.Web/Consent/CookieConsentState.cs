@@ -1,4 +1,4 @@
-using AStar.Dev.FunctionalParadigm;
+using AStarDev.FunctionalParadigm;
 using Blazored.LocalStorage;
 
 namespace AStarDev.Web.Consent;
