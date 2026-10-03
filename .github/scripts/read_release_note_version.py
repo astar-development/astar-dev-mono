@@ -20,12 +20,11 @@ def main() -> None:
     with open(path, encoding="utf-8") as handle:
         text = handle.read()
 
-    marker = "<PackageReleaseNotes>"
-    if marker not in text:
+    block = re.search(r"<PackageReleaseNotes>(.*?)</PackageReleaseNotes>", text, re.DOTALL)
+    if block is None:
         return
 
-    rest = text[text.index(marker) + len(marker):]
-    match = re.search(r"v(\d+\.\d+\.\d+(?:-[\w.]+)?)", rest)
+    match = re.search(r"v(\d+\.\d+\.\d+(?:-[\w.]+)?)", block.group(1))
     if match:
         print(match.group(1))
 

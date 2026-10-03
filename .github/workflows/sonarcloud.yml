@@ -116,7 +116,7 @@ jobs:
             /o:"${{ env.SONAR_ORG }}" \
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
             /d:sonar.host.url="https://sonarcloud.io" \
-            /d:sonar.cs.cobertura.reportsPaths="TestResults/**/coverage.cobertura.xml" \
+            /d:sonar.cs.cobertura.reportsPaths="TestResults/**/*.cobertura.xml" \
             /d:sonar.scanner.scanAll=false \
             /d:sonar.scanner.skipJreProvisioning=true
 
@@ -144,10 +144,9 @@ jobs:
             dotnet test \
               --no-build \
               --configuration Release \
-              --logger "trx;LogFileName=$proj_name.trx" \
               --results-directory "$GITHUB_WORKSPACE/TestResults" \
-              --collect:"XPlat Code Coverage" \
-              -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
+              --report-xunit-trx --report-xunit-trx-filename $proj_name.trx \
+              --coverage --coverage-output-format cobertura --coverage-output $proj_name.cobertura.xml
 
             cd "$GITHUB_WORKSPACE"
           done

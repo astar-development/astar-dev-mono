@@ -164,4 +164,9 @@ Framework:  $(TargetFramework)
     <VSTestBlameCrash>true</VSTestBlameCrash>
   </PropertyGroup>
 
+  <ItemGroup Condition="$(MSBuildProjectName.EndsWith('.TestsUnit')) OR
+                        $(MSBuildProjectName.EndsWith('.TestsIntegration'))">
+    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" />
+  </ItemGroup>
+
 </Project>

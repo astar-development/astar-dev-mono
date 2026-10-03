@@ -1,22 +1,26 @@
 # ════════════════════════════════════════════════════════════════════════════
 # nuget-publish.yml
 #
-# Triggered by a per-package version tag. The tag IS the version — no
-# version files to edit, no tools to run. Just tag and push.
+# Publishes one package. Two ways in:
+#
+#   1. Tag push (manual / ad-hoc / re-publish of an old version):
+#        git tag AStarDev.Utilities/v1.7.0
+#        git push origin AStarDev.Utilities/v1.7.0
+#      Package name, version, and the .csproj to build are derived from the
+#      tag itself — nothing else to configure.
+#
+#   2. workflow_call (automated — see release-on-merge.yml):
+#      the caller supplies package_name, version, and csproj directly, and
+#      this workflow builds/tests/packs/publishes/tags/releases exactly as
+#      it would for a manual tag push. This is how "merge to main" ends up
+#      published without anyone needing to push a tag by hand.
 #
 # Tag format:  {PackageName}/v{version}
 # Examples:
 #   AStarDev.Utilities/v1.6.6
 #   AStarDev.Utilities/v1.7.0
-#   AStar.Dev.SomeNewPackage/v1.0.0
-#   AStar.Dev.AnotherPackage/v2.1.0-beta.1
-#
-# Release workflow — always the same regardless of major/minor/patch:
-#
-#   git tag AStarDev.Utilities/v1.7.0
-#   git push origin AStarDev.Utilities/v1.7.0
-#
-# That's it. The pipeline does everything else.
+#   AStarDev.SomeNewPackage/v1.0.0
+#   AStarDev.AnotherPackage/v2.1.0-beta.1
 # ════════════════════════════════════════════════════════════════════════════
 
 name: Publish NuGet package
@@ -27,6 +31,20 @@ on:
     tags:
       - "*/v[0-9]+.[0-9]+.[0-9]+"
       - "*/v[0-9]+.[0-9]+.[0-9]+-*"
+  workflow_call:
+    inputs:
+      package_name:
+        description: "Package name, e.g. AStarDev.Utilities"
+        required: true
+        type: string
+      version:
+        description: "Version to build/pack/publish, e.g. 1.7.0"
+        required: true
+        type: string
+      csproj:
+        description: "Path to the package's .csproj"
+        required: true
+        type: string
 
 # ── Permissions ───────────────────────────────────────────────────────────────
 permissions:
@@ -49,9 +67,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # workflow_call: check out the tag the caller just created (github.ref
+      # still points at the *push-to-main* event, not that new tag).
+      # Tag push: github.ref already points at the pushed tag — use it as-is.
       - name: Checkout
         uses: actions/checkout@v7.0.1
         with:
+          ref: ${{ inputs.package_name && format('{0}/v{1}', inputs.package_name, inputs.version) || github.ref }}
           fetch-depth: 0
           persist-credentials: false
 
@@ -60,43 +82,50 @@ jobs:
         with:
           global-json-file: global.json
 
-      # ── Derive package name and version from the tag ───────────────────────
-      # Tag:            AStarDev.Utilities/v1.7.0
+      # ── Resolve package name, version, and project path ────────────────────
+      # workflow_call: caller supplies them directly (inputs.* is empty when
+      # this workflow was triggered by a tag push instead).
+      # Tag push:            AStarDev.Utilities/v1.7.0
       # PACKAGE_NAME  → AStarDev.Utilities
       # PACKAGE_VERSION → 1.7.0  (leading 'v' stripped)
       # IS_PRERELEASE → true if version contains a hyphen
-      - name: Extract package name and version from tag
+      - name: Resolve package name, version, and project path
         id: tag
         run: |
-          RAW_TAG="${GITHUB_REF_NAME}"
-          PACKAGE_NAME="${RAW_TAG%/v*}"
-          PACKAGE_VERSION="${RAW_TAG##*/v}"
+          if [ -n "${{ inputs.package_name }}" ]; then
+            PACKAGE_NAME="${{ inputs.package_name }}"
+            PACKAGE_VERSION="${{ inputs.version }}"
+            CSPROJ="${{ inputs.csproj }}"
+            if [ ! -f "$CSPROJ" ]; then
+              echo "ERROR: ${CSPROJ} (from workflow_call input) does not exist"
+              exit 1
+            fi
+          else
+            RAW_TAG="${GITHUB_REF_NAME}"
+            PACKAGE_NAME="${RAW_TAG%/v*}"
+            PACKAGE_VERSION="${RAW_TAG##*/v}"
+            CSPROJ=$(find packages/ -name "${PACKAGE_NAME}.csproj" | head -1)
+            if [ -z "$CSPROJ" ]; then
+              echo "ERROR: Could not find ${PACKAGE_NAME}.csproj under packages/"
+              exit 1
+            fi
+          fi
+
           IS_PRERELEASE=false
           if [[ "$PACKAGE_VERSION" == *"-"* ]]; then
             IS_PRERELEASE=true
           fi
+
           echo "PACKAGE_NAME=${PACKAGE_NAME}"       >> $GITHUB_ENV
           echo "PACKAGE_VERSION=${PACKAGE_VERSION}" >> $GITHUB_ENV
+          echo "CSPROJ=${CSPROJ}"                   >> $GITHUB_ENV
           echo "package_name=${PACKAGE_NAME}"       >> $GITHUB_OUTPUT
           echo "version=${PACKAGE_VERSION}"         >> $GITHUB_OUTPUT
           echo "prerelease=${IS_PRERELEASE}"        >> $GITHUB_OUTPUT
           echo "Package : ${PACKAGE_NAME}"
           echo "Version : ${PACKAGE_VERSION}"
+          echo "Project : ${CSPROJ}"
           echo "Pre-release : ${IS_PRERELEASE}"
-
-      # ── Locate the .csproj for the tagged package ──────────────────────────
-      # Fails fast with a clear error if the project cannot be found.
-      - name: Locate project
-        id: project
-        run: |
-          CSPROJ=$(find packages/ -name "${PACKAGE_NAME}.csproj" | head -1)
-          if [ -z "$CSPROJ" ]; then
-            echo "ERROR: Could not find ${PACKAGE_NAME}.csproj under packages/"
-            exit 1
-          fi
-          echo "CSPROJ=${CSPROJ}" >> $GITHUB_ENV
-          echo "csproj=${CSPROJ}" >> $GITHUB_OUTPUT
-          echo "Found : ${CSPROJ}"
 
       - name: Cache NuGet packages
         uses: actions/cache@v6.1.0
@@ -113,7 +142,7 @@ jobs:
       - name: Restore
         run: dotnet restore "${CSPROJ}"
 
-      # ── Build — version stamped directly from the tag ─────────────────────
+      # ── Build — version stamped directly from the tag / workflow_call input ─
       - name: Build
         run: |
           dotnet build "${CSPROJ}" \
@@ -133,7 +162,7 @@ jobs:
             echo "Running tests: ${TEST_PROJ}"
             dotnet test "${TEST_PROJ}" \
               --configuration Release \
-              --logger "trx;LogFileName=results.trx" \
+              --report-xunit-trx --report-xunit-trx-filename results.trx \
               --results-directory ./TestResults
           fi
 
@@ -146,7 +175,7 @@ jobs:
           check_name: ${{ env.PACKAGE_NAME }} — test results
           fail_on: test failures
 
-      # ── Pack — version comes from the tag, not from version.json ──────────
+      # ── Pack — version comes from the tag / workflow_call input ───────────
       - name: Pack
         run: |
           dotnet pack "${CSPROJ}" \
@@ -177,7 +206,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3.0.2
         with:
-          tag_name: ${{ github.ref_name }}
+          tag_name: ${{ env.PACKAGE_NAME }}/v${{ env.PACKAGE_VERSION }}
           name: ${{ env.PACKAGE_NAME }} v${{ env.PACKAGE_VERSION }}
           draft: false
           prerelease: ${{ steps.tag.outputs.prerelease }}

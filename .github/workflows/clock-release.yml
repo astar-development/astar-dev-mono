@@ -112,7 +112,7 @@ jobs:
         run: |
           dotnet test "${{ env.TEST_PROJECT_PATH }}" \
             --configuration Release \
-            --logger "trx;LogFileName=linux-results.trx" \
+            --report-xunit-trx --report-xunit-trx-filename linux-results.trx \
             --results-directory "$GITHUB_WORKSPACE/TestResults"
 
       - name: Publish self-contained linux-x64
@@ -240,7 +240,7 @@ jobs:
         run: |
           dotnet test "${{ env.TEST_PROJECT_PATH }}" \
             --configuration Release \
-            --logger "trx;LogFileName=${{ matrix.channel }}-results.trx" \
+            --report-xunit-trx --report-xunit-trx-filename ${{ matrix.channel }}-results.trx \
             --results-directory "$GITHUB_WORKSPACE/TestResults"
 
       - name: Publish self-contained ${{ matrix.rid }}

@@ -196,6 +196,7 @@
   </ItemGroup>
   <ItemGroup Label="Testing">
     <PackageVersion Include="Microsoft.Testing.Platform.MSBuild" Version="2.4.0" />
+    <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.11.2" />
     <PackageVersion Include="bunit" Version="2.11.3" />
     <PackageVersion Include="Microsoft.Playwright" Version="1.62.0" />
     <PackageVersion Include="coverlet.collector" Version="10.0.1" />
