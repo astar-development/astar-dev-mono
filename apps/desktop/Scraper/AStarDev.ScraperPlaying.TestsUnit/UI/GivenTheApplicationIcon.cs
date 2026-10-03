@@ -26,8 +26,20 @@ public sealed class GivenTheApplicationIcon
     [InlineData("TagsEditorWindow")]
     public void when_a_window_is_declared_then_it_uses_the_application_icon(string windowName)
     {
-        var xamlPath = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "AStarDev.ScraperPlaying", "UI", $"{windowName}.axaml");
+        var xamlPath = Path.Combine(FindRepositoryRoot(), "apps", "desktop", "Scraper", "AStarDev.ScraperPlaying", "UI", $"{windowName}.axaml");
 
         XDocument.Load(xamlPath).Root!.Attribute("Icon")!.Value.ShouldBe(IconPath);
+    }
+
+    private static string FindRepositoryRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+
+        while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "AStarDev.slnx")))
+        {
+            directory = directory.Parent;
+        }
+
+        return directory!.FullName;
     }
 }

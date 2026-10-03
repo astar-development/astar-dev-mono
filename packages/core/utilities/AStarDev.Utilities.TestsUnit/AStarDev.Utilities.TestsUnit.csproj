@@ -12,6 +12,10 @@
     so changes to the package are immediately visible without a publish cycle.
   -->
 
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);CA1062</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup>
       <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage"/>
   </ItemGroup>

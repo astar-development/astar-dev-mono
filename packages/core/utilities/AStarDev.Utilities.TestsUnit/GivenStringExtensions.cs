@@ -115,7 +115,7 @@ public sealed class GivenStringExtensions
     [InlineData(null, false)]
     [InlineData("", false)]
     public void when_is_image_is_called_then_returns_the_expected_results(string? fileName, bool expectedResponse) =>
-        fileName!.IsImage().ShouldBe(expectedResponse);
+        fileName!.IsImage.ShouldBe(expectedResponse);
 
     [Theory]
     [InlineData("no-Truncation", 20, "no-Truncation")]
@@ -149,7 +149,7 @@ public sealed class GivenStringExtensions
     [InlineData("1_2.3", true)]
     [InlineData("1.2_3", true)]
     public void when_is_number_only_is_called_then_returns_the_expected_results(string fileName, bool expectedResponse) =>
-        fileName.IsNumberOnly().ShouldBe(expectedResponse);
+        fileName.IsNumberOnly.ShouldBe(expectedResponse);
 
 
     [Theory]
