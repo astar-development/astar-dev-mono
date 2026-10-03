@@ -1,6 +1,6 @@
 # How the scraper hangs together
 
-This document explains how a scrape runs, from the **Run** button to a wallpaper on disk and in the database. All paths are relative to `AStarDev.ScraperPlaying/` unless stated.
+This document explains how a scrape runs, from the **Run** button to a wallpaper on disk and in the database. All paths are relative to `AStarDev.WallpaperScraper/` unless stated.
 
 ## 1. The big picture
 
@@ -21,15 +21,15 @@ flowchart LR
 
 Folders are grouped by domain, not by type:
 
-| Folder | Responsibility |
-|---|---|
-| `UI/` | Windows, button handlers, status log, image preview |
-| `Operations/` | `OperationCoordinator` - one operation at a time, plus cancellation |
-| `Scoping/` | `ScopedRunner` - runs work inside a DI scope |
-| `Scraping/` | Paging through search results, resume logic, API client, rate limiting, tags |
-| `WallpaperIngestion/` | Deciding what is new, downloading, saving, recording, announcing |
-| `ScrapeConfiguration/` | Loading, editing, importing and exporting the configuration |
-| `Startup/` | DI registration and database initialisation |
+| Folder                 | Responsibility                                                               |
+| ---------------------- | ---------------------------------------------------------------------------- |
+| `UI/`                  | Windows, button handlers, status log, image preview                          |
+| `Operations/`          | `OperationCoordinator` - one operation at a time, plus cancellation          |
+| `Scoping/`             | `ScopedRunner` - runs work inside a DI scope                                 |
+| `Scraping/`            | Paging through search results, resume logic, API client, rate limiting, tags |
+| `WallpaperIngestion/`  | Deciding what is new, downloading, saving, recording, announcing             |
+| `ScrapeConfiguration/` | Loading, editing, importing and exporting the configuration                  |
+| `Startup/`             | DI registration and database initialisation                                  |
 
 ## 2. The call chain
 
@@ -56,23 +56,23 @@ flowchart TD
 
 ### What each class does
 
-| Class | Method | Job |
-|---|---|---|
-| `UI/MainWindow` | `RunScraper` | Reads the hot, top and categories switches into a `ScrapeSelection` |
-| `UI/ScrapeActions` | `RunScraperAsync`, `CancelOperation` | Button actions; cancel calls `OperationCoordinator.Cancel` |
-| `UI/ScrapeRunner` | `RunAsync` | Runs the scrape on the thread pool, so continuations never resume on the UI thread; catches anything that escapes |
-| `Scraping/ScrapeService` | `RunScraperAsync` | Takes the single-operation lock via `OperationCoordinator.TryStart`, times the run, reports completion, cancellation or failure once |
-| `Scoping/ScopedRunner` | `RunAsync` | Creates a DI scope so scoped services (DbContext, tag linker) live for exactly one scrape |
-| `Scraping/SearchOrchestrator` | `RunSearchesAsync` | Builds a `PageScrapeRequest` for hot, top, and each included category (honouring `ScrapeSelection` and `ScrapeLimits`); a `PageFetchException` ends only that search |
-| `Scraping/PagesProcessor` | `FetchAndProcessPagesAsync` | Resolves the start page, applies the resume policy, loops over pages with a pacing delay |
-| `Scraping/ScrapeResumePolicy` | `ResumePage`, `IsUnchangedSincePreviousScrape`, `IsLastPageToVisit` | Pure decisions: where to resume, whether to skip a finished category, when to stop |
-| `Scraping/PageIngestionStep` | `IngestPageAsync` | Ingests one page, records category progress, calls `SaveChangesAsync`; on cancel it saves what was downloaded so far |
-| `WallpaperIngestion/WallpaperIngestionService` | `IngestPageAsync` | Asks the DB which wallpapers already exist, skips those, pipelines tag fetching for the rest |
-| `WallpaperIngestion/NewWallpaperIngestor` | `FetchTagsAsync`, `IngestAsync` | Fetches tags; wallpapers with an "ignore" tag are remembered and not downloaded |
-| `WallpaperIngestion/WallpaperFiler` | `FileAsync` | Chooses directory and file name from tags, saves, links tags, announces |
-| `WallpaperIngestion/WallpaperSaver` | `SaveAsync` | Downloads the image, then records a `FileEntity` |
-| `WallpaperIngestion/ImageDownloader` | `DownloadAsync` | Paced download to a `.part` file, then moved into place |
-| `Scraping/TagLinker` | `LinkTagsAsync` | Creates or reuses `TagEntity` rows and links them to the file |
+| Class                                          | Method                                                              | Job                                                                                                                                                                  |
+| ---------------------------------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `UI/MainWindow`                                | `RunScraper`                                                        | Reads the hot, top and categories switches into a `ScrapeSelection`                                                                                                  |
+| `UI/ScrapeActions`                             | `RunScraperAsync`, `CancelOperation`                                | Button actions; cancel calls `OperationCoordinator.Cancel`                                                                                                           |
+| `UI/ScrapeRunner`                              | `RunAsync`                                                          | Runs the scrape on the thread pool, so continuations never resume on the UI thread; catches anything that escapes                                                    |
+| `Scraping/ScrapeService`                       | `RunScraperAsync`                                                   | Takes the single-operation lock via `OperationCoordinator.TryStart`, times the run, reports completion, cancellation or failure once                                 |
+| `Scoping/ScopedRunner`                         | `RunAsync`                                                          | Creates a DI scope so scoped services (DbContext, tag linker) live for exactly one scrape                                                                            |
+| `Scraping/SearchOrchestrator`                  | `RunSearchesAsync`                                                  | Builds a `PageScrapeRequest` for hot, top, and each included category (honouring `ScrapeSelection` and `ScrapeLimits`); a `PageFetchException` ends only that search |
+| `Scraping/PagesProcessor`                      | `FetchAndProcessPagesAsync`                                         | Resolves the start page, applies the resume policy, loops over pages with a pacing delay                                                                             |
+| `Scraping/ScrapeResumePolicy`                  | `ResumePage`, `IsUnchangedSincePreviousScrape`, `IsLastPageToVisit` | Pure decisions: where to resume, whether to skip a finished category, when to stop                                                                                   |
+| `Scraping/PageIngestionStep`                   | `IngestPageAsync`                                                   | Ingests one page, records category progress, calls `SaveChangesAsync`; on cancel it saves what was downloaded so far                                                 |
+| `WallpaperIngestion/WallpaperIngestionService` | `IngestPageAsync`                                                   | Asks the DB which wallpapers already exist, skips those, pipelines tag fetching for the rest                                                                         |
+| `WallpaperIngestion/NewWallpaperIngestor`      | `FetchTagsAsync`, `IngestAsync`                                     | Fetches tags; wallpapers with an "ignore" tag are remembered and not downloaded                                                                                      |
+| `WallpaperIngestion/WallpaperFiler`            | `FileAsync`                                                         | Chooses directory and file name from tags, saves, links tags, announces                                                                                              |
+| `WallpaperIngestion/WallpaperSaver`            | `SaveAsync`                                                         | Downloads the image, then records a `FileEntity`                                                                                                                     |
+| `WallpaperIngestion/ImageDownloader`           | `DownloadAsync`                                                     | Paced download to a `.part` file, then moved into place                                                                                                              |
+| `Scraping/TagLinker`                           | `LinkTagsAsync`                                                     | Creates or reuses `TagEntity` rows and links them to the file                                                                                                        |
 
 ## 3. End-to-end sequence
 
@@ -240,11 +240,11 @@ flowchart LR
     H2 --> Net(("Network"))
 ```
 
-| Throttle | Where | Applies to |
-|---|---|---|
-| Sliding-window `RateLimiter` plus 429 retry | `WallhavenRateLimitingHandler` | Every request to the API path (search pages, tag detail) |
-| Random 2-3s `DownloadPacing` | `ImageDownloader` | Before each image download |
-| Same `DownloadPacing` | `PagesProcessor` | Before each page after the first, so skipping already-ingested pages does not trigger 429s |
+| Throttle                                    | Where                          | Applies to                                                                                 |
+| ------------------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------ |
+| Sliding-window `RateLimiter` plus 429 retry | `WallhavenRateLimitingHandler` | Every request to the API path (search pages, tag detail)                                   |
+| Random 2-3s `DownloadPacing`                | `ImageDownloader`              | Before each image download                                                                 |
+| Same `DownloadPacing`                       | `PagesProcessor`               | Before each page after the first, so skipping already-ingested pages does not trigger 429s |
 
 Image downloads are not rate limited by the handler, and the API key is removed from them so it is never sent to the image host.
 
@@ -324,24 +324,24 @@ erDiagram
     TagEntity ||--o{ FileTagEntity : used
 ```
 
-| Entity | Role in a scrape |
-|---|---|
-| `ScrapeConfigurationEntity` | API key, base URL, hot and top settings, search string prefix and suffix, root directories |
-| `SearchCategoryEntity` | A category; stores `LastKnownImageCount`, `LastPageVisited`, `TotalPages` for resume |
-| `FileEntity` | One saved wallpaper; its `FileHandle` is the Wallhaven id, which is how "already exists" is detected |
-| `TagEntity` / `FileTagEntity` | Tags and their links; flags (ignore, name, famous) decide skipping and directories |
+| Entity                        | Role in a scrape                                                                                     |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `ScrapeConfigurationEntity`   | API key, base URL, hot and top settings, search string prefix and suffix, root directories           |
+| `SearchCategoryEntity`        | A category; stores `LastKnownImageCount`, `LastPageVisited`, `TotalPages` for resume                 |
+| `FileEntity`                  | One saved wallpaper; its `FileHandle` is the Wallhaven id, which is how "already exists" is detected |
+| `TagEntity` / `FileTagEntity` | Tags and their links; flags (ignore, name, famous) decide skipping and directories                   |
 
 `IUnitOfWork` commits once per page (`PageIngestionStep`), so a page is saved as one batch.
 
 ## 12. Where to look when...
 
-| You want to change | Start at |
-|---|---|
-| Which scrapes run, or limits | `SearchOrchestrator`, `ScrapeSelection`, `ScrapeLimits` |
-| Resume / skip rules | `ScrapeResumePolicy`, `PagesProcessor` |
-| Waits between requests | `DownloadPacing`, `WallhavenRateLimitingHandler`, `ApplicationConstants` |
-| Where files are saved and named | `SaveDirectories`, `SaveDirectoryResolver`, `WallpaperFileNamer` |
-| What is recorded in the DB | `WallpaperFileRecorder`, `TagLinker` |
-| What is ignored | `TagFlagStore`, `TagFetcher`, `IgnoredWallpaperRecorder` |
-| The preview and counts | `ImageDisplayCoordinator`, `ImagePreviewPanel`, `ScrapeTally`, `WallpaperInfo` |
-| Service wiring | `Startup/ApplicationServices.cs`, `Startup/DataServices.cs` |
+| You want to change              | Start at                                                                       |
+| ------------------------------- | ------------------------------------------------------------------------------ |
+| Which scrapes run, or limits    | `SearchOrchestrator`, `ScrapeSelection`, `ScrapeLimits`                        |
+| Resume / skip rules             | `ScrapeResumePolicy`, `PagesProcessor`                                         |
+| Waits between requests          | `DownloadPacing`, `WallhavenRateLimitingHandler`, `ApplicationConstants`       |
+| Where files are saved and named | `SaveDirectories`, `SaveDirectoryResolver`, `WallpaperFileNamer`               |
+| What is recorded in the DB      | `WallpaperFileRecorder`, `TagLinker`                                           |
+| What is ignored                 | `TagFlagStore`, `TagFetcher`, `IgnoredWallpaperRecorder`                       |
+| The preview and counts          | `ImageDisplayCoordinator`, `ImagePreviewPanel`, `ScrapeTally`, `WallpaperInfo` |
+| Service wiring                  | `Startup/ApplicationServices.cs`, `Startup/DataServices.cs`                    |

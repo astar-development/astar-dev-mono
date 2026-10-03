@@ -1,0 +1,169 @@
+# ════════════════════════════════════════════════════════════════════════════
+# release-notes-bump.yml
+#
+# Runs pre-merge, on the PR branch. main's ruleset requires a PR (1 approval,
+# dismiss-stale-reviews-on-push, required signatures, bypass_actors: [] — no
+# exceptions, not even for Actions) so nothing can push a commit straight to
+# main. The PR branch itself has none of those restrictions, so this is where
+# the version bump and release-notes entry actually get written.
+#
+# For each packable project the PR touches: work out the bump type from the
+# PR title (Conventional Commits: feat: -> minor, fix:/other -> patch, '!' or
+# a BREAKING CHANGE: footer in the PR body -> major), read that package's
+# latest {name}/v* tag (none yet -> bootstrap at 0.1.0), and prepend a
+# PackageReleaseNotes entry with the computed version and the PR title.
+#
+# The commit is created via the createCommitOnBranch GraphQL mutation, not a
+# plain `git commit` + `git push`. main's ruleset also requires every commit
+# to have a verified signature, and that's evaluated per-commit within the
+# PR, not just on the eventual squash — a commit pushed via plain git from
+# Actions is unsigned and gets rejected at merge time. Commits created
+# through GitHub's API are automatically GitHub-verified, no signing key to
+# generate or store as a secret.
+#
+# Idempotent: insert_release_note.py no-ops if the desired entry is already
+# there, so the second run this triggers (on the push it just made) does
+# nothing and creates no commit — no infinite loop.
+#
+# By the time this PR is squash-merged, the release notes are already part
+# of the merged diff. release-on-merge.yml then only needs to read that
+# version back out and push a *tag* (unrestricted by the branch ruleset) —
+# it never commits to main.
+# ════════════════════════════════════════════════════════════════════════════
+
+name: Bump release notes (pre-merge)
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    name: Bump touched packages' release notes
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Find packable projects touched by this PR
+        id: find
+        run: |
+          BASE="${{ github.event.pull_request.base.sha }}"
+
+          # A pure path move (100% content-identical rename) isn't a real
+          # change to the package — exclude it, or e.g. an infrastructure/ ->
+          # packages/ rename would bump every package it touches with a
+          # release note that has nothing to do with their actual content.
+          mapfile -t PURE_RENAMES < <(git diff --name-status --find-renames=100% "$BASE" HEAD | awk '$1=="R100"{print $3}')
+          CHANGED=$(git diff --name-only "$BASE" HEAD)
+          if [ "${#PURE_RENAMES[@]}" -gt 0 ]; then
+            CHANGED=$(comm -23 <(echo "$CHANGED" | sort) <(printf '%s\n' "${PURE_RENAMES[@]}" | sort))
+          fi
+
+          mapfile -t ALL_CSPROJ < <(grep -rlE "GeneratePackageOnBuild>true|IsPackable>true" packages --include="*.csproj" | sort)
+
+          declare -A TOUCHED
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            best=""
+            bestlen=0
+            for csproj in "${ALL_CSPROJ[@]}"; do
+              dir=$(dirname "$csproj")
+              if [[ "$file" == "$dir"/* ]] && [ ${#dir} -gt "$bestlen" ]; then
+                best="$csproj"
+                bestlen=${#dir}
+              fi
+            done
+            [ -n "$best" ] && TOUCHED["$best"]=1
+          done <<< "$CHANGED"
+
+          PACKAGES_JSON="[]"
+          for csproj in "${!TOUCHED[@]}"; do
+            name=$(basename "$csproj" .csproj)
+            PACKAGES_JSON=$(echo "$PACKAGES_JSON" | jq -c --arg n "$name" --arg c "$csproj" '. + [{"name":$n,"csproj":$c}]')
+          done
+
+          echo "packages=${PACKAGES_JSON}" >> "$GITHUB_OUTPUT"
+          echo "Touched packages: ${PACKAGES_JSON}"
+
+      - name: Bump release notes for each touched package
+        if: steps.find.outputs.packages != '[]'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PACKAGES_JSON: ${{ steps.find.outputs.packages }}
+          TITLE: ${{ github.event.pull_request.title }}
+          BODY: ${{ github.event.pull_request.body }}
+          REPO: ${{ github.repository }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          BUMP=patch
+          if echo "$TITLE" | grep -qE '^[a-zA-Z]+(\([^)]*\))?!:'; then
+            BUMP=major
+          elif echo "$BODY" | grep -q 'BREAKING CHANGE:'; then
+            BUMP=major
+          elif echo "$TITLE" | grep -qE '^feat(\([^)]*\))?:'; then
+            BUMP=minor
+          fi
+          echo "Bump type: ${BUMP}"
+
+          ADDITIONS="[]"
+          while IFS= read -r pkg; do
+            [ -z "$pkg" ] && continue
+            name=$(echo "$pkg" | jq -r '.name')
+            csproj=$(echo "$pkg" | jq -r '.csproj')
+
+            latest=$(git tag --list "${name}/v*" | sed "s#^${name}/v##" | sort -V | tail -1)
+            if [ -z "$latest" ]; then
+              next="0.1.0"
+            else
+              IFS='.' read -r MA MI PA <<< "$latest"
+              case "$BUMP" in
+                major) next="$((MA + 1)).0.0" ;;
+                minor) next="${MA}.$((MI + 1)).0" ;;
+                *)     next="${MA}.${MI}.$((PA + 1))" ;;
+              esac
+            fi
+
+            RESULT=$(python3 .github/scripts/insert_release_note.py "$csproj" "$next" "$TITLE")
+            echo "${name}: ${latest:-<none>} -> ${next} (${RESULT})"
+
+            if [ "$RESULT" == "changed" ]; then
+              b64=$(base64 -w0 "$csproj")
+              ADDITIONS=$(echo "$ADDITIONS" | jq -c --arg p "$csproj" --arg c "$b64" '. + [{"path":$p,"contents":$c}]')
+            fi
+          done < <(echo "$PACKAGES_JSON" | jq -c '.[]')
+
+          if [ "$ADDITIONS" == "[]" ]; then
+            echo "Release notes already up to date — nothing to commit"
+            exit 0
+          fi
+
+          HEAD_OID=$(git rev-parse HEAD)
+          REQUEST_BODY=$(jq -n \
+              --arg query 'mutation($input: CreateCommitOnBranchInput!) { createCommitOnBranch(input: $input) { commit { oid } } }' \
+              --arg repo "$REPO" \
+              --arg branch "$BRANCH" \
+              --arg oid "$HEAD_OID" \
+              --arg headline "chore(release): update release notes" \
+              --argjson additions "$ADDITIONS" \
+              '{query: $query, variables: {input: {branch: {repositoryNameWithOwner: $repo, branchName: $branch}, message: {headline: $headline}, expectedHeadOid: $oid, fileChanges: {additions: $additions}}}}')
+
+          RESPONSE=$(echo "$REQUEST_BODY" | gh api graphql --input -)
+          echo "$RESPONSE" | jq .
+
+          # A GraphQL error (e.g. expectedHeadOid stale because something else
+          # pushed in between) still returns HTTP 200 — check the body, not
+          # just the exit code.
+          if echo "$RESPONSE" | jq -e '.errors' > /dev/null 2>&1; then
+            echo "ERROR: createCommitOnBranch failed"
+            exit 1
+          fi

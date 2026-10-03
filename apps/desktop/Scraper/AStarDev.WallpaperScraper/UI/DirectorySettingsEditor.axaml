@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="AStarDev.WallpaperScraper.UI.DirectorySettingsEditor">
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto" Margin="12" ColumnSpacing="16" RowSpacing="8">
+      <TextBlock Grid.Row="0" Grid.Column="0" Text="Root directory" VerticalAlignment="Center" />
+      <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Spacing="12">
+        <TextBox x:Name="RootDirectoryBox" MinWidth="480" TextChanged="DirectoryChanged" />
+        <Button Content="Browse..." Click="BrowseRootDirectory" />
+      </StackPanel>
+      <TextBlock Grid.Row="1" Grid.Column="0" Text="Famous root directory" VerticalAlignment="Center" />
+      <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="12">
+        <TextBox x:Name="RootDirectoryFamousBox" MinWidth="480" TextChanged="DirectoryChanged" />
+        <Button Content="Browse..." Click="BrowseRootDirectoryFamous" />
+      </StackPanel>
+      <TextBlock Grid.Row="2" Grid.Column="0" Text="Sub-directory name" VerticalAlignment="Center" />
+      <TextBox Grid.Row="2" Grid.Column="1" x:Name="SubDirectoryNameBox" MinWidth="480" HorizontalAlignment="Left" />
+      <TextBlock Grid.Row="3" Grid.Column="1" x:Name="MissingDirectoriesText" Foreground="DarkOrange" TextWrapping="Wrap" />
+    </Grid>
+  </ScrollViewer>
+</UserControl>

@@ -1,0 +1,167 @@
+# ════════════════════════════════════════════════════════════════════════════
+# release-on-merge.yml
+#
+# Fully automatic package release. On every push to main (i.e. every
+# squash-merged PR):
+#
+#   1. detect  — which packable project(s) under packages/ did this merge
+#                touch? None -> nothing else runs.
+#   2. tag     — for each touched package, read the version already sitting
+#                in its PackageReleaseNotes (bumped pre-merge by
+#                release-notes-bump.yml — see that file for why the bump
+#                itself can't happen here) and push the {name}/v{version}
+#                tag. Tag refs aren't covered by main's branch ruleset, so
+#                this needs no bypass and no commit to main.
+#   3. publish — calls nuget-publish.yml (workflow_call) once per touched
+#                package. Called directly rather than relying on the tag
+#                push to retrigger it, since a GITHUB_TOKEN-authored tag
+#                push doesn't fire other workflows.
+#
+# Skips cleanly (no tag, no publish) if a package's release notes weren't
+# actually bumped, or if that version's tag already exists — makes this
+# safe to no-op rather than fail on an unrelated packages/ change.
+# ════════════════════════════════════════════════════════════════════════════
+
+name: Release on merge
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  packages: write
+  checks: write
+
+jobs:
+  detect:
+    name: Detect touched packages
+    runs-on: ubuntu-latest
+    outputs:
+      packages: ${{ steps.find.outputs.packages }}
+      has_packages: ${{ steps.find.outputs.has_packages }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Find packable projects touched by this push
+        id: find
+        run: |
+          BEFORE="${{ github.event.before }}"
+          AFTER="${{ github.event.after }}"
+          if [[ "$BEFORE" =~ ^0+$ ]]; then
+            # First push on a new ref — fall back to the single latest commit.
+            BEFORE=$(git rev-parse HEAD^)
+            AFTER=$(git rev-parse HEAD)
+          fi
+
+          # A pure path move (100% content-identical rename) isn't a real
+          # change to the package — exclude it, or e.g. an infrastructure/ ->
+          # packages/ rename would bump every package it touches with a
+          # release note that has nothing to do with their actual content.
+          mapfile -t PURE_RENAMES < <(git diff --name-status --find-renames=100% "$BEFORE" "$AFTER" | awk '$1=="R100"{print $3}')
+          CHANGED=$(git diff --name-only "$BEFORE" "$AFTER")
+          if [ "${#PURE_RENAMES[@]}" -gt 0 ]; then
+            CHANGED=$(comm -23 <(echo "$CHANGED" | sort) <(printf '%s\n' "${PURE_RENAMES[@]}" | sort))
+          fi
+
+          mapfile -t ALL_CSPROJ < <(grep -rlE "GeneratePackageOnBuild>true|IsPackable>true" packages --include="*.csproj" | sort)
+
+          declare -A TOUCHED
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            best=""
+            bestlen=0
+            for csproj in "${ALL_CSPROJ[@]}"; do
+              dir=$(dirname "$csproj")
+              if [[ "$file" == "$dir"/* ]] && [ ${#dir} -gt "$bestlen" ]; then
+                best="$csproj"
+                bestlen=${#dir}
+              fi
+            done
+            [ -n "$best" ] && TOUCHED["$best"]=1
+          done <<< "$CHANGED"
+
+          PACKAGES_JSON="[]"
+          for csproj in "${!TOUCHED[@]}"; do
+            name=$(basename "$csproj" .csproj)
+            PACKAGES_JSON=$(echo "$PACKAGES_JSON" | jq -c --arg n "$name" --arg c "$csproj" '. + [{"name":$n,"csproj":$c}]')
+          done
+
+          HAS=$([ "$PACKAGES_JSON" != "[]" ] && echo true || echo false)
+          echo "packages=${PACKAGES_JSON}" >> "$GITHUB_OUTPUT"
+          echo "has_packages=${HAS}"       >> "$GITHUB_OUTPUT"
+          echo "Touched packages: ${PACKAGES_JSON}"
+
+  tag:
+    name: Tag each touched package
+    needs: detect
+    if: needs.detect.outputs.has_packages == 'true'
+    runs-on: ubuntu-latest
+    outputs:
+      versions: ${{ steps.tag.outputs.versions }}
+      tagged: ${{ steps.tag.outputs.tagged }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Read bumped version and tag it
+        id: tag
+        env:
+          PACKAGES_JSON: ${{ needs.detect.outputs.packages }}
+        run: |
+          VERSIONS_JSON="{}"
+          TAGGED_JSON="[]"
+          while IFS= read -r pkg; do
+            [ -z "$pkg" ] && continue
+            name=$(echo "$pkg" | jq -r '.name')
+            csproj=$(echo "$pkg" | jq -r '.csproj')
+
+            version=$(python3 .github/scripts/read_release_note_version.py "$csproj")
+            if [ -z "$version" ]; then
+              echo "${name}: no PackageReleaseNotes entry found in ${csproj} — skipping"
+              continue
+            fi
+
+            tagname="${name}/v${version}"
+            if git rev-parse "$tagname" >/dev/null 2>&1; then
+              echo "${name}: ${tagname} already exists — skipping (no version bump merged for this package)"
+              continue
+            fi
+
+            git tag "$tagname"
+            echo "${name}: created ${tagname}"
+
+            VERSIONS_JSON=$(echo "$VERSIONS_JSON" | jq -c --arg n "$name" --arg v "$version" '. + {($n): $v}')
+            TAGGED_JSON=$(echo "$TAGGED_JSON" | jq -c --arg n "$name" --arg c "$csproj" '. + [{"name":$n,"csproj":$c}]')
+          done < <(echo "$PACKAGES_JSON" | jq -c '.[]')
+
+          echo "versions=${VERSIONS_JSON}" >> "$GITHUB_OUTPUT"
+          echo "tagged=${TAGGED_JSON}"     >> "$GITHUB_OUTPUT"
+
+          if [ "$TAGGED_JSON" != "[]" ]; then
+            git push origin --tags
+          else
+            echo "Nothing new to tag"
+          fi
+
+  publish:
+    name: Publish
+    needs: [tag]
+    if: needs.tag.outputs.tagged != '[]'
+    strategy:
+      matrix:
+        package: ${{ fromJson(needs.tag.outputs.tagged) }}
+      fail-fast: false
+    uses: ./.github/workflows/nuget-publish.yml
+    with:
+      package_name: ${{ matrix.package.name }}
+      version: ${{ fromJson(needs.tag.outputs.versions)[matrix.package.name] }}
+      csproj: ${{ matrix.package.csproj }}
+    secrets: inherit

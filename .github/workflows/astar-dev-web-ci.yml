@@ -98,7 +98,7 @@ jobs:
           dotnet test ${{ env.TEST_PROJECT_PATH }} \
             --no-build \
             --configuration Release \
-            --logger "trx;LogFileName=AStarDev.Web.TestsUnit.trx" \
+            --report-xunit-trx --report-xunit-trx-filename AStarDev.Web.TestsUnit.trx \
             --results-directory "$GITHUB_WORKSPACE/TestResults"
 
       - name: Publish test results

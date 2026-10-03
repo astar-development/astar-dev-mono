@@ -120,10 +120,9 @@ jobs:
             xvfb-run -a dotnet test \
               --no-build \
               --configuration Release \
-              --logger "trx;LogFileName=$proj_name.trx" \
               --results-directory "$GITHUB_WORKSPACE/TestResults" \
-              --collect:"XPlat Code Coverage" \
-              -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
+              --report-xunit-trx --report-xunit-trx-filename $proj_name.trx \
+              --coverage --coverage-output-format cobertura --coverage-output $proj_name.cobertura.xml
 
             cd "$GITHUB_WORKSPACE"
           done
@@ -139,5 +138,5 @@ jobs:
         uses: codecov/codecov-action@v7.0.0
         if: always()
         with:
-          files: TestResults/**/coverage.cobertura.xml
+          files: TestResults/**/*.cobertura.xml
           fail_ci_if_error: false
