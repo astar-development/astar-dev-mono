@@ -291,7 +291,7 @@ public sealed class GivenASyncPassOrchestrator
     }
 
     [Fact]
-    public async Task when_enumeration_succeeds_then_progress_includes_detecting_remote_deletions_before_local_changes()
+    public async Task when_enumeration_succeeds_then_progress_includes_detecting_local_changes_before_remote_deletions()
     {
         SetupDeepSyncPrerequisites();
 
@@ -303,7 +303,7 @@ public sealed class GivenASyncPassOrchestrator
 
         progressMessages.ShouldContain("Sync.DetectingRemoteDeletions");
         progressMessages.ShouldContain("Sync.DetectingLocalChanges");
-        progressMessages.IndexOf("Sync.DetectingRemoteDeletions").ShouldBeLessThan(progressMessages.IndexOf("Sync.DetectingLocalChanges"));
+        progressMessages.IndexOf("Sync.DetectingLocalChanges").ShouldBeLessThan(progressMessages.IndexOf("Sync.DetectingRemoteDeletions"));
     }
 
     [Fact]
