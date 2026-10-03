@@ -13,9 +13,9 @@
         <Project Path="apps/desktop/AStarDev.FileApp/AStarDev.FileApp/AStarDev.FileApp.csproj" />
     </Folder>
     <Folder Name="/apps/desktop/Scraper/">
-        <Project Path="apps/desktop/Scraper/AStarDev.ScraperPlaying.TestsIntegration/AStarDev.ScraperPlaying.TestsIntegration.csproj" />
-        <Project Path="apps/desktop/Scraper/AStarDev.ScraperPlaying.TestsUnit/AStarDev.ScraperPlaying.TestsUnit.csproj" />
-        <Project Path="apps/desktop/Scraper/AStarDev.ScraperPlaying/AStarDev.ScraperPlaying.csproj" />
+        <Project Path="apps/desktop/Scraper/AStarDev.WallpaperScraper.TestsIntegration/AStarDev.WallpaperScraper.TestsIntegration.csproj" />
+        <Project Path="apps/desktop/Scraper/AStarDev.WallpaperScraper.TestsUnit/AStarDev.WallpaperScraper.TestsUnit.csproj" />
+        <Project Path="apps/desktop/Scraper/AStarDev.WallpaperScraper/AStarDev.WallpaperScraper.csproj" />
     </Folder>
     <Folder Name="/apps/web/" />
     <Folder Name="/apps/web/astar-dev-csharp/">

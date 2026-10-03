@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="using:AStarDev.WallpaperScraper.UI"
+             x:Class="AStarDev.WallpaperScraper.UI.PersonCategoriesEditor">
+  <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12">
+    <TextBlock Grid.Row="0"
+               Text="Wallhaven tag categories whose tags are treated as person names when naming wallpaper files. Names are matched ignoring case."
+               TextWrapping="Wrap"
+               Margin="0,0,0,12" />
+    <TextBlock Grid.Row="1" Text="Name" FontWeight="SemiBold" Margin="0,0,0,6" />
+    <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+      <ItemsControl x:Name="CategoriesList">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="ui:PersonCategoryRow">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="0,0,0,6">
+              <TextBox Grid.Column="0" Text="{Binding Name}" />
+              <Button Grid.Column="1" Content="Remove" Click="RemoveCategory" />
+            </Grid>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+    <Button Grid.Row="3" Content="Add category" Click="AddCategory" HorizontalAlignment="Left" Margin="0,8,0,0" />
+  </Grid>
+</UserControl>

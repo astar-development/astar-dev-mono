@@ -1,0 +1,12 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="AStarDev.WallpaperScraper.UI.SearchSettingsEditor">
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" Margin="12" ColumnSpacing="16" RowSpacing="8">
+      <TextBlock Grid.Row="0" Grid.Column="0" Text="Search term" VerticalAlignment="Center" />
+      <TextBox Grid.Row="0" Grid.Column="1" x:Name="SearchTermBox" MinWidth="360" HorizontalAlignment="Left" />
+      <TextBlock Grid.Row="1" Grid.Column="0" Text="Max results (blank for no limit)" VerticalAlignment="Center" />
+      <NumericUpDown Grid.Row="1" Grid.Column="1" x:Name="MaxResultsBox" Minimum="1" Increment="1" FormatString="0" MinWidth="160" HorizontalAlignment="Left" />
+    </Grid>
+  </ScrollViewer>
+</UserControl>

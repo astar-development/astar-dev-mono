@@ -1,0 +1,216 @@
+# ════════════════════════════════════════════════════════════════════════════
+# nuget-publish.yml
+#
+# Publishes one package. Two ways in:
+#
+#   1. Tag push (manual / ad-hoc / re-publish of an old version):
+#        git tag AStarDev.Utilities/v1.7.0
+#        git push origin AStarDev.Utilities/v1.7.0
+#      Package name, version, and the .csproj to build are derived from the
+#      tag itself — nothing else to configure.
+#
+#   2. workflow_call (automated — see release-on-merge.yml):
+#      the caller supplies package_name, version, and csproj directly, and
+#      this workflow builds/tests/packs/publishes/tags/releases exactly as
+#      it would for a manual tag push. This is how "merge to main" ends up
+#      published without anyone needing to push a tag by hand.
+#
+# Tag format:  {PackageName}/v{version}
+# Examples:
+#   AStarDev.Utilities/v1.6.6
+#   AStarDev.Utilities/v1.7.0
+#   AStarDev.SomeNewPackage/v1.0.0
+#   AStarDev.AnotherPackage/v2.1.0-beta.1
+# ════════════════════════════════════════════════════════════════════════════
+
+name: Publish NuGet package
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "*/v[0-9]+.[0-9]+.[0-9]+"
+      - "*/v[0-9]+.[0-9]+.[0-9]+-*"
+  workflow_call:
+    inputs:
+      package_name:
+        description: "Package name, e.g. AStarDev.Utilities"
+        required: true
+        type: string
+      version:
+        description: "Version to build/pack/publish, e.g. 1.7.0"
+        required: true
+        type: string
+      csproj:
+        description: "Path to the package's .csproj"
+        required: true
+        type: string
+
+# ── Permissions ───────────────────────────────────────────────────────────────
+permissions:
+  contents: write # Create GitHub Release
+  packages: write # Push .nupkg to GitHub Packages
+  checks: write # Publish test results
+
+# ── Environment variables ─────────────────────────────────────────────────────
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  NUGET_XMLDOC_MODE: skip
+  NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  validate-and-publish:
+    name: Build, test & publish
+    runs-on: ubuntu-latest
+
+    steps:
+      # workflow_call: check out the tag the caller just created (github.ref
+      # still points at the *push-to-main* event, not that new tag).
+      # Tag push: github.ref already points at the pushed tag — use it as-is.
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ inputs.package_name && format('{0}/v{1}', inputs.package_name, inputs.version) || github.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v6.0.0
+        with:
+          global-json-file: global.json
+
+      # ── Resolve package name, version, and project path ────────────────────
+      # workflow_call: caller supplies them directly (inputs.* is empty when
+      # this workflow was triggered by a tag push instead).
+      # Tag push:            AStarDev.Utilities/v1.7.0
+      # PACKAGE_NAME  → AStarDev.Utilities
+      # PACKAGE_VERSION → 1.7.0  (leading 'v' stripped)
+      # IS_PRERELEASE → true if version contains a hyphen
+      - name: Resolve package name, version, and project path
+        id: tag
+        run: |
+          if [ -n "${{ inputs.package_name }}" ]; then
+            PACKAGE_NAME="${{ inputs.package_name }}"
+            PACKAGE_VERSION="${{ inputs.version }}"
+            CSPROJ="${{ inputs.csproj }}"
+            if [ ! -f "$CSPROJ" ]; then
+              echo "ERROR: ${CSPROJ} (from workflow_call input) does not exist"
+              exit 1
+            fi
+          else
+            RAW_TAG="${GITHUB_REF_NAME}"
+            PACKAGE_NAME="${RAW_TAG%/v*}"
+            PACKAGE_VERSION="${RAW_TAG##*/v}"
+            CSPROJ=$(find packages/ -name "${PACKAGE_NAME}.csproj" | head -1)
+            if [ -z "$CSPROJ" ]; then
+              echo "ERROR: Could not find ${PACKAGE_NAME}.csproj under packages/"
+              exit 1
+            fi
+          fi
+
+          IS_PRERELEASE=false
+          if [[ "$PACKAGE_VERSION" == *"-"* ]]; then
+            IS_PRERELEASE=true
+          fi
+
+          echo "PACKAGE_NAME=${PACKAGE_NAME}"       >> $GITHUB_ENV
+          echo "PACKAGE_VERSION=${PACKAGE_VERSION}" >> $GITHUB_ENV
+          echo "CSPROJ=${CSPROJ}"                   >> $GITHUB_ENV
+          echo "package_name=${PACKAGE_NAME}"       >> $GITHUB_OUTPUT
+          echo "version=${PACKAGE_VERSION}"         >> $GITHUB_OUTPUT
+          echo "prerelease=${IS_PRERELEASE}"        >> $GITHUB_OUTPUT
+          echo "Package : ${PACKAGE_NAME}"
+          echo "Version : ${PACKAGE_VERSION}"
+          echo "Project : ${CSPROJ}"
+          echo "Pre-release : ${IS_PRERELEASE}"
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v6.1.0
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('Directory.Packages.props') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+          lookup-only: true
+
+      - name: Authenticate GitHub Packages source
+        run: dotnet nuget add source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json --name github --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
+
+      - name: Restore
+        run: dotnet restore "${CSPROJ}"
+
+      # ── Build — version stamped directly from the tag / workflow_call input ─
+      - name: Build
+        run: |
+          dotnet build "${CSPROJ}" \
+            --no-restore \
+            --configuration Release \
+            -p:Version=${PACKAGE_VERSION} \
+            -p:TreatWarningsAsErrors=true
+
+      # ── Test — finds the matching .TestsUnit project automatically ────────
+      - name: Test
+        run: |
+          TEST_PROJ=$(find packages/ \
+            -name "${PACKAGE_NAME}.TestsUnit.csproj" | head -1)
+          if [ -z "$TEST_PROJ" ]; then
+            echo "No test project found for ${PACKAGE_NAME} — skipping"
+          else
+            echo "Running tests: ${TEST_PROJ}"
+            dotnet test "${TEST_PROJ}" \
+              --configuration Release \
+              --logger "trx;LogFileName=results.trx" \
+              --results-directory ./TestResults
+          fi
+
+      - name: Publish test results
+        uses: EnricoMi/publish-unit-test-result-action@v2.24.0
+        if: always()
+        continue-on-error: true
+        with:
+          files: TestResults/**/*.trx
+          check_name: ${{ env.PACKAGE_NAME }} — test results
+          fail_on: test failures
+
+      # ── Pack — version comes from the tag / workflow_call input ───────────
+      - name: Pack
+        run: |
+          dotnet pack "${CSPROJ}" \
+            --no-build \
+            --configuration Release \
+            -p:Version=${PACKAGE_VERSION} \
+            --output ./nupkgs
+
+      - name: List packages
+        run: ls -la ./nupkgs/
+
+      # ── Push to GitHub Packages ───────────────────────────────────────────
+      - name: Push to GitHub Packages
+        run: |
+          dotnet nuget push "./nupkgs/*.nupkg" \
+            --api-key ${{ secrets.GITHUB_TOKEN }} \
+            --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
+            --skip-duplicate
+
+      - name: Push to NuGet.org
+        run: |
+          dotnet nuget push "./nupkgs/*.nupkg" \
+            --api-key ${{ secrets.NUGET_API_KEY }} \
+            --source "https://api.nuget.org/v3/index.json" \
+            --skip-duplicate
+
+      # ── Create GitHub Release with .nupkg assets attached ─────────────────
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3.0.2
+        with:
+          tag_name: ${{ env.PACKAGE_NAME }}/v${{ env.PACKAGE_VERSION }}
+          name: ${{ env.PACKAGE_NAME }} v${{ env.PACKAGE_VERSION }}
+          draft: false
+          prerelease: ${{ steps.tag.outputs.prerelease }}
+          generate_release_notes: true
+          files: |
+            ./nupkgs/*.nupkg
+            ./nupkgs/*.snupkg
