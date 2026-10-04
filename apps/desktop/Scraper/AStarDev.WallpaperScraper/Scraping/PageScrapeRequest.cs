@@ -12,7 +12,11 @@ public sealed record PageScrapeRequest(
     ScrapeLabel Label,
     Option<SearchCategoryProgress> PreviousProgress,
     PageHooks Hooks,
-    ScrapeTarget Target);
+    ScrapeTarget Target)
+{
+    /// <summary>Whether paging is limited to a batch of pages per run. Defaults to batched; the hot and top searches, which record no progress to resume from, are unbatched.</summary>
+    public PageBatching Batching { get; init; } = PageBatchingFactory.CreateBatched();
+}
 
 /// <summary>Identifies a scrape for logging and saving.</summary>
 /// <param name="LogLabel">A label used for logging purposes.</param>

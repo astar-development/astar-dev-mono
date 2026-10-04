@@ -46,7 +46,7 @@ public sealed class PagesProcessor(IWallpaperIngestionContextFactory contextFact
             if (!progressWithheld && outcome == IngestOutcome.Incomplete && run.Request.PreviousProgress is Option<SearchCategoryProgress>.Some) run.Progress.Report($"Not every wallpaper on page {current.Number} was ingested - progress stays before that page so it is retried on the next scrape.");
 
             progressWithheld |= outcome == IngestOutcome.Incomplete;
-            if (resumePolicy.IsLastPageToVisit(current.Number, startPage.Number, current.Response.Meta)) return;
+            if (resumePolicy.IsLastPageToVisit(current.Number, startPage.Number, current.Response.Meta, run.Request.Batching)) return;
 
             await Task.Delay(pacing.NextDelay(), timeProvider, run.CancellationToken);
             current = await FetchPageAsync(run, current.Number + 1);
