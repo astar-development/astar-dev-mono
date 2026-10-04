@@ -7,7 +7,7 @@ public sealed class GivenAScrapeLimits
 {
     [Fact]
     public void when_the_defaults_are_used_then_all_categories_and_all_pages_are_allowed()
-        => (ScrapeLimits.Default.MaximumSearchCategories, ScrapeLimits.Default.MaximumPagesPerSearch).ShouldBe((int.MaxValue, int.MaxValue));
+        => (ScrapeLimits.Default.MaximumSearchCategories, ScrapeLimits.Default.MaximumPagesPerSearch, ScrapeLimits.Default.MaximumPagesPerRun).ShouldBe((int.MaxValue, int.MaxValue, int.MaxValue));
 
     [Fact]
     public void when_the_configuration_has_no_scrape_limits_section_then_the_defaults_are_used()
@@ -33,12 +33,20 @@ public sealed class GivenAScrapeLimits
         ScrapeLimits.From(configuration).ShouldBe(new ScrapeLimits(int.MaxValue, 2));
     }
 
+    [Fact]
+    public void when_the_configuration_sets_the_pages_per_run_then_it_is_used()
+    {
+        var configuration = Configuration(("ScrapeLimits:MaximumPagesPerRun", "5"));
+
+        ScrapeLimits.From(configuration).ShouldBe(new ScrapeLimits(int.MaxValue, int.MaxValue, 5));
+    }
+
     [Theory]
     [InlineData("0")]
     [InlineData("-1")]
     public void when_a_configured_limit_is_less_than_one_then_that_limit_is_unlimited(string value)
     {
-        var configuration = Configuration(("ScrapeLimits:MaximumSearchCategories", value), ("ScrapeLimits:MaximumPagesPerSearch", value));
+        var configuration = Configuration(("ScrapeLimits:MaximumSearchCategories", value), ("ScrapeLimits:MaximumPagesPerSearch", value), ("ScrapeLimits:MaximumPagesPerRun", value));
 
         ScrapeLimits.From(configuration).ShouldBe(ScrapeLimits.Default);
     }

@@ -138,6 +138,28 @@ public sealed class GivenAPagesProcessor
     }
 
     [Fact]
+    public async Task when_the_pages_per_run_limit_is_reached_then_paging_stops_after_that_many_pages_and_progress_is_the_last_page_visited()
+    {
+        SetUpPage(page: null, CreateSearchResponse(lastPage: 10, total: 100));
+        var batchedProcessor = CreateProcessor(new ScrapeLimits(int.MaxValue, int.MaxValue, 5));
+
+        await batchedProcessor.FetchAndProcessPagesAsync(CreateRequest("wallpapers", Option.None<string>(), Option.None<SearchCategoryProgress>(), completedProgress.Add), progress, CancellationToken.None);
+
+        (unitOfWork.SaveCount, completedProgress.Last()).ShouldBe((5, new SearchCategoryProgress(100, 5, 10)));
+    }
+
+    [Fact]
+    public async Task when_the_previous_run_stopped_part_way_then_the_next_batch_starts_after_the_last_page_visited()
+    {
+        SetUpPage(page: null, CreateSearchResponse(lastPage: 20, total: 200));
+        var batchedProcessor = CreateProcessor(new ScrapeLimits(int.MaxValue, int.MaxValue, 5));
+
+        await batchedProcessor.FetchAndProcessPagesAsync(CreateRequest("wallpapers", Option.None<string>(), Option.Some(new SearchCategoryProgress(200, 5, 20)), completedProgress.Add), progress, CancellationToken.None);
+
+        (unitOfWork.SaveCount, completedProgress.Last()).ShouldBe((5, new SearchCategoryProgress(200, 10, 20)));
+    }
+
+    [Fact]
     public async Task when_every_page_is_processed_then_the_last_page_reports_the_observed_progress()
     {
         SetUpPage(page: null, CreateSearchResponse(lastPage: 2, total: 50));
