@@ -149,6 +149,18 @@ public sealed class GivenAPagesProcessor
     }
 
     [Fact]
+    public async Task when_the_search_is_unbatched_then_the_pages_per_run_limit_does_not_stop_paging()
+    {
+        SetUpPage(page: null, CreateSearchResponse(lastPage: 10, total: 100));
+        var batchedProcessor = CreateProcessor(new ScrapeLimits(int.MaxValue, int.MaxValue, 5));
+        var request = CreateRequest("wallpapers", Option.None<string>(), Option.None<SearchCategoryProgress>(), completedProgress.Add) with { Batching = PageBatchingFactory.CreateUnbatched() };
+
+        await batchedProcessor.FetchAndProcessPagesAsync(request, progress, CancellationToken.None);
+
+        unitOfWork.SaveCount.ShouldBe(10);
+    }
+
+    [Fact]
     public async Task when_the_previous_run_stopped_part_way_then_the_next_batch_starts_after_the_last_page_visited()
     {
         SetUpPage(page: null, CreateSearchResponse(lastPage: 20, total: 200));
