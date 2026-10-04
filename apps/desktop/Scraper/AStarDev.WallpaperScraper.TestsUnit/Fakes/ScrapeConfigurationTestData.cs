@@ -9,7 +9,7 @@ internal static class ScrapeConfigurationTestData
     {
         var scrapeConfigurationId = new ScrapeConfigurationId(Guid.CreateVersion7());
         var searchConfigurationId = new SearchConfigurationId(Guid.CreateVersion7());
-        var categoryNames = new[] { "category one", "category two", "category three", "category four", "category five" };
+        var categoryNames = new[] { "category 1", "category 2", "category 3", "category 4", "category 5" };
         var categories = Enumerable.Range(1, categoryCount)
             .Select(i => new SearchCategoryEntity { SearchConfigurationId = searchConfigurationId, Id = $"cat{i}", Name = categoryNames[i - 1] })
             .ToList();

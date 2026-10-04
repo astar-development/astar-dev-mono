@@ -54,7 +54,7 @@ DI from start. Never `new` service inside class. Never modify production code so
 - **Blank line before `return`** after code block. NOT after `if`/`else`.
 - **ALL** new code needs GH issue (create if missing), must use TDD — failing test committed first (red), confirm fail, then implement + commit production code separately (green). Never batch test + production code one commit. New Git branch required: `feature/<gh-issue-number>-short-description` / `bug/<gh-issue-number>-short-description` / etc.
 - **Coverage exclusions** — class not testable/little regression value: add `[ExcludeFromCodeCoverage]`
-- **PR** Development done → push branch, raise PR, request human review
+- **PR** Development done → push branch, raise PR, set auto complete with squash, request human review
 - **NEVER** touch code unrelated to requested change (no judgement-call restructuring, reordering, "while I'm here" cleanup). Beneficial-but-unrelated change (logical grouping, indirect refactor, etc.) → SUGGEST as separate item, don't implement.
 - **Test projects**: `*.TestsUnit` / `*.TestsIntegration`
 - **Method signatures**: single-line regardless param count. Split only >200 chars.
