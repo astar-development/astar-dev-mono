@@ -55,10 +55,10 @@ public sealed class SearchOrchestrator(IPagesProcessor pagesProcessor, ScrapeLim
     }
 
     private static PageScrapeRequest HotRequest(ScrapeConfigurationEntity configuration, ScrapeTarget target)
-        => new(new ScrapeLabel("hot wallpapers", Option.Some(HotWallpapersName)), Option.None<SearchCategoryProgress>(), new PageHooks(_ => { }, page => WallhavenUrlBuilder.BuildHotWallpapersPageUrl(configuration.HotWallpapers, page)), target);
+        => new(new ScrapeLabel("hot wallpapers", Option.Some(HotWallpapersName)), Option.None<SearchCategoryProgress>(), new PageHooks(_ => { }, page => WallhavenUrlBuilder.BuildHotWallpapersPageUrl(configuration.HotWallpapers, page)), target) { Batching = PageBatchingFactory.CreateUnbatched() };
 
     private static PageScrapeRequest TopRequest(ScrapeConfigurationEntity configuration, ScrapeTarget target)
-        => new(new ScrapeLabel("top wallpapers", Option.None<string>()), Option.None<SearchCategoryProgress>(), new PageHooks(_ => { }, page => WallhavenUrlBuilder.BuildTopWallpapersPageUrl(configuration.TopWallpapers, page)), target);
+        => new(new ScrapeLabel("top wallpapers", Option.None<string>()), Option.None<SearchCategoryProgress>(), new PageHooks(_ => { }, page => WallhavenUrlBuilder.BuildTopWallpapersPageUrl(configuration.TopWallpapers, page)), target) { Batching = PageBatchingFactory.CreateUnbatched() };
 
     private static PageScrapeRequest CategoryRequest(ScrapeConfigurationEntity configuration, SearchCategoryEntity category, ScrapeTarget target)
         => new(new ScrapeLabel($"search category {category.Name}", Option.Some(category.Name)), Option.Some(new SearchCategoryProgress(category.LastKnownImageCount, category.LastPageVisited, category.TotalPages)), new PageHooks(RecordProgress(category), page => WallhavenUrlBuilder.BuildCategoryPageUrl(configuration.SearchStringPrefix, configuration.SearchStringSuffix, category, page)), target);

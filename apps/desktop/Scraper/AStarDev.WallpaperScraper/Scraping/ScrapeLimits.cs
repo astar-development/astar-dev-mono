@@ -5,12 +5,13 @@ namespace AStarDev.WallpaperScraper.Scraping;
 /// <summary>How much a single scrape is allowed to fetch.</summary>
 /// <param name="MaximumSearchCategories">The maximum number of configured search categories searched, before the top wallpapers search.</param>
 /// <param name="MaximumPagesPerSearch">The maximum number of result pages fetched for each search.</param>
-public sealed record ScrapeLimits(int MaximumSearchCategories, int MaximumPagesPerSearch)
+/// <param name="MaximumPagesPerRun">The maximum number of result pages fetched for each search in a single run; the next run continues from the last page visited.</param>
+public sealed record ScrapeLimits(int MaximumSearchCategories, int MaximumPagesPerSearch, int MaximumPagesPerRun = int.MaxValue)
 {
     private const string SectionName = "ScrapeLimits";
 
     /// <summary>The limits used when none are configured: no limit, so every category and every page is scraped.</summary>
-    public static ScrapeLimits Default { get; } = new(int.MaxValue, int.MaxValue);
+    public static ScrapeLimits Default { get; } = new(int.MaxValue, int.MaxValue, int.MaxValue);
 
     /// <summary>Reads the limits from the <c>ScrapeLimits</c> configuration section; a missing, unparsable or less-than-one value means that limit is unlimited.</summary>
     /// <param name="configuration">The application configuration.</param>
@@ -20,7 +21,8 @@ public sealed record ScrapeLimits(int MaximumSearchCategories, int MaximumPagesP
 
         return new ScrapeLimits(
             PositiveOrDefault(section[nameof(MaximumSearchCategories)], Default.MaximumSearchCategories),
-            PositiveOrDefault(section[nameof(MaximumPagesPerSearch)], Default.MaximumPagesPerSearch));
+            PositiveOrDefault(section[nameof(MaximumPagesPerSearch)], Default.MaximumPagesPerSearch),
+            PositiveOrDefault(section[nameof(MaximumPagesPerRun)], Default.MaximumPagesPerRun));
     }
 
     private static int PositiveOrDefault(string? configuredValue, int defaultValue)

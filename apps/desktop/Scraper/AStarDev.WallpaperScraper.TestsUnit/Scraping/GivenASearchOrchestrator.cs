@@ -70,6 +70,16 @@ public sealed class GivenASearchOrchestrator
     }
 
     [Fact]
+    public async Task when_the_pages_per_run_limit_is_set_then_only_category_searches_are_limited_to_that_many_pages()
+    {
+        pageFetcher.Meta = new Meta(10);
+
+        await Run(ScrapeConfigurationTestData.CreateConfiguration(categoryCount: 1), new ScrapeLimits(3, int.MaxValue, 2));
+
+        FetchedLabels.GroupBy(label => label).ToDictionary(group => group.Key, group => group.Count()).ShouldBe(new Dictionary<string, int> { ["hot wallpapers"] = 10, ["top wallpapers"] = 10, ["search category category one"] = 2 });
+    }
+
+    [Fact]
     public async Task when_pages_are_processed_then_every_page_is_fetched_with_the_configured_connection_and_ingested_with_the_person_categories()
     {
         await Run(ScrapeConfigurationTestData.CreateConfiguration(categoryCount: 2));

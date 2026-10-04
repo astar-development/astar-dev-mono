@@ -33,9 +33,11 @@ public sealed class ScrapeResumePolicy(ScrapeLimits limits)
 
     /// <summary>Whether no further page should be visited after <paramref name="pageNumber"/>.</summary>
     /// <param name="pageNumber">The page just visited.</param>
+    /// <param name="startPage">The page this run started from.</param>
     /// <param name="meta">The paging metadata of that page.</param>
-    public bool IsLastPageToVisit(int pageNumber, Meta meta)
-        => pageNumber >= meta.LastPage || pageNumber >= limits.MaximumPagesPerSearch;
+    /// <param name="batching">Whether the search is limited to a batch of pages per run.</param>
+    public bool IsLastPageToVisit(int pageNumber, int startPage, Meta meta, PageBatching batching)
+        => pageNumber >= meta.LastPage || pageNumber >= limits.MaximumPagesPerSearch || (batching is BatchedPaging && pageNumber - startPage + 1 >= limits.MaximumPagesPerRun);
 
     private bool IsComplete(SearchCategoryProgress previous)
         => previous.LastPageVisited >= Math.Min(previous.TotalPages, limits.MaximumPagesPerSearch);

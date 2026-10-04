@@ -62,5 +62,22 @@ public sealed class GivenAScrapeResumePolicy
     [InlineData(4, 10, true)]
     [InlineData(3, 10, false)]
     public void when_a_page_is_visited_then_it_is_last_only_at_the_reported_last_page_or_the_page_limit(int pageNumber, int lastPage, bool expected)
-        => policy.IsLastPageToVisit(pageNumber, new Meta(lastPage)).ShouldBe(expected);
+        => policy.IsLastPageToVisit(pageNumber, 1, new Meta(lastPage), PageBatchingFactory.CreateBatched()).ShouldBe(expected);
+
+    [Theory]
+    [InlineData(1, 1, false)]
+    [InlineData(1, 2, false)]
+    [InlineData(1, 3, true)]
+    [InlineData(6, 7, false)]
+    [InlineData(6, 8, true)]
+    public void when_a_page_is_visited_then_it_is_last_once_the_pages_allowed_per_run_have_been_visited_from_the_start_page(int startPage, int pageNumber, bool expected)
+        => new ScrapeResumePolicy(new ScrapeLimits(int.MaxValue, int.MaxValue, 3)).IsLastPageToVisit(pageNumber, startPage, new Meta(50), PageBatchingFactory.CreateBatched()).ShouldBe(expected);
+
+    [Fact]
+    public void when_the_search_is_unbatched_then_the_pages_allowed_per_run_do_not_end_paging()
+        => new ScrapeResumePolicy(new ScrapeLimits(int.MaxValue, int.MaxValue, 3)).IsLastPageToVisit(3, 1, new Meta(50), PageBatchingFactory.CreateUnbatched()).ShouldBeFalse();
+
+    [Fact]
+    public void when_the_search_is_unbatched_then_the_last_page_and_the_page_limit_still_end_paging()
+        => (policy.IsLastPageToVisit(2, 1, new Meta(2), PageBatchingFactory.CreateUnbatched()), policy.IsLastPageToVisit(4, 1, new Meta(10), PageBatchingFactory.CreateUnbatched())).ShouldBe((true, true));
 }
