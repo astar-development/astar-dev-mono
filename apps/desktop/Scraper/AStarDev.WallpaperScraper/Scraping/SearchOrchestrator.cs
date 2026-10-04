@@ -34,7 +34,7 @@ public sealed class SearchOrchestrator(IPagesProcessor pagesProcessor, ScrapeLim
         if (!selection.Categories) return;
 
         progress.Report("Fetching categories.");
-        foreach (var category in configuration.SearchConfiguration.SearchCategories.Where(category => category.IncludeInSearch).Take(limits.MaximumSearchCategories))
+        foreach (var category in configuration.SearchConfiguration.SearchCategories.Where(category => category.IncludeInSearch).OrderByDescending(category => category.IsFamous).ThenByDescending(category => category.IsInternet).ThenBy(category => category.Name, StringComparer.OrdinalIgnoreCase).Take(limits.MaximumSearchCategories))
         {
             await RunSearchAsync(CategoryRequest(configuration, category, target), progress, cancellationToken);
         }
