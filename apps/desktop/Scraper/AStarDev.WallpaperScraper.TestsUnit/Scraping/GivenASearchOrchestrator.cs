@@ -26,13 +26,13 @@ public sealed class GivenASearchOrchestrator
         await Run(ScrapeConfigurationTestData.CreateConfiguration(categoryCount: 5));
 
         progress.Messages.Where(message => message.StartsWith("Fetching ", StringComparison.Ordinal) && !message.Contains(" page ", StringComparison.Ordinal)).ShouldBe(["Fetching hot wallpapers.", "Fetching top wallpapers.", "Fetching categories."]);
-        FetchedLabels.ShouldBe(["hot wallpapers", "top wallpapers", "search category category one", "search category category two", "search category category three"]);
-        IngestedLabels.ShouldBe(["Hot Wallpapers", "Top Wallpapers", "category one", "category two", "category three"]);
+        FetchedLabels.ShouldBe(["hot wallpapers", "top wallpapers", "search category category 1", "search category category 2", "search category category 3"]);
+        IngestedLabels.ShouldBe(["Hot Wallpapers", "Top Wallpapers", "category 1", "category 2", "category 3"]);
     }
 
     [Theory]
-    [InlineData(false, true, true, new[] { "top wallpapers", "search category category one", "search category category two" })]
-    [InlineData(true, false, true, new[] { "hot wallpapers", "search category category one", "search category category two" })]
+    [InlineData(false, true, true, new[] { "top wallpapers", "search category category 1", "search category category 2" })]
+    [InlineData(true, false, true, new[] { "hot wallpapers", "search category category 1", "search category category 2" })]
     [InlineData(true, true, false, new[] { "hot wallpapers", "top wallpapers" })]
     [InlineData(false, false, false, new string[0])]
     public async Task when_a_scrape_is_switched_off_then_only_the_scrapes_still_switched_on_are_processed(bool hot, bool top, bool categories, string[] expected)
@@ -50,7 +50,39 @@ public sealed class GivenASearchOrchestrator
 
         await Run(configuration);
 
-        FetchedLabels.ShouldBe(["hot wallpapers", "top wallpapers", "search category category two", "search category category three", "search category category four"]);
+        FetchedLabels.ShouldBe(["hot wallpapers", "top wallpapers", "search category category 2", "search category category 3", "search category category 4"]);
+    }
+
+    [Fact]
+    public async Task when_categories_have_different_flags_then_famous_come_first_then_internet_then_the_rest_alphabetically()
+    {
+        var configuration = ScrapeConfigurationTestData.CreateConfiguration(categoryCount: 5);
+        var categories = configuration.SearchConfiguration.SearchCategories.ToList();
+        categories[0].Name = "zebra";
+        categories[1].Name = "apple";
+        categories[2].Name = "yak";
+        categories[2].IsInternet = true;
+        categories[3].Name = "walrus";
+        categories[3].IsFamous = true;
+        categories[4].Name = "mango";
+        categories[4].IsInternet = true;
+        categories[4].IsFamous = true;
+
+        await Run(configuration, ScrapeLimits.Default);
+
+        FetchedLabels.Skip(2).ShouldBe(["search category mango", "search category walrus", "search category yak", "search category apple", "search category zebra"]);
+    }
+
+    [Fact]
+    public async Task when_the_category_limit_applies_then_the_first_categories_of_the_ordered_list_are_processed()
+    {
+        var configuration = ScrapeConfigurationTestData.CreateConfiguration(categoryCount: 5);
+        var categories = configuration.SearchConfiguration.SearchCategories.ToList();
+        categories[4].IsFamous = true;
+
+        await Run(configuration);
+
+        FetchedLabels.Skip(2).ShouldBe(["search category category 5", "search category category 1", "search category category 2"]);
     }
 
     [Fact]
@@ -66,7 +98,7 @@ public sealed class GivenASearchOrchestrator
     {
         await Run(ScrapeConfigurationTestData.CreateConfiguration(categoryCount: 5), new ScrapeLimits(1, 4));
 
-        FetchedLabels.ShouldBe(["hot wallpapers", "top wallpapers", "search category category one"]);
+        FetchedLabels.ShouldBe(["hot wallpapers", "top wallpapers", "search category category 1"]);
     }
 
     [Fact]
@@ -76,7 +108,7 @@ public sealed class GivenASearchOrchestrator
 
         await Run(ScrapeConfigurationTestData.CreateConfiguration(categoryCount: 1), new ScrapeLimits(3, int.MaxValue, 2));
 
-        FetchedLabels.GroupBy(label => label).ToDictionary(group => group.Key, group => group.Count()).ShouldBe(new Dictionary<string, int> { ["hot wallpapers"] = 10, ["top wallpapers"] = 10, ["search category category one"] = 2 });
+        FetchedLabels.GroupBy(label => label).ToDictionary(group => group.Key, group => group.Count()).ShouldBe(new Dictionary<string, int> { ["hot wallpapers"] = 10, ["top wallpapers"] = 10, ["search category category 1"] = 2 });
     }
 
     [Fact]
@@ -103,19 +135,19 @@ public sealed class GivenASearchOrchestrator
 
         await Run(ScrapeConfigurationTestData.CreateConfiguration(categoryCount: 2));
 
-        FetchedLabels.ShouldBe(["top wallpapers", "search category category one", "search category category two"]);
+        FetchedLabels.ShouldBe(["top wallpapers", "search category category 1", "search category category 2"]);
         progress.Messages.Where(message => message.Contains("boom", StringComparison.Ordinal)).ShouldHaveSingleItem().ShouldBe("The hot wallpapers search failed: boom");
     }
 
     [Fact]
     public async Task when_a_category_search_fails_then_the_next_category_is_still_processed_and_the_failure_is_reported_once()
     {
-        pageFetcher.FailWhen = (label, _) => label == "search category category one";
+        pageFetcher.FailWhen = (label, _) => label == "search category category 1";
 
         await Run(ScrapeConfigurationTestData.CreateConfiguration(categoryCount: 3));
 
-        FetchedLabels.ShouldBe(["hot wallpapers", "top wallpapers", "search category category two", "search category category three"]);
-        progress.Messages.Where(message => message.Contains("boom", StringComparison.Ordinal)).ShouldHaveSingleItem().ShouldBe("The search category category one search failed: boom");
+        FetchedLabels.ShouldBe(["hot wallpapers", "top wallpapers", "search category category 2", "search category category 3"]);
+        progress.Messages.Where(message => message.Contains("boom", StringComparison.Ordinal)).ShouldHaveSingleItem().ShouldBe("The search category category 1 search failed: boom");
     }
 
     [Fact]
@@ -163,7 +195,7 @@ public sealed class GivenASearchOrchestrator
 
         var category = configuration.SearchConfiguration.SearchCategories.Single();
         (category.LastKnownImageCount, category.LastPageVisited, category.TotalPages, unitOfWork.SaveCount).ShouldBe((50, 1, 1, 2));
-        progress.Messages.ShouldContain("Skipping search category category one - nothing has changed since the last scrape.");
+        progress.Messages.ShouldContain("Skipping search category category 1 - nothing has changed since the last scrape.");
     }
 
     [Fact]
@@ -177,8 +209,8 @@ public sealed class GivenASearchOrchestrator
 
         pageFetcher.Fetches.ShouldContain(fetch => fetch.StartsWith("Fetched hot wallpapers page 1 ", StringComparison.Ordinal));
         pageFetcher.Fetches.ShouldContain(fetch => fetch.StartsWith("Fetched top wallpapers page 1 ", StringComparison.Ordinal));
-        pageFetcher.Fetches.ShouldContain(fetch => fetch.StartsWith("Fetched search category category one page 4 ", StringComparison.Ordinal));
-        pageFetcher.Fetches.ShouldNotContain(fetch => fetch.StartsWith("Fetched search category category one page 1 ", StringComparison.Ordinal));
+        pageFetcher.Fetches.ShouldContain(fetch => fetch.StartsWith("Fetched search category category 1 page 4 ", StringComparison.Ordinal));
+        pageFetcher.Fetches.ShouldNotContain(fetch => fetch.StartsWith("Fetched search category category 1 page 1 ", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -186,13 +218,13 @@ public sealed class GivenASearchOrchestrator
     {
         var configuration = ScrapeConfigurationTestData.CreateConfiguration(categoryCount: 1);
         pageFetcher.Meta = new Meta(3, 50);
-        pageFetcher.FailWhen = (label, page) => label == "search category category one" && page == 2;
+        pageFetcher.FailWhen = (label, page) => label == "search category category 1" && page == 2;
 
         await Run(configuration);
 
         var category = configuration.SearchConfiguration.SearchCategories.Single();
         (category.LastKnownImageCount, category.LastPageVisited, category.TotalPages).ShouldBe((50, 1, 3));
-        progress.Messages.ShouldContain("The search category category one search failed: boom");
+        progress.Messages.ShouldContain("The search category category 1 search failed: boom");
     }
 
     [Fact]
