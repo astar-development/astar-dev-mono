@@ -18,6 +18,8 @@ public sealed class PageIngestionStep(IWallpaperIngestionService wallpaperIngest
     public async Task<IngestOutcome> IngestPageAsync(IngestionRun run, FetchedPage page, bool recordProgress)
     {
         run.Tally.Total = page.Response.Meta.Total;
+        run.Tally.CurrentPage = page.Number;
+        run.Tally.TotalPages = page.Response.Meta.LastPage;
         try
         {
             var outcome = await wallpaperIngestionService.IngestPageAsync(page.Response.Data, run);

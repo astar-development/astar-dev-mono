@@ -8,6 +8,12 @@ public sealed class ScrapeTally
     /// <summary>Gets or sets the total number of wallpapers the search matches, as reported by the latest page fetched.</summary>
     public int Total { get; set; }
 
+    /// <summary>Gets or sets the number of the page being ingested.</summary>
+    public int CurrentPage { get; set; }
+
+    /// <summary>Gets or sets the total number of pages the search has, as reported by the latest page fetched.</summary>
+    public int TotalPages { get; set; }
+
     /// <summary>Gets the number of wallpapers the search has got through so far.</summary>
     public int Current { get; private set; }
 
@@ -21,6 +27,6 @@ public sealed class ScrapeTally
     {
         Current++;
 
-        return new(Total > 0 ? Math.Min(Current, Total) : Current, Total);
+        return new(Total > 0 ? Math.Min(Current, Total) : Current, Total, CurrentPage, TotalPages);
     }
 }
