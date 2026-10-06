@@ -208,12 +208,6 @@ public static class ResultExtensions
 
     extension<TResult, TError>(Task<Result<TResult, TError>> resultTask)
     {
-        /// <summary>Executes the specified actions based on the result's success or failure, and returns the original result.</summary>
-        /// <param name="onSuccess">The action to execute if the result is successful.</param>
-        /// <param name="onFailure">The action to execute if the result is a failure.</param>
-        /// <returns>The original result after executing the specified actions.</returns>
-        public Task<Result<TResult, TError>> Tap(Action<TResult> onSuccess, Action<TError>? onFailure = null) => resultTask.ContinueWith(task => task.Result.Tap(onSuccess, onFailure), TaskContinuationOptions.ExecuteSynchronously);
-
 /// <summary>Executes the specified asynchronous actions based on the result's success or failure, and returns the original result.</summary>
 /// <param name="onSuccess">The action to execute if the result is successful.</param>
 /// <param name="onFailure">The action to execute if the result is a failure.</param>
