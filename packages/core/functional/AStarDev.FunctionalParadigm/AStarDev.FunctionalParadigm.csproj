@@ -11,6 +11,7 @@
     <PackageProjectUrl>https://github.com/astar-development/astar-dev-mono/tree/main/packages/core</PackageProjectUrl>
     <DocumentationFile>$(AssemblyName).xml</DocumentationFile>
     <PackageReleaseNotes>
+        v0.1.1 update astardev functio7nalparadigm append: .ConfigureAwait(false)
     v0.1.1 Fix for async extension methods to use ConfigureAwait(false) to avoid deadlocks in certain contexts.
     v0.1.0 Initial release - largely a port of the existing functional programming utilities: AStar.Dev.Functional.Extensions.
     </PackageReleaseNotes>
