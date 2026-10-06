@@ -30,7 +30,7 @@ public static class LinqExtensions
             await source
                   .Select<T, Option<T>>(x => x)
                   .DefaultIfEmpty(Option.None<T>())
-                  .FirstAsync(cancellationToken);
+                  .FirstAsync(cancellationToken).ConfigureAwait(false);
 
         /// <summary>
         ///     Asynchronously returns the first element of <paramref name="source" /> matching <paramref name="predicate" />
@@ -42,6 +42,6 @@ public static class LinqExtensions
             await source.Where(predicate)
                   .Select<T, Option<T>>(x => x)
                   .DefaultIfEmpty(Option.None<T>())
-                  .FirstAsync(cancellationToken);
+                  .FirstAsync(cancellationToken).ConfigureAwait(false);
     }
 }

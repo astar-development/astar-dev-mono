@@ -5,7 +5,7 @@ namespace AStarDev.FunctionalParadigm;
 /// <summary>Functional helpers and utilities for working with <see cref="Option{T}" />.</summary>
 public static class OptionExtensions
 {
-    private static readonly string unreachableMessage = "It should not be possible to reach this point.";
+    private const string UnreachableMessage = "It should not be possible to reach this point.";
 
     extension<T>(T value)
     {
@@ -64,25 +64,25 @@ public static class OptionExtensions
         public async Task<Option<TResult>> MapAsync<TResult>(Func<T, Task<TResult>> mapAsync)
             => option switch
             {
-                Option<T>.Some some => new Option<TResult>.Some(await mapAsync(some.Value)),
+                Option<T>.Some some => new Option<TResult>.Some(await mapAsync(some.Value).ConfigureAwait(false)),
                 Option<T>.None => Option.None<TResult>(),
-                _ => throw new InvalidOperationException(unreachableMessage)
+                _ => throw new InvalidOperationException(UnreachableMessage)
             };
 
         /// <summary>Asynchronously chains another <see cref="Option{T}" />-producing function.</summary>
         public async Task<Option<TResult>> BindAsync<TResult>(Func<T, Task<Option<TResult>>> bindAsync)
             => option switch
             {
-                Option<T>.Some some => await bindAsync(some.Value),
+                Option<T>.Some some => await bindAsync(some.Value).ConfigureAwait(false),
                 Option<T>.None => Option.None<TResult>(),
-                _ => throw new InvalidOperationException(unreachableMessage)
+                _ => throw new InvalidOperationException(UnreachableMessage)
             };
 
         /// <summary>Asynchronously converts an <see cref="Option{T}" /> to a <see cref="Result{T, TError}" />.</summary>
         public async Task<Result<T, TError>> ToResultAsync<TError>(Func<Task<TError>> errorFactoryAsync)
             => await option.Match(
                                 some => Task.FromResult(Result.Success<T, TError>(some)),
-                                async () => Result.Failure<T, TError>(await errorFactoryAsync()));
+                                async () => Result.Failure<T, TError>(await errorFactoryAsync().ConfigureAwait(false))).ConfigureAwait(false);
 
         /// <summary>Executes a side-effect action on the value if present, and returns the original option.</summary>
         public Option<T> Tap(Action<T> action)
@@ -95,7 +95,7 @@ public static class OptionExtensions
         /// <summary>Asynchronously executes a side-effect action on the value if present, and returns the original option.</summary>
         public async Task<Option<T>> TapAsync(Func<T, Task> actionAsync)
         {
-            if (option is Option<T>.Some some) await actionAsync(some.Value);
+            if (option is Option<T>.Some some) await actionAsync(some.Value).ConfigureAwait(false);
 
             return option;
         }
@@ -104,9 +104,9 @@ public static class OptionExtensions
         public async Task<TResult> MatchAsync<TResult>(Func<T, Task<TResult>> onSomeAsync, Func<TResult> onNone)
             => option switch
             {
-                Option<T>.Some some => await onSomeAsync(some.Value),
+                Option<T>.Some some => await onSomeAsync(some.Value).ConfigureAwait(false),
                 Option<T>.None => onNone(),
-                _ => throw new InvalidOperationException(unreachableMessage)
+                _ => throw new InvalidOperationException(UnreachableMessage)
             };
 
         /// <summary>Pattern matches on the option with an asynchronous function for None.</summary>
@@ -114,17 +114,17 @@ public static class OptionExtensions
             => option switch
             {
                 Option<T>.Some some => onSome(some.Value),
-                Option<T>.None => await onNoneAsync(),
-                _ => throw new InvalidOperationException(unreachableMessage)
+                Option<T>.None => await onNoneAsync().ConfigureAwait(false),
+                _ => throw new InvalidOperationException(UnreachableMessage)
             };
 
         /// <summary>Pattern matches on the option with asynchronous functions for both Some and None.</summary>
         public async Task<TResult> MatchAsync<TResult>(Func<T, Task<TResult>> onSomeAsync, Func<Task<TResult>> onNoneAsync)
             => option switch
             {
-                Option<T>.Some some => await onSomeAsync(some.Value),
-                Option<T>.None => await onNoneAsync(),
-                _ => throw new InvalidOperationException(unreachableMessage)
+                Option<T>.Some some => await onSomeAsync(some.Value).ConfigureAwait(false),
+                Option<T>.None => await onNoneAsync().ConfigureAwait(false),
+                _ => throw new InvalidOperationException(UnreachableMessage)
             };
 
         /// <summary>Pattern matches on the option for side effects, awaiting the matched branch.</summary>
@@ -133,7 +133,7 @@ public static class OptionExtensions
             switch (option)
             {
                 case Option<T>.Some some:
-                    await onSomeAsync(some.Value);
+                    await onSomeAsync(some.Value).ConfigureAwait(false);
                     break;
 
                 case Option<T>.None:
@@ -141,7 +141,7 @@ public static class OptionExtensions
                     break;
 
                 default:
-                    throw new InvalidOperationException(unreachableMessage);
+                    throw new InvalidOperationException(UnreachableMessage);
             }
         }
 
@@ -171,59 +171,59 @@ public static class OptionExtensions
         /// <summary>Awaits the <see cref="Option{T}" />-producing task, then pattern matches on the result.</summary>
         public async Task<TResult> MatchAsync<TResult>(Func<T, Task<TResult>> onSome, Func<TResult> onNone)
         {
-            var option = await optionTask;
+            var option = await optionTask.ConfigureAwait(false);
 
-            return await option.MatchAsync(onSome, onNone);
+            return await option.MatchAsync(onSome, onNone).ConfigureAwait(false);
         }
 
         /// <summary>Awaits the <see cref="Option{T}" />-producing task, then pattern matches on the result for side effects.</summary>
         public async Task MatchAsync(Func<T, Task> onSome, Action onNone)
         {
-            var option = await optionTask;
+            var option = await optionTask.ConfigureAwait(false);
 
-            await option.MatchAsync(onSome, onNone);
+            await option.MatchAsync(onSome, onNone).ConfigureAwait(false);
         }
 
         /// <summary>Asynchronously transforms the value inside a Task of <see cref="Option{T}" /> if present.</summary>
         public async Task<Option<TResult>> MapAsync<TResult>(Func<T, TResult> map)
-            => (await optionTask).Map(map);
+            => (await optionTask.ConfigureAwait(false)).Map(map);
 
         /// <summary>Asynchronously transforms the value inside a Task of <see cref="Option{T}" /> if present.</summary>
         public async Task<Option<TResult>> MapAsync<TResult>(Func<T, Task<TResult>> mapAsync)
         {
-            var option = await optionTask;
+            var option = await optionTask.ConfigureAwait(false);
 
-            return await option.MapAsync(mapAsync);
+            return await option.MapAsync(mapAsync).ConfigureAwait(false);
         }
 
         /// <summary>Asynchronously chains another <see cref="Option{T}" />-producing function.</summary>
         public async Task<Option<TResult>> BindAsync<TResult>(Func<T, Option<TResult>> bind)
-            => (await optionTask).Bind(bind);
+            => (await optionTask.ConfigureAwait(false)).Bind(bind);
 
         /// <summary>Asynchronously chains another <see cref="Option{T}" />-producing function.</summary>
         public async Task<Option<TResult>> BindAsync<TResult>(Func<T, Task<Option<TResult>>> bindAsync)
         {
-            var option = await optionTask;
+            var option = await optionTask.ConfigureAwait(false);
 
-            return await option.BindAsync(bindAsync);
+            return await option.BindAsync(bindAsync).ConfigureAwait(false);
         }
 
         /// <summary>Asynchronously converts a Task of <see cref="Option{T}" /> to a <see cref="Result{T, TError}" />.</summary>
         public async Task<Result<T, TError>> ToResultAsync<TError>(Func<TError> errorFactory) =>
-            (await optionTask).ToResult(errorFactory);
+            (await optionTask.ConfigureAwait(false)).ToResult(errorFactory);
 
         /// <summary>Asynchronously converts a Task of <see cref="Option{T}" /> to a <see cref="Result{T, TError}" />.</summary>
         public async Task<Result<T, TError>> ToResultAsync<TError>(Func<Task<TError>> errorFactoryAsync)
         {
-            var option = await optionTask;
+            var option = await optionTask.ConfigureAwait(false);
 
-            return await option.ToResultAsync(errorFactoryAsync);
+            return await option.ToResultAsync(errorFactoryAsync).ConfigureAwait(false);
         }
 
         /// <summary>Executes a side-effect action on the value if present, and returns the original option.</summary>
         public async Task<Option<T>> TapAsync(Action<T> action)
         {
-            var option = await optionTask;
+            var option = await optionTask.ConfigureAwait(false);
 
             return option.Tap(action);
         }
@@ -231,9 +231,9 @@ public static class OptionExtensions
         /// <summary>Asynchronously executes a side-effect action on the value if present, and returns the original option.</summary>
         public async Task<Option<T>> TapAsync(Func<T, Task> actionAsync)
         {
-            var option = await optionTask;
+            var option = await optionTask.ConfigureAwait(false);
 
-            return await option.TapAsync(actionAsync);
+            return await option.TapAsync(actionAsync).ConfigureAwait(false);
         }
     }
 
