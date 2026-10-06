@@ -221,7 +221,7 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
 
     private async Task PersistUpdateAsync(FileClassificationCategory category, string trimmedName)
         => await repository.UpdateCategoryAsync(CategoryId, category, CancellationToken.None)
-            .Tap(_ =>
+            .TapAsync(_ =>
             {
                 Name = trimmedName;
                 IsEditing = false;
@@ -262,7 +262,7 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
         string childAncestorPath = HasAncestorPath ? $"{AncestorPath} > {Name}" : Name;
 
         await repository.AddCategoryAsync(category, CancellationToken.None)
-            .Tap(newId =>
+            .TapAsync(newId =>
             {
                 var newChild = new CategoryNodeViewModel(newId, trimmedName, childLevel, IsFamous, IsInternet, Option.Some(CategoryId), IncludeInSearch, repository, categoryEditDialogService, self => Children.Remove(self), allCategories, reloadAsync, childAncestorPath);
                 Children.Add(newChild);

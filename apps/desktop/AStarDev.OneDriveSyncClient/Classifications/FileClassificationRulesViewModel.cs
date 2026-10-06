@@ -241,7 +241,7 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
         CategoryNodeViewModel? newNode = null;
 
         await repository.AddCategoryAsync(category, CancellationToken.None)
-            .Tap(newId =>
+            .TapAsync(newId =>
             {
                 newNode = new CategoryNodeViewModel(newId, trimmedName, 1, IsFamous, IsInternet, Option.None<FileClassificationCategoryId>(), IncludeInSearch, repository, categoryEditDialogService, self => Categories.Remove(self), VisibleCategories, () => LoadAsync(CancellationToken.None));
                 Categories.Add(newNode);
