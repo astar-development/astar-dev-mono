@@ -18,10 +18,10 @@ public static class OptionLinqExtensions
         /// <summary>Asynchronously projects the value of a <see cref="Task{Option}" /> using the specified function.</summary>
         public async Task<Option<TResult>> SelectAwaitAsync<TResult>(Func<T, Task<TResult>> selector)
         {
-            var option = await task;
+            var option = await task.ConfigureAwait(false);
 
             return option is Option<T>.Some some
-                       ? new Option<TResult>.Some(await selector(some.Value))
+                       ? new Option<TResult>.Some(await selector(some.Value).ConfigureAwait(false))
                        : Option.None<TResult>();
         }
     }
