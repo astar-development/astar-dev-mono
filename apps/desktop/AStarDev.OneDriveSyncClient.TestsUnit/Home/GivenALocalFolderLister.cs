@@ -70,12 +70,12 @@ public sealed class GivenALocalFolderLister
     [Fact]
     public void when_a_folder_is_hidden_then_it_is_skipped()
     {
-        var fileSystem = new MockFileSystem();
-        fileSystem.Directory.CreateDirectory("/sync-root/Secret");
-        fileSystem.DirectoryInfo.New("/sync-root/Secret").Attributes = FileAttributes.Hidden | FileAttributes.Directory;
-        fileSystem.Directory.CreateDirectory("/sync-root/Photos");
+        var fileSystem = new MockFileSystem(options => options.SimulatingOperatingSystem(SimulationMode.Windows));
+        fileSystem.Directory.CreateDirectory(@"C:\sync-root\Secret");
+        fileSystem.DirectoryInfo.New(@"C:\sync-root\Secret").Attributes = FileAttributes.Hidden | FileAttributes.Directory;
+        fileSystem.Directory.CreateDirectory(@"C:\sync-root\Photos");
 
-        var result = CreateSut(fileSystem).ListChildFolderNames(SyncRoot, "/");
+        var result = CreateSut(fileSystem).ListChildFolderNames(@"C:\sync-root", "/");
 
         result.ShouldBe(["Photos"]);
     }
