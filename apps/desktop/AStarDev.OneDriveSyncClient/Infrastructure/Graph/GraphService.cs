@@ -13,6 +13,8 @@ namespace AStarDev.OneDriveSyncClient.Infrastructure.Graph;
 internal sealed class GraphService(IUploadService uploadService, IGraphClientFactory graphClientFactory, DriveContextCache driveContextCache, GraphFolderEnumerator graphFolderEnumerator) : IGraphService
 {
     private const string RootPathMarker = "root:";
+    private const string ConflictBehaviorKey = "@microsoft.graph.conflictBehavior";
+    private const string ConflictBehaviorFail = "fail";
     private const string DownloadUrlKey = "@microsoft.graph.downloadUrl";
 
     private static readonly string[] childrenSelect =
@@ -193,6 +195,32 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
         {
             return new Fail<string, string>(ex.Message);
         }
+    }
+
+    /// <inheritdoc />
+    public async Task<Result<DriveFolder, string>> CreateFolderAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, string parentFolderId, string folderName, CancellationToken cancellationToken = default)
+    {
+        var contextResult = await driveContextCache.ResolveAsync(accountId, tokenFactory, cancellationToken).ConfigureAwait(false);
+
+        return await contextResult.MatchAsync(
+            async ctx =>
+            {
+                try
+                {
+                    var created = await ctx.Client.Drives[ctx.Ctx.DriveId.Value].Items[parentFolderId].Children
+                        .PostAsync(new DriveItem { Name = folderName, Folder = new Folder(), AdditionalData = new Dictionary<string, object> { [ConflictBehaviorKey] = ConflictBehaviorFail } }, cancellationToken: cancellationToken)
+                        .ConfigureAwait(false);
+
+                    return created?.Id is null
+                        ? (Result<DriveFolder, string>)new Fail<DriveFolder, string>($"No folder was returned when creating '{folderName}'.")
+                        : new Ok<DriveFolder, string>(new DriveFolder(Id: created.Id, Name: created.Name ?? folderName, ParentId: ToOptionString(created.ParentReference?.Id)));
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException and not SyncReAuthRequiredException)
+                {
+                    return new Fail<DriveFolder, string>(ex.Message);
+                }
+            },
+            error => new Fail<DriveFolder, string>(error)).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
