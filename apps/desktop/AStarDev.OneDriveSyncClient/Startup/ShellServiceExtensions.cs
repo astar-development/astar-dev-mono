@@ -57,6 +57,7 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<ILocalChangeDetector, LocalChangeDetector>();
         _ = services.AddSingleton<ILocalFolderLister, LocalFolderLister>();
         _ = services.AddSingleton<IRemoteFolderEnumerator, RemoteFolderEnumerator>();
+        _ = services.AddSingleton<IRemoteFolderCreator, RemoteFolderCreator>();
         _ = services.AddSingleton<IRemoteDeletionDetector, RemoteDeletionDetector>();
         _ = services.AddSingleton<ILocalDeletionDetector, LocalDeletionDetector>();
         _ = services.AddSingleton<ISyncJobExecutor, SyncJobExecutor>();

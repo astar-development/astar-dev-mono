@@ -93,6 +93,8 @@ internal sealed class SyncPassOrchestrator(ISyncPassRepositories syncPassReposit
             if (context.HadNoRules)
                 return;
 
+            await dependencies.RemoteFolderCreator.CreateMissingFoldersAsync(account, syncConfig, tokenFactory, context, cancellationToken).ConfigureAwait(false);
+
             RaiseProgress(account.Id.Value, 0, 0, localizationService.GetLocal("Sync.DetectingLocalChanges"), onProgress);
             await dependencies.LocalDeletionDetector.DetectAndApplyAsync(account.Id, tokenFactory, context.SyncedItems, cancellationToken).ConfigureAwait(false);
 
