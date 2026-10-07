@@ -48,7 +48,7 @@ public sealed partial class FilesViewModel(IAccountFilesViewModelFactory account
 
         tab.ViewActivityRequested += (_, node) =>
             ViewActivityRequested?.Invoke(this,
-                (tab.AccountId, FolderId: node.Id));
+                (tab.AccountId, FolderId: node.RemoteId.Match(id => id, () => string.Empty)));
 
         tab.FolderCountChanged += (_, count) =>
             FolderCountChanged?.Invoke(this, (tab.AccountId, count));

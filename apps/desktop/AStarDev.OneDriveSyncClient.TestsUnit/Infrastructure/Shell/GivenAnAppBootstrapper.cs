@@ -51,7 +51,7 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
     private readonly SqliteConnection sqliteConnection;
     private readonly IDbContextFactory<AppDbContext> dbContextFactory;
     private IAccountFilesViewServices accountFilesViewServices => new AccountFilesViewServices(authService, localizationService, graphService, Substitute.For<ISyncRuleService>());
-    private AccountFilesViewModelFactory accountFilesViewModelFactory => new(accountFilesViewServices, new FileSystemServices(fileSystem, Substitute.For<IFileManagerService>()), Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), localizationService));
+    private AccountFilesViewModelFactory accountFilesViewModelFactory => new(accountFilesViewServices, new FileSystemServices(fileSystem, Substitute.For<IFileManagerService>()), Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), localizationService, new LocalFolderLister(new MockFileSystem())));
 
 
     public GivenAnAppBootstrapper()

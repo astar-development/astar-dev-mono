@@ -16,15 +16,22 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
     private readonly Func<CancellationToken, Task<string>> tokenFactory;
     private readonly DriveId driveId;
     private readonly Func<string, FolderSyncState?> ruleStateResolver;
+    private readonly Func<string, IReadOnlyList<string>> localFolderLister;
     private readonly ILogger<FolderTreeNodeViewModel> logger;
     private readonly ILocalizationService loc;
     private bool childrenLoaded;
 
-    public string Id { get; }
+    public Option<string> RemoteId { get; }
     public string Name { get; }
     public string? ParentId { get; }
     public string RemotePath { get; }
     public int Depth { get; }
+
+    public bool IsLocalOnly => RemoteId is Option<string>.None;
+
+    internal bool NeedsRulePersisted { get; }
+
+    public string LocalOnlyBadgeText => loc.GetLocal("Files.FolderStatus.LocalOnly");
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsIncluded))]
@@ -66,12 +73,13 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
     public ObservableCollection<FolderTreeNodeViewModel> Children { get; } = [];
 
     public event EventHandler<FolderTreeNodeViewModel>? IncludeToggled;
+    public event EventHandler<FolderTreeNodeViewModel>? LocalOnlyFolderDiscovered;
     public event EventHandler<FolderTreeNodeViewModel>? OpenInFileManagerRequested;
     public event EventHandler<FolderTreeNodeViewModel>? ViewActivityRequested;
 
-    public FolderTreeNodeViewModel(FolderTreeNode node, IGraphService graphService, Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, Func<string, FolderSyncState?> ruleStateResolver, ILogger<FolderTreeNodeViewModel> logger, ILocalizationService localizationService, int depth = 0)
+    public FolderTreeNodeViewModel(FolderTreeNode node, IGraphService graphService, Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, Func<string, FolderSyncState?> ruleStateResolver, Func<string, IReadOnlyList<string>> localFolderLister, ILogger<FolderTreeNodeViewModel> logger, ILocalizationService localizationService, int depth = 0)
     {
-        Id = node.Id;
+        RemoteId = node.RemoteId;
         Name = node.Name;
         ParentId = node.ParentId.Match<string?>(id => id, () => null);
         RemotePath = node.RemotePath;
@@ -82,8 +90,10 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
         this.tokenFactory = tokenFactory;
         this.driveId = driveId;
         this.ruleStateResolver = ruleStateResolver;
+        this.localFolderLister = localFolderLister;
         this.logger = logger;
         loc = localizationService;
+        NeedsRulePersisted = IsLocalOnly && ruleStateResolver(node.RemotePath) is null;
         loc.CultureChanged += OnCultureChanged;
     }
 
@@ -93,6 +103,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
         _ = ToggleTooltip;
         OnPropertyChanged(nameof(ToggleLabel));
         OnPropertyChanged(nameof(ToggleTooltip));
+        OnPropertyChanged(nameof(LocalOnlyBadgeText));
     }
 
     [RelayCommand]
@@ -146,23 +157,17 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
         IsLoadingChildren = true;
         try
         {
-            var folders = await graphService.GetChildFoldersAsync(tokenFactory, driveId, Id)
-                .MatchAsync<List<DriveFolder>, string, List<DriveFolder>?>(
-                    f => f,
-                    error =>
-                    {
-                        OneDriveSyncClientMessages.FolderChildrenLoadFailed(logger, RemotePath, error);
-                        HasChildren = false;
-                        return null;
-                    });
+            var remoteFolders = await LoadRemoteChildFoldersAsync();
 
-            if (folders is null)
+            if (remoteFolders is null)
                 return;
 
+            var mergedFolders = FolderTreeMerger.Merge(remoteFolders, localFolderLister(RemotePath), RemotePath, RemoteId, SyncState, path => ruleStateResolver(path).ToOption());
+
             Children.Clear();
-            foreach (var f in folders)
+            foreach (var mergedFolder in mergedFolders)
             {
-                var childVm = CreateChildFolderTreeViewModel(f);
+                var childVm = CreateChildFolderTreeViewModel(MapMergedFolderToChildNode(mergedFolder));
 
                 Children.Add(childVm);
             }
@@ -170,6 +175,9 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
             if (Children.Count == 0) HasChildren = false;
 
             childrenLoaded = true;
+
+            foreach (var child in Children.Where(child => child.NeedsRulePersisted))
+                LocalOnlyFolderDiscovered?.Invoke(this, child);
         }
         finally
         {
@@ -177,29 +185,34 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
         }
     }
 
-    private FolderTreeNodeViewModel CreateChildFolderTreeViewModel(DriveFolder f)
+    private async Task<List<DriveFolder>?> LoadRemoteChildFoldersAsync()
     {
-        string childRemotePath = $"{RemotePath}/{f.Name}";
-        var childNode = MapDriveFolderToChildNode(f, childRemotePath);
+        if (!RemoteId.TryGetValue(out string? remoteFolderId))
+            return [];
 
-        return CreateChildFolderTreeViewModel(childNode);
+        return await graphService.GetChildFoldersAsync(tokenFactory, driveId, remoteFolderId)
+            .MatchAsync<List<DriveFolder>, string, List<DriveFolder>?>(
+                f => f,
+                error =>
+                {
+                    OneDriveSyncClientMessages.FolderChildrenLoadFailed(logger, RemotePath, error);
+                    HasChildren = false;
+                    return null;
+                });
     }
 
     private FolderTreeNodeViewModel CreateChildFolderTreeViewModel(FolderTreeNode childNode)
     {
-        var childVm = new FolderTreeNodeViewModel(childNode, graphService, tokenFactory, driveId, ruleStateResolver, logger, loc, Depth + 1);
+        var childVm = new FolderTreeNodeViewModel(childNode, graphService, tokenFactory, driveId, ruleStateResolver, localFolderLister, logger, loc, Depth + 1);
 
         childVm.IncludeToggled += (s, e) => IncludeToggled?.Invoke(s, e);
+        childVm.LocalOnlyFolderDiscovered += (s, e) => LocalOnlyFolderDiscovered?.Invoke(s, e);
         childVm.OpenInFileManagerRequested += (s, e) => OpenInFileManagerRequested?.Invoke(s, e);
         childVm.ViewActivityRequested += (s, e) => ViewActivityRequested?.Invoke(s, e);
 
         return childVm;
     }
 
-    private FolderTreeNode MapDriveFolderToChildNode(DriveFolder f, string childRemotePath)
-    {
-        var resolvedState = ruleStateResolver(childRemotePath) ?? SyncState;
-
-        return new(f.Id, f.Name, f.ParentId, AccountId: string.Empty, RemotePath: childRemotePath, resolvedState, HasChildren: true);
-    }
+    private static FolderTreeNode MapMergedFolderToChildNode(MergedFolder mergedFolder)
+        => new(mergedFolder.RemoteId, mergedFolder.Name, mergedFolder.ParentId, AccountId: string.Empty, RemotePath: mergedFolder.RemotePath, mergedFolder.SyncState, HasChildren: true);
 }

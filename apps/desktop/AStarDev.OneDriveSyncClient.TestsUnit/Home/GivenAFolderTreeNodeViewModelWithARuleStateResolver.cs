@@ -88,7 +88,7 @@ public sealed class GivenAFolderTreeNodeViewModelWithARuleStateResolver
     private static FolderTreeNodeViewModel BuildRootVm(IGraphService graphService, FolderSyncState syncState, Func<string, FolderSyncState?> ruleStateResolver)
     {
         var node = new FolderTreeNode(
-            Id: RootFolderId,
+            RemoteId: RootFolderId,
             Name: RootFolderName,
             ParentId: Option.None<string>(),
             AccountId: "account-1",
@@ -96,6 +96,6 @@ public sealed class GivenAFolderTreeNodeViewModelWithARuleStateResolver
             SyncState: syncState,
             HasChildren: true);
 
-        return new FolderTreeNodeViewModel(node, graphService, TokenFactory, new DriveId(DriveIdString), ruleStateResolver, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), BuildLocalizationService());
+        return new FolderTreeNodeViewModel(node, graphService, TokenFactory, new DriveId(DriveIdString), ruleStateResolver, _ => [], Substitute.For<ILogger<FolderTreeNodeViewModel>>(), BuildLocalizationService());
     }
 }

@@ -341,7 +341,7 @@ public sealed class GivenAFolderTreeNodeViewModel
     private static FolderTreeNodeViewModel BuildRootVm(IGraphService graphService, FolderSyncState syncState, ILocalizationService loc)
     {
         var node = new FolderTreeNode(
-            Id: RootFolderId,
+            RemoteId: RootFolderId,
             Name: RootFolderName,
             ParentId: Option.None<string>(),
             AccountId: "account-1",
@@ -349,6 +349,6 @@ public sealed class GivenAFolderTreeNodeViewModel
             SyncState: syncState,
             HasChildren: true);
 
-        return new FolderTreeNodeViewModel(node, graphService, TokenFactory, new DriveId(DriveIdString), _ => null, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), loc);
+        return new FolderTreeNodeViewModel(node, graphService, TokenFactory, new DriveId(DriveIdString), _ => null, _ => [], Substitute.For<ILogger<FolderTreeNodeViewModel>>(), loc);
     }
 }

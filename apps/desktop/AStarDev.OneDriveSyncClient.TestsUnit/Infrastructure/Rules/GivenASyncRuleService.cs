@@ -1,3 +1,4 @@
+using AStarDev.FunctionalParadigm;
 using AStarDev.OneDriveSyncClient.Data.Repositories;
 using AStarDev.OneDriveSyncClient.Infrastructure.Rules;
 using Microsoft.Extensions.Logging;
@@ -23,7 +24,7 @@ public sealed class GivenASyncRuleService
         var sut = BuildSut(repo);
         var accountId = new AccountId(AccountIdString);
 
-        await sut.ApplyRuleAsync(accountId, ParentPath, RuleType.Include, [(ParentPath, ParentItemId)], CancellationToken.None);
+        await sut.ApplyRuleAsync(accountId, ParentPath, RuleType.Include, [(ParentPath, Option.Some(ParentItemId))], CancellationToken.None);
 
         await repo.Received(1).DeleteChildRulesAsync(accountId, ParentPath, Arg.Any<CancellationToken>());
     }
@@ -37,12 +38,28 @@ public sealed class GivenASyncRuleService
 
         var sut = BuildSut(repo);
         var accountId = new AccountId(AccountIdString);
-        (string RemotePath, string Id)[] nodes = [(ParentPath, ParentItemId), (ChildPath, ChildItemId)];
+        (string RemotePath, Option<string> RemoteId)[] nodes = [(ParentPath, Option.Some(ParentItemId)), (ChildPath, Option.Some(ChildItemId))];
 
         await sut.ApplyRuleAsync(accountId, ParentPath, RuleType.Include, nodes, CancellationToken.None);
 
         await repo.Received(1).UpsertAsync(accountId, ParentPath, RuleType.Include, ParentItemId, Arg.Any<CancellationToken>());
         await repo.Received(1).UpsertAsync(accountId, ChildPath, RuleType.Include, ChildItemId, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_a_node_has_no_remote_id_then_it_is_upserted_without_one()
+    {
+        var repo = Substitute.For<ISyncRuleRepository>();
+        repo.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns([]);
+
+        var sut = BuildSut(repo);
+        var accountId = new AccountId(AccountIdString);
+        (string RemotePath, Option<string> RemoteId)[] nodes = [(ChildPath, Option.None<string>())];
+
+        await sut.ApplyRuleAsync(accountId, ChildPath, RuleType.Include, nodes, CancellationToken.None);
+
+        await repo.Received(1).UpsertAsync(accountId, ChildPath, RuleType.Include, null, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -55,7 +72,7 @@ public sealed class GivenASyncRuleService
         var sut = BuildSut(repo);
         var accountId = new AccountId(AccountIdString);
 
-        await sut.ApplyRuleAsync(accountId, ParentPath, RuleType.Exclude, [(ParentPath, ParentItemId)], CancellationToken.None);
+        await sut.ApplyRuleAsync(accountId, ParentPath, RuleType.Exclude, [(ParentPath, Option.Some(ParentItemId))], CancellationToken.None);
 
         await repo.Received(1).UpsertAsync(accountId, ParentPath, RuleType.Exclude, ParentItemId, Arg.Any<CancellationToken>());
     }
@@ -73,7 +90,7 @@ public sealed class GivenASyncRuleService
         var sut = BuildSut(repo);
         var accountId = new AccountId(AccountIdString);
 
-        int result = await sut.ApplyRuleAsync(accountId, ParentPath, RuleType.Include, [(ParentPath, ParentItemId)], CancellationToken.None);
+        int result = await sut.ApplyRuleAsync(accountId, ParentPath, RuleType.Include, [(ParentPath, Option.Some(ParentItemId))], CancellationToken.None);
 
         result.ShouldBe(2);
     }
@@ -90,7 +107,7 @@ public sealed class GivenASyncRuleService
         var sut = BuildSut(repo);
         var accountId = new AccountId(AccountIdString);
 
-        int result = await sut.ApplyRuleAsync(accountId, ParentPath, RuleType.Exclude, [(ParentPath, ParentItemId)], CancellationToken.None);
+        int result = await sut.ApplyRuleAsync(accountId, ParentPath, RuleType.Exclude, [(ParentPath, Option.Some(ParentItemId))], CancellationToken.None);
 
         result.ShouldBe(1);
     }
@@ -112,7 +129,7 @@ public sealed class GivenASyncRuleService
         var sut = BuildSut(repo);
         var accountId = new AccountId(AccountIdString);
 
-        await sut.ApplyRuleAsync(accountId, ParentPath, RuleType.Include, [(ParentPath, ParentItemId)], CancellationToken.None);
+        await sut.ApplyRuleAsync(accountId, ParentPath, RuleType.Include, [(ParentPath, Option.Some(ParentItemId))], CancellationToken.None);
 
         callOrder[0].ShouldBe("delete");
         callOrder[1].ShouldBe("upsert");

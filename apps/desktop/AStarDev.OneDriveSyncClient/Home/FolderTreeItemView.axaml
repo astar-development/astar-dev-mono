@@ -56,25 +56,38 @@
                            VerticalAlignment="Center"
                            TextTrimming="CharacterEllipsis"/>
 
-                <!-- Status badge -->
-                <Border Grid.Column="4"
-                        Margin="8,0"
-                        Padding="6,2"
-                        CornerRadius="{StaticResource RadiusSm}"
-                        VerticalAlignment="Center">
-                    <Border.Background>
-                        <SolidColorBrush Color="{Binding SyncState,
-                            Converter={StaticResource SyncStateToBadgeBackgroundConverter}}"/>
-                    </Border.Background>
-                    <TextBlock Text="{Binding StatusBadgeText}"
-                               FontSize="{StaticResource FontSizeXs}"
-                               VerticalAlignment="Center">
-                        <TextBlock.Foreground>
+                <!-- Status badges -->
+                <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,8,0">
+                    <Border Margin="8,0,0,0"
+                            Padding="6,2"
+                            CornerRadius="{StaticResource RadiusSm}"
+                            VerticalAlignment="Center">
+                        <Border.Background>
                             <SolidColorBrush Color="{Binding SyncState,
-                                Converter={StaticResource SyncStateToBadgeForegroundConverter}}"/>
-                        </TextBlock.Foreground>
-                    </TextBlock>
-                </Border>
+                                Converter={StaticResource SyncStateToBadgeBackgroundConverter}}"/>
+                        </Border.Background>
+                        <TextBlock Text="{Binding StatusBadgeText}"
+                                   FontSize="{StaticResource FontSizeXs}"
+                                   VerticalAlignment="Center">
+                            <TextBlock.Foreground>
+                                <SolidColorBrush Color="{Binding SyncState,
+                                    Converter={StaticResource SyncStateToBadgeForegroundConverter}}"/>
+                            </TextBlock.Foreground>
+                        </TextBlock>
+                    </Border>
+
+                    <Border Margin="6,0,0,0"
+                            Padding="6,2"
+                            CornerRadius="{StaticResource RadiusSm}"
+                            Background="{DynamicResource BackgroundSecondaryBrush}"
+                            VerticalAlignment="Center"
+                            IsVisible="{Binding IsLocalOnly}">
+                        <TextBlock Text="{Binding LocalOnlyBadgeText}"
+                                   FontSize="{StaticResource FontSizeXs}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   VerticalAlignment="Center"/>
+                    </Border>
+                </StackPanel>
 
                 <!-- Include / exclude toggle -->
                 <Button Grid.Column="5"
