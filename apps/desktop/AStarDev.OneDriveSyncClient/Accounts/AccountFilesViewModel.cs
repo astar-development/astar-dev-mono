@@ -146,20 +146,19 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAcco
             return;
 
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult(accessToken ?? string.Empty);
+        string localSyncRoot = account.SyncConfig.Match(config => config.LocalSyncPath.Value, () => string.Empty);
 
-        foreach (var f in folders)
+        foreach (var vm in folderTreeNodeViewModelFactory.CreateRootLevel(folders, account.Id.Value, localSyncRoot, tokenFactory, driveId.Value, ResolveRuleState))
         {
-            string remotePath = $"/{f.Name}";
-            var syncState = ResolveRuleState(remotePath) ?? FolderSyncState.Excluded;
-
-            var node = new FolderTreeNode(Id: f.Id, Name: f.Name, ParentId: f.ParentId, AccountId: account.Id.Value, RemotePath: remotePath, SyncState: syncState, HasChildren: true);
-            var vm = folderTreeNodeViewModelFactory.Create(node, tokenFactory, driveId.Value, ResolveRuleState);
-
             vm.IncludeToggled += OnIncludeToggled;
+            vm.LocalOnlyFolderDiscovered += OnLocalOnlyFolderDiscovered;
             vm.ViewActivityRequested += OnViewActivityRequested;
             vm.OpenInFileManagerRequested += OnOpenInFileManager;
 
             RootFolders.Add(vm);
+
+            if (vm.NeedsRulePersisted)
+                await PersistDiscoveredFolderAsync(vm);
         }
     }
 
@@ -190,7 +189,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAcco
                 ? CollectAllVisible([node])
                 : [node];
 
-            var ruleNodes = affected.Select(item => (item.RemotePath, Option.Some(item.Id))).ToList();
+            var ruleNodes = affected.Select(item => (item.RemotePath, item.RemoteId)).ToList();
             int includedCount = await accountFilesViewServices.SyncRuleService.ApplyRuleAsync(account.Id, node.RemotePath, ruleType, ruleNodes, CancellationToken.None);
 
             string childPrefix = node.RemotePath + "/";
@@ -199,6 +198,26 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAcco
 
             foreach (var (path, _) in ruleNodes)
                 ruleStates[path] = ruleType;
+
+            FolderCountChanged?.Invoke(this, includedCount);
+        }
+        catch (Exception ex)
+        {
+            OneDriveSyncClientMessages.FolderSelectionPersistFailed(logger, account.Id.Value, ex.Message, ex);
+            HasLoadError = true;
+            LoadError = ex.Message;
+        }
+    }
+
+    private void OnLocalOnlyFolderDiscovered(object? sender, FolderTreeNodeViewModel node)
+        => _ = PersistDiscoveredFolderAsync(node);
+
+    private async Task PersistDiscoveredFolderAsync(FolderTreeNodeViewModel node)
+    {
+        try
+        {
+            int includedCount = await accountFilesViewServices.SyncRuleService.ApplyRuleAsync(account.Id, node.RemotePath, RuleType.Include, [(node.RemotePath, node.RemoteId)], CancellationToken.None);
+            ruleStates[node.RemotePath] = RuleType.Include;
 
             FolderCountChanged?.Invoke(this, includedCount);
         }

@@ -79,6 +79,7 @@
   "Files.FolderStatus.Conflict": "Conflict",
   "Files.FolderStatus.Error": "Error",
   "Files.FolderStatus.Excluded": "Excluded",
+  "Files.FolderStatus.LocalOnly": "Local only",
   "Files.NoAccountsConnected": "No accounts connected",
   "Files.NoAccountsConnectedHint": "Add an account from the Accounts section.",
   "Files.LoadingFolders": "Loading folders ...",
