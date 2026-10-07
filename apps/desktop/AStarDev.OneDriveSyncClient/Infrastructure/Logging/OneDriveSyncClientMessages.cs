@@ -170,6 +170,18 @@ public static partial class OneDriveSyncClientMessages
     [LoggerMessage(EventId = 2606, Level = LogLevel.Warning, Message = "[RemoteFolderEnumerator] Cannot resolve folder ID for rule path {Path} — skipping")]
     public static partial void RemoteFolderEnumeratorCannotResolveId(ILogger logger, string path);
 
+    /// <summary>Logs creation of a missing remote folder for a local-only rule.</summary>
+    [LoggerMessage(EventId = 2609, Level = LogLevel.Information, Message = "[RemoteFolderCreator] Created remote folder for rule path {Path}")]
+    public static partial void RemoteFolderCreated(ILogger logger, string path);
+
+    /// <summary>Logs failure to create a missing remote folder for a local-only rule.</summary>
+    [LoggerMessage(EventId = 2610, Level = LogLevel.Warning, Message = "[RemoteFolderCreator] Cannot create remote folder for rule path {Path}: {Error}")]
+    public static partial void RemoteFolderCreateFailed(ILogger logger, string path, string error);
+
+    /// <summary>Logs failure to resolve the drive before creating missing remote folders.</summary>
+    [LoggerMessage(EventId = 2611, Level = LogLevel.Warning, Message = "[RemoteFolderCreator] Cannot resolve drive for account {AccountId}: {Error}")]
+    public static partial void RemoteFolderCreatorDriveUnavailable(ILogger logger, string accountId, string error);
+
     /// <summary>Logs the start of drive ID resolution against the Graph API.</summary>
     [LoggerMessage(EventId = 2607, Level = LogLevel.Debug, Message = "[RemoteFolderEnumerator] Connecting to drive for {AccountId}")]
     public static partial void RemoteFolderEnumeratorConnectingToDrive(ILogger logger, string accountId);

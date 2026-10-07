@@ -8,4 +8,4 @@ namespace AStarDev.OneDriveSyncClient.Infrastructure.Sync;
 /// Groups the sync-pass collaborators injected into <see cref="SyncPassOrchestrator"/>
 /// to keep its constructor within the parameter-count guideline.
 /// </summary>
-public sealed record SyncServiceDependencies(IRemoteFolderEnumerator RemoteFolderEnumerator, IRemoteDeletionDetector RemoteDeletionDetector, ILocalDeletionDetector LocalDeletionDetector, ILocalChangeDetector LocalChangeDetector, ISyncJobExecutor JobExecutor, IDownloadJobBuilder DownloadJobBuilder);
+public sealed record SyncServiceDependencies(IRemoteFolderEnumerator RemoteFolderEnumerator, IRemoteDeletionDetector RemoteDeletionDetector, ILocalDeletionDetector LocalDeletionDetector, ILocalChangeDetector LocalChangeDetector, ISyncJobExecutor JobExecutor, IDownloadJobBuilder DownloadJobBuilder, IRemoteFolderCreator RemoteFolderCreator);
