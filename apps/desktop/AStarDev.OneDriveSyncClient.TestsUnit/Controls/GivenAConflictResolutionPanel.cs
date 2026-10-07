@@ -30,24 +30,20 @@ public sealed class GivenAConflictResolutionPanel
         return new ConflictItemViewModel(conflict, Substitute.For<ISyncService>(), loc);
     }
 
-    private static List<Button> ShowPolicyButtons(ConflictResolutionPanel sut)
-    {
-        var window = new Window { Content = sut };
-        window.Show();
+    private static void Show(ConflictResolutionPanel sut) => new Window { Content = sut }.Show();
 
-        return sut.GetVisualDescendants().OfType<Button>().Where(button => button.Tag is ConflictPolicy).ToList();
-    }
+    private static List<Button> PolicyButtons(ConflictResolutionPanel sut) => sut.GetVisualDescendants().OfType<Button>().Where(button => button.Tag is ConflictPolicy).ToList();
 
     [AvaloniaFact]
     public void when_remote_wins_is_clicked_then_only_remote_wins_button_has_selected_class()
     {
         var viewModel = BuildViewModel();
         var sut = new ConflictResolutionPanel { DataContext = viewModel };
-        var buttons = ShowPolicyButtons(sut);
+        Show(sut);
 
-        buttons.Single(button => (ConflictPolicy)button.Tag! == ConflictPolicy.RemoteWins).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        PolicyButtons(sut).Single(button => (ConflictPolicy)button.Tag! == ConflictPolicy.RemoteWins).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
 
-        var selected = ShowPolicyButtons(sut).Where(button => button.Classes.Contains(SelectedClassName)).Select(button => (ConflictPolicy)button.Tag!).ToList();
+        var selected = PolicyButtons(sut).Where(button => button.Classes.Contains(SelectedClassName)).Select(button => (ConflictPolicy)button.Tag!).ToList();
         selected.ShouldBe([ConflictPolicy.RemoteWins]);
     }
 
@@ -55,8 +51,9 @@ public sealed class GivenAConflictResolutionPanel
     public void when_panel_is_first_shown_then_default_policy_button_has_selected_class()
     {
         var sut = new ConflictResolutionPanel { DataContext = BuildViewModel() };
+        Show(sut);
 
-        var selected = ShowPolicyButtons(sut).Where(button => button.Classes.Contains(SelectedClassName)).Select(button => (ConflictPolicy)button.Tag!).ToList();
+        var selected = PolicyButtons(sut).Where(button => button.Classes.Contains(SelectedClassName)).Select(button => (ConflictPolicy)button.Tag!).ToList();
 
         selected.ShouldBe([ConflictPolicy.Ignore]);
     }
