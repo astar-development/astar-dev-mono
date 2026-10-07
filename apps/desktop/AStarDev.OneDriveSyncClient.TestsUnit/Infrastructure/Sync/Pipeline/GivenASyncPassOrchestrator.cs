@@ -549,6 +549,36 @@ public sealed class GivenASyncPassOrchestrator
         await Should.ThrowAsync<OperationCanceledException>(
             () => sut.OrchestrateAsync(account, CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: cts.Token));
     }
+
+    [Fact]
+    public async Task when_rules_exist_then_missing_remote_folders_are_created_before_enumeration()
+    {
+        _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns(Option.None<DriveStateEntity>());
+        _remoteFolderEnumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<Action<string>?>(), Arg.Any<CancellationToken>())
+            .Returns(_ => EmptyStream());
+        var callOrder = new List<string>();
+        _remoteFolderEnumerator.When(enumerator => enumerator.PrepareAsync(Arg.Any<OneDriveAccount>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<CancellationToken>())).Do(_ => callOrder.Add("prepare"));
+        _remoteFolderCreator.When(creator => creator.CreateMissingFoldersAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<CancellationToken>())).Do(_ => callOrder.Add("create"));
+        _remoteFolderEnumerator.When(enumerator => enumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<Action<string>?>(), Arg.Any<CancellationToken>())).Do(_ => callOrder.Add("stream"));
+
+        await CreateSut().OrchestrateAsync(CreateAccount(), CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
+
+        callOrder.ShouldBe(["prepare", "create", "stream"]);
+    }
+
+    [Fact]
+    public async Task when_the_account_has_no_rules_then_no_remote_folders_are_created()
+    {
+        _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns(Option.None<DriveStateEntity>());
+        _remoteFolderEnumerator.When(enumerator => enumerator.PrepareAsync(Arg.Any<OneDriveAccount>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<CancellationToken>()))
+            .Do(callInfo => callInfo.ArgAt<RemoteEnumerationContext>(1).HadNoRules = true);
+
+        await CreateSut().OrchestrateAsync(CreateAccount(), CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
+
+        await _remoteFolderCreator.DidNotReceive().CreateMissingFoldersAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<CancellationToken>());
+    }
 }
 
 internal sealed class ThrowingStream : IAsyncEnumerable<DeltaItem>
@@ -616,33 +646,4 @@ internal sealed class CancelOnIterateStream(CancellationTokenSource cts) : IAsyn
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
 
-    [Fact]
-    public async Task when_rules_exist_then_missing_remote_folders_are_created_before_enumeration()
-    {
-        _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
-            .Returns(Option.None<DriveStateEntity>());
-        _remoteFolderEnumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<Action<string>?>(), Arg.Any<CancellationToken>())
-            .Returns(_ => EmptyStream());
-        var callOrder = new List<string>();
-        _remoteFolderEnumerator.When(enumerator => enumerator.PrepareAsync(Arg.Any<OneDriveAccount>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<CancellationToken>())).Do(_ => callOrder.Add("prepare"));
-        _remoteFolderCreator.When(creator => creator.CreateMissingFoldersAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<CancellationToken>())).Do(_ => callOrder.Add("create"));
-        _remoteFolderEnumerator.When(enumerator => enumerator.StreamAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<Action<int>?>(), Arg.Any<Action<string>?>(), Arg.Any<CancellationToken>())).Do(_ => callOrder.Add("stream"));
-
-        await CreateSut().OrchestrateAsync(CreateAccount(), CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
-
-        callOrder.ShouldBe(["prepare", "create", "stream"]);
-    }
-
-    [Fact]
-    public async Task when_the_account_has_no_rules_then_no_remote_folders_are_created()
-    {
-        _driveStateRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
-            .Returns(Option.None<DriveStateEntity>());
-        _remoteFolderEnumerator.When(enumerator => enumerator.PrepareAsync(Arg.Any<OneDriveAccount>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<CancellationToken>()))
-            .Do(callInfo => callInfo.ArgAt<RemoteEnumerationContext>(1).HadNoRules = true);
-
-        await CreateSut().OrchestrateAsync(CreateAccount(), CreateSyncConfig(), _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
-
-        await _remoteFolderCreator.DidNotReceive().CreateMissingFoldersAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<RemoteEnumerationContext>(), Arg.Any<CancellationToken>());
-    }
 }
