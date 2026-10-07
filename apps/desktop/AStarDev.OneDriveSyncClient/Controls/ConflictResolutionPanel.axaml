@@ -4,6 +4,21 @@
              x:Class="AStarDev.OneDriveSyncClient.Controls.ConflictResolutionPanel"
              x:DataType="conflicts:ConflictItemViewModel">
 
+    <UserControl.Styles>
+        <Style Selector="Button.policy">
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderDefaultBrush}"/>
+        </Style>
+        <Style Selector="Button.policy.selected">
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderAccentBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource BackgroundSelectedBrush}"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+        <Style Selector="Button.policy.selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource BackgroundSelectedBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderAccentBrush}"/>
+        </Style>
+    </UserControl.Styles>
+
     <Border Background="{DynamicResource BackgroundSecondaryBrush}"
             BorderBrush="{DynamicResource BorderSubtleBrush}"
             BorderThickness="0,1,0,0"
@@ -81,16 +96,14 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate DataType="conflicts:ConflictPolicyOption">
-                            <Button Padding="10,5"
+                            <Button Classes="policy"
+                                    Classes.selected="{Binding IsSelected}"
+                                    Padding="10,5"
                                     CornerRadius="{StaticResource RadiusMd}"
                                     BorderThickness="1"
                                     Click="OnPolicyClick"
                                     Tag="{Binding Policy}"
                                     ToolTip.Tip="{Binding Description}">
-                                <Button.BorderBrush>
-                                    <SolidColorBrush Color="{Binding $parent[UserControl].((conflicts:ConflictItemViewModel)DataContext).SelectedPolicy,
-                                        Converter={StaticResource BoolToAccentConverter}}"/>
-                                </Button.BorderBrush>
                                 <TextBlock Text="{Binding Label}"
                                            FontSize="{StaticResource FontSizeXs}"
                                            Foreground="{DynamicResource TextPrimaryBrush}"/>
