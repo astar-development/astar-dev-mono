@@ -1,3 +1,4 @@
+using AStarDev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStarDev.OneDriveSyncClient.Data.Repositories;
 using AStarDev.OneDriveSyncClient.Infrastructure.Logging;
@@ -12,15 +13,15 @@ namespace AStarDev.OneDriveSyncClient.Infrastructure.Rules;
 public sealed class SyncRuleService(ISyncRuleRepository syncRuleRepository, ILogger<SyncRuleService> logger) : ISyncRuleService
 {
     /// <inheritdoc />
-    public async Task<int> ApplyRuleAsync(AccountId accountId, string parentRemotePath, RuleType ruleType, IReadOnlyList<(string RemotePath, string Id)> nodes, CancellationToken cancellationToken)
+    public async Task<int> ApplyRuleAsync(AccountId accountId, string parentRemotePath, RuleType ruleType, IReadOnlyList<(string RemotePath, Option<string> RemoteId)> nodes, CancellationToken cancellationToken)
     {
         string ruleTypeName = ruleType.ToString();
         OneDriveSyncClientMessages.RulePersisting(logger, ruleTypeName, parentRemotePath, accountId.Value);
 
         await syncRuleRepository.DeleteChildRulesAsync(accountId, parentRemotePath, cancellationToken).ConfigureAwait(false);
 
-        foreach (var (remotePath, remoteItemId) in nodes)
-            await syncRuleRepository.UpsertAsync(accountId, remotePath, ruleType, remoteItemId, cancellationToken).ConfigureAwait(false);
+        foreach (var (remotePath, remoteId) in nodes)
+            await syncRuleRepository.UpsertAsync(accountId, remotePath, ruleType, remoteId.Match<string?>(id => id, () => null), cancellationToken).ConfigureAwait(false);
 
         var rules = await syncRuleRepository.GetByAccountIdAsync(accountId, cancellationToken).ConfigureAwait(false);
 

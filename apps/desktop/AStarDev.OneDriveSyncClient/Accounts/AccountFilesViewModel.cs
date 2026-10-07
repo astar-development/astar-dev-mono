@@ -190,7 +190,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAcco
                 ? CollectAllVisible([node])
                 : [node];
 
-            var ruleNodes = affected.Select(item => (item.RemotePath, item.Id)).ToList();
+            var ruleNodes = affected.Select(item => (item.RemotePath, Option.Some(item.Id))).ToList();
             int includedCount = await accountFilesViewServices.SyncRuleService.ApplyRuleAsync(account.Id, node.RemotePath, ruleType, ruleNodes, CancellationToken.None);
 
             string childPrefix = node.RemotePath + "/";

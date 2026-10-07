@@ -1,4 +1,5 @@
 using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStarDev.FunctionalParadigm;
 using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 
 namespace AStarDev.OneDriveSyncClient.Infrastructure.Rules;
@@ -8,8 +9,8 @@ namespace AStarDev.OneDriveSyncClient.Infrastructure.Rules;
 /// </summary>
 public interface ISyncRuleService
 {
-    /// <summary>Removes all rules beneath <paramref name="parentRemotePath" />, upserts the supplied nodes with <paramref name="ruleType" />, and returns the resulting count of include rules for the account.</summary>
-    Task<int> ApplyRuleAsync(AccountId accountId, string parentRemotePath, RuleType ruleType, IReadOnlyList<(string RemotePath, string Id)> nodes, CancellationToken cancellationToken);
+    /// <summary>Removes all rules beneath <paramref name="parentRemotePath" />, upserts the supplied nodes with <paramref name="ruleType" /> (a node with no remote id is persisted path-only), and returns the resulting count of include rules for the account.</summary>
+    Task<int> ApplyRuleAsync(AccountId accountId, string parentRemotePath, RuleType ruleType, IReadOnlyList<(string RemotePath, Option<string> RemoteId)> nodes, CancellationToken cancellationToken);
 
     /// <summary>Returns a dictionary mapping each persisted rule's remote path to its <see cref="RuleType" />, compared case-insensitively.</summary>
     Task<IReadOnlyDictionary<string, RuleType>> GetRuleStatesAsync(AccountId accountId, CancellationToken cancellationToken);

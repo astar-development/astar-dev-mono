@@ -26,7 +26,7 @@ public sealed class GivenAnAccountFilesViewModelToggleErrorSurfacing
         var syncRuleService = Substitute.For<ISyncRuleService>();
         syncRuleService.GetRuleStatesAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyDictionary<string, RuleType>>(new Dictionary<string, RuleType>()));
-        syncRuleService.ApplyRuleAsync(Arg.Any<AccountId>(), Arg.Any<string>(), Arg.Any<RuleType>(), Arg.Any<IReadOnlyList<(string RemotePath, string Id)>>(), Arg.Any<CancellationToken>())
+        syncRuleService.ApplyRuleAsync(Arg.Any<AccountId>(), Arg.Any<string>(), Arg.Any<RuleType>(), Arg.Any<IReadOnlyList<(string RemotePath, Option<string> RemoteId)>>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromException<int>(new InvalidOperationException("service error")));
 
         var sut = BuildSut(BuildMocks(), syncRuleService);
@@ -51,7 +51,7 @@ public sealed class GivenAnAccountFilesViewModelToggleErrorSurfacing
         var syncRuleService = Substitute.For<ISyncRuleService>();
         syncRuleService.GetRuleStatesAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyDictionary<string, RuleType>>(new Dictionary<string, RuleType>()));
-        syncRuleService.ApplyRuleAsync(Arg.Any<AccountId>(), Arg.Any<string>(), Arg.Any<RuleType>(), Arg.Any<IReadOnlyList<(string RemotePath, string Id)>>(), Arg.Any<CancellationToken>())
+        syncRuleService.ApplyRuleAsync(Arg.Any<AccountId>(), Arg.Any<string>(), Arg.Any<RuleType>(), Arg.Any<IReadOnlyList<(string RemotePath, Option<string> RemoteId)>>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(1));
 
         var sut = BuildSut(BuildMocks(), syncRuleService);
