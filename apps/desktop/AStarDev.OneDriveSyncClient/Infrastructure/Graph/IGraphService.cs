@@ -31,6 +31,9 @@ public interface IGraphService
     /// <summary>Uploads a local file to OneDrive using a resumable upload session. Returns the remote item ID on success.</summary>
     Task<Result<string, string>> UploadFileAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, string localPath, string remotePath, string parentFolderId, CancellationToken cancellationToken = default);
 
+    /// <summary>Creates a folder with the given name under the specified parent folder. Fails if a sibling with the same name already exists.</summary>
+    Task<Result<DriveFolder, string>> CreateFolderAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, string parentFolderId, string folderName, CancellationToken cancellationToken = default);
+
     /// <summary>Permanently deletes the specified item from OneDrive (moves it to the recycle bin).</summary>
     Task<Result<Unit, string>> DeleteItemAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, string itemId, CancellationToken cancellationToken = default);
 
