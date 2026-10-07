@@ -141,6 +141,6 @@ public sealed class GivenAnAccountFilesViewModelRuleStateResolution
     {
         var fileSystemServices = new FileSystemServices(Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());
         var accountFilesViewServices = new AccountFilesViewServices(mocks.Auth, Substitute.For<ILocalizationService>(), mocks.Graph, new SyncRuleService(syncRuleRepo, Substitute.For<ILogger<SyncRuleService>>()));
-        return new(BuildAccount(), accountFilesViewServices, fileSystemServices, Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(mocks.Graph, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>()));
+        return new(BuildAccount(), accountFilesViewServices, fileSystemServices, Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(mocks.Graph, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>(), new LocalFolderLister(new MockFileSystem())));
     }
 }

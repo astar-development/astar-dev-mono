@@ -34,7 +34,7 @@ public sealed class GivenFolderTreeItemViewDisplay
         var tokenFactory = Substitute.For<Func<CancellationToken, Task<string>>>();
 
         var node = new FolderTreeNode(
-            Id: Guid.NewGuid().ToString(),
+            RemoteId: Guid.NewGuid().ToString(),
             Name: name,
             ParentId: Option.None<string>(),
             AccountId: "test-account",
@@ -49,6 +49,7 @@ public sealed class GivenFolderTreeItemViewDisplay
             tokenFactory,
             new DriveId("test-drive"),
             _ => syncState,
+            _ => [],
             logger,
             localization,
             depth

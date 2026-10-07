@@ -15,7 +15,7 @@ public sealed class GivenAFolderTreeNode
 
         var node = new FolderTreeNode(id, name, parentId, accountId, remotePath);
 
-        node.Id.ShouldBe(id);
+        node.RemoteId.ShouldBe(id);
         node.Name.ShouldBe(name);
         node.ParentId.ShouldBe(parentId);
         node.AccountId.ShouldBe(accountId);
