@@ -1,4 +1,5 @@
 using AStarDev.FunctionalParadigm;
+using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStarDev.OneDriveSyncClient.Infrastructure.Graph;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Jobs;
 
@@ -597,6 +598,67 @@ public sealed class GivenAGraphService : IDisposable
         var result = await CreateSut().DeleteItemAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), AnyItemId, TestContext.Current.CancellationToken);
 
         result.ShouldBeAssignableTo<Fail<System.Reactive.Unit, string>>();
+    }
+
+    [Fact]
+    public async Task when_create_folder_succeeds_then_the_created_folder_is_returned()
+    {
+        SetupDriveContext(AnyDriveId, "root-001");
+        server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/{AnyFolderId}/children").UsingPost())
+            .RespondWith(Response.Create()
+                .WithStatusCode(201)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyAsJson(new { id = "new-folder-001", name = "NewFolder", folder = new { }, parentReference = new { id = AnyFolderId, driveId = AnyDriveId } }));
+
+        var result = await CreateSut().CreateFolderAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), AnyFolderId, "NewFolder", TestContext.Current.CancellationToken);
+
+        var folder = result.ShouldBeAssignableTo<Ok<DriveFolder, string>>().Value;
+        folder.Id.ShouldBe("new-folder-001");
+        folder.Name.ShouldBe("NewFolder");
+        folder.ParentId.ShouldBe(Option.Some(AnyFolderId));
+    }
+
+    [Fact]
+    public async Task when_create_folder_is_called_then_request_body_names_a_folder_that_fails_on_conflict()
+    {
+        SetupDriveContext(AnyDriveId, "root-001");
+        server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/{AnyFolderId}/children").UsingPost())
+            .RespondWith(Response.Create()
+                .WithStatusCode(201)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyAsJson(new { id = "new-folder-001", name = "NewFolder", folder = new { }, parentReference = new { id = AnyFolderId, driveId = AnyDriveId } }));
+
+        await CreateSut().CreateFolderAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), AnyFolderId, "NewFolder", TestContext.Current.CancellationToken);
+
+        string body = server.LogEntries.Single(entry => entry.RequestMessage!.Method == "POST").RequestMessage!.Body!;
+        body.ShouldContain("\"name\":\"NewFolder\"");
+        body.ShouldContain("\"folder\"");
+        body.ShouldContain("\"@microsoft.graph.conflictBehavior\":\"fail\"");
+    }
+
+    [Fact]
+    public async Task when_create_folder_returns_conflict_then_result_is_error()
+    {
+        SetupDriveContext(AnyDriveId, "root-001");
+        server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/{AnyFolderId}/children").UsingPost())
+            .RespondWith(Response.Create()
+                .WithStatusCode(409)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyAsJson(new { error = new { code = "nameAlreadyExists", message = "Name already exists" } }));
+
+        var result = await CreateSut().CreateFolderAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), AnyFolderId, "NewFolder", TestContext.Current.CancellationToken);
+
+        result.ShouldBeAssignableTo<Fail<DriveFolder, string>>();
+    }
+
+    [Fact]
+    public async Task when_create_folder_is_called_with_a_pre_cancelled_token_then_operation_is_cancelled()
+    {
+        var sut = CreateSut();
+        using var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+
+        await Should.ThrowAsync<OperationCanceledException>(() => sut.CreateFolderAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), AnyFolderId, "NewFolder", cts.Token));
     }
 
     private void SetupDriveContext(string driveId, string rootId)
