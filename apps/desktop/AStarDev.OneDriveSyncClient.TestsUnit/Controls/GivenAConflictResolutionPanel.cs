@@ -32,7 +32,12 @@ public sealed class GivenAConflictResolutionPanel
 
     private static void Show(ConflictResolutionPanel sut) => new Window { Content = sut }.Show();
 
-    private static List<Button> PolicyButtons(ConflictResolutionPanel sut) => sut.GetVisualDescendants().OfType<Button>().Where(button => button.Tag is ConflictPolicy).ToList();
+    private static List<Button> PolicyButtons(ConflictResolutionPanel sut)
+    {
+        (TopLevel.GetTopLevel(sut) as Window)?.UpdateLayout();
+
+        return sut.GetVisualDescendants().OfType<Button>().Where(button => button.Tag is ConflictPolicy).ToList();
+    }
 
     [AvaloniaFact]
     public void when_remote_wins_is_clicked_then_only_remote_wins_button_has_selected_class()
