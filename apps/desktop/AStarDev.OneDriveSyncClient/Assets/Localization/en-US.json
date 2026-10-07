@@ -114,6 +114,7 @@
   "Conflict.Resolve": "US-Resolve",
   "Conflict.Collapse": "US-Collapse",
   "Conflict.ResolveAll": "US-Resolve all",
+  "Conflict.GlobalResolution": "US-Conflict resolution for all",
   "Conflict.Skip": "US-Skip",
   "Conflict.ChooseResolution": "US-Choose resolution",
   "Settings.Title": "US-Settings",

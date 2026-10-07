@@ -1,0 +1,77 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:activity="clr-namespace:AStarDev.OneDriveSyncClient.Activity"
+             xmlns:conflicts="clr-namespace:AStarDev.OneDriveSyncClient.Conflicts"
+             x:Class="AStarDev.OneDriveSyncClient.Controls.GlobalConflictResolutionPanel"
+             x:DataType="activity:ActivityViewModel">
+
+    <UserControl.Styles>
+        <Style Selector="Button.policy">
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderDefaultBrush}"/>
+        </Style>
+        <Style Selector="Button.policy.selected">
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderAccentBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource BackgroundSelectedBrush}"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+        <Style Selector="Button.policy.selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource BackgroundSelectedBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderAccentBrush}"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Border Background="{DynamicResource BackgroundSecondaryBrush}"
+            BorderBrush="{DynamicResource BorderSubtleBrush}"
+            BorderThickness="0,0,0,1"
+            Padding="16,12">
+
+        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,6,Auto">
+
+            <TextBlock Grid.Row="0"
+                       Grid.Column="0"
+                       Text="{Binding GlobalResolutionText}"
+                       FontSize="{StaticResource FontSizeXs}"
+                       Foreground="{DynamicResource TextTertiaryBrush}"
+                       FontWeight="Medium"/>
+
+            <ItemsControl Grid.Row="2"
+                          Grid.Column="0"
+                          ItemsSource="{Binding GlobalPolicyOptions}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="6"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="conflicts:ConflictPolicyOption">
+                        <Button Classes="policy"
+                                Classes.selected="{Binding IsSelected}"
+                                Padding="10,5"
+                                CornerRadius="{StaticResource RadiusMd}"
+                                BorderThickness="1"
+                                Click="OnPolicyClick"
+                                Tag="{Binding Policy}"
+                                ToolTip.Tip="{Binding Description}">
+                            <TextBlock Text="{Binding Label}"
+                                       FontSize="{StaticResource FontSizeXs}"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        </Button>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Button Grid.Row="2"
+                    Grid.Column="1"
+                    Content="{Binding ResolveAllText}"
+                    Padding="16,6"
+                    CornerRadius="{StaticResource RadiusMd}"
+                    Background="{DynamicResource TextAccentBrush}"
+                    Foreground="White"
+                    BorderThickness="0"
+                    VerticalAlignment="Center"
+                    Command="{Binding ResolveAllConflictsCommand}"/>
+
+        </Grid>
+    </Border>
+
+</UserControl>

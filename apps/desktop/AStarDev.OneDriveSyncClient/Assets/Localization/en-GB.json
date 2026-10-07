@@ -114,6 +114,7 @@
   "Conflict.Resolve": "Resolve",
   "Conflict.Collapse": "Collapse",
   "Conflict.ResolveAll": "Resolve all",
+  "Conflict.GlobalResolution": "Conflict resolution for all",
   "Conflict.Skip": "Skip",
   "Conflict.ChooseResolution": "Choose resolution",
   "Settings.Title": "Settings",
