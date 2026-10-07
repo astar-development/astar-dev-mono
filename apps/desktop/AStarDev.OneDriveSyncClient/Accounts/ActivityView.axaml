@@ -209,10 +209,15 @@
             </Grid>
 
             <!-- Conflicts tab -->
-            <Grid IsVisible="{Binding IsConflictsTabActive}">
+            <Grid IsVisible="{Binding IsConflictsTabActive}" RowDefinitions="Auto,*">
+
+                <controls:GlobalConflictResolutionPanel Grid.Row="0"
+                                                        IsVisible="{Binding HasConflicts}"/>
 
                 <!-- Empty state -->
-                <StackPanel IsVisible="{Binding !HasConflicts}"
+                <StackPanel Grid.Row="0"
+                            Grid.RowSpan="2"
+                            IsVisible="{Binding !HasConflicts}"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Spacing="8">
@@ -227,7 +232,8 @@
                 </StackPanel>
 
                 <!-- Conflict list -->
-                <ScrollViewer IsVisible="{Binding HasConflicts}"
+                <ScrollViewer Grid.Row="1"
+                              IsVisible="{Binding HasConflicts}"
                               VerticalScrollBarVisibility="Auto"
                               MinHeight="0">
                     <ItemsControl ItemsSource="{Binding Conflicts}">

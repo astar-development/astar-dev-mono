@@ -51,6 +51,37 @@ public sealed partial class ActivityViewModel(ISyncRepository syncRepository, IS
     public bool HasConflicts => ConflictCount > 0;
     public string ConflictBadgeText => ConflictCount > 0 ? ConflictCount.ToString(CultureInfo.CurrentCulture) : string.Empty;
 
+    [ObservableProperty]
+    public partial ConflictPolicy SelectedGlobalPolicy { get; set; } = ConflictPolicy.Ignore;
+
+    partial void OnSelectedGlobalPolicyChanged(ConflictPolicy value)
+    {
+        GlobalPolicyOptions = ConflictPolicyOptionFactory.Create(loc, value);
+        OnPropertyChanged(nameof(GlobalPolicyOptions));
+    }
+
+    /// <summary>Policy options for the global resolution picker, with the selected policy flagged.</summary>
+    public IReadOnlyList<ConflictPolicyOption> GlobalPolicyOptions { get; private set; } = ConflictPolicyOptionFactory.Create(loc, ConflictPolicy.Ignore);
+
+    /// <summary>Localised heading for the global resolution picker.</summary>
+    public string GlobalResolutionText => loc.GetLocal("Conflict.GlobalResolution");
+
+    /// <summary>Localised "Resolve all" button label.</summary>
+    public string ResolveAllText => loc.GetLocal("Conflict.ResolveAll");
+
+    [RelayCommand]
+    private void SelectGlobalPolicy(ConflictPolicy policy) => SelectedGlobalPolicy = policy;
+
+    [RelayCommand]
+    private async Task ResolveAllConflictsAsync()
+    {
+        foreach (var conflict in Conflicts.ToList())
+        {
+            conflict.SelectedPolicy = SelectedGlobalPolicy;
+            await conflict.ResolveCommand.ExecuteAsync(null);
+        }
+    }
+
     /// <summary>Localised "Activity log" tab label.</summary>
     public string LogTabText => loc.GetLocal("Activity.LogTab");
 
