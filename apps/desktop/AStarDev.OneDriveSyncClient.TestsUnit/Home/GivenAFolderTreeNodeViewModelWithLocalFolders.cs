@@ -22,6 +22,8 @@ public sealed class GivenAFolderTreeNodeViewModelWithLocalFolders
         var graphService = Substitute.For<IGraphService>();
         var folders = remoteChildNames.Select(name => new DriveFolder($"remote-{name}", name, RootFolderId)).ToList();
 
+        graphService.GetChildFoldersAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), new DriveId(DriveIdString), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(new Ok<List<DriveFolder>, string>([]));
         graphService.GetChildFoldersAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), new DriveId(DriveIdString), RootFolderId, Arg.Any<CancellationToken>())
             .Returns(new Ok<List<DriveFolder>, string>(folders));
 
@@ -118,7 +120,7 @@ public sealed class GivenAFolderTreeNodeViewModelWithLocalFolders
 
         await sut.ToggleExpandCommand.ExecuteAsync(null);
 
-        sut.Children.Single().ParentId.ShouldBe(Option.None<string>());
+        sut.Children.Single().ParentId.ShouldBeNull();
     }
 
     [Fact]

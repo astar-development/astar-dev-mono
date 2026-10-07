@@ -14,7 +14,7 @@ public sealed class GivenAFolderTreeNodeViewModelFactory
 
     private static FolderTreeNodeViewModelFactory CreateSut(MockFileSystem fileSystem) => new(Substitute.For<IGraphService>(), Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>(), new LocalFolderLister(fileSystem));
 
-    private static FolderTreeNode BuildNode() => new(Id: "folder-1", Name: "Documents", ParentId: Option.None<string>(), AccountId: "account-1", RemotePath: "/Documents", SyncState: FolderSyncState.Included, HasChildren: true);
+    private static FolderTreeNode BuildNode() => new(RemoteId: "folder-1", Name: "Documents", ParentId: Option.None<string>(), AccountId: "account-1", RemotePath: "/Documents", SyncState: FolderSyncState.Included, HasChildren: true);
 
     [Fact]
     public void when_create_is_called_then_the_node_details_are_projected_onto_the_view_model()
