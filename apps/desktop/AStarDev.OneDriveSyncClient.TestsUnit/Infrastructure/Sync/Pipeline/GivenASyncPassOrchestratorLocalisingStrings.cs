@@ -25,6 +25,7 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
     private readonly ILocalChangeDetector _localChangeDetector = Substitute.For<ILocalChangeDetector>();
     private readonly ISyncJobExecutor _syncJobExecutor = Substitute.For<ISyncJobExecutor>();
     private readonly IDownloadJobBuilder _downloadJobBuilder = Substitute.For<IDownloadJobBuilder>();
+    private readonly IRemoteFolderCreator _remoteFolderCreator = Substitute.For<IRemoteFolderCreator>();
     private readonly ILocalizationService _localizationService = Substitute.For<ILocalizationService>();
     private readonly ISettingsService _settingsService = Substitute.For<ISettingsService>();
     private readonly IFileClassificationRepository _classificationRepository = Substitute.For<IFileClassificationRepository>();
@@ -48,7 +49,8 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
             _localDeletionDetector,
             _localChangeDetector,
             _syncJobExecutor,
-            _downloadJobBuilder);
+            _downloadJobBuilder,
+            _remoteFolderCreator);
 
         var syncPassRepositories = new SyncPassRepositories(
             _accountRepository,
