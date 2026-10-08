@@ -34,10 +34,10 @@ internal sealed class SyncPassOrchestrator(ISyncPassRepositories syncPassReposit
         int workerCount = settingsService.Current.ConcurrentWorkerCount;
         var context = new RemoteEnumerationContext();
 
-        Action<int>? enumerationProgress = onProgress is null ? null : count =>
+        Action<string, int>? enumerationProgress = onProgress is null ? null : (folder, count) =>
         {
             if (count == 1 || count % progressReportInterval == 0)
-                RaiseProgress(account.Id.Value, count, 0, localizationService.GetLocal("Sync.Enumerating", count), onProgress);
+                RaiseProgress(account.Id.Value, count, 0, localizationService.GetLocal("Sync.Enumerating", folder, count), onProgress);
         };
 
         Action<string>? stageChanged = onProgress is null ? null : stage => RaiseProgress(account.Id.Value, 0, 0, localizationService.GetLocal(stage), onProgress);
@@ -83,7 +83,7 @@ internal sealed class SyncPassOrchestrator(ISyncPassRepositories syncPassReposit
         return SyncPassResultFactory.Create(didRun: true, failedJobCount: failedJobCount);
     }
 
-    private async Task RunProducerAsync(OneDriveAccount account, AccountSyncConfig syncConfig, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncConflict, Task> conflictCallback, Action<int>? enumerationProgress, Action<string>? stageChanged, RemoteEnumerationContext context, Action<SyncProgressEventArgs>? onProgress, ChannelWriter<SyncJob> writer, TaskCompletionSource<bool> firstJobSignal, IReadOnlyList<FileClassificationCategory> mappings, CancellationToken cancellationToken)
+    private async Task RunProducerAsync(OneDriveAccount account, AccountSyncConfig syncConfig, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncConflict, Task> conflictCallback, Action<string, int>? enumerationProgress, Action<string>? stageChanged, RemoteEnumerationContext context, Action<SyncProgressEventArgs>? onProgress, ChannelWriter<SyncJob> writer, TaskCompletionSource<bool> firstJobSignal, IReadOnlyList<FileClassificationCategory> mappings, CancellationToken cancellationToken)
     {
         bool signaled = false;
         try
