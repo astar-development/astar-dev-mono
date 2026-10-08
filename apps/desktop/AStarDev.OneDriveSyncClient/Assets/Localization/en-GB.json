@@ -200,7 +200,7 @@
   "Sync.Preparing": "Preparing sync...",
   "Sync.ConnectingToDrive": "Connecting to OneDrive...",
   "Sync.ResolvingFolder": "Resolving folder...",
-  "Sync.Enumerating": "Enumerating: {0:N0} item(s) found",
+  "Sync.Enumerating": "Enumerating {0}: {1:N0} item(s) found",
   "Sync.DetectingRemoteDeletions": "Detecting remote deletions...",
   "Sync.DetectingLocalChanges": "Detecting local changes...",
   "Sync.SyncingFiles": "Syncing {0:N0} file(s)...",

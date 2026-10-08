@@ -27,6 +27,9 @@ public interface IRemoteFolderEnumerator
     /// drive, resolving a folder id) for phases that precede the first discovered item, closing the UI
     /// feedback gap between authentication and the first enumeration progress event.
     /// </para>
+    /// <para>
+    /// <paramref name="onItemDiscovered"/> reports the remote path of the folder being enumerated together with the running item count.
+    /// </para>
     /// </summary>
-    IAsyncEnumerable<DeltaItem> StreamAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, RemoteEnumerationContext context, Action<int>? onItemDiscovered = null, Action<string>? onStageChanged = null, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<DeltaItem> StreamAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, RemoteEnumerationContext context, Action<string, int>? onItemDiscovered = null, Action<string>? onStageChanged = null, CancellationToken cancellationToken = default);
 }

@@ -38,7 +38,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<DeltaItem> StreamAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, RemoteEnumerationContext context, Action<int>? onItemDiscovered = null, Action<string>? onStageChanged = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<DeltaItem> StreamAsync(OneDriveAccount account, Func<CancellationToken, Task<string>> tokenFactory, RemoteEnumerationContext context, Action<string, int>? onItemDiscovered = null, Action<string>? onStageChanged = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         await PrepareAsync(account, context, cancellationToken).ConfigureAwait(false);
 
@@ -82,7 +82,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
             }
 
             OneDriveSyncClientMessages.RemoteFolderEnumeratorEnumerating(logger, rule.RemotePath, account.Id.Value);
-            var folderEnumerator = graphService.EnumerateFolderAsync(tokenFactory, driveId.Value, folderId, rule.RemotePath, onItemDiscovered, cancellationToken).GetAsyncEnumerator(cancellationToken);
+            var folderEnumerator = graphService.EnumerateFolderAsync(tokenFactory, driveId.Value, folderId, rule.RemotePath, onItemDiscovered is null ? null : count => onItemDiscovered(rule.RemotePath, count), cancellationToken).GetAsyncEnumerator(cancellationToken);
             int itemCount = 0;
 
             try
