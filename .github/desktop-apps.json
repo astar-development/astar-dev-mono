@@ -1,0 +1,64 @@
+[
+  {
+    "display_name": "Clock",
+    "pack_id": "AStarDev.Clock",
+    "pack_title": "AStar Dev Clock",
+    "main_exe": "AStarDev.Clock",
+    "project_path": "apps/desktop/AStarDev.Clock/AStarDev.Clock/AStarDev.Clock.csproj",
+    "test_project_path": "apps/desktop/AStarDev.Clock/AStarDev.Clock.TestsUnit/AStarDev.Clock.TestsUnit.csproj",
+    "tag_prefix": "clock-v",
+    "channel_prefix": "clock",
+    "icon_path": "",
+    "enable_delta_updates": false,
+    "directories": [
+      "apps/desktop/AStarDev.Clock/"
+    ]
+  },
+  {
+    "display_name": "File App",
+    "pack_id": "AStarDev.FileApp",
+    "pack_title": "AStar Dev File App",
+    "main_exe": "AStarDev.FileApp",
+    "project_path": "apps/desktop/AStarDev.FileApp/AStarDev.FileApp/AStarDev.FileApp.csproj",
+    "test_project_path": "apps/desktop/AStarDev.FileApp/AStarDev.FileApp.TestsUnit/AStarDev.FileApp.TestsUnit.csproj",
+    "tag_prefix": "file-app-v",
+    "channel_prefix": "file-app",
+    "icon_path": "",
+    "enable_delta_updates": false,
+    "directories": [
+      "apps/desktop/AStarDev.FileApp/"
+    ]
+  },
+  {
+    "display_name": "OneDrive Sync Client",
+    "pack_id": "AStarDev.OneDriveSyncClient",
+    "pack_title": "AStar Dev OneDrive Sync Client",
+    "main_exe": "AStarDev.OneDriveSyncClient",
+    "project_path": "apps/desktop/AStarDev.OneDriveSyncClient/AStarDev.OneDriveSyncClient.csproj",
+    "test_project_path": "apps/desktop/AStarDev.OneDriveSyncClient.TestsUnit/AStarDev.OneDriveSyncClient.TestsUnit.csproj",
+    "tag_prefix": "onedrive-sync-v",
+    "channel_prefix": "onedrive-sync",
+    "icon_path": "",
+    "enable_delta_updates": false,
+    "directories": [
+      "apps/desktop/AStarDev.OneDriveSyncClient/",
+      "apps/desktop/AStarDev.OneDriveSyncClient.TestsUnit/",
+      "apps/desktop/AStarDev.OneDriveSyncClient.TestsIntegration/"
+    ]
+  },
+  {
+    "display_name": "Wallpaper Scraper",
+    "pack_id": "AStarDev.WallpaperScraper",
+    "pack_title": "AStar Dev Wallpaper Scraper",
+    "main_exe": "AStarDev.WallpaperScraper",
+    "project_path": "apps/desktop/Scraper/AStarDev.WallpaperScraper/AStarDev.WallpaperScraper.csproj",
+    "test_project_path": "apps/desktop/Scraper/AStarDev.WallpaperScraper.TestsUnit/AStarDev.WallpaperScraper.TestsUnit.csproj",
+    "tag_prefix": "wallpaper-scraper-v",
+    "channel_prefix": "wallpaper-scraper",
+    "icon_path": "apps/desktop/Scraper/AStarDev.WallpaperScraper/Assets/astar.png",
+    "enable_delta_updates": true,
+    "directories": [
+      "apps/desktop/Scraper/"
+    ]
+  }
+]
