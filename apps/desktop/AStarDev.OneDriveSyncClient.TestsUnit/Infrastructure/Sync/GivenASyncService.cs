@@ -21,7 +21,7 @@ public sealed class GivenASyncService
     private readonly IConflictApplier _conflictApplier = Substitute.For<IConflictApplier>();
 
     private SyncService BuildSut()
-        => new(_authService, _syncRepository, _syncPassOrchestrator, _conflictApplier, Substitute.For<ILogger<SyncService>>(), Substitute.For<ILocalizationService>());
+        => new(_authService, _syncRepository, _syncPassOrchestrator, _conflictApplier, Substitute.For<ILogger<SyncService>>(), Substitute.For<ILocalizationService>(), System.TimeProvider.System);
 
     [Fact]
     public void when_constructed_then_instance_is_not_null()

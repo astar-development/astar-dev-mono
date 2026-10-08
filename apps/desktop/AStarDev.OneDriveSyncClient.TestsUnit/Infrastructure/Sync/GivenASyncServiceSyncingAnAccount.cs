@@ -25,7 +25,7 @@ public sealed class GivenASyncServiceSyncingAnAccount
     }
 
     private SyncService CreateSut()
-        => new(_authService, _syncRepository, _syncPassOrchestrator, _conflictApplier, Substitute.For<ILogger<SyncService>>(), _localizationService);
+        => new(_authService, _syncRepository, _syncPassOrchestrator, _conflictApplier, Substitute.For<ILogger<SyncService>>(), _localizationService, System.TimeProvider.System);
 
     private static OneDriveAccount CreateAccount(string localSyncPath = "/path/to/sync") => new()
     {
