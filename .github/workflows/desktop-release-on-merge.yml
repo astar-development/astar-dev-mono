@@ -1,0 +1,171 @@
+# ════════════════════════════════════════════════════════════════════════════
+# desktop-release-on-merge.yml
+#
+# Fully automatic desktop app release. On every push to main (i.e. every
+# squash-merged PR):
+#
+#   1. detect  — which apps in .github/desktop-apps.json did this push touch?
+#                None -> nothing else runs. Changes to shared packages/ do
+#                not select an app.
+#   2. tag     — for each touched app, work out the next version from the
+#                app's latest stable <tag_prefix>X.Y.Z tag and the pushed
+#                commit messages (Conventional Commits: feat -> minor, fix or
+#                other -> patch, '!' or a BREAKING CHANGE footer -> major;
+#                no tag yet -> 0.1.0) and push that tag. Tag refs aren't
+#                covered by main's branch ruleset, so this needs no bypass
+#                and no commit to main.
+#   3. release — calls desktop-app-release.yml once per tagged app. Called
+#                directly rather than relying on the tag push to retrigger
+#                anything, since a GITHUB_TOKEN-authored tag push doesn't
+#                fire other workflows.
+#
+# workflow_dispatch releases one app manually with an explicit version.
+# ════════════════════════════════════════════════════════════════════════════
+
+name: Desktop release on merge
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      app:
+        description: App to release
+        required: true
+        type: choice
+        options:
+          - clock
+          - file-app
+          - onedrive-sync
+          - wallpaper-scraper
+      version:
+        description: Version to release, e.g. 1.2.3 or 1.2.3-beta.1 (no tag prefix)
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  detect:
+    name: Detect touched desktop apps
+    runs-on: ubuntu-latest
+    outputs:
+      apps: ${{ steps.find.outputs.apps }}
+      has_apps: ${{ steps.find.outputs.has_apps }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Test release scripts
+        run: python3 -I -m unittest discover -s .github/scripts/tests
+
+      - name: Find desktop apps touched by this push
+        id: find
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          MANUAL_APP: ${{ inputs.app }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            APPS=$(jq -c --arg app "$MANUAL_APP" '[.[] | select(.channel_prefix == $app)]' .github/desktop-apps.json)
+          else
+            BEFORE="${{ github.event.before }}"
+            AFTER="${{ github.event.after }}"
+            if [[ "$BEFORE" =~ ^0+$ ]]; then
+              BEFORE=$(git rev-parse HEAD^)
+              AFTER=$(git rev-parse HEAD)
+            fi
+
+            APPS=$(git diff --name-only "$BEFORE" "$AFTER" | python3 -I .github/scripts/detect_touched_desktop_apps.py)
+          fi
+
+          HAS=$([ "$APPS" != "[]" ] && echo true || echo false)
+          echo "apps=${APPS}"    >> "$GITHUB_OUTPUT"
+          echo "has_apps=${HAS}" >> "$GITHUB_OUTPUT"
+          echo "Touched apps: ${APPS}"
+
+  tag:
+    name: Tag each touched app
+    needs: detect
+    if: needs.detect.outputs.has_apps == 'true'
+    runs-on: ubuntu-latest
+    outputs:
+      releases: ${{ steps.tag.outputs.releases }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Work out each version and push its tag
+        id: tag
+        env:
+          APPS_JSON: ${{ needs.detect.outputs.apps }}
+          EVENT_NAME: ${{ github.event_name }}
+          MANUAL_VERSION: ${{ inputs.version }}
+        run: |
+          BEFORE="${{ github.event.before }}"
+          AFTER="${{ github.event.after }}"
+          if [[ "$BEFORE" =~ ^0+$ ]]; then
+            BEFORE=$(git rev-parse HEAD^)
+            AFTER=$(git rev-parse HEAD)
+          fi
+
+          if [ "$EVENT_NAME" != "workflow_dispatch" ]; then
+            git log --format=%B%x00 "$BEFORE..$AFTER" > "$RUNNER_TEMP/messages.txt"
+          fi
+
+          RELEASES_JSON="[]"
+          while IFS= read -r app; do
+            [ -z "$app" ] && continue
+            prefix=$(echo "$app" | jq -r '.tag_prefix')
+            channel=$(echo "$app" | jq -r '.channel_prefix')
+
+            if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+              version="$MANUAL_VERSION"
+            else
+              git tag -l "${prefix}*" > "$RUNNER_TEMP/tags.txt"
+              version=$(python3 -I .github/scripts/compute_next_desktop_version.py "$prefix" "$RUNNER_TEMP/tags.txt" "$RUNNER_TEMP/messages.txt")
+            fi
+
+            tagname="${prefix}${version}"
+            if git rev-parse "$tagname" >/dev/null 2>&1; then
+              echo "${channel}: ${tagname} already exists — skipping"
+              continue
+            fi
+
+            git tag "$tagname"
+            git push origin "$tagname"
+            echo "${channel}: created ${tagname}"
+
+            RELEASES_JSON=$(echo "$RELEASES_JSON" | jq -c --argjson a "$app" --arg v "$version" '. + [$a + {version: $v}]')
+          done < <(echo "$APPS_JSON" | jq -c '.[]')
+
+          echo "releases=${RELEASES_JSON}" >> "$GITHUB_OUTPUT"
+
+  release:
+    name: Release ${{ matrix.app.display_name }}
+    needs: tag
+    if: needs.tag.outputs.releases != '[]'
+    strategy:
+      matrix:
+        app: ${{ fromJson(needs.tag.outputs.releases) }}
+      fail-fast: false
+    uses: ./.github/workflows/desktop-app-release.yml
+    secrets: inherit
+    with:
+      display_name: ${{ matrix.app.display_name }}
+      pack_id: ${{ matrix.app.pack_id }}
+      pack_title: ${{ matrix.app.pack_title }}
+      main_exe: ${{ matrix.app.main_exe }}
+      project_path: ${{ matrix.app.project_path }}
+      test_project_path: ${{ matrix.app.test_project_path }}
+      tag_prefix: ${{ matrix.app.tag_prefix }}
+      version: ${{ matrix.app.version }}
+      channel_prefix: ${{ matrix.app.channel_prefix }}
+      icon_path: ${{ matrix.app.icon_path }}
+      enable_delta_updates: ${{ matrix.app.enable_delta_updates }}
