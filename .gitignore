@@ -171,3 +171,6 @@ local.settings.json
 
 # Claude Code agent worktrees
 .claude/worktrees/
+
+# Python bytecode (release script tests)
+__pycache__/
