@@ -1,0 +1,391 @@
+# ════════════════════════════════════════════════════════════════════════════
+# desktop-app-release.yml
+#
+# Reusable workflow (workflow_call) that packages and publishes a desktop app
+# as a Velopack release on GitHub Releases, for the in-app updater to discover.
+# Called by the thin per-app workflows (clock-release.yml, file-app-release.yml,
+# onedrive-sync-client-release.yml, wallpaper-scraper-release.yml), each of
+# which owns its own tag trigger and passes the app specific values below.
+#
+# Tag format: <tag_prefix>1.2.3  (or <tag_prefix>1.2.3-beta.1 for a pre-release)
+#
+# Linux is this repo's primary platform - developed on Linux, primarily
+# consumed on Linux - so `release-linux` runs alone, first, and is the only
+# job that can fail the workflow. `release-other-platforms` (win-x64,
+# osx-arm64) only starts once release-linux has published, and is entirely
+# best-effort (continue-on-error) so a Windows/macOS packaging problem never
+# blocks or delays shipping the Linux release.
+#
+# `vpk upload github --merge` only appends to an ALREADY-existing release -
+# it doesn't handle two jobs racing to create the first one - so the
+# needs:/sequencing here isn't just about priority, it also avoids that race.
+#
+# Each platform packs/uploads under its own Velopack channel
+# (<channel_prefix>-linux/-win/-osx) rather than the bare "linux"/"win"/"osx"
+# names - Velopack's update lookup is scoped by channel name across the whole
+# repo, not by packId, so reusing those names collides across the apps
+# released from here.
+# ════════════════════════════════════════════════════════════════════════════
+
+name: Desktop App Release
+
+on:
+  workflow_call:
+    inputs:
+      display_name:
+        description: Human readable app name used in check names, e.g. "OneDrive Sync Client"
+        required: true
+        type: string
+      pack_id:
+        description: Velopack pack id, e.g. AStarDev.OneDriveSyncClient
+        required: true
+        type: string
+      pack_title:
+        description: Velopack pack title, e.g. "AStar Dev OneDrive Sync Client"
+        required: true
+        type: string
+      main_exe:
+        description: Main executable name without extension, e.g. AStarDev.OneDriveSyncClient
+        required: true
+        type: string
+      project_path:
+        description: Path to the app csproj
+        required: true
+        type: string
+      test_project_path:
+        description: Path to the app unit test csproj
+        required: true
+        type: string
+      tag_prefix:
+        description: Tag prefix stripped to derive the version, e.g. onedrive-sync-v
+        required: true
+        type: string
+      channel_prefix:
+        description: Velopack channel prefix, e.g. onedrive-sync
+        required: true
+        type: string
+      icon_path:
+        description: Optional path to the Velopack package icon
+        required: false
+        type: string
+        default: ""
+      enable_delta_updates:
+        description: Download the previous release before packing so Velopack can build delta packages
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  NUGET_XMLDOC_MODE: skip
+  NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  VELOPACK_VERSION: 1.2.0
+  PROJECT_PATH: ${{ inputs.project_path }}
+  TEST_PROJECT_PATH: ${{ inputs.test_project_path }}
+
+jobs:
+  release-linux:
+    name: Release (linux)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v6.0.0
+        with:
+          global-json-file: global.json
+
+      # ── Derive version from the tag ────────────────────────────────────────
+      # Tag:     <tag_prefix>0.34.0
+      # VERSION → 0.34.0  (tag prefix stripped)
+      - name: Extract version from tag
+        id: tag
+        shell: bash
+        env:
+          TAG_PREFIX: ${{ inputs.tag_prefix }}
+        run: |
+          RAW_TAG="${GITHUB_REF_NAME}"
+          VERSION="${RAW_TAG#"$TAG_PREFIX"}"
+          IS_PRERELEASE=false
+          if [[ "$VERSION" == *"-"* ]]; then
+            IS_PRERELEASE=true
+          fi
+          echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
+          echo "prerelease=${IS_PRERELEASE}" >> "$GITHUB_OUTPUT"
+          echo "Version : ${VERSION}"
+          echo "Pre-release : ${IS_PRERELEASE}"
+
+      - name: Install vpk
+        run: dotnet tool install -g vpk --version ${{ env.VELOPACK_VERSION }}
+
+      - name: Authenticate GitHub Packages source
+        run: dotnet nuget update source github --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
+
+      - name: Restore
+        run: dotnet restore "${{ env.PROJECT_PATH }}"
+
+      - name: Build
+        shell: bash
+        run: |
+          dotnet build "${{ env.PROJECT_PATH }}" \
+            --no-restore \
+            --configuration Release \
+            -p:Version=${{ env.VERSION }} \
+            -p:TreatWarningsAsErrors=true
+
+      - name: Test
+        shell: bash
+        run: |
+          dotnet test "${{ env.TEST_PROJECT_PATH }}" \
+            --configuration Release \
+            --report-xunit-trx --report-xunit-trx-filename linux-results.trx \
+            --results-directory "$GITHUB_WORKSPACE/TestResults"
+
+      - name: Publish self-contained linux-x64
+        shell: bash
+        run: |
+          dotnet publish "${{ env.PROJECT_PATH }}" \
+            --configuration Release \
+            --runtime linux-x64 \
+            --self-contained true \
+            -p:Version=${{ env.VERSION }} \
+            -p:PublishTrimmed=false \
+            -p:EnableTrimAnalyzer=false \
+            --output ./publish/linux-x64
+
+      - name: Write release notes
+        shell: bash
+        run: |
+          NOTES="$(git tag -l --format='%(contents)' "${GITHUB_REF_NAME}")"
+          if [ -z "$NOTES" ]; then
+            NOTES="See the full changelog: https://github.com/${{ github.repository }}/releases/tag/${GITHUB_REF_NAME}"
+          fi
+          printf '%s\n' "$NOTES" > release-notes.md
+
+      - name: Download previous release packages (enables delta updates)
+        if: inputs.enable_delta_updates
+        shell: bash
+        run: |
+          vpk download github \
+            --repoUrl https://github.com/${{ github.repository }} \
+            --token ${{ secrets.GITHUB_TOKEN }} \
+            --channel ${{ inputs.channel_prefix }}-linux \
+            || echo "No previous release found - building full package only"
+
+      - name: Pack with vpk
+        shell: bash
+        env:
+          PACK_ID: ${{ inputs.pack_id }}
+          PACK_TITLE: ${{ inputs.pack_title }}
+          MAIN_EXE: ${{ inputs.main_exe }}
+          ICON_PATH: ${{ inputs.icon_path }}
+          CHANNEL: ${{ inputs.channel_prefix }}-linux
+        run: |
+          ICON_ARGS=()
+          if [ -n "$ICON_PATH" ]; then
+            ICON_ARGS=(--icon "$ICON_PATH")
+          fi
+
+          vpk pack \
+            --packId "$PACK_ID" \
+            --packVersion ${{ env.VERSION }} \
+            --packDir ./publish/linux-x64 \
+            --packAuthors "AStar Development" \
+            --packTitle "$PACK_TITLE" \
+            --mainExe "$MAIN_EXE" \
+            "${ICON_ARGS[@]}" \
+            --channel "$CHANNEL" \
+            --releaseNotes release-notes.md \
+            --outputDir ./Releases
+
+      - name: Upload to GitHub Releases
+        shell: bash
+        run: |
+          vpk upload github \
+            --repoUrl https://github.com/${{ github.repository }} \
+            --token ${{ secrets.GITHUB_TOKEN }} \
+            --channel ${{ inputs.channel_prefix }}-linux \
+            --outputDir ./Releases \
+            --tag ${{ github.ref_name }} \
+            --releaseName "${{ inputs.pack_title }} v${{ env.VERSION }}" \
+            --publish true \
+            --merge true \
+            --pre ${{ steps.tag.outputs.prerelease }}
+
+      - name: Publish test results
+        uses: EnricoMi/publish-unit-test-result-action@v2.24.0
+        if: always()
+        continue-on-error: true
+        with:
+          files: TestResults/**/*.trx
+          check_name: ${{ inputs.display_name }} (linux) — test results
+          fail_on: test failures
+
+  release-other-platforms:
+    name: Release (${{ matrix.platform }})
+    needs: release-linux
+    runs-on: ${{ matrix.os }}
+    continue-on-error: true
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            rid: win-x64
+            platform: win
+          - os: macos-latest
+            rid: osx-arm64
+            platform: osx
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v6.0.0
+        with:
+          global-json-file: global.json
+
+      - name: Extract version from tag
+        id: tag
+        shell: bash
+        env:
+          TAG_PREFIX: ${{ inputs.tag_prefix }}
+        run: |
+          RAW_TAG="${GITHUB_REF_NAME}"
+          VERSION="${RAW_TAG#"$TAG_PREFIX"}"
+          IS_PRERELEASE=false
+          if [[ "$VERSION" == *"-"* ]]; then
+            IS_PRERELEASE=true
+          fi
+          echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
+          echo "prerelease=${IS_PRERELEASE}" >> "$GITHUB_OUTPUT"
+          echo "Version : ${VERSION}"
+          echo "Pre-release : ${IS_PRERELEASE}"
+
+      - name: Install vpk
+        run: dotnet tool install -g vpk --version ${{ env.VELOPACK_VERSION }}
+
+      - name: Authenticate GitHub Packages source
+        run: dotnet nuget update source github --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
+
+      - name: Restore
+        run: dotnet restore "${{ env.PROJECT_PATH }}"
+
+      - name: Build
+        shell: bash
+        run: |
+          dotnet build "${{ env.PROJECT_PATH }}" \
+            --no-restore \
+            --configuration Release \
+            -p:Version=${{ env.VERSION }} \
+            -p:TreatWarningsAsErrors=true
+
+      - name: Test
+        shell: bash
+        run: |
+          dotnet test "${{ env.TEST_PROJECT_PATH }}" \
+            --configuration Release \
+            --report-xunit-trx --report-xunit-trx-filename ${{ inputs.channel_prefix }}-${{ matrix.platform }}-results.trx \
+            --results-directory "$GITHUB_WORKSPACE/TestResults"
+
+      - name: Publish self-contained ${{ matrix.rid }}
+        shell: bash
+        run: |
+          dotnet publish "${{ env.PROJECT_PATH }}" \
+            --configuration Release \
+            --runtime ${{ matrix.rid }} \
+            --self-contained true \
+            -p:Version=${{ env.VERSION }} \
+            -p:PublishTrimmed=false \
+            -p:EnableTrimAnalyzer=false \
+            --output ./publish/${{ matrix.rid }}
+
+      - name: Write release notes
+        shell: bash
+        run: |
+          NOTES="$(git tag -l --format='%(contents)' "${GITHUB_REF_NAME}")"
+          if [ -z "$NOTES" ]; then
+            NOTES="See the full changelog: https://github.com/${{ github.repository }}/releases/tag/${GITHUB_REF_NAME}"
+          fi
+          printf '%s\n' "$NOTES" > release-notes.md
+
+      - name: Download previous release packages (enables delta updates)
+        if: inputs.enable_delta_updates
+        shell: bash
+        run: |
+          vpk download github \
+            --repoUrl https://github.com/${{ github.repository }} \
+            --token ${{ secrets.GITHUB_TOKEN }} \
+            --channel ${{ inputs.channel_prefix }}-${{ matrix.platform }} \
+            || echo "No previous release found - building full package only"
+
+      - name: Pack with vpk
+        shell: bash
+        env:
+          PACK_ID: ${{ inputs.pack_id }}
+          PACK_TITLE: ${{ inputs.pack_title }}
+          BASE_EXE: ${{ inputs.main_exe }}
+          ICON_PATH: ${{ inputs.icon_path }}
+          CHANNEL: ${{ inputs.channel_prefix }}-${{ matrix.platform }}
+          PLATFORM: ${{ matrix.platform }}
+          RID: ${{ matrix.rid }}
+        run: |
+          MAIN_EXE="$BASE_EXE"
+          if [ "$PLATFORM" = "win" ]; then
+            MAIN_EXE="${BASE_EXE}.exe"
+          fi
+
+          ICON_ARGS=()
+          if [ -n "$ICON_PATH" ]; then
+            ICON_ARGS=(--icon "$ICON_PATH")
+          fi
+
+          vpk pack \
+            --packId "$PACK_ID" \
+            --packVersion ${{ env.VERSION }} \
+            --packDir "./publish/${RID}" \
+            --packAuthors "AStar Development" \
+            --packTitle "$PACK_TITLE" \
+            --mainExe "$MAIN_EXE" \
+            "${ICON_ARGS[@]}" \
+            --channel "$CHANNEL" \
+            --releaseNotes release-notes.md \
+            --outputDir ./Releases
+
+      - name: Upload to GitHub Releases
+        shell: bash
+        run: |
+          vpk upload github \
+            --repoUrl https://github.com/${{ github.repository }} \
+            --token ${{ secrets.GITHUB_TOKEN }} \
+            --channel ${{ inputs.channel_prefix }}-${{ matrix.platform }} \
+            --outputDir ./Releases \
+            --tag ${{ github.ref_name }} \
+            --releaseName "${{ inputs.pack_title }} v${{ env.VERSION }}" \
+            --publish true \
+            --merge true \
+            --pre ${{ steps.tag.outputs.prerelease }}
+
+      - name: Publish test results
+        uses: EnricoMi/publish-unit-test-result-action@v2.24.0
+        if: always()
+        continue-on-error: true
+        with:
+          files: TestResults/**/*.trx
+          check_name: ${{ inputs.display_name }} (${{ inputs.channel_prefix }}-${{ matrix.platform }}) — test results
+          fail_on: test failures
