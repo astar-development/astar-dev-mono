@@ -1,3 +1,4 @@
+using System.Globalization;
 using AStarDev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.Infrastructure.AppDb.Entities;
@@ -13,7 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace AStarDev.OneDriveSyncClient.Infrastructure.Sync;
 
-public sealed class SyncService(IAuthService authService, ISyncRepository syncRepository, ISyncPassOrchestrator syncPassOrchestrator, IConflictApplier conflictApplier, ILogger<SyncService> logger, ILocalizationService localizationService) : ISyncService
+public sealed class SyncService(IAuthService authService, ISyncRepository syncRepository, ISyncPassOrchestrator syncPassOrchestrator, IConflictApplier conflictApplier, ILogger<SyncService> logger, ILocalizationService localizationService, TimeProvider timeProvider) : ISyncService
 {
     /// <inheritdoc />
     public event EventHandler<SyncProgressEventArgs>? SyncProgressChanged;
@@ -30,6 +31,7 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
     /// <inheritdoc />
     public async Task SyncAccountAsync(OneDriveAccount account, CancellationToken cancellationToken = default)
     {
+        long startTimestamp = timeProvider.GetTimestamp();
         OneDriveSyncClientMessages.SyncServiceStarting(logger, account.Id.Value);
         RaiseProgress(account.Id.Value, localizationService.GetLocal("Sync.Authenticating"), SyncState.Syncing);
 
@@ -37,7 +39,7 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
             authResult => RunSyncPassAsync(account, authResult, cancellationToken),
             authError => Task.FromResult(SyncOutcomeFactory.CreateAuthFailed(authError is AuthReAuthRequiredError)));
 
-        ApplyOutcome(account.Id.Value, outcome);
+        ApplyOutcome(account.Id.Value, outcome, timeProvider.GetElapsedTime(startTimestamp));
     }
 
     /// <inheritdoc />
@@ -109,7 +111,7 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
         _ => SyncOutcomeFactory.CreateCompleted()
     };
 
-    private void ApplyOutcome(string accountId, SyncOutcome outcome)
+    private void ApplyOutcome(string accountId, SyncOutcome outcome, TimeSpan elapsed)
     {
         switch (outcome)
         {
@@ -132,12 +134,12 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
 
             case SyncOutcome.CompletedWithErrors(var failedJobCount):
                 OneDriveSyncClientMessages.SyncServiceComplete(logger, accountId);
-                RaiseProgress(accountId, localizationService.GetLocal("Sync.CompletedWithErrors", failedJobCount), SyncState.Error);
+                RaiseProgress(accountId, localizationService.GetLocal("Sync.CompletedWithErrors", failedJobCount, FormatElapsed(elapsed)), SyncState.Error);
                 break;
 
             case SyncOutcome.Completed:
                 OneDriveSyncClientMessages.SyncServiceComplete(logger, accountId);
-                RaiseProgress(accountId, localizationService.GetLocal("Sync.Complete"), SyncState.Idle);
+                RaiseProgress(accountId, localizationService.GetLocal("Sync.Complete", FormatElapsed(elapsed)), SyncState.Idle);
                 break;
 
             case SyncOutcome.Cancelled:
@@ -150,6 +152,8 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
                 break;
         }
     }
+
+    private static string FormatElapsed(TimeSpan elapsed) => elapsed.ToString(@"hh\:mm\:ss", CultureInfo.InvariantCulture);
 
     private void RaiseProgress(string accountId, string currentFile, SyncState syncState)
         => SyncProgressChanged?.Invoke(this, new SyncProgressEventArgs(accountId, currentFile, syncState));

@@ -22,7 +22,7 @@ public sealed class GivenASyncServiceApplyingUseRemoteConflictOutcome
             .Returns(AuthResultFactory.Success("token", "user-1", AccountProfileFactory.Create("User", "user@outlook.com")));
 
     private SyncService CreateSut()
-        => new(_authService, _syncRepository, Substitute.For<ISyncPassOrchestrator>(), _conflictApplier, Substitute.For<ILogger<SyncService>>(), Substitute.For<ILocalizationService>());
+        => new(_authService, _syncRepository, Substitute.For<ISyncPassOrchestrator>(), _conflictApplier, Substitute.For<ILogger<SyncService>>(), Substitute.For<ILocalizationService>(), System.TimeProvider.System);
 
     private static SyncConflict CreateConflict() => new()
     {

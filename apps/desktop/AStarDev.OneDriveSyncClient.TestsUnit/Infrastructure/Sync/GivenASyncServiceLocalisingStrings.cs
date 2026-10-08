@@ -8,6 +8,7 @@ using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Jobs;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Pipeline;
 using AStarDev.OneDriveSyncClient.Localization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Time.Testing;
 using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId;
 
@@ -20,6 +21,7 @@ public sealed class GivenASyncServiceLocalisingStrings
     private readonly ISyncPassOrchestrator _syncPassOrchestrator = Substitute.For<ISyncPassOrchestrator>();
     private readonly IConflictApplier _conflictApplier = Substitute.For<IConflictApplier>();
     private readonly ILocalizationService _localizationService = Substitute.For<ILocalizationService>();
+    private readonly FakeTimeProvider _timeProvider = new();
 
     public GivenASyncServiceLocalisingStrings()
     {
@@ -28,7 +30,7 @@ public sealed class GivenASyncServiceLocalisingStrings
     }
 
     private SyncService CreateSut()
-        => new(_authService, _syncRepository, _syncPassOrchestrator, _conflictApplier, Substitute.For<ILogger<SyncService>>(), _localizationService);
+        => new(_authService, _syncRepository, _syncPassOrchestrator, _conflictApplier, Substitute.For<ILogger<SyncService>>(), _localizationService, _timeProvider);
 
     private static OneDriveAccount CreateAccount(bool withSyncConfig = true) => new()
     {
@@ -215,13 +217,18 @@ public sealed class GivenASyncServiceLocalisingStrings
         _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(AuthResultFactory.Success("token", "user-1", AccountProfileFactory.Create("User", "user@outlook.com")));
         _syncPassOrchestrator.OrchestrateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<Action<SyncProgressEventArgs>>(), Arg.Any<Func<JobCompletedEventArgs, Task>>(), Arg.Any<CancellationToken>())
-            .Returns(SyncPassResultFactory.Create(true, 0));
+            .Returns(_ =>
+            {
+                _timeProvider.Advance(TimeSpan.FromSeconds(75));
+
+                return SyncPassResultFactory.Create(true, 0);
+            });
 
         var sut = CreateSut();
 
         await sut.SyncAccountAsync(CreateAccount(), TestContext.Current.CancellationToken);
 
-        _localizationService.Received().GetLocal("Sync.Complete");
+        _localizationService.Received().GetLocal("Sync.Complete", "00:01:15");
     }
 
     [Fact]
@@ -230,13 +237,18 @@ public sealed class GivenASyncServiceLocalisingStrings
         _authService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(AuthResultFactory.Success("token", "user-1", AccountProfileFactory.Create("User", "user@outlook.com")));
         _syncPassOrchestrator.OrchestrateAsync(Arg.Any<OneDriveAccount>(), Arg.Any<AccountSyncConfig>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<Func<SyncConflict, Task>>(), Arg.Any<Action<SyncProgressEventArgs>>(), Arg.Any<Func<JobCompletedEventArgs, Task>>(), Arg.Any<CancellationToken>())
-            .Returns(SyncPassResultFactory.Create(true, 1));
+            .Returns(_ =>
+            {
+                _timeProvider.Advance(TimeSpan.FromSeconds(3725));
+
+                return SyncPassResultFactory.Create(true, 1);
+            });
 
         var sut = CreateSut();
 
         await sut.SyncAccountAsync(CreateAccount(), TestContext.Current.CancellationToken);
 
-        _localizationService.Received().GetLocal("Sync.CompletedWithErrors", Arg.Any<object[]>());
+        _localizationService.Received().GetLocal("Sync.CompletedWithErrors", 1, "01:02:05");
     }
 
     [Fact]
