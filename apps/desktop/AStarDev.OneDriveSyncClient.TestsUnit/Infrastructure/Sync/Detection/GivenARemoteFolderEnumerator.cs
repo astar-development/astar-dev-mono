@@ -289,4 +289,25 @@ public sealed class GivenARemoteFolderEnumerator
 
         stages.ShouldContain("Sync.ResolvingFolder");
     }
+
+    [Fact]
+    public async Task when_graph_reports_an_item_count_then_the_rule_folder_path_is_reported_with_it()
+    {
+        _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns([IncludeRule("/Documents", remoteItemId: "folder-1")]);
+        _graphService.EnumerateFolderAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                callInfo.ArgAt<Action<int>?>(4)?.Invoke(7);
+
+                return EmptyStream();
+            });
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
+        var context = new RemoteEnumerationContext();
+        var reported = new List<(string Folder, int Count)>();
+
+        await foreach (var _ in CreateSut().StreamAsync(CreateAccount(), tokenFactory, context, onItemDiscovered: (folder, count) => reported.Add((folder, count)), cancellationToken: TestContext.Current.CancellationToken)) { }
+
+        reported.ShouldBe([("/Documents", 7)]);
+    }
 }
