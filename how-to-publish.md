@@ -6,11 +6,7 @@ namespace so pushing one tag only ever fires one workflow. Pick the right format
 | What                           | Tag format                     | Workflow                                             |
 | ------------------------------ | ------------------------------ | ---------------------------------------------------- |
 | A NuGet package                | `{PackageName}/v{version}`     | `.github/workflows/nuget-publish.yml`                |
-| OneDrive Sync Client (desktop) | `onedrive-sync-v{version}`     | `.github/workflows/onedrive-sync-client-release.yml` |
-| Wallpaper Scraper (desktop)    | `scraper-v{version}`           | `.github/workflows/scraper-release.yml`              |
-| File App (desktop)             | `file-app-v{version}`          | `.github/workflows/file-app-release.yml`             |
-| Clock (desktop)                | `clock-v{version}`             | `.github/workflows/clock-release.yml`                |
-| Wallpaper Scraper (desktop) V2 | `wallpaper-scraper-v{version}` | `.github/workflows/wallpaper-scraper-release.yml`    |
+| A desktop app                  | `{app}-v{version}` (created automatically) | `.github/workflows/desktop-release-on-merge.yml` |
 
 **Never reuse another row's tag format.** The patterns are deliberately disjoint
 (slash-delimited vs. bare `v` vs. `scraper-v` vs. `file-app-v`) — mixing them up either
@@ -47,96 +43,37 @@ Fails fast if no `.csproj` matches the tagged package name — check the name is
 
 ---
 
-## 2. Publish the OneDrive Sync Client
+## 2. Publish a desktop app
 
-Tag format: `onedrive-sync-v{version}`.
+Desktop apps (Clock, File App, OneDrive Sync Client, Wallpaper Scraper) release
+automatically. Nothing needs tagging by hand.
 
-```bash
-git tag onedrive-sync-v1.0.3
-git push origin onedrive-sync-v1.0.3
-```
+On every merge to `main`, `desktop-release-on-merge.yml`:
 
-Prerelease: `git tag onedrive-sync-v0.35.0-rc.1`
+1. Works out which apps the merge touched, using the directories listed per app in
+   `.github/desktop-apps.json`. Changes under `packages/` do not release an app.
+2. Computes each touched app's next version from its latest stable `{tag-prefix}X.Y.Z`
+   tag and the merged commit messages (`feat` = minor, `fix`/other = patch, `!` or a
+   `BREAKING CHANGE:` footer = major; an app with no tag yet starts at `0.1.0`).
+3. Pushes the tag and calls `desktop-app-release.yml`, which builds, tests, and publishes
+   self-contained Velopack packages. `release-linux` runs first and is the only job that
+   can fail the workflow; `release-other-platforms` (win-x64, osx-arm64) only starts after
+   Linux succeeds and is best-effort (`continue-on-error: true`). All platforms publish to
+   the **same** GitHub Release (`vpk upload --merge`).
 
-What happens: `onedrive-sync-client-release.yml` builds, tests, and publishes
-self-contained Velopack packages. `release-linux` runs first and is the only job that can
-fail the workflow (Linux is this project's primary platform); `release-other-platforms`
-(win-x64, osx-arm64) only starts after Linux succeeds and is best-effort
-(`continue-on-error: true`) — a Windows/macOS packaging problem never blocks the Linux
-release. All platforms publish to the **same** GitHub Release (`vpk upload --merge`).
+| App                  | Tag prefix            |
+| -------------------- | --------------------- |
+| Clock                | `clock-v`             |
+| File App             | `file-app-v`          |
+| OneDrive Sync Client | `onedrive-sync-v`     |
+| Wallpaper Scraper    | `wallpaper-scraper-v` |
 
----
+To release one app manually (for example a pre-release), run the **Desktop release on
+merge** workflow from the Actions tab (`workflow_dispatch`), choose the app and enter the
+version, e.g. `0.35.0-rc.1`. Pushing a desktop tag by hand no longer triggers anything.
 
-## 3. Publish the Wallpaper Scraper
-
-Tag format: `scraper-v{version}`.
-
-```bash
-git tag scraper-v1.1.1
-git push origin scraper-v1.1.1
-```
-
-What happens: `scraper-release.yml` publishes self-contained linux-x64 and win-x64
-builds, packs each with `vpk`, and uploads both to the same GitHub Release
-(`--merge`, jobs serialized via `max-parallel: 1` to avoid a race creating the release
-twice).
-
----
-
-## 4. Publish the File App
-
-Tag format: `file-app-v{version}`.
-
-```bash
-git tag file-app-v1.0.1
-git push origin file-app-v1.0.1
-```
-
-Prerelease: `git tag file-app-v0.1.0-rc.1`
-
-What happens: `file-app-release.yml` builds, tests, and publishes self-contained Velopack
-packages, mirroring the OneDrive Sync Client's workflow shape — `release-linux` runs
-first and is the only job that can fail the workflow; `release-other-platforms` (win-x64,
-osx-arm64) only starts after Linux succeeds and is best-effort (`continue-on-error: true`).
-All platforms publish to the **same** GitHub Release (`vpk upload --merge`).
-
----
-
-## 5. Publish the Clock
-
-Tag format: `clock-v{version}`.
-
-```bash
-git tag clock-v1.1.3
-git push origin clock-v1.1.3
-```
-
-Prerelease: `git tag clock-v0.1.0-rc.1`
-
-What happens: `clock-release.yml` builds, tests, and publishes self-contained Velopack
-packages, mirroring the OneDrive Sync Client's workflow shape — `release-linux` runs
-first and is the only job that can fail the workflow; `release-other-platforms` (win-x64,
-osx-arm64) only starts after Linux succeeds and is best-effort (`continue-on-error: true`).
-All platforms publish to the **same** GitHub Release (`vpk upload --merge`).
-
----
-
-## 6. Publish the Wallpaper Scraper V2
-
-Tag format: `wallpaper-scraper-v{version}`.
-
-```bash
-git tag wallpaper-scraper-v0.1.2
-git push origin wallpaper-scraper-v0.1.2
-```
-
-Prerelease: `git tag wallpaper-scraper-v0.1.0-rc.1`
-
-What happens: `wallpaper-scraper-release.yml` builds, tests, and publishes self-contained Velopack
-packages, mirroring the OneDrive Sync Client's workflow shape — `release-linux` runs
-first and is the only job that can fail the workflow; `release-other-platforms` (win-x64,
-osx-arm64) only starts after Linux succeeds and is best-effort (`continue-on-error: true`).
-All platforms publish to the **same** GitHub Release (`vpk upload --merge`).
+To add an app, add an entry to `.github/desktop-apps.json` and to the `app` options of the
+`workflow_dispatch` input.
 
 ---
 
