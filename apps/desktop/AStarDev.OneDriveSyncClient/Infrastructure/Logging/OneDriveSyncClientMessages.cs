@@ -47,6 +47,10 @@ public static partial class OneDriveSyncClientMessages
     [LoggerMessage(EventId = 2008, Level = LogLevel.Information, Message = "[Pipeline] Preparing sync pass for {AccountId}")]
     public static partial void SyncPipelinePreparing(ILogger logger, string accountId);
 
+    /// <summary>Logs how long a named stage of a sync pass took.</summary>
+    [LoggerMessage(EventId = 2009, Level = LogLevel.Information, Message = "[Pipeline] Stage {Stage} for {AccountId} took {ElapsedMs} ms")]
+    public static partial void SyncPipelineStageTiming(ILogger logger, string stage, string accountId, long elapsedMs);
+
     // Sync Service (2100-2199)
 
     /// <summary>Logs start of account sync.</summary>
