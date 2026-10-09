@@ -14,7 +14,7 @@ internal sealed class GraphDeltaReader(IGraphClientFactory graphClientFactory)
     private const string TokenKey = "token";
     private const int GoneStatusCode = 410;
 
-    private static readonly string[] deltaSelect = ["id", "parentReference", "deleted"];
+    private static readonly string[] deltaSelect = ["id", "parentReference", "deleted", "root"];
 
     internal async Task<Result<string, string>> GetLatestDeltaLinkAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, CancellationToken cancellationToken)
     {
@@ -51,7 +51,7 @@ internal sealed class GraphDeltaReader(IGraphClientFactory graphClientFactory)
                 string pageToken = token;
                 var page = await client.Drives[driveId.Value].Items[RootItem].DeltaWithToken(pageToken).GetAsDeltaWithTokenGetResponseAsync(request => request.QueryParameters.Select = deltaSelect, cancellationToken).ConfigureAwait(false);
 
-                changes.AddRange((page?.Value ?? []).Select(MapChange));
+                changes.AddRange((page?.Value ?? []).Where(item => item.Root is null).Select(MapChange));
                 nextDeltaLink = page?.OdataDeltaLink;
                 token = string.IsNullOrEmpty(nextDeltaLink) ? ExtractToken(page?.OdataNextLink) : null;
             }
