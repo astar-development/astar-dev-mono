@@ -601,6 +601,36 @@ public sealed class GivenAGraphService : IDisposable
     }
 
     [Fact]
+    public async Task when_delete_item_returns_not_found_then_the_item_is_treated_as_already_deleted()
+    {
+        SetupDriveContext(AnyDriveId, "root-001");
+        server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/{AnyItemId}").UsingDelete())
+            .RespondWith(Response.Create()
+                .WithStatusCode(404)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyAsJson(new { error = new { code = "itemNotFound", message = "The resource could not be found." } }));
+
+        var result = await CreateSut().DeleteItemAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), AnyItemId, TestContext.Current.CancellationToken);
+
+        result.ShouldBeAssignableTo<Ok<System.Reactive.Unit, string>>();
+    }
+
+    [Fact]
+    public async Task when_delete_item_returns_forbidden_then_result_is_error()
+    {
+        SetupDriveContext(AnyDriveId, "root-001");
+        server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/{AnyItemId}").UsingDelete())
+            .RespondWith(Response.Create()
+                .WithStatusCode(403)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyAsJson(new { error = new { code = "accessDenied", message = "Denied" } }));
+
+        var result = await CreateSut().DeleteItemAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), AnyItemId, TestContext.Current.CancellationToken);
+
+        result.ShouldBeAssignableTo<Fail<System.Reactive.Unit, string>>();
+    }
+
+    [Fact]
     public async Task when_create_folder_succeeds_then_the_created_folder_is_returned()
     {
         SetupDriveContext(AnyDriveId, "root-001");
