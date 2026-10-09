@@ -10,7 +10,7 @@ using Microsoft.Kiota.Abstractions;
 namespace AStarDev.OneDriveSyncClient.Infrastructure.Graph;
 
 /// <summary>Implementation of <see cref="IGraphService"/> that delegates drive-context resolution to <see cref="DriveContextCache"/> and recursive folder enumeration to <see cref="GraphFolderEnumerator"/>.</summary>
-internal sealed class GraphService(IUploadService uploadService, IGraphClientFactory graphClientFactory, DriveContextCache driveContextCache, GraphFolderEnumerator graphFolderEnumerator) : IGraphService
+internal sealed class GraphService(IUploadService uploadService, IGraphClientFactory graphClientFactory, DriveContextCache driveContextCache, GraphFolderEnumerator graphFolderEnumerator, GraphDeltaReader graphDeltaReader) : IGraphService
 {
     private const string RootPathMarker = "root:";
     private const string ConflictBehaviorKey = "@microsoft.graph.conflictBehavior";
@@ -123,6 +123,14 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
             return new Fail<(long Total, long Used), string>(ex.Message);
         }
     }
+
+    /// <inheritdoc />
+    public Task<Result<string, string>> GetLatestDeltaLinkAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, CancellationToken cancellationToken = default)
+        => graphDeltaReader.GetLatestDeltaLinkAsync(tokenFactory, driveId, cancellationToken);
+
+    /// <inheritdoc />
+    public Task<Result<DeltaQueryResult, string>> GetDeltaChangesAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, string deltaLink, CancellationToken cancellationToken = default)
+        => graphDeltaReader.GetChangesAsync(tokenFactory, driveId, deltaLink, cancellationToken);
 
     /// <inheritdoc />
     public IAsyncEnumerable<DeltaItem> EnumerateFolderAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, string folderId, string remotePath, Action<int>? onItemDiscovered = null, CancellationToken cancellationToken = default)

@@ -20,6 +20,12 @@ public class DriveStateEntityConfiguration : IEntityTypeConfiguration<DriveState
         _ = builder.Property(e => e.LastSyncStartedAt)
                    .HasConversion(SqliteTypeConverters.OptionDateTimeOffsetToNullableTicks)
                    .IsRequired(false);
+        _ = builder.Property(e => e.RulesFingerprint)
+                   .HasConversion(SqliteTypeConverters.OptionStringToNullableString)
+                   .IsRequired(false);
+        _ = builder.Property(e => e.LastFullEnumerationAt)
+                   .HasConversion(SqliteTypeConverters.OptionDateTimeOffsetToNullableTicks)
+                   .IsRequired(false);
         _ = builder.HasIndex(e => e.AccountId).IsUnique();
         _ = builder.HasOne(e => e.Account)
                    .WithOne()

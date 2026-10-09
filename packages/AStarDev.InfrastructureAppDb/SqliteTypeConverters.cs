@@ -44,9 +44,7 @@ public static class SqliteTypeConverters
     public static ValueConverter<Option<string>, string?> OptionStringToNullableString { get; } = new OptionStringValueConverter();
 
     /// <summary>Converts an <see cref="Option{T}"/> of <see cref="DateTimeOffset"/> to and from nullable UTC ticks.</summary>
-    public static ValueConverter<Option<DateTimeOffset>, long?> OptionDateTimeOffsetToNullableTicks { get; } =
-        new(opt => opt.Match<long?>(v => v.ToUniversalTime().UtcTicks, () => null),
-            ticks => ticks.HasValue ? Option.Some(new DateTimeOffset(ticks.Value, TimeSpan.Zero)) : Option.None<DateTimeOffset>());
+    public static ValueConverter<Option<DateTimeOffset>, long?> OptionDateTimeOffsetToNullableTicks { get; } = new OptionDateTimeOffsetValueConverter();
 
     /// <summary>Converts an <see cref="Option{T}"/> of <see cref="ConflictPolicy"/> to and from a nullable integer.</summary>
     public static ValueConverter<Option<ConflictPolicy>, int?> OptionConflictPolicyToNullableInt { get; } =

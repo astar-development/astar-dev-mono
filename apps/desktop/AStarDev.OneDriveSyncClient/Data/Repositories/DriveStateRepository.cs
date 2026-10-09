@@ -31,6 +31,8 @@ public sealed class DriveStateRepository(IDbContextFactory<AppDbContext> dbFacto
         {
             existing.DeltaLink = driveState.DeltaLink;
             existing.LastSyncStartedAt = driveState.LastSyncStartedAt;
+            existing.RulesFingerprint = driveState.RulesFingerprint;
+            existing.LastFullEnumerationAt = driveState.LastFullEnumerationAt;
         }
 
         _ = await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);

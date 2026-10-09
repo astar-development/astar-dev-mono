@@ -1027,6 +1027,12 @@
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.DriveStateEntity.LastSyncStartedAt">
             <summary>Timestamp of the last sync operation start, or None if never synced.</summary>
         </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.DriveStateEntity.RulesFingerprint">
+            <summary>Fingerprint of the sync rules in force when the last full enumeration completed, or None before the first one. A different fingerprint forces a full enumeration.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.DriveStateEntity.LastFullEnumerationAt">
+            <summary>Timestamp at which the last successful full enumeration completed, or None before the first one.</summary>
+        </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.DriveStateEntity.Account">
             <summary>Navigation property to the associated AccountEntity.</summary>
         </member>
@@ -1986,12 +1992,33 @@
         <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.RemoveKeywords.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.Migrations.AddDriveStateFullEnumerationTracking">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddDriveStateFullEnumerationTracking.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddDriveStateFullEnumerationTracking.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddDriveStateFullEnumerationTracking.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.ModelBuilderExtensions">
             <summary>Extension methods that register SQLite-friendly value conversions on a <see cref="T:Microsoft.EntityFrameworkCore.ModelBuilder"/>.</summary>
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.ModelBuilderExtensions.UseSqliteFriendlyConversions(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <summary>Applies the SQLite-friendly value conversions to every configured entity type that needs them.</summary>
             <param name="mb">The model builder to configure.</param>
+        </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.OptionDateTimeOffsetValueConverter">
+            <summary>Converts an <see cref="T:AStarDev.FunctionalParadigm.Option`1"/> of <see cref="T:System.DateTimeOffset"/> to and from nullable UTC ticks, including NULL column values which map to <c>Option.None</c>.</summary>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.OptionDateTimeOffsetValueConverter.#ctor">
+            <summary>Converts an <see cref="T:AStarDev.FunctionalParadigm.Option`1"/> of <see cref="T:System.DateTimeOffset"/> to and from nullable UTC ticks, including NULL column values which map to <c>Option.None</c>.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.OptionDateTimeOffsetValueConverter.ConvertsNulls">
+            <inheritdoc />
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.OptionStringValueConverter">
             <summary>Converts an <see cref="T:AStarDev.FunctionalParadigm.Option`1"/> of <see cref="T:System.String"/> to and from a nullable string, including NULL column values which map to <c>Option.None</c>.</summary>

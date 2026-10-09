@@ -2,6 +2,7 @@ using AStarDev.FunctionalParadigm;
 using AStarDev.OneDriveSyncClient.Accounts;
 using AStarDev.OneDriveSyncClient.Data.Repositories;
 using AStarDev.OneDriveSyncClient.Infrastructure.Graph;
+using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Delta;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Detection;
 using Microsoft.Extensions.Logging;
 using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
@@ -14,6 +15,7 @@ public sealed class GivenARemoteFolderEnumerator
     private readonly IGraphService _graphService = Substitute.For<IGraphService>();
     private readonly ISyncRuleRepository _syncRuleRepository = Substitute.For<ISyncRuleRepository>();
     private readonly ISyncedItemRepository _syncedItemRepository = Substitute.For<ISyncedItemRepository>();
+    private readonly IRemoteChangeGate _remoteChangeGate = Substitute.For<IRemoteChangeGate>();
 
     public GivenARemoteFolderEnumerator()
     {
@@ -21,9 +23,11 @@ public sealed class GivenARemoteFolderEnumerator
             .Returns([]);
         _graphService.GetDriveIdAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
             .Returns(new Ok<DriveId, string>(new DriveId("drive-1")));
+        _remoteChangeGate.DecideAsync(Arg.Any<OneDriveAccount>(), Arg.Any<DriveId>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<IReadOnlyList<SyncRuleEntity>>(), Arg.Any<IReadOnlyDictionary<string, SyncedItemEntity>>(), Arg.Any<CancellationToken>())
+            .Returns(RemoteWalkDecisionFactory.CreateWalk(WalkReasons.NoDeltaLink, Option.None<string>()));
     }
 
-    private RemoteFolderEnumerator CreateSut() => new(_graphService, _syncRuleRepository, _syncedItemRepository, Substitute.For<ILogger<RemoteFolderEnumerator>>());
+    private RemoteFolderEnumerator CreateSut() => new(_graphService, _syncRuleRepository, _syncedItemRepository, _remoteChangeGate, Substitute.For<ILogger<RemoteFolderEnumerator>>());
 
     private static OneDriveAccount CreateAccount() => new()
     {

@@ -9,6 +9,7 @@ using AStarDev.OneDriveSyncClient.Infrastructure.OneDrive;
 using AStarDev.OneDriveSyncClient.Infrastructure.Rules;
 using AStarDev.OneDriveSyncClient.Infrastructure.Shell;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync;
+using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Delta;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Detection;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Jobs;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Pipeline;
@@ -45,6 +46,7 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<IGraphClientFactory, GraphClientFactory>();
         _ = services.AddSingleton<DriveContextCache>();
         _ = services.AddSingleton<GraphFolderEnumerator>();
+        _ = services.AddSingleton<GraphDeltaReader>();
         _ = services.AddSingleton<IGraphService, GraphService>();
         _ = services.AddSingleton<IQuotaRefreshService, QuotaRefreshService>();
         _ = services.AddSingleton<IStartupService, StartupService>();
@@ -59,6 +61,7 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<IRemoteFolderEnumerator, RemoteFolderEnumerator>();
         _ = services.AddSingleton<IRemoteFolderCreator, RemoteFolderCreator>();
         _ = services.AddSingleton<IRemoteDeletionDetector, RemoteDeletionDetector>();
+        _ = services.AddSingleton<IRemoteChangeGate, RemoteChangeGate>();
         _ = services.AddSingleton<ILocalDeletionDetector, LocalDeletionDetector>();
         _ = services.AddSingleton<ISyncJobExecutor, SyncJobExecutor>();
         _ = services.AddSingleton<SyncServiceDependencies>();

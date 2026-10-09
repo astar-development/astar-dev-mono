@@ -7,13 +7,14 @@ using AStarDev.OneDriveSyncClient.Accounts;
 using AStarDev.OneDriveSyncClient.Data.Repositories;
 using AStarDev.OneDriveSyncClient.Infrastructure.Graph;
 using AStarDev.OneDriveSyncClient.Infrastructure.Logging;
+using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Delta;
 using Microsoft.Extensions.Logging;
 using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 
 namespace AStarDev.OneDriveSyncClient.Infrastructure.Sync.Detection;
 
 /// <inheritdoc />
-public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRuleRepository syncRuleRepository, ISyncedItemRepository syncedItemRepository, ILogger<RemoteFolderEnumerator> logger) : IRemoteFolderEnumerator
+public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRuleRepository syncRuleRepository, ISyncedItemRepository syncedItemRepository, IRemoteChangeGate remoteChangeGate, ILogger<RemoteFolderEnumerator> logger) : IRemoteFolderEnumerator
 {
     /// <inheritdoc />
     public async Task PrepareAsync(OneDriveAccount account, RemoteEnumerationContext context, CancellationToken cancellationToken = default)
@@ -58,6 +59,16 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
                 }).ConfigureAwait(false);
 
         if (driveId is null)
+        {
+            context.HadEnumerationFailures = true;
+
+            yield break;
+        }
+
+        var walkDecision = await remoteChangeGate.DecideAsync(account, driveId.Value, tokenFactory, context.Rules, context.SyncedItems, cancellationToken).ConfigureAwait(false);
+        context.WalkDecision = Option.Some(walkDecision);
+
+        if (walkDecision is SkipRemote)
             yield break;
 
         var includeRules = context.Rules.Where(r => r.RuleType == RuleType.Include).ToList();
@@ -78,6 +89,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
             if (folderId is null)
             {
                 OneDriveSyncClientMessages.RemoteFolderEnumeratorCannotResolveId(logger, rule.RemotePath);
+                context.HadEnumerationFailures = true;
                 continue;
             }
 
@@ -97,6 +109,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
                     catch (Exception ex) when (ex is not OperationCanceledException and not SyncReAuthRequiredException)
                     {
                         OneDriveSyncClientMessages.RemoteFolderEnumeratorFailed(logger, rule.RemotePath, ex.Message);
+                        context.HadEnumerationFailures = true;
                         break;
                     }
 
