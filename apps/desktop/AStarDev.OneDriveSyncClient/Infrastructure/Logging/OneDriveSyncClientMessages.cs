@@ -194,6 +194,10 @@ public static partial class OneDriveSyncClientMessages
     [LoggerMessage(EventId = 2608, Level = LogLevel.Debug, Message = "[RemoteFolderEnumerator] Resolving folder id for {Path}")]
     public static partial void RemoteFolderEnumeratorResolvingFolder(ILogger logger, string path);
 
+    /// <summary>Logs the remote change gate decision for a sync pass.</summary>
+    [LoggerMessage(EventId = 2612, Level = LogLevel.Information, Message = "[RemoteChangeGate] {Outcome} for {AccountId}: {Reason}")]
+    public static partial void RemoteChangeGateDecided(ILogger logger, string outcome, string accountId, string reason);
+
     // Download Operations (2700-2799)
 
     /// <summary>Logs ETag match, skipping download.</summary>

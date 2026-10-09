@@ -14,4 +14,11 @@ public record SyncSettings
     /// </summary>
     [Range(1, int.MaxValue, ErrorMessage = "ProgressReportInterval must be at least 1.")]
     public required int ProgressReportInterval { get; init; }
+
+    /// <summary>
+    /// The longest time, in hours, that may pass between full remote enumerations. Between full enumerations the sync
+    /// asks Graph what changed and skips the walk when nothing relevant did. Must be at least 1.
+    /// </summary>
+    [Range(1, int.MaxValue, ErrorMessage = "FullEnumerationMaxAgeHours must be at least 1.")]
+    public int FullEnumerationMaxAgeHours { get; init; } = 24;
 }

@@ -18,6 +18,9 @@ public static class WalkReasons
     /// <summary>The delta query reported relevant changes.</summary>
     public const string RelevantChanges = "RelevantChanges";
 
+    /// <summary>Nothing relevant changed remotely since the stored delta link.</summary>
+    public const string NoChanges = "NoChanges";
+
     /// <summary>The delta query failed or its link has expired.</summary>
     public const string DeltaUnavailable = "DeltaUnavailable";
 }
