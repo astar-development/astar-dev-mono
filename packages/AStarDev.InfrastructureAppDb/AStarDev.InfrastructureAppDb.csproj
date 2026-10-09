@@ -1,6 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <PackageReleaseNotes>
+        v0.1.0 fix(infrastructure-app-db): map NULL Option<string> columns to Option.None
+        </PackageReleaseNotes>
         <ApplicationIcon>astar.ico</ApplicationIcon>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Authors>AStar Development, Jason Barden</Authors>
