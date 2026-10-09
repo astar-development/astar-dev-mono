@@ -27,8 +27,8 @@ public sealed class RemoteChangeGate(IGraphService graphService, IDriveStateRepo
 
         var decision = plan switch
         {
-            CheckForChanges check => await CheckForRelevantChangesAsync(driveId, tokenFactory, check.DeltaLink, rules, syncedItems, cancellationToken).ConfigureAwait(false),
-            WalkRequired walk => await WalkWithLatestLinkAsync(driveId, tokenFactory, walk.Reason, cancellationToken).ConfigureAwait(false),
+            CheckForChanges check => await CheckForRelevantChangesAsync(account.Id.Value, driveId, tokenFactory, check.DeltaLink, rules, syncedItems, cancellationToken).ConfigureAwait(false),
+            WalkRequired walk => await WalkWithLatestLinkAsync(account.Id.Value, driveId, tokenFactory, walk.Reason, cancellationToken).ConfigureAwait(false),
             _ => RemoteWalkDecisionFactory.CreateWalk(WalkReasons.DeltaUnavailable, Option.None<string>())
         };
 
@@ -37,21 +37,29 @@ public sealed class RemoteChangeGate(IGraphService graphService, IDriveStateRepo
         return decision;
     }
 
-    private async Task<RemoteWalkDecision> CheckForRelevantChangesAsync(DriveId driveId, Func<CancellationToken, Task<string>> tokenFactory, string deltaLink, IReadOnlyList<SyncRuleEntity> rules, IReadOnlyDictionary<string, SyncedItemEntity> syncedItems, CancellationToken cancellationToken)
+    private async Task<RemoteWalkDecision> CheckForRelevantChangesAsync(string accountId, DriveId driveId, Func<CancellationToken, Task<string>> tokenFactory, string deltaLink, IReadOnlyList<SyncRuleEntity> rules, IReadOnlyDictionary<string, SyncedItemEntity> syncedItems, CancellationToken cancellationToken)
     {
         var result = await graphService.GetDeltaChangesAsync(tokenFactory, driveId, deltaLink, cancellationToken).ConfigureAwait(false);
 
         if (result is not Ok<DeltaQueryResult, string> { Value: DeltaChangesFound found })
-            return await WalkWithLatestLinkAsync(driveId, tokenFactory, WalkReasons.DeltaUnavailable, cancellationToken).ConfigureAwait(false);
+        {
+            string error = result is Fail<DeltaQueryResult, string> failure ? failure.Error : "Delta link expired or unusable";
+            OneDriveSyncClientMessages.RemoteChangeGateDeltaFailed(logger, accountId, error);
+
+            return await WalkWithLatestLinkAsync(accountId, driveId, tokenFactory, WalkReasons.DeltaUnavailable, cancellationToken).ConfigureAwait(false);
+        }
 
         return RemoteChangeRelevance.AnyAffectSyncedScope(found.Changes, syncedItems, rules)
             ? RemoteWalkDecisionFactory.CreateWalk(WalkReasons.RelevantChanges, Option.Some(found.NextDeltaLink))
             : RemoteWalkDecisionFactory.CreateSkip(found.NextDeltaLink);
     }
 
-    private async Task<RemoteWalkDecision> WalkWithLatestLinkAsync(DriveId driveId, Func<CancellationToken, Task<string>> tokenFactory, string reason, CancellationToken cancellationToken)
+    private async Task<RemoteWalkDecision> WalkWithLatestLinkAsync(string accountId, DriveId driveId, Func<CancellationToken, Task<string>> tokenFactory, string reason, CancellationToken cancellationToken)
     {
         var latest = await graphService.GetLatestDeltaLinkAsync(tokenFactory, driveId, cancellationToken).ConfigureAwait(false);
+
+        if (latest is Fail<string, string> failure)
+            OneDriveSyncClientMessages.RemoteChangeGateDeltaFailed(logger, accountId, failure.Error);
 
         return RemoteWalkDecisionFactory.CreateWalk(reason, latest is Ok<string, string> ok ? Option.Some(ok.Value) : Option.None<string>());
     }

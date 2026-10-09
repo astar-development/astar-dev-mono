@@ -198,6 +198,10 @@ public static partial class OneDriveSyncClientMessages
     [LoggerMessage(EventId = 2612, Level = LogLevel.Information, Message = "[RemoteChangeGate] {Outcome} for {AccountId}: {Reason}")]
     public static partial void RemoteChangeGateDecided(ILogger logger, string outcome, string accountId, string reason);
 
+    /// <summary>Logs why the Graph delta query could not be used, so the sync falls back to a full walk.</summary>
+    [LoggerMessage(EventId = 2613, Level = LogLevel.Warning, Message = "[RemoteChangeGate] Delta query unavailable for {AccountId}: {Error}")]
+    public static partial void RemoteChangeGateDeltaFailed(ILogger logger, string accountId, string error);
+
     // Download Operations (2700-2799)
 
     /// <summary>Logs ETag match, skipping download.</summary>
