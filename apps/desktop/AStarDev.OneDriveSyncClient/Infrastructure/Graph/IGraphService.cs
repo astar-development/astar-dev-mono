@@ -40,7 +40,7 @@ public interface IGraphService
     /// <summary>Creates a folder with the given name under the specified parent folder. Fails if a sibling with the same name already exists.</summary>
     Task<Result<DriveFolder, string>> CreateFolderAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, string parentFolderId, string folderName, CancellationToken cancellationToken = default);
 
-    /// <summary>Permanently deletes the specified item from OneDrive (moves it to the recycle bin).</summary>
+    /// <summary>Permanently deletes the specified item from OneDrive (moves it to the recycle bin). An item that no longer exists is treated as already deleted and succeeds.</summary>
     Task<Result<Unit, string>> DeleteItemAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, string itemId, CancellationToken cancellationToken = default);
 
     /// <summary>Removes the cached drive context for the given account. Call after sign-out to prevent stale entries accumulating.</summary>
