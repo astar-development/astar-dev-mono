@@ -36,7 +36,7 @@ public sealed class GivenAGraphDeltaReader : IDisposable
     private static Task<string> Token(CancellationToken cancellationToken) => Task.FromResult("any-access-token");
 
     private void StubDelta(string token, JsonObject body, int statusCode = 200)
-        => server.Given(Request.Create().WithPath(DeltaPath).WithParam("token", token).UsingGet())
+        => server.Given(Request.Create().WithPath($"{DeltaPath}(token='{token}')").UsingGet())
             .RespondWith(Response.Create().WithStatusCode(statusCode).WithHeader("Content-Type", "application/json").WithBody(body.ToJsonString()));
 
     private static JsonObject FileNode(string id, string parentId)

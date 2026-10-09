@@ -22,6 +22,12 @@ public interface IGraphService
     /// <summary>Streams all descendants (files and folders) of the given folder. Items are yielded per Graph API page; no buffering. ETag and CTag are populated on each yielded DeltaItem.</summary>
     IAsyncEnumerable<DeltaItem> EnumerateFolderAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, string folderId, string remotePath, Action<int>? onItemDiscovered = null, CancellationToken cancellationToken = default);
 
+    /// <summary>Returns a delta link representing "now" without enumerating the drive, for use as the baseline of the next change check.</summary>
+    Task<Result<string, string>> GetLatestDeltaLinkAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, CancellationToken cancellationToken = default);
+
+    /// <summary>Reads every drive change since the supplied delta link, following all pages. Returns <see cref="DeltaResyncRequired"/> when the link has expired or is unusable.</summary>
+    Task<Result<DeltaQueryResult, string>> GetDeltaChangesAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, string deltaLink, CancellationToken cancellationToken = default);
+
     /// <summary>Resolves the OneDrive item ID for a path relative to the drive root. Returns null if the path does not exist.</summary>
     Task<string?> GetFolderIdByPathAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, string remotePath, CancellationToken cancellationToken = default);
 

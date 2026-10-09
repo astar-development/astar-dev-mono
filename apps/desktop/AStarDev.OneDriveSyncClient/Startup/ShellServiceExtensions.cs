@@ -45,6 +45,7 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<IGraphClientFactory, GraphClientFactory>();
         _ = services.AddSingleton<DriveContextCache>();
         _ = services.AddSingleton<GraphFolderEnumerator>();
+        _ = services.AddSingleton<GraphDeltaReader>();
         _ = services.AddSingleton<IGraphService, GraphService>();
         _ = services.AddSingleton<IQuotaRefreshService, QuotaRefreshService>();
         _ = services.AddSingleton<IStartupService, StartupService>();

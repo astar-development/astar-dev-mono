@@ -39,7 +39,7 @@ public sealed class GivenAGraphService : IDisposable
     {
         var factory = new WireMockGraphClientFactory(server);
 
-        return new GraphService(Substitute.For<IUploadService>(), factory, new DriveContextCache(factory), new GraphFolderEnumerator(factory));
+        return new GraphService(Substitute.For<IUploadService>(), factory, new DriveContextCache(factory), new GraphFolderEnumerator(factory), new GraphDeltaReader(factory));
     }
 
     [Fact]
