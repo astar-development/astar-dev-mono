@@ -96,6 +96,22 @@ public sealed class GivenAGraphDeltaReader : IDisposable
     }
 
     [Fact]
+    public async Task when_the_drive_root_item_is_reported_then_it_is_not_returned_as_a_change()
+    {
+        StubDelta("old", new JsonObject
+        {
+            ["@odata.deltaLink"] = $"{GraphDeltaBase}?token=new",
+            ["value"] = new JsonArray(new JsonObject { ["id"] = "root-id", ["name"] = "root", ["folder"] = new JsonObject(), ["root"] = new JsonObject() }, FileNode("file-1", "folder-1"))
+        });
+        var sut = CreateSut();
+
+        var result = await sut.GetChangesAsync(Token, driveId, $"{GraphDeltaBase}?token=old", TestContext.Current.CancellationToken);
+
+        var found = result.ShouldBeOfType<Ok<DeltaQueryResult, string>>().Value.ShouldBeOfType<DeltaChangesFound>();
+        found.Changes.Select(change => change.ItemId).ShouldBe(["file-1"]);
+    }
+
+    [Fact]
     public async Task when_changes_span_multiple_pages_then_all_pages_are_read_and_the_final_delta_link_is_returned()
     {
         StubDelta("old", new JsonObject { ["@odata.nextLink"] = $"{GraphDeltaBase}?token=page2", ["value"] = new JsonArray(FileNode("file-1", "folder-1")) });
