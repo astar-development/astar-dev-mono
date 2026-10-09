@@ -7,8 +7,8 @@ namespace AStarDev.OneDriveSyncClient.TestsUnit.Infrastructure.Graph;
 
 public sealed class GivenAGraphDeltaReader : IDisposable
 {
-    private const string DeltaPath = "/drives/drive-001/root/delta";
-    private const string GraphDeltaBase = "https://graph.microsoft.com/v1.0/drives/drive-001/root/delta";
+    private const string DeltaPath = "/drives/drive-001/items/root/delta";
+    private const string GraphDeltaBase = "https://graph.microsoft.com/v1.0/drives/drive-001/items/root/delta";
 
     private readonly WireMockServer server = WireMockServer.Start();
     private readonly DriveId driveId = new("drive-001");
