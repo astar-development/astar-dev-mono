@@ -16,6 +16,7 @@ stage the file.
 
 import re
 import sys
+from xml.sax.saxutils import escape
 
 
 def main() -> None:
@@ -24,7 +25,7 @@ def main() -> None:
     with open(path, encoding="utf-8") as handle:
         text = handle.read()
 
-    desired_entry = f"v{version} {title}"
+    desired_entry = escape(f"v{version} {title}")
     block = re.search(r"<PackageReleaseNotes>(.*?)</PackageReleaseNotes>", text, re.DOTALL)
 
     if block is None:
