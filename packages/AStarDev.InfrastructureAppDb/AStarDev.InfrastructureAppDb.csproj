@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <PackageReleaseNotes>
+        v0.1.2 perf(onedrive-sync-client): skip remote walk when Graph delta shows no relevant changes
         v0.1.1 fix(release-notes): XML-escape PR title in PackageReleaseNotes and repair broken csproj
         v0.1.0 fix(infrastructure-app-db): map NULL Option&lt;string&gt; columns to Option.None
         </PackageReleaseNotes>
