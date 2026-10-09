@@ -41,9 +41,7 @@ public static class SqliteTypeConverters
         new(d => d.HasValue ? (long?)Math.Round(d.Value * 100m) : null, l => l.HasValue ? l.Value / 100m : null);
 
     /// <summary>Converts an <see cref="Option{T}"/> of <see cref="string"/> to and from a nullable string.</summary>
-    public static ValueConverter<Option<string>, string?> OptionStringToNullableString { get; } =
-        new(opt => opt.Match<string?>(v => v, () => null),
-            str => str != null ? Option.Some(str) : Option.None<string>());
+    public static ValueConverter<Option<string>, string?> OptionStringToNullableString { get; } = new OptionStringValueConverter();
 
     /// <summary>Converts an <see cref="Option{T}"/> of <see cref="DateTimeOffset"/> to and from nullable UTC ticks.</summary>
     public static ValueConverter<Option<DateTimeOffset>, long?> OptionDateTimeOffsetToNullableTicks { get; } =

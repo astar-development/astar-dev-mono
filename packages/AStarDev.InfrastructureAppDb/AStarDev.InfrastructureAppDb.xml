@@ -1993,6 +1993,15 @@
             <summary>Applies the SQLite-friendly value conversions to every configured entity type that needs them.</summary>
             <param name="mb">The model builder to configure.</param>
         </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.OptionStringValueConverter">
+            <summary>Converts an <see cref="T:AStarDev.FunctionalParadigm.Option`1"/> of <see cref="T:System.String"/> to and from a nullable string, including NULL column values which map to <c>Option.None</c>.</summary>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.OptionStringValueConverter.#ctor">
+            <summary>Converts an <see cref="T:AStarDev.FunctionalParadigm.Option`1"/> of <see cref="T:System.String"/> to and from a nullable string, including NULL column values which map to <c>Option.None</c>.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.OptionStringValueConverter.ConvertsNulls">
+            <inheritdoc />
+        </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.SqliteTypeConverters">
             <summary>Shared EF Core value converters for types SQLite cannot store natively.</summary>
         </member>
