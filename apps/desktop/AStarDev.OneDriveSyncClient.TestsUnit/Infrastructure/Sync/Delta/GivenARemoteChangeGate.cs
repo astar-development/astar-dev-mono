@@ -6,6 +6,8 @@ using AStarDev.OneDriveSyncClient.Data.Repositories;
 using AStarDev.OneDriveSyncClient.Infrastructure.ApplicationConfiguration;
 using AStarDev.OneDriveSyncClient.Infrastructure.Graph;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Delta;
+using AStarDev.OneDriveSyncClient.TestsUnit.TestHelpers;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Time.Testing;
 using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
@@ -153,6 +155,20 @@ public sealed class GivenARemoteChangeGate
         var walk = decision.ShouldBeOfType<WalkRemote>();
         walk.Reason.ShouldBe(WalkReasons.DeltaUnavailable);
         walk.NewDeltaLink.ShouldBe(Option.Some(LatestLink));
+    }
+
+    [Fact]
+    public async Task when_the_delta_query_fails_then_a_warning_is_logged()
+    {
+        GivenDriveState();
+        _graphService.GetDeltaChangesAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), StoredLink, Arg.Any<CancellationToken>())
+            .Returns(new Fail<DeltaQueryResult, string>("boom"));
+        var logger = new TestLogger<RemoteChangeGate>();
+        var sut = new RemoteChangeGate(_graphService, _driveStateRepository, _timeProvider, Options.Create(new SyncSettings { ProgressReportInterval = 100 }), logger);
+
+        _ = await Decide(sut);
+
+        logger.Entries.ShouldContain(entry => entry.Level == LogLevel.Warning && entry.EventId.Id == 2613);
     }
 
     [Fact]

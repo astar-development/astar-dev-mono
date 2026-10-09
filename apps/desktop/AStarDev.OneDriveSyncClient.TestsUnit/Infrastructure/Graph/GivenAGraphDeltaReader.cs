@@ -147,6 +147,58 @@ public sealed class GivenAGraphDeltaReader : IDisposable
     }
 
     [Fact]
+    public async Task when_the_stored_delta_link_uses_the_path_token_form_then_changes_are_read()
+    {
+        StubDelta("old", new JsonObject { ["@odata.deltaLink"] = $"{GraphDeltaBase}(token='new')", ["value"] = new JsonArray(FileNode("file-1", "folder-1")) });
+        var sut = CreateSut();
+
+        var result = await sut.GetChangesAsync(Token, driveId, $"{GraphDeltaBase}(token='old')", TestContext.Current.CancellationToken);
+
+        var found = result.ShouldBeOfType<Ok<DeltaQueryResult, string>>().Value.ShouldBeOfType<DeltaChangesFound>();
+        found.Changes.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_changes_are_requested_then_no_select_query_is_sent()
+    {
+        StubDelta("old", new JsonObject { ["@odata.deltaLink"] = $"{GraphDeltaBase}?token=new", ["value"] = new JsonArray() });
+        var sut = CreateSut();
+
+        _ = await sut.GetChangesAsync(Token, driveId, $"{GraphDeltaBase}?token=old", TestContext.Current.CancellationToken);
+
+        var requestUrls = server.LogEntries.Select(entry => entry.RequestMessage?.Url ?? string.Empty).ToList();
+
+        requestUrls.ShouldNotBeEmpty();
+        requestUrls.ShouldAllBe(url => !url.Contains("select", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task when_graph_fails_then_the_status_code_and_error_code_are_in_the_failure_message()
+    {
+        StubDelta("old", new JsonObject { ["error"] = new JsonObject { ["code"] = "invalidRequest", ["message"] = "bad token" } }, 400);
+        var sut = CreateSut();
+
+        var result = await sut.GetChangesAsync(Token, driveId, $"{GraphDeltaBase}?token=old", TestContext.Current.CancellationToken);
+
+        string message = result.ShouldBeOfType<Fail<DeltaQueryResult, string>>().Error;
+        message.ShouldContain("400");
+        message.ShouldContain("invalidRequest");
+    }
+
+    [Fact]
+    public async Task when_latest_delta_link_fails_then_the_status_code_and_error_code_are_in_the_failure_message()
+    {
+        StubDelta("latest", new JsonObject { ["error"] = new JsonObject { ["code"] = "accessDenied", ["message"] = "no" } }, 403);
+        var sut = CreateSut();
+
+        var result = await sut.GetLatestDeltaLinkAsync(Token, driveId, TestContext.Current.CancellationToken);
+
+        string message = result.ShouldBeOfType<Fail<string, string>>().Error;
+        message.ShouldContain("403");
+        message.ShouldContain("accessDenied");
+    }
+
+    [Fact]
     public async Task when_graph_fails_with_a_server_error_then_a_failure_is_returned()
     {
         StubDelta("old", [], 500);

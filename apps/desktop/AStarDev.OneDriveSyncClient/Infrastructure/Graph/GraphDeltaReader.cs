@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using System.Web;
 using AStarDev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Domain;
@@ -7,14 +8,12 @@ using Microsoft.Graph.Models.ODataErrors;
 namespace AStarDev.OneDriveSyncClient.Infrastructure.Graph;
 
 /// <summary>Reads the drive-root delta feed. Only the opaque token is taken from any link, and requests always go to the authenticated client's own base address, so a tampered link cannot redirect the bearer token.</summary>
-internal sealed class GraphDeltaReader(IGraphClientFactory graphClientFactory)
+internal sealed partial class GraphDeltaReader(IGraphClientFactory graphClientFactory)
 {
     private const string RootItem = "root";
     private const string LatestToken = "latest";
     private const string TokenKey = "token";
     private const int GoneStatusCode = 410;
-
-    private static readonly string[] deltaSelect = ["id", "parentReference", "deleted", "root"];
 
     internal async Task<Result<string, string>> GetLatestDeltaLinkAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, CancellationToken cancellationToken)
     {
@@ -29,7 +28,7 @@ internal sealed class GraphDeltaReader(IGraphClientFactory graphClientFactory)
         }
         catch (Exception ex) when (ex is not OperationCanceledException and not SyncReAuthRequiredException)
         {
-            return new Fail<string, string>(ex.Message);
+            return new Fail<string, string>(Describe(ex));
         }
     }
 
@@ -49,7 +48,7 @@ internal sealed class GraphDeltaReader(IGraphClientFactory graphClientFactory)
             while (token is not null)
             {
                 string pageToken = token;
-                var page = await client.Drives[driveId.Value].Items[RootItem].DeltaWithToken(pageToken).GetAsDeltaWithTokenGetResponseAsync(request => request.QueryParameters.Select = deltaSelect, cancellationToken).ConfigureAwait(false);
+                var page = await client.Drives[driveId.Value].Items[RootItem].DeltaWithToken(pageToken).GetAsDeltaWithTokenGetResponseAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
                 changes.AddRange((page?.Value ?? []).Where(item => item.Root is null).Select(MapChange));
                 nextDeltaLink = page?.OdataDeltaLink;
@@ -66,7 +65,7 @@ internal sealed class GraphDeltaReader(IGraphClientFactory graphClientFactory)
         }
         catch (Exception ex) when (ex is not OperationCanceledException and not SyncReAuthRequiredException)
         {
-            return new Fail<DeltaQueryResult, string>(ex.Message);
+            return new Fail<DeltaQueryResult, string>(Describe(ex));
         }
     }
 
@@ -79,13 +78,28 @@ internal sealed class GraphDeltaReader(IGraphClientFactory graphClientFactory)
             : DeltaChangeFactory.CreateChanged(itemId, item.ParentReference?.Id is string parentId ? Option.Some(parentId) : Option.None<string>());
     }
 
+    private static string Describe(Exception exception)
+        => exception is ODataError error
+            ? $"HTTP {error.ResponseStatusCode} {error.Error?.Code} {error.Error?.Message}".Trim()
+            : exception.Message;
+
     private static string? ExtractToken(string? link)
     {
         if (string.IsNullOrEmpty(link) || !Uri.TryCreate(link, UriKind.Absolute, out var uri))
             return null;
 
-        string? token = HttpUtility.ParseQueryString(uri.Query)[TokenKey];
+        string? token = HttpUtility.ParseQueryString(uri.Query)[TokenKey] ?? ExtractPathToken(uri.AbsolutePath);
 
         return string.IsNullOrEmpty(token) ? null : token;
     }
+
+    private static string? ExtractPathToken(string absolutePath)
+    {
+        var match = PathTokenPattern().Match(Uri.UnescapeDataString(absolutePath));
+
+        return match.Success ? match.Groups[TokenKey].Value : null;
+    }
+
+    [GeneratedRegex("""delta\(token='(?<token>[^']+)'\)""", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex PathTokenPattern();
 }
