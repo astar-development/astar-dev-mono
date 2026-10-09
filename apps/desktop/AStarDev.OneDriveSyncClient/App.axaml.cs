@@ -16,6 +16,7 @@ using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using AStarDev.LoggingExtensions;
 using ApplicationMessages = AStarDev.LoggingExtensions.ApplicationMessages;
 
 namespace AStarDev.OneDriveSyncClient;
@@ -73,7 +74,7 @@ public class App : Application, IDisposable
         _ = services.AddViews();
         _ = services.AddViewModels();
         var configuration = RegisterOptions(services);
-        _ = services.AddLogging(logging => logging.ConfigureOTelLogging(configuration, inMemoryLogProcessor));
+        _ = services.AddLogging(logging => logging.ConfigureOTelLogging(configuration, inMemoryLogProcessor).AddFileLogging(ApplicationDirectories.LogsDirectory, ApplicationMetadata.ApplicationNameHyphenated));
 
         _ = services.AddVelopackUpdates(configuration);
         _ = services.AddShell(inMemoryLogProcessor);
