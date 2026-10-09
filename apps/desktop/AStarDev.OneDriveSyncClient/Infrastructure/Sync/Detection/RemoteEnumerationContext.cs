@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
+using AStarDev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Delta;
 
 namespace AStarDev.OneDriveSyncClient.Infrastructure.Sync.Detection;
 
@@ -16,6 +18,15 @@ public sealed class RemoteEnumerationContext
 
     /// <summary>Synced items loaded before streaming begins, keyed by remote item ID. Thread-safe for concurrent producer/worker access.</summary>
     public ConcurrentDictionary<string, SyncedItemEntity> SyncedItems { get; internal set; } = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>The decision on whether the remote tree is walked on this pass; None until the enumerator has decided.</summary>
+    public Option<RemoteWalkDecision> WalkDecision { get; internal set; } = Option.None<RemoteWalkDecision>();
+
+    /// <summary>True when the remote walk was skipped because Graph reported no relevant changes, so <see cref="SeenRemoteIds"/> is intentionally empty.</summary>
+    public bool RemoteWalkSkipped => WalkDecision is Option<RemoteWalkDecision>.Some { Value: SkipRemote };
+
+    /// <summary>True when enumeration could not be completed in full (drive or folder unresolved, or a Graph error), so this pass must not advance the stored delta state.</summary>
+    public bool HadEnumerationFailures { get; internal set; }
 
     /// <summary>Remote item IDs seen so far; populated as items are yielded.</summary>
     public HashSet<string> SeenRemoteIds { get; } = new(StringComparer.OrdinalIgnoreCase);

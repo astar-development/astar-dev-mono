@@ -7,6 +7,7 @@ using AStarDev.OneDriveSyncClient.Accounts;
 using AStarDev.OneDriveSyncClient.Infrastructure.ApplicationConfiguration;
 using AStarDev.OneDriveSyncClient.Infrastructure.Logging;
 using AStarDev.OneDriveSyncClient.Infrastructure.Shell;
+using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Delta;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Detection;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Jobs;
 using AStarDev.OneDriveSyncClient.Localization;
@@ -35,7 +36,6 @@ internal sealed class SyncPassOrchestrator(ISyncPassRepositories syncPassReposit
             .Match(v => v, () => new DriveStateEntity { AccountId = account.Id });
 
         driveState.LastSyncStartedAt = Option.Some(DateTimeOffset.UtcNow);
-        driveState.DeltaLink = Option.None<string>();
         await syncPassRepositories.DriveStateRepository.UpsertAsync(driveState, cancellationToken).ConfigureAwait(false);
 
         var mappings = await syncPassRepositories.ClassificationRepository.GetAllCategoriesAsync(cancellationToken).ConfigureAwait(false);
@@ -96,6 +96,9 @@ internal sealed class SyncPassOrchestrator(ISyncPassRepositories syncPassReposit
                 await syncPassRepositories.AccountRepository.UpsertAsync(entity, cancellationToken).ConfigureAwait(false);
             }).ConfigureAwait(false);
 
+        if (failedJobCount == 0 && !context.HadEnumerationFailures)
+            await PersistDeltaStateAsync(driveState, context, cancellationToken).ConfigureAwait(false);
+
         account.LastSyncedAt = Option.Some(DateTimeOffset.UtcNow);
         LogStageTiming(account.Id.Value, TotalStage, passStarted);
 
@@ -147,10 +150,13 @@ internal sealed class SyncPassOrchestrator(ISyncPassRepositories syncPassReposit
             if (context.HadNoRules)
                 return;
 
-            RaiseProgress(account.Id.Value, 0, 0, localizationService.GetLocal("Sync.DetectingRemoteDeletions"), onProgress);
-            stageStarted = Stopwatch.GetTimestamp();
-            await dependencies.RemoteDeletionDetector.DetectAndApplyAsync(account.Id, context.SyncedItems, context.SeenRemoteIds, context.Rules, cancellationToken).ConfigureAwait(false);
-            LogStageTiming(account.Id.Value, RemoteDeletionDetectionStage, stageStarted);
+            if (!context.RemoteWalkSkipped)
+            {
+                RaiseProgress(account.Id.Value, 0, 0, localizationService.GetLocal("Sync.DetectingRemoteDeletions"), onProgress);
+                stageStarted = Stopwatch.GetTimestamp();
+                await dependencies.RemoteDeletionDetector.DetectAndApplyAsync(account.Id, context.SyncedItems, context.SeenRemoteIds, context.Rules, cancellationToken).ConfigureAwait(false);
+                LogStageTiming(account.Id.Value, RemoteDeletionDetectionStage, stageStarted);
+            }
 
             stageStarted = Stopwatch.GetTimestamp();
 
@@ -183,6 +189,25 @@ internal sealed class SyncPassOrchestrator(ISyncPassRepositories syncPassReposit
             firstJobSignal.TrySetResult(false);
             writer.TryComplete();
         }
+    }
+
+    private async Task PersistDeltaStateAsync(DriveStateEntity driveState, RemoteEnumerationContext context, CancellationToken cancellationToken)
+    {
+        switch (context.WalkDecision)
+        {
+            case Option<RemoteWalkDecision>.Some { Value: SkipRemote skip }:
+                driveState.DeltaLink = Option.Some(skip.NewDeltaLink);
+                break;
+            case Option<RemoteWalkDecision>.Some { Value: WalkRemote walk }:
+                driveState.DeltaLink = walk.NewDeltaLink;
+                driveState.RulesFingerprint = Option.Some(RulesFingerprintCalculator.Compute(context.Rules));
+                driveState.LastFullEnumerationAt = Option.Some(DateTimeOffset.UtcNow);
+                break;
+            default:
+                return;
+        }
+
+        await syncPassRepositories.DriveStateRepository.UpsertAsync(driveState, cancellationToken).ConfigureAwait(false);
     }
 
     private void LogStageTiming(string accountId, string stage, long startedTimestamp)
