@@ -148,7 +148,7 @@ public sealed class SyncService(IAuthService authService, ISyncRepository syncRe
 
             case SyncOutcome.UnexpectedError(var cause):
                 OneDriveSyncClientMessages.SyncServiceError(logger, accountId, cause.Message, cause);
-                RaiseProgress(accountId, localizationService.GetLocal("Sync.UnexpectedError"), SyncState.Error);
+                RaiseProgress(accountId, localizationService.GetLocal("Sync.UnexpectedError", cause.Message), SyncState.Error);
                 break;
         }
     }
