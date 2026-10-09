@@ -20,6 +20,12 @@ public sealed class DriveStateEntity
     /// <summary>Timestamp of the last sync operation start, or None if never synced.</summary>
     public Option<DateTimeOffset> LastSyncStartedAt { get; set; } = Option.None<DateTimeOffset>();
 
+    /// <summary>Fingerprint of the sync rules in force when the last full enumeration completed, or None before the first one. A different fingerprint forces a full enumeration.</summary>
+    public Option<string> RulesFingerprint { get; set; } = Option.None<string>();
+
+    /// <summary>Timestamp at which the last successful full enumeration completed, or None before the first one.</summary>
+    public Option<DateTimeOffset> LastFullEnumerationAt { get; set; } = Option.None<DateTimeOffset>();
+
     /// <summary>Navigation property to the associated AccountEntity.</summary>
     [ForeignKey(nameof(AccountId))]
     public AccountEntity? Account { get; set; }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using AStar.Dev.Infrastructure.AppDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,12 +12,14 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AStar.Dev.Infrastructure.AppDb.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261009125336_AddDriveStateFullEnumerationTracking")]
+    partial class AddDriveStateFullEnumerationTracking
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.10");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.12");
 
             modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.AccountEntity", b =>
                 {
@@ -499,53 +502,6 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                     b.ToTable("ScrapeDirectories", (string)null);
                 });
 
-            modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.SearchCategoryEntity", b =>
-                {
-                    b.Property<int>("SearchConfigurationId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Id")
-                        .HasMaxLength(128)
-                        .HasColumnType("TEXT")
-                        .UseCollation("NOCASE");
-
-                    b.Property<long>("CreatedAt")
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("CreatedAt_Ticks");
-
-                    b.Property<bool>("IncludeInSearch")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsFamous")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsInternet")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("LastKnownImageCount")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("LastPageVisited")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("TEXT")
-                        .UseCollation("NOCASE");
-
-                    b.Property<int>("TotalPages")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<long>("UpdatedAt")
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("UpdatedAt_Ticks");
-
-                    b.HasKey("SearchConfigurationId", "Id");
-
-                    b.ToTable("SearchCategories", (string)null);
-                });
-
             modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.SearchConfigurationEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -937,6 +893,53 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                     b.ToTable("UserConfiguration", (string)null);
                 });
 
+            modelBuilder.Entity("AStarDev.InfrastructureAppDb.Entities.SearchCategoryEntity", b =>
+                {
+                    b.Property<int>("SearchConfigurationId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Id")
+                        .HasMaxLength(128)
+                        .HasColumnType("TEXT")
+                        .UseCollation("NOCASE");
+
+                    b.Property<long>("CreatedAt")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("CreatedAt_Ticks");
+
+                    b.Property<bool>("IncludeInSearch")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsFamous")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsInternet")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("LastKnownImageCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("LastPageVisited")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT")
+                        .UseCollation("NOCASE");
+
+                    b.Property<int>("TotalPages")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("UpdatedAt")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("UpdatedAt_Ticks");
+
+                    b.HasKey("SearchConfigurationId", "Id");
+
+                    b.ToTable("SearchCategories", (string)null);
+                });
+
             modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.ConnectionStringsEntity", b =>
                 {
                     b.HasOne("AStar.Dev.Infrastructure.AppDb.Entities.ScrapeConfigurationEntity", "ScrapeConfigurationEntity")
@@ -1029,17 +1032,6 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                         .IsRequired();
 
                     b.Navigation("ScrapeConfigurationEntity");
-                });
-
-            modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.SearchCategoryEntity", b =>
-                {
-                    b.HasOne("AStar.Dev.Infrastructure.AppDb.Entities.SearchConfigurationEntity", "SearchConfiguration")
-                        .WithMany("SearchCategories")
-                        .HasForeignKey("SearchConfigurationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("SearchConfiguration");
                 });
 
             modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.SearchConfigurationEntity", b =>
@@ -1137,6 +1129,17 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
                         .IsRequired();
 
                     b.Navigation("ScrapeConfigurationEntity");
+                });
+
+            modelBuilder.Entity("AStarDev.InfrastructureAppDb.Entities.SearchCategoryEntity", b =>
+                {
+                    b.HasOne("AStar.Dev.Infrastructure.AppDb.Entities.SearchConfigurationEntity", "SearchConfiguration")
+                        .WithMany("SearchCategories")
+                        .HasForeignKey("SearchConfigurationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SearchConfiguration");
                 });
 
             modelBuilder.Entity("AStar.Dev.Infrastructure.AppDb.Entities.FileDetailEntity", b =>
