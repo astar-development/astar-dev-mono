@@ -5,6 +5,7 @@ using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Jobs;
 using Microsoft.Graph.Models;
+using Microsoft.Graph.Models.ODataErrors;
 using Microsoft.Kiota.Abstractions;
 
 namespace AStarDev.OneDriveSyncClient.Infrastructure.Graph;
@@ -16,6 +17,7 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
     private const string ConflictBehaviorKey = "@microsoft.graph.conflictBehavior";
     private const string ConflictBehaviorFail = "fail";
     private const string DownloadUrlKey = "@microsoft.graph.downloadUrl";
+    private const int NotFoundStatusCode = 404;
 
     private static readonly string[] childrenSelect =
     [
@@ -244,6 +246,10 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
                     await ctx.Client.Drives[ctx.Ctx.DriveId.Value].Items[itemId].DeleteAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
                     return (Result<Unit, string>)new Ok<Unit, string>(Unit.Default);
+                }
+                catch (ODataError error) when (error.ResponseStatusCode == NotFoundStatusCode)
+                {
+                    return new Ok<Unit, string>(Unit.Default);
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException and not SyncReAuthRequiredException)
                 {
