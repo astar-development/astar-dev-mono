@@ -18,9 +18,20 @@ public sealed class SyncedItemRegistrar(ISyncedItemRepository syncedItemReposito
     {
         _ = fileSystem.Directory.CreateDirectory(localPath);
         var entity = SyncedItemEntityFactory.Create(accountId, item, remotePath, localPath);
+
+        if (syncedItems.TryGetValue(item.Id.Value, out var known) && IsUnchangedFolder(known, entity))
+            return;
+
         _ = await syncedItemRepository.UpsertAsync(entity, cancellationToken).ConfigureAwait(false);
         syncedItems[item.Id.Value] = entity;
     }
+
+    private static bool IsUnchangedFolder(SyncedItemEntity known, SyncedItemEntity incoming)
+        => known.IsFolder
+           && known.RemoteParentId == incoming.RemoteParentId
+           && known.RemotePath == incoming.RemotePath
+           && known.LocalPath == incoming.LocalPath
+           && known.Tags == incoming.Tags;
 
     /// <inheritdoc />
     public async Task RegisterPhantomAsync(AccountId accountId, FileDeltaItem item, string remotePath, string localPath, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, IReadOnlyList<FileClassificationCategory> mappings, CancellationToken cancellationToken)

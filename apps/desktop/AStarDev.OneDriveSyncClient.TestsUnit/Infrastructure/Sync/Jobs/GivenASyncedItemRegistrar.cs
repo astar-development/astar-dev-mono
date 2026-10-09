@@ -106,6 +106,78 @@ public sealed class GivenASyncedItemRegistrar
     }
 
     [Fact]
+    public async Task when_register_folder_called_for_unchanged_known_folder_then_upsert_is_not_called()
+    {
+        var sut = CreateSut();
+        var item = FolderItem("folder-1", "/Documents/Sub");
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity> { ["folder-1"] = SyncedItemEntityFactory.Create(new AccountId("user-1"), item, "/Documents/Sub", "/sync-root/Documents/Sub") };
+
+        await sut.RegisterFolderAsync(new AccountId("user-1"), item, "/Documents/Sub", "/sync-root/Documents/Sub", syncedItems, TestContext.Current.CancellationToken);
+
+        await _syncedItemRepository.DidNotReceive().UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_register_folder_called_for_unchanged_known_folder_then_directory_is_still_ensured()
+    {
+        var sut = CreateSut();
+        var item = FolderItem("folder-1", "/Documents/Sub");
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity> { ["folder-1"] = SyncedItemEntityFactory.Create(new AccountId("user-1"), item, "/Documents/Sub", "/sync-root/Documents/Sub") };
+
+        await sut.RegisterFolderAsync(new AccountId("user-1"), item, "/Documents/Sub", "/sync-root/Documents/Sub", syncedItems, TestContext.Current.CancellationToken);
+
+        _mockDirectory.Received(1).CreateDirectory("/sync-root/Documents/Sub");
+    }
+
+    [Fact]
+    public async Task when_register_folder_called_for_known_folder_with_new_remote_path_then_upsert_is_called()
+    {
+        var sut = CreateSut();
+        var item = FolderItem("folder-1", "/Documents/Renamed");
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity> { ["folder-1"] = SyncedItemEntityFactory.Create(new AccountId("user-1"), FolderItem("folder-1", "/Documents/Sub"), "/Documents/Sub", "/sync-root/Documents/Sub") };
+
+        await sut.RegisterFolderAsync(new AccountId("user-1"), item, "/Documents/Renamed", "/sync-root/Documents/Renamed", syncedItems, TestContext.Current.CancellationToken);
+
+        await _syncedItemRepository.Received(1).UpsertAsync(Arg.Is<SyncedItemEntity>(e => e.RemotePath == "/Documents/Renamed"), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_register_folder_called_for_known_folder_with_new_etag_then_upsert_is_called()
+    {
+        var sut = CreateSut();
+        var item = DeltaItemFactory.CreateFolder(new OneDriveItemId("folder-1"), new DriveId("drive-1"), Option.None<OneDriveFolderId>(), ItemPathFactory.Create("folder-1", "/Documents/Sub"), VersionInfoFactory.Create(Option.Some("etag-2"), Option.None<string>()));
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity> { ["folder-1"] = SyncedItemEntityFactory.Create(new AccountId("user-1"), FolderItem("folder-1", "/Documents/Sub"), "/Documents/Sub", "/sync-root/Documents/Sub") };
+
+        await sut.RegisterFolderAsync(new AccountId("user-1"), item, "/Documents/Sub", "/sync-root/Documents/Sub", syncedItems, TestContext.Current.CancellationToken);
+
+        await _syncedItemRepository.Received(1).UpsertAsync(Arg.Any<SyncedItemEntity>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_register_folder_called_for_known_folder_with_new_local_path_then_upsert_is_called()
+    {
+        var sut = CreateSut();
+        var item = FolderItem("folder-1", "/Documents/Sub");
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity> { ["folder-1"] = SyncedItemEntityFactory.Create(new AccountId("user-1"), item, "/Documents/Sub", "/old-root/Documents/Sub") };
+
+        await sut.RegisterFolderAsync(new AccountId("user-1"), item, "/Documents/Sub", "/sync-root/Documents/Sub", syncedItems, TestContext.Current.CancellationToken);
+
+        await _syncedItemRepository.Received(1).UpsertAsync(Arg.Is<SyncedItemEntity>(e => e.LocalPath == "/sync-root/Documents/Sub"), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_register_folder_called_for_known_file_id_then_upsert_is_called()
+    {
+        var sut = CreateSut();
+        var item = FolderItem("item-1", "/Documents/Sub");
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity> { ["item-1"] = SyncedItemEntityFactory.Create(new AccountId("user-1"), FileItem("item-1", "/Documents/Sub"), "/Documents/Sub", "/sync-root/Documents/Sub") };
+
+        await sut.RegisterFolderAsync(new AccountId("user-1"), item, "/Documents/Sub", "/sync-root/Documents/Sub", syncedItems, TestContext.Current.CancellationToken);
+
+        await _syncedItemRepository.Received(1).UpsertAsync(Arg.Is<SyncedItemEntity>(e => e.IsFolder), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task when_register_folder_called_then_no_file_detail_is_resolved()
     {
         var sut = CreateSut();
