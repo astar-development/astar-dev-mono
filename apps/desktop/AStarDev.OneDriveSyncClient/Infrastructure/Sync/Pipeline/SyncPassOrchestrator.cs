@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Threading.Channels;
 using AStarDev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Domain;
@@ -16,8 +17,20 @@ namespace AStarDev.OneDriveSyncClient.Infrastructure.Sync.Pipeline;
 
 internal sealed class SyncPassOrchestrator(ISyncPassRepositories syncPassRepositories, SyncServiceDependencies dependencies, IOptions<SyncSettings> syncSettings, ISettingsService settingsService, ILocalizationService localizationService, ILogger<SyncPassOrchestrator> logger) : ISyncPassOrchestrator
 {
+    private const string PrepareStage = "Prepare";
+    private const string RemotePrepareStage = "RemotePrepare";
+    private const string CreateMissingFoldersStage = "CreateMissingFolders";
+    private const string LocalDeletionDetectionStage = "LocalDeletionDetection";
+    private const string EnumerateAndQueueStage = "EnumerateAndQueue";
+    private const string BuildJobsStage = "BuildJobs";
+    private const string RemoteDeletionDetectionStage = "RemoteDeletionDetection";
+    private const string LocalChangeScanStage = "LocalChangeScan";
+    private const string JobExecutionStage = "JobExecution";
+    private const string TotalStage = "Total";
+
     public async Task<SyncPassResult> OrchestrateAsync(OneDriveAccount account, AccountSyncConfig syncConfig, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncConflict, Task> conflictCallback, Action<SyncProgressEventArgs>? onProgress = null, Func<JobCompletedEventArgs, Task>? onJobCompleted = null, CancellationToken cancellationToken = default)
     {
+        long passStarted = Stopwatch.GetTimestamp();
         var driveState = (await syncPassRepositories.DriveStateRepository.GetByAccountIdAsync(account.Id, cancellationToken).ConfigureAwait(false))
             .Match(v => v, () => new DriveStateEntity { AccountId = account.Id });
 
@@ -27,6 +40,7 @@ internal sealed class SyncPassOrchestrator(ISyncPassRepositories syncPassReposit
 
         var mappings = await syncPassRepositories.ClassificationRepository.GetAllCategoriesAsync(cancellationToken).ConfigureAwait(false);
 
+        LogStageTiming(account.Id.Value, PrepareStage, passStarted);
         OneDriveSyncClientMessages.SyncPipelinePreparing(logger, account.Id.Value);
         RaiseProgress(account.Id.Value, 0, 0, localizationService.GetLocal("Sync.Preparing"), onProgress);
 
@@ -60,8 +74,12 @@ internal sealed class SyncPassOrchestrator(ISyncPassRepositories syncPassReposit
         }
 
         int failedJobCount = 0;
+        long executionStarted = Stopwatch.GetTimestamp();
         if (hasJobs)
             failedJobCount = await dependencies.JobExecutor.ExecuteAsync(account, tokenFactory, jobChannel.Reader.ReadAllAsync(cancellationToken), context.SyncedItems, mappings, onProgress ?? (_ => { }), onJobCompleted ?? (_ => Task.CompletedTask), cancellationToken).ConfigureAwait(false);
+
+        if (hasJobs)
+            LogStageTiming(account.Id.Value, JobExecutionStage, executionStarted);
 
         await producerTask.ConfigureAwait(false);
 
@@ -79,6 +97,7 @@ internal sealed class SyncPassOrchestrator(ISyncPassRepositories syncPassReposit
             }).ConfigureAwait(false);
 
         account.LastSyncedAt = Option.Some(DateTimeOffset.UtcNow);
+        LogStageTiming(account.Id.Value, TotalStage, passStarted);
 
         return SyncPassResultFactory.Create(didRun: true, failedJobCount: failedJobCount);
     }
@@ -88,19 +107,29 @@ internal sealed class SyncPassOrchestrator(ISyncPassRepositories syncPassReposit
         bool signaled = false;
         try
         {
+            long stageStarted = Stopwatch.GetTimestamp();
             await dependencies.RemoteFolderEnumerator.PrepareAsync(account, context, cancellationToken).ConfigureAwait(false);
+            LogStageTiming(account.Id.Value, RemotePrepareStage, stageStarted);
 
             if (context.HadNoRules)
                 return;
 
+            stageStarted = Stopwatch.GetTimestamp();
             await dependencies.RemoteFolderCreator.CreateMissingFoldersAsync(account, syncConfig, tokenFactory, context, cancellationToken).ConfigureAwait(false);
+            LogStageTiming(account.Id.Value, CreateMissingFoldersStage, stageStarted);
 
             RaiseProgress(account.Id.Value, 0, 0, localizationService.GetLocal("Sync.DetectingLocalChanges"), onProgress);
+            stageStarted = Stopwatch.GetTimestamp();
             await dependencies.LocalDeletionDetector.DetectAndApplyAsync(account.Id, tokenFactory, context.SyncedItems, cancellationToken).ConfigureAwait(false);
+            LogStageTiming(account.Id.Value, LocalDeletionDetectionStage, stageStarted);
 
+            stageStarted = Stopwatch.GetTimestamp();
+            long buildTicks = 0;
             await foreach (var item in dependencies.RemoteFolderEnumerator.StreamAsync(account, tokenFactory, context, enumerationProgress, stageChanged, cancellationToken).ConfigureAwait(false))
             {
+                long buildStarted = Stopwatch.GetTimestamp();
                 var job = await dependencies.DownloadJobBuilder.BuildOneAsync(account, syncConfig, item, context.Rules, context.SyncedItems, conflictCallback, mappings, cancellationToken).ConfigureAwait(false);
+                buildTicks += Stopwatch.GetTimestamp() - buildStarted;
                 if (job is not null)
                 {
                     await writer.WriteAsync(job, cancellationToken).ConfigureAwait(false);
@@ -112,14 +141,22 @@ internal sealed class SyncPassOrchestrator(ISyncPassRepositories syncPassReposit
                 }
             }
 
+            LogStageTiming(account.Id.Value, EnumerateAndQueueStage, stageStarted);
+            LogAccumulatedStageTiming(account.Id.Value, BuildJobsStage, buildTicks);
+
             if (context.HadNoRules)
                 return;
 
             RaiseProgress(account.Id.Value, 0, 0, localizationService.GetLocal("Sync.DetectingRemoteDeletions"), onProgress);
+            stageStarted = Stopwatch.GetTimestamp();
             await dependencies.RemoteDeletionDetector.DetectAndApplyAsync(account.Id, context.SyncedItems, context.SeenRemoteIds, context.Rules, cancellationToken).ConfigureAwait(false);
+            LogStageTiming(account.Id.Value, RemoteDeletionDetectionStage, stageStarted);
+
+            stageStarted = Stopwatch.GetTimestamp();
 
             var syncedItemsByLocalPath = context.SyncedItems.Values.ToDictionary(i => i.LocalPath, StringComparer.OrdinalIgnoreCase);
             var uploadJobs = dependencies.LocalChangeDetector.DetectNewAndModifiedFiles(account.Id.Value, syncConfig.LocalSyncPath.Value, context.Rules, syncedItemsByLocalPath);
+            LogStageTiming(account.Id.Value, LocalChangeScanStage, stageStarted);
 
             foreach (var job in uploadJobs)
             {
@@ -146,6 +183,18 @@ internal sealed class SyncPassOrchestrator(ISyncPassRepositories syncPassReposit
             firstJobSignal.TrySetResult(false);
             writer.TryComplete();
         }
+    }
+
+    private void LogStageTiming(string accountId, string stage, long startedTimestamp)
+    {
+        long elapsedMs = (long)Stopwatch.GetElapsedTime(startedTimestamp).TotalMilliseconds;
+        OneDriveSyncClientMessages.SyncPipelineStageTiming(logger, stage, accountId, elapsedMs);
+    }
+
+    private void LogAccumulatedStageTiming(string accountId, string stage, long elapsedTicks)
+    {
+        long elapsedMs = (long)Stopwatch.GetElapsedTime(0, elapsedTicks).TotalMilliseconds;
+        OneDriveSyncClientMessages.SyncPipelineStageTiming(logger, stage, accountId, elapsedMs);
     }
 
     private static void RaiseProgress(string accountId, int completed, int total, string currentFile, Action<SyncProgressEventArgs>? onProgress)
