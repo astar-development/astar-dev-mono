@@ -20,17 +20,30 @@ internal sealed class SyncProgressTracker(string accountId, string folderId, int
     private int failed;
     private int total = int.MaxValue;
     private bool totalized;
+    private int lastReportedDone;
+    private string lastCompletedFile = string.Empty;
 
     internal int Done => done;
     internal int FailedCount => failed;
 
-    internal void SetTotal(int value)
+    internal void SetTotal(int value, Action<SyncProgressEventArgs>? onProgress = null)
     {
+        SyncProgressEventArgs? missedFinalProgress = null;
+
         lock (lockObj)
         {
             total = value;
             totalized = true;
+
+            if (done == value && done > lastReportedDone)
+            {
+                lastReportedDone = done;
+                missedFinalProgress = new SyncProgressEventArgs(accountId, folderId, done, value, lastCompletedFile, SyncState.Syncing);
+            }
         }
+
+        if (missedFinalProgress is not null)
+            onProgress?.Invoke(missedFinalProgress);
     }
 
     internal async Task RecordCompletionAsync(SyncJob job, bool success, string? error, Action<SyncProgressEventArgs> onProgress, Func<JobCompletedEventArgs, Task> onJobCompleted)
@@ -48,6 +61,9 @@ internal sealed class SyncProgressTracker(string accountId, string folderId, int
             currentTotal = total;
             isTotalized = totalized;
             shouldReportProgress = completedSoFar % progressReportInterval == 0 || (isTotalized && completedSoFar == currentTotal);
+            lastCompletedFile = job.Target.RelativePath;
+            if (shouldReportProgress)
+                lastReportedDone = completedSoFar;
         }
 
         var completedJob = success ? job.Complete() : job.Fail(error ?? throw new ArgumentNullException(nameof(error), "Error message required when success is false."));
