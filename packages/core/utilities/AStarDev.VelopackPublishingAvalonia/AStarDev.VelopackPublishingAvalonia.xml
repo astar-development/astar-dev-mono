@@ -89,6 +89,12 @@
         <member name="P:AStar.Dev.Velopack.Publishing.Avalonia.Updates.UpdateAvailableViewModel.ErrorMessage">
             <inheritdoc/>
         </member>
+        <member name="P:AStar.Dev.Velopack.Publishing.Avalonia.Updates.UpdateAvailableViewModel.DownloadProgress">
+            <inheritdoc/>
+        </member>
+        <member name="P:AStar.Dev.Velopack.Publishing.Avalonia.Updates.UpdateAvailableViewModel.DownloadProgressText">
+            <inheritdoc/>
+        </member>
         <member name="P:AStar.Dev.Velopack.Publishing.Avalonia.Updates.UpdateAvailableViewModel.Title">
             <summary>The dialog's title text.</summary>
         </member>
@@ -167,6 +173,12 @@
         <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.ErrorMessage">
             <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "ErrorMessage" generated properties.</summary>
         </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.DownloadProgress">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "DownloadProgress" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.DownloadProgressText">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "DownloadProgressText" generated properties.</summary>
+        </member>
         <member name="T:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs">
             <summary>
             A helper type providing cached, reusable <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instances
@@ -184,6 +196,12 @@
         </member>
         <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.ErrorMessage">
             <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "ErrorMessage" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.DownloadProgress">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "DownloadProgress" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.DownloadProgressText">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "DownloadProgressText" generated properties.</summary>
         </member>
     </members>
 </doc>
