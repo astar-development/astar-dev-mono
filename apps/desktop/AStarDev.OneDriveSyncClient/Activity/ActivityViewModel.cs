@@ -169,8 +169,7 @@ public sealed partial class ActivityViewModel(ISyncRepository syncRepository, IS
                                                                     {
                                                                         LogItems.Insert(0, item);
 
-                                                                        while (LogItems.Count > MaxLogSize)
-                                                                            LogItems.RemoveAt(LogItems.Count - 1);
+                                                                        TrimOldestNonErrorItems();
 
                                                                         LogItemCount = LogItems.Count;
                                                                         RebuildFilteredLog();
@@ -228,6 +227,20 @@ public sealed partial class ActivityViewModel(ISyncRepository syncRepository, IS
             ConflictCount = Conflicts.Count;
         };
         Conflicts.Add(vm);
+    }
+
+    private void TrimOldestNonErrorItems()
+    {
+        int excess = LogItems.Count(item => item.Type != ActivityItemType.Error) - MaxLogSize;
+
+        for (int index = LogItems.Count - 1; index >= 0 && excess > 0; index--)
+        {
+            if (LogItems[index].Type == ActivityItemType.Error)
+                continue;
+
+            LogItems.RemoveAt(index);
+            excess--;
+        }
     }
 
     private void RebuildFilteredLog()
