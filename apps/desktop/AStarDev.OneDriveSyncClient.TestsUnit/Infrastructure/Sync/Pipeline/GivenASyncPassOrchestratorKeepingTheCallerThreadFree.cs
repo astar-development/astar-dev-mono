@@ -70,9 +70,17 @@ public sealed class GivenASyncPassOrchestratorKeepingTheCallerThreadFree
             SyncConfig = syncConfig,
             SelectedFolderIds = []
         };
-        int callerThreadId = Environment.CurrentManagedThreadId;
+        int callerThreadId = 0;
 
-        await sut.OrchestrateAsync(account, syncConfig, _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
+        await Task.Factory.StartNew(
+            () =>
+            {
+                callerThreadId = Environment.CurrentManagedThreadId;
+                sut.OrchestrateAsync(account, syncConfig, _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken).GetAwaiter().GetResult();
+            },
+            TestContext.Current.CancellationToken,
+            TaskCreationOptions.LongRunning,
+            TaskScheduler.Default);
 
         localDeletionDetectionThreadId.ShouldNotBe(callerThreadId);
     }
