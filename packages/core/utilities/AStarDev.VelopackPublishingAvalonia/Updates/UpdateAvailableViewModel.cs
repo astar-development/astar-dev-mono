@@ -48,6 +48,12 @@ public sealed partial class UpdateAvailableViewModel : ObservableObject, IDispos
     [ObservableProperty]
     public partial string? ErrorMessage { get; set; }
 
+    [ObservableProperty]
+    public partial int DownloadProgress { get; set; }
+
+    [ObservableProperty]
+    public partial string DownloadProgressText { get; set; } = string.Empty;
+
     /// <summary>The dialog's title text.</summary>
     public string Title => textProvider.Title;
 
