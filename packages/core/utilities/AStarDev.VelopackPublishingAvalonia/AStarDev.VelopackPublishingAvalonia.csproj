@@ -17,6 +17,9 @@
   -->
 
   <PropertyGroup>
+        <PackageReleaseNotes>
+        v0.1.0 feat(velopack): show download percentage and MB progress in the update dialog
+        </PackageReleaseNotes>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <PackageTags>velopack;updates;publishing;avalonia;astar;astardevelopment</PackageTags>

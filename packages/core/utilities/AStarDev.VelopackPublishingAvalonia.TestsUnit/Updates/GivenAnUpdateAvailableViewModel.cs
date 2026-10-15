@@ -7,9 +7,9 @@ namespace AStar.Dev.Velopack.Publishing.Avalonia.TestsUnit.Updates;
 
 public sealed class GivenAnUpdateAvailableViewModel
 {
-    private static UpdateInfo CreateUpdateInfo(string version = "1.2.3", string releaseNotes = "## What's new")
+    private static UpdateInfo CreateUpdateInfo(string version = "1.2.3", string releaseNotes = "## What's new", long sizeInBytes = 0)
     {
-        var asset = new VelopackAsset { Version = SemanticVersion.Parse(version), NotesMarkdown = releaseNotes };
+        var asset = new VelopackAsset { Version = SemanticVersion.Parse(version), NotesMarkdown = releaseNotes, Size = sizeInBytes };
 
         return new UpdateInfo(asset, false, null, []);
     }
@@ -94,7 +94,7 @@ public sealed class GivenAnUpdateAvailableViewModel
 
         Received.InOrder(() =>
         {
-            updateCheckService.DownloadUpdatesAsync(updateInfo, cancellationToken: Arg.Any<CancellationToken>());
+            updateCheckService.DownloadUpdatesAsync(updateInfo, Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>());
             updateCheckService.ApplyUpdatesAndRestart(updateInfo);
         });
     }
@@ -113,7 +113,7 @@ public sealed class GivenAnUpdateAvailableViewModel
     public async Task when_download_fails_then_error_message_is_populated_and_exception_does_not_propagate()
     {
         var (viewModel, updateCheckService) = CreateSut();
-        updateCheckService.DownloadUpdatesAsync(Arg.Any<UpdateInfo>(), cancellationToken: Arg.Any<CancellationToken>()).ThrowsAsync(new InvalidOperationException("offline"));
+        updateCheckService.DownloadUpdatesAsync(Arg.Any<UpdateInfo>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>()).ThrowsAsync(new InvalidOperationException("offline"));
 
         await viewModel.RestartNowCommand.ExecuteAsync(null);
 
@@ -124,10 +124,54 @@ public sealed class GivenAnUpdateAvailableViewModel
     public async Task when_download_fails_then_apply_updates_and_restart_is_never_called()
     {
         var (viewModel, updateCheckService) = CreateSut();
-        updateCheckService.DownloadUpdatesAsync(Arg.Any<UpdateInfo>(), cancellationToken: Arg.Any<CancellationToken>()).ThrowsAsync(new InvalidOperationException("offline"));
+        updateCheckService.DownloadUpdatesAsync(Arg.Any<UpdateInfo>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>()).ThrowsAsync(new InvalidOperationException("offline"));
 
         await viewModel.RestartNowCommand.ExecuteAsync(null);
 
         updateCheckService.DidNotReceive().ApplyUpdatesAndRestart(Arg.Any<UpdateInfo>());
     }
+
+    [Fact]
+    public async Task when_the_download_reports_progress_then_the_percentage_is_exposed()
+    {
+        var (viewModel, updateCheckService) = CreateSut(CreateUpdateInfo(sizeInBytes: 48 * 1024 * 1024));
+        ReportProgressWhenDownloading(updateCheckService, 50);
+
+        await viewModel.RestartNowCommand.ExecuteAsync(null);
+
+        viewModel.DownloadProgress.ShouldBe(50);
+    }
+
+    [Fact]
+    public async Task when_the_download_reports_progress_then_the_text_shows_the_megabytes_downloaded_and_total()
+    {
+        var (viewModel, updateCheckService) = CreateSut(CreateUpdateInfo(sizeInBytes: 48 * 1024 * 1024));
+        ReportProgressWhenDownloading(updateCheckService, 50);
+
+        await viewModel.RestartNowCommand.ExecuteAsync(null);
+
+        viewModel.DownloadProgressText.ShouldBe("50% · 24.0 / 48.0 MB");
+    }
+
+    [Fact]
+    public async Task when_the_update_is_a_delta_then_the_total_is_the_size_of_the_deltas()
+    {
+        var delta = new VelopackAsset { Version = SemanticVersion.Parse("1.2.3"), Size = 10 * 1024 * 1024 };
+        var updateInfo = new UpdateInfo(new VelopackAsset { Version = SemanticVersion.Parse("1.2.3"), Size = 48 * 1024 * 1024 }, false, null, [delta]);
+        var (viewModel, updateCheckService) = CreateSut(updateInfo);
+        ReportProgressWhenDownloading(updateCheckService, 100);
+
+        await viewModel.RestartNowCommand.ExecuteAsync(null);
+
+        viewModel.DownloadProgressText.ShouldBe("100% · 10.0 / 10.0 MB");
+    }
+
+    private static void ReportProgressWhenDownloading(IVelopackUpdateService updateCheckService, int percent)
+        => updateCheckService.DownloadUpdatesAsync(Arg.Any<UpdateInfo>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                call.ArgAt<Action<int>?>(1)?.Invoke(percent);
+
+                return Task.CompletedTask;
+            });
 }

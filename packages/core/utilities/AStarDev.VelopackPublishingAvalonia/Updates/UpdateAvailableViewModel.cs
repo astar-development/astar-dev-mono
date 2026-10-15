@@ -1,3 +1,4 @@
+using System.Globalization;
 using AStarDev.LoggingExtensions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -9,6 +10,8 @@ namespace AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 /// <summary>Presents a discovered Velopack update, offering the user a choice to restart now or later.</summary>
 public sealed partial class UpdateAvailableViewModel : ObservableObject, IDisposable
 {
+    private const double BytesPerMegabyte = 1024 * 1024;
+
     private readonly UpdateInfo updateInfo;
     private readonly IVelopackUpdateService updateCheckService;
     private readonly IUpdateDialogTextProvider textProvider;
@@ -47,6 +50,12 @@ public sealed partial class UpdateAvailableViewModel : ObservableObject, IDispos
 
     [ObservableProperty]
     public partial string? ErrorMessage { get; set; }
+
+    [ObservableProperty]
+    public partial int DownloadProgress { get; set; }
+
+    [ObservableProperty]
+    public partial string DownloadProgressText { get; set; } = string.Empty;
 
     /// <summary>The dialog's title text.</summary>
     public string Title => textProvider.Title;
@@ -105,7 +114,10 @@ public sealed partial class UpdateAvailableViewModel : ObservableObject, IDispos
 
         try
         {
-            await updateCheckService.DownloadUpdatesAsync(updateInfo);
+            DownloadProgress = 0;
+            DownloadProgressText = string.Empty;
+            var uiContext = SynchronizationContext.Current;
+            await updateCheckService.DownloadUpdatesAsync(updateInfo, percent => PostToUi(uiContext, () => ReportProgress(percent)));
             updateCheckService.ApplyUpdatesAndRestart(updateInfo);
         }
         catch (Exception ex)
@@ -118,6 +130,31 @@ public sealed partial class UpdateAvailableViewModel : ObservableObject, IDispos
             IsBusy = false;
         }
     }
+
+    private static void PostToUi(SynchronizationContext? uiContext, Action action)
+    {
+        if (uiContext is null)
+        {
+            action();
+
+            return;
+        }
+
+        uiContext.Post(_ => action(), null);
+    }
+
+    private void ReportProgress(int percent)
+    {
+        int clamped = Math.Clamp(percent, 0, 100);
+        double totalMegabytes = DownloadSizeInBytes() / BytesPerMegabyte;
+        double downloadedMegabytes = totalMegabytes * clamped / 100;
+
+        DownloadProgress = clamped;
+        DownloadProgressText = string.Create(CultureInfo.InvariantCulture, $"{clamped}% · {downloadedMegabytes:F1} / {totalMegabytes:F1} MB");
+    }
+
+    private double DownloadSizeInBytes()
+        => updateInfo.DeltasToTarget.Length > 0 ? updateInfo.DeltasToTarget.Sum(delta => delta.Size) : updateInfo.TargetFullRelease.Size;
 
     [RelayCommand]
     private void Later() => CloseRequested?.Invoke(this, EventArgs.Empty);
