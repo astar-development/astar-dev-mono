@@ -59,7 +59,7 @@ internal sealed class SyncPassOrchestrator(ISyncPassRepositories syncPassReposit
         var jobChannel = Channel.CreateBounded<SyncJob>(new BoundedChannelOptions(workerCount * 4) { FullMode = BoundedChannelFullMode.Wait, SingleReader = false, SingleWriter = true });
         var firstJobSignal = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        var producerTask = RunProducerAsync(account, syncConfig, tokenFactory, conflictCallback, enumerationProgress, stageChanged, context, onProgress, jobChannel.Writer, firstJobSignal, mappings, cancellationToken);
+        var producerTask = Task.Run(() => RunProducerAsync(account, syncConfig, tokenFactory, conflictCallback, enumerationProgress, stageChanged, context, onProgress, jobChannel.Writer, firstJobSignal, mappings, cancellationToken), CancellationToken.None);
 
         bool hasJobs;
         try
