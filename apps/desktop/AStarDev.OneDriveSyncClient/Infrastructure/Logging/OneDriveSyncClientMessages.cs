@@ -202,6 +202,10 @@ public static partial class OneDriveSyncClientMessages
     [LoggerMessage(EventId = 2613, Level = LogLevel.Warning, Message = "[RemoteChangeGate] Delta query unavailable for {AccountId}: {Error}")]
     public static partial void RemoteChangeGateDeltaFailed(ILogger logger, string accountId, string error);
 
+    /// <summary>Logs how many remote changes affect the synced scope, with a sample, so a triggered walk can be explained.</summary>
+    [LoggerMessage(EventId = 2614, Level = LogLevel.Information, Message = "[RemoteChangeGate] {RelevantCount} of {TotalCount} remote changes affect the synced scope for {AccountId}; first changes: {Changes}")]
+    public static partial void RemoteChangeGateRelevantChanges(ILogger logger, string accountId, int relevantCount, int totalCount, string changes);
+
     // Download Operations (2700-2799)
 
     /// <summary>Logs ETag match, skipping download.</summary>

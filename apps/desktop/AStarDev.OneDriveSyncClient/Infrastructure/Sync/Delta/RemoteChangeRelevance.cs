@@ -15,6 +15,14 @@ public static class RemoteChangeRelevance
         return changes.Any(change => IsRelevant(change, syncedItems, ruleRootIds));
     }
 
+    /// <summary>Returns the changes that touch the synced scope, using the same rules as <see cref="AnyAffectSyncedScope"/>.</summary>
+    public static IReadOnlyList<DeltaChange> GetRelevantChanges(IReadOnlyList<DeltaChange> changes, IReadOnlyDictionary<string, SyncedItemEntity> syncedItems, IReadOnlyList<SyncRuleEntity> rules)
+    {
+        HashSet<string> ruleRootIds = new(rules.Where(rule => rule.RuleType == RuleType.Include).Select(rule => rule.RemoteItemId).OfType<Option<string>.Some>().Select(some => some.Value), StringComparer.OrdinalIgnoreCase);
+
+        return changes.Where(change => IsRelevant(change, syncedItems, ruleRootIds)).ToList();
+    }
+
     private static bool IsRelevant(DeltaChange change, IReadOnlyDictionary<string, SyncedItemEntity> syncedItems, HashSet<string> ruleRootIds)
         => change switch
         {

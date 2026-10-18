@@ -16,6 +16,7 @@ public sealed class RemoteChangeGate(IGraphService graphService, IDriveStateRepo
 {
     private const string WalkOutcome = "Walk";
     private const string SkipOutcome = "Skip";
+    private const int MaxLoggedChanges = 10;
 
     /// <inheritdoc />
     public async Task<RemoteWalkDecision> DecideAsync(OneDriveAccount account, DriveId driveId, Func<CancellationToken, Task<string>> tokenFactory, IReadOnlyList<SyncRuleEntity> rules, IReadOnlyDictionary<string, SyncedItemEntity> syncedItems, CancellationToken cancellationToken)
@@ -49,9 +50,15 @@ public sealed class RemoteChangeGate(IGraphService graphService, IDriveStateRepo
             return await WalkWithLatestLinkAsync(accountId, driveId, tokenFactory, WalkReasons.DeltaUnavailable, cancellationToken).ConfigureAwait(false);
         }
 
-        return RemoteChangeRelevance.AnyAffectSyncedScope(found.Changes, syncedItems, rules)
-            ? RemoteWalkDecisionFactory.CreateWalk(WalkReasons.RelevantChanges, Option.Some(found.NextDeltaLink))
-            : RemoteWalkDecisionFactory.CreateSkip(found.NextDeltaLink);
+        var relevantChanges = RemoteChangeRelevance.GetRelevantChanges(found.Changes, syncedItems, rules);
+
+        if (relevantChanges.Count == 0)
+            return RemoteWalkDecisionFactory.CreateSkip(found.NextDeltaLink);
+
+        string sample = string.Join("; ", relevantChanges.Take(MaxLoggedChanges));
+        OneDriveSyncClientMessages.RemoteChangeGateRelevantChanges(logger, accountId, relevantChanges.Count, found.Changes.Count, sample);
+
+        return RemoteWalkDecisionFactory.CreateWalk(WalkReasons.RelevantChanges, Option.Some(found.NextDeltaLink));
     }
 
     private async Task<RemoteWalkDecision> WalkWithLatestLinkAsync(string accountId, DriveId driveId, Func<CancellationToken, Task<string>> tokenFactory, string reason, CancellationToken cancellationToken)
