@@ -35,7 +35,9 @@
         <Project Path="packages/AStarDev.InfrastructureAppDb.TestsUnit/AStarDev.InfrastructureAppDb.TestsUnit.csproj" />
         <Project Path="packages/AStarDev.InfrastructureAppDb/AStarDev.InfrastructureAppDb.csproj" />
         <Project Path="packages/AStarDev.InfrastructureFilesDb/AStarDev.InfrastructureFilesDb.csproj" />
-        <Project Path="packages/AStarDev.EFCoreSqlite/AStarDev.EFCoreSqlite.csproj" />
+        <Project Path="packages/EFCore/AStarDev.EFCoreSqlite/AStarDev.EFCoreSqlite.csproj" />
+        <Project Path="packages/EFCore/AStarDev.EFCoreExtensions/AStarDev.EFCoreExtensions.csproj" />
+        <Project Path="packages/EFCore/AStarDev.EFCoreExtensions.TestsUnit/AStarDev.EFCoreExtensions.TestsUnit.csproj" />
     </Folder>
     <Folder Name="/packages/aspnet/" />
     <Folder Name="/packages/aspnet/AStarDev.ApiHealthChecks/" />
