@@ -202,6 +202,22 @@ public static partial class OneDriveSyncClientMessages
     [LoggerMessage(EventId = 2613, Level = LogLevel.Warning, Message = "[RemoteChangeGate] Delta query unavailable for {AccountId}: {Error}")]
     public static partial void RemoteChangeGateDeltaFailed(ILogger logger, string accountId, string error);
 
+    /// <summary>Logs how many remote changes affect the synced scope, with a sample, so a triggered walk can be explained.</summary>
+    [LoggerMessage(EventId = 2614, Level = LogLevel.Information, Message = "[RemoteChangeGate] {RelevantCount} of {TotalCount} remote changes affect the synced scope for {AccountId}; first changes: {Changes}")]
+    public static partial void RemoteChangeGateRelevantChanges(ILogger logger, string accountId, int relevantCount, int totalCount, string changes);
+
+    /// <summary>Logs a Graph children page that took long to return, which points at throttling or a slow network.</summary>
+    [LoggerMessage(EventId = 2615, Level = LogLevel.Warning, Message = "[GraphFolderEnumerator] Slow children page for {FolderPath}: {ElapsedMs} ms")]
+    public static partial void GraphFolderEnumeratorSlowPage(ILogger logger, string folderPath, long elapsedMs);
+
+    /// <summary>Logs periodic progress of a recursive folder walk.</summary>
+    [LoggerMessage(EventId = 2616, Level = LogLevel.Information, Message = "[GraphFolderEnumerator] {RootPath}: {Pages} pages fetched in {ElapsedMs} ms, currently in {FolderPath}")]
+    public static partial void GraphFolderEnumeratorProgress(ILogger logger, string rootPath, int pages, long elapsedMs, string folderPath);
+
+    /// <summary>Logs the totals for a completed recursive folder walk.</summary>
+    [LoggerMessage(EventId = 2617, Level = LogLevel.Information, Message = "[GraphFolderEnumerator] {RootPath} walk complete: {Items} items, {Pages} pages, {ElapsedMs} ms")]
+    public static partial void GraphFolderEnumeratorCompleted(ILogger logger, string rootPath, int items, int pages, long elapsedMs);
+
     // Download Operations (2700-2799)
 
     /// <summary>Logs ETag match, skipping download.</summary>
