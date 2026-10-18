@@ -2,6 +2,8 @@ using AStarDev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStarDev.OneDriveSyncClient.Infrastructure.Graph;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Jobs;
+using AStarDev.OneDriveSyncClient.TestsUnit.TestHelpers;
+using Microsoft.Extensions.Logging;
 
 namespace AStarDev.OneDriveSyncClient.TestsUnit.Infrastructure.Graph;
 
@@ -16,6 +18,7 @@ public sealed class GivenAGraphService : IDisposable
     private const string AnyLocalPath = "/home/user/file.txt";
 
     private readonly WireMockServer server = WireMockServer.Start();
+    private readonly TestLogger<GraphFolderEnumerator> folderEnumeratorLogger = new();
     private bool disposed;
 
     public void Dispose()
@@ -39,7 +42,21 @@ public sealed class GivenAGraphService : IDisposable
     {
         var factory = new WireMockGraphClientFactory(server);
 
-        return new GraphService(Substitute.For<IUploadService>(), factory, new DriveContextCache(factory), new GraphFolderEnumerator(factory), new GraphDeltaReader(factory));
+        return new GraphService(Substitute.For<IUploadService>(), factory, new DriveContextCache(factory), new GraphFolderEnumerator(factory, folderEnumeratorLogger), new GraphDeltaReader(factory));
+    }
+
+    [Fact]
+    public async Task when_enumerate_folder_completes_then_the_walk_summary_is_logged()
+    {
+        server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/{AnyFolderId}/children").UsingGet())
+            .RespondWith(Response.Create()
+                .WithStatusCode(200)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyAsJson(new { value = new object[] { new { id = "file-root", name = "root-file.txt", file = new { }, size = 100L, parentReference = new { id = AnyFolderId, driveId = AnyDriveId } } } }));
+
+        await foreach (var _ in CreateSut().EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, AnyRemotePath, cancellationToken: TestContext.Current.CancellationToken)) { }
+
+        folderEnumeratorLogger.Entries.ShouldContain((LogLevel.Information, new EventId(2617)));
     }
 
     [Fact]
