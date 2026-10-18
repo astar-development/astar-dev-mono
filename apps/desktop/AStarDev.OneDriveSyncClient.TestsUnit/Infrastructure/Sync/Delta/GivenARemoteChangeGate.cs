@@ -36,8 +36,10 @@ public sealed class GivenARemoteChangeGate
         _syncedItems["folder-1"] = new SyncedItemEntity { AccountId = UserOne, RemoteItemId = new OneDriveItemId("folder-1") };
     }
 
+    private readonly TestLogger<RemoteChangeGate> _logger = new();
+
     private RemoteChangeGate CreateSut(int maxAgeHours = 24)
-        => new(_graphService, _driveStateRepository, _timeProvider, Options.Create(new SyncSettings { ProgressReportInterval = 100, FullEnumerationMaxAgeHours = maxAgeHours }), NullLogger<RemoteChangeGate>.Instance);
+        => new(_graphService, _driveStateRepository, _timeProvider, Options.Create(new SyncSettings { ProgressReportInterval = 100, FullEnumerationMaxAgeHours = maxAgeHours }), _logger);
 
     private static OneDriveAccount CreateAccount() => new()
     {
@@ -181,5 +183,27 @@ public sealed class GivenARemoteChangeGate
         var decision = await Decide(CreateSut());
 
         decision.ShouldBeOfType<WalkRemote>().Reason.ShouldBe(WalkReasons.DeltaUnavailable);
+    }
+
+    [Fact]
+    public async Task when_relevant_changes_are_found_then_the_relevant_changes_are_logged()
+    {
+        GivenDriveState();
+        GivenChanges(DeltaChangeFactory.CreateChanged("new-file", Option.Some("folder-1")));
+
+        _ = await Decide(CreateSut());
+
+        _logger.Entries.ShouldContain((LogLevel.Information, new EventId(2614)));
+    }
+
+    [Fact]
+    public async Task when_no_relevant_changes_are_found_then_no_relevant_changes_are_logged()
+    {
+        GivenDriveState();
+        GivenChanges(DeltaChangeFactory.CreateChanged("stranger", Option.Some("unrelated-folder")));
+
+        _ = await Decide(CreateSut());
+
+        _logger.Entries.ShouldNotContain((LogLevel.Information, new EventId(2614)));
     }
 }
