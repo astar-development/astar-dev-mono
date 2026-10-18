@@ -26,7 +26,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../AStarDev.EFCoreSqlite/AStarDev.EFCoreSqlite.csproj" />
+    <ProjectReference Include="../../core/functional/AStarDev.FunctionalParadigm/AStarDev.FunctionalParadigm.csproj" />
+    <ProjectReference Include="../../EFCore/AStarDev.EFCoreSqlite/AStarDev.EFCoreSqlite.csproj" />
     <ProjectReference Include="../../source-generators/AStarDev.SourceGeneratorAttributes/AStarDev.SourceGeneratorAttributes.csproj" />
     <ProjectReference Include="../../source-generators/AStarDev.SourceGenerators/AStarDev.SourceGenerators.csproj" PrivateAssets="all" />
   </ItemGroup>

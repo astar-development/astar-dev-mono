@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+    <NoWarn>$(NoWarn);IDE1006;CA1812</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+    <Using Include="Shouldly" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3.mtp-v2" />
+    <PackageReference Include="Shouldly" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AStarDev.EFCoreExtensions\AStarDev.EFCoreExtensions.csproj" />
+  </ItemGroup>
+
+</Project>
