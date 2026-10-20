@@ -24,6 +24,7 @@ public sealed partial class ActivityItemViewModel : ObservableObject
     public DateTimeOffset OccurredAt { get; init; } = DateTimeOffset.UtcNow;
     public string? ErrorMessage { get; init; }
     public long FileSize { get; init; }
+    public string ElapsedText { get; set; } = string.Empty;
 
     public string TypeLabel => Type switch
     {

@@ -308,7 +308,7 @@
                                         <ItemsControl ItemsSource="{Binding RecentActivity}">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate DataType="activity:ActivityItemViewModel">
-                                                    <Grid ColumnDefinitions="Auto,8,*,Auto"
+                                                    <Grid ColumnDefinitions="Auto,8,*,Auto,8,Auto"
                                                           Margin="0,2">
                                                         <TextBlock Grid.Column="0"
                                                                    Text="{Binding TypeIcon}"
@@ -323,6 +323,11 @@
                                                                    TextTrimming="CharacterEllipsis"
                                                                    VerticalAlignment="Center"/>
                                                         <TextBlock Grid.Column="3"
+                                                                   Text="{Binding ElapsedText}"
+                                                                   FontSize="{StaticResource FontSizeXs}"
+                                                                   Foreground="{DynamicResource TextTertiaryBrush}"
+                                                                   VerticalAlignment="Center"/>
+                                                        <TextBlock Grid.Column="5"
                                                                    Text="{Binding TimeAgoText}"
                                                                    FontSize="{StaticResource FontSizeXs}"
                                                                    Foreground="{DynamicResource TextTertiaryBrush}"
