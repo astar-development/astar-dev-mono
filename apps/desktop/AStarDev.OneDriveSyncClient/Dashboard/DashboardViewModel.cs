@@ -165,7 +165,7 @@ public sealed partial class DashboardViewModel(ILocalizationService localization
         section.UpdateSyncState(args.SyncState, section.ConflictCount);
 
         if (args.Total == 0 && !string.IsNullOrEmpty(args.CurrentFile))
-            AddActivityItem(activityItemViewModelFactory.CreateInfo(args.AccountId, args.CurrentFile));
+            section.AddProgressActivity(args.CurrentFile);
 
         RecalculateGlobals();
     }

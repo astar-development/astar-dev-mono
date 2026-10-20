@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Globalization;
 using System.Reactive;
 using Unit = System.Reactive.Unit;
 using AStarDev.FunctionalParadigm;
@@ -54,6 +56,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
 
     private readonly ILocalizationService localizationService;
     private readonly IActivityItemViewModelFactory activityItemViewModelFactory;
+    private long? syncStartedAt;
     private readonly ILogger<DashboardAccountViewModel> logger;
 
     [ObservableProperty]
@@ -164,7 +167,11 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     {
         SyncState = state;
         ConflictCount = conflicts;
+        var wasSyncing = IsSyncing;
         IsSyncing = state == SyncState.Syncing;
+
+        if (IsSyncing && !wasSyncing)
+            syncStartedAt = Stopwatch.GetTimestamp();
 
         if (state is not (SyncState.Idle or SyncState.Completed or SyncState.NoSyncPathConfigured)) return;
 
@@ -182,6 +189,14 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
         OnPropertyChanged(nameof(QuotaUsed));
         OnPropertyChanged(nameof(StorageFraction));
         OnPropertyChanged(nameof(StorageText));
+    }
+
+    /// <summary>Adds a stage or progress message stamped with the time elapsed since the current sync started.</summary>
+    public void AddProgressActivity(string message)
+    {
+        var item = activityItemViewModelFactory.CreateInfo(account.Id.Value, message);
+        item.ElapsedText = syncStartedAt is { } started ? Stopwatch.GetElapsedTime(started).ToString(@"hh\:mm\:ss", CultureInfo.InvariantCulture) : string.Empty;
+        AddRecentActivity(item);
     }
 
     public void AddRecentActivity(ActivityItemViewModel item)
