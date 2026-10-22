@@ -82,10 +82,10 @@
       netstandard2.0 analyzer projects, but nothing ever builds them into that path — CSC
       then fails with CS0006 (metadata file not found).
     -->
-    <MSBuild Projects="..\..\..\packages\source-generators\AStarDev.SourceGenerators\AStarDev.SourceGenerators.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration);RuntimeIdentifier=;SelfContained=false">
+    <MSBuild Projects="..\..\..\packages\source-generators\AStarDev.SourceGenerators\AStarDev.SourceGenerators.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration);TargetFramework=netstandard2.0;RuntimeIdentifier=;SelfContained=false">
       <Output TaskParameter="TargetOutputs" ItemName="Analyzer" />
     </MSBuild>
-    <MSBuild Projects="..\..\..\packages\source-generators\AStarDev.SourceGeneratorAttributes\AStarDev.SourceGeneratorAttributes.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration);RuntimeIdentifier=;SelfContained=false">
+    <MSBuild Projects="..\..\..\packages\source-generators\AStarDev.SourceGeneratorAttributes\AStarDev.SourceGeneratorAttributes.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration);TargetFramework=netstandard2.0;RuntimeIdentifier=;SelfContained=false">
       <Output TaskParameter="TargetOutputs" ItemName="Analyzer" />
     </MSBuild>
   </Target>

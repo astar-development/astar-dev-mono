@@ -12,7 +12,7 @@ public sealed class GivenTheSearchLocalisationKeys
     private static JsonElement RootElement()
     {
         string json = File.ReadAllText(JsonPath);
-        return JsonDocument.Parse(json).RootElement;
+        return JsonElement.Parse(json);
     }
 
     [Fact]

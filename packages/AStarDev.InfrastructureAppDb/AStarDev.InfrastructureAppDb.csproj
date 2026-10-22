@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <PackageReleaseNotes>
+        v0.1.3 fix(build): pin SDK and analyzer target framework
         v0.1.2 perf(onedrive-sync-client): skip remote walk when Graph delta shows no relevant changes
         v0.1.1 fix(release-notes): XML-escape PR title in PackageReleaseNotes and repair broken csproj
         v0.1.0 fix(infrastructure-app-db): map NULL Option&lt;string&gt; columns to Option.None
@@ -56,10 +57,10 @@
     </ItemGroup>
 
     <Target Name="AddGeneratorAnalyzerRefs" BeforeTargets="CoreCompile">
-        <MSBuild Projects="../source-generators/AStarDev.SourceGenerators/AStarDev.SourceGenerators.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration)">
+        <MSBuild Projects="../source-generators/AStarDev.SourceGenerators/AStarDev.SourceGenerators.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration);TargetFramework=netstandard2.0">
             <Output TaskParameter="TargetOutputs" ItemName="Analyzer" />
         </MSBuild>
-        <MSBuild Projects="../source-generators/AStarDev.SourceGeneratorAttributes/AStarDev.SourceGeneratorAttributes.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration)">
+        <MSBuild Projects="../source-generators/AStarDev.SourceGeneratorAttributes/AStarDev.SourceGeneratorAttributes.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration);TargetFramework=netstandard2.0">
             <Output TaskParameter="TargetOutputs" ItemName="Analyzer" />
         </MSBuild>
     </Target>
