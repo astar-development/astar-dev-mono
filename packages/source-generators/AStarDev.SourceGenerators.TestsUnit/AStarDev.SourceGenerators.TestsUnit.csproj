@@ -39,12 +39,12 @@
 <Target Name="AddGeneratorAnalyzerRefs" BeforeTargets="CoreCompile">
     <MSBuild Projects="..\AStarDev.SourceGenerators\AStarDev.SourceGenerators.csproj"
              Targets="GetTargetPath"
-             Properties="Configuration=$(Configuration)">
+             Properties="Configuration=$(Configuration);TargetFramework=netstandard2.0">
         <Output TaskParameter="TargetOutputs" ItemName="Analyzer" />
     </MSBuild>
     <MSBuild Projects="..\AStarDev.SourceGeneratorAttributes\AStarDev.SourceGeneratorAttributes.csproj"
              Targets="GetTargetPath"
-             Properties="Configuration=$(Configuration)">
+             Properties="Configuration=$(Configuration);TargetFramework=netstandard2.0">
         <Output TaskParameter="TargetOutputs" ItemName="Analyzer" />
     </MSBuild>
 </Target>
