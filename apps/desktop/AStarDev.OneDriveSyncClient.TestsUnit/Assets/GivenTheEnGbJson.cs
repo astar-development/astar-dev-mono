@@ -13,7 +13,7 @@ public sealed class GivenTheEnGbJson
     {
         string json = File.ReadAllText(JsonPath);
 
-        return JsonDocument.Parse(json).RootElement;
+        return JsonElement.Parse(json);
     }
 
     [Fact]

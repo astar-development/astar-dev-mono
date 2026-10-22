@@ -1,10 +1,4 @@
 {
-  // ── C# Dev Kit — point at your root solution file ────────────────────────
-  // Tells the C# language server which .sln to load. Without this VS Code
-  // may prompt you to pick one (or guess wrong) every time you open the repo.
-  "dotnet.defaultSolution": "MonoRepo.sln",
-
-  // ── Format on save (global) ──────────────────────────────────────────────
   "editor.formatOnSave": true,
   // Also run ESLint/Roslyn code actions (organise usings, fix warnings) on save
   "editor.codeActionsOnSave": {
