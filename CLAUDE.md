@@ -72,6 +72,16 @@ Patterns: see @.claude/rules/c-sharp-code-style.md and @.claude/rules/avalonia-u
 
 Plan approved → raise one GitHub issue per phase before writing code.
 
+## Issue & PR Workflow
+
+- Every distinct bug found (including ones found in manual testing) → separate GitHub issue via `gh issue create` first, then PR referencing it (`Fixes #N`).
+- End of session: list every issue/PR raised or touched with status (merged / open / uninvestigated) and next step. Leave nothing unmentioned.
+
+## Testing
+
+- Tests use Microsoft.Testing.Platform. CI test steps must invoke it correctly (see CI workflow); `dotnet test` arguments differ from VSTest.
+- Changes to upload or folder-creation code → consider concurrency races (e.g. "Name already exists", HTTP 412 precondition failures). Add test for concurrent operations.
+
 ## Before Starting ANY Task (mandatory, no exceptions)
 
 1. **Repo + folder** — run `gh repo view --json nameWithOwner -q '.nameWithOwner'`, confirm correct `src/` folder for issue scope.

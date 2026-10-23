@@ -14,12 +14,6 @@
       "name": "Scraper Debug",
       "type": "dotnet",
       "request": "launch",
-      "projectPath": "${workspaceFolder}/apps/desktop/Scraper/AStar.Dev.Wallpaper.Scraper/AStar.Dev.Wallpaper.Scraper.csproj"
-    },
-    {
-      "name": "Scraper Debug V2",
-      "type": "dotnet",
-      "request": "launch",
       "projectPath": "${workspaceFolder}/apps/desktop/Scraper/AStarDev.WallpaperScraper/AStarDev.WallpaperScraper.csproj"
     },
     {

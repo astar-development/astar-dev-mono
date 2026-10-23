@@ -1,5 +1,5 @@
 using AStarDev.ControlDb;
-using AStarDev.ControlDb.TagDetail;
+
 using AStarDev.FunctionalParadigm;
 using AStarDev.WallpaperScraper.Scraping.WallhavenResponses.DetailResponse;
 using AStarDev.WallpaperScraper.Tags;
