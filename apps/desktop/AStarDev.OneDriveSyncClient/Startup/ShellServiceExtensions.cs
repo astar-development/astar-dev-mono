@@ -3,6 +3,7 @@ using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStarDev.OneDriveSyncClient.Classifications;
 using AStarDev.OneDriveSyncClient.Home;
 using AStarDev.OneDriveSyncClient.Infrastructure.Authentication;
+using AStarDev.OneDriveSyncClient.Infrastructure.Autostart;
 using AStarDev.OneDriveSyncClient.Infrastructure.Graph;
 using AStarDev.OneDriveSyncClient.Infrastructure.Notifications;
 using AStarDev.OneDriveSyncClient.Infrastructure.Onboarding;
@@ -84,6 +85,9 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<INotificationSender, ProcessNotificationSender>();
         _ = services.AddSingleton<IAccountNameResolver, AccountNameResolver>();
         _ = services.AddSingleton<SyncNotificationService>();
+        _ = services.AddSingleton<IAutostartContextProvider, AutostartContextProvider>();
+        _ = services.AddSingleton<IWindowsRunKey, WindowsRunKey>();
+        _ = services.AddSingleton<AutostartService>();
         _ = services.AddSingleton<IJobHandler, DownloadJobHandler>();
         _ = services.AddSingleton<IJobHandler, UploadJobHandler>();
         _ = services.AddSingleton<IJobHandler, DeleteJobHandler>();
