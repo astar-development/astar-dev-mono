@@ -88,4 +88,16 @@ public sealed class GivenASettingsViewModelBrowseForAccountFolder
 
         sut.AccountSettings.Single(a => a.AccountId == KnownAccountId).LocalSyncPath.ShouldBe(originalPath);
     }
+
+    [Fact]
+    public async Task when_called_with_known_account_id_then_picker_title_comes_from_the_localisation_service()
+    {
+        var pickerService = BuildFolderPickerService();
+        var sut = BuildSut(pickerService);
+        sut.AddAccount(BuildAccount(KnownAccountId));
+
+        await sut.BrowseForAccountFolderAsync(KnownAccountId, Substitute.For<IStorageProvider>(), TestContext.Current.CancellationToken);
+
+        await pickerService.Received(1).PickFolderAsync(Arg.Any<IStorageProvider>(), "Settings.ChooseSyncFolder", Arg.Any<CancellationToken>());
+    }
 }

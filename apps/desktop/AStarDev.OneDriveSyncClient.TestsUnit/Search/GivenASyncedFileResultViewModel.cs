@@ -117,4 +117,13 @@ public sealed class GivenASyncedFileResultViewModel
             File.Delete(tmpPath);
         }
     }
+
+    [Fact]
+    public void when_open_button_text_is_read_then_it_comes_from_the_localisation_service()
+    {
+        loc.GetLocal("Search.Result.Open.Button").Returns("Open-localised");
+        var vm = CreateSut("/some/file.png");
+
+        ((string?)typeof(SyncedFileResultViewModel).GetProperty("OpenButtonText")?.GetValue(vm)).ShouldBe("Open-localised");
+    }
 }

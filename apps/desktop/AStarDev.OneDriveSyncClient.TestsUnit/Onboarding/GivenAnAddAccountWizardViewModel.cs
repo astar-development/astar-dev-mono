@@ -160,6 +160,7 @@ public sealed class GivenAnAddAccountWizardViewModel
     [Fact]
     public async Task when_graph_service_throws_then_folder_load_error_is_set()
     {
+        _localizationService.GetLocal("Wizard.AddAccount.LoadFoldersFailed", Arg.Any<object[]>()).Returns("localised-load-folders-failed");
         var sut = CreateSut();
         await SignInAsync(sut);
         _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
@@ -167,7 +168,7 @@ public sealed class GivenAnAddAccountWizardViewModel
 
         await sut.NextCommand.ExecuteAsync(null);
 
-        sut.FolderLoadError.ShouldNotBeNullOrEmpty();
+        sut.FolderLoadError.ShouldBe("localised-load-folders-failed");
         sut.IsLoadingFolders.ShouldBeFalse();
     }
 

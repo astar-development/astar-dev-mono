@@ -64,6 +64,12 @@ public sealed class GivenTheLocalisationFiles
     [InlineData("Files.LoadDriveIdFailed")]
     [InlineData("Files.LoadFoldersFailed")]
     [InlineData("Wizard.AddAccount.LoadFoldersFailed")]
+    [InlineData("Wizard.AddAccount.UnexpectedAuthError")]
+    [InlineData("Classifications.ExportDialogTitle")]
+    [InlineData("Classifications.ImportDialogTitle")]
+    [InlineData("Classifications.ImportConfirmMessage")]
+    [InlineData("Settings.ChooseSyncFolder")]
+    [InlineData("Common.Save")]
     public void when_a_key_is_required_then_both_cultures_define_it(string key)
     {
         ReadKeys("en-GB").ShouldContain(key);

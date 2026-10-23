@@ -26,7 +26,9 @@ public sealed class GivenAnAccountFilesViewModelWithAuthFailure
     private static AccountFilesViewModel BuildSut(IAuthService authService)
     {
         var fileSystemServices = new FileSystemServices(Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());
-        var accountFilesViewServices = new AccountFilesViewServices(authService, Substitute.For<ILocalizationService>(), Substitute.For<IGraphService>(), Substitute.For<ISyncRuleService>());
+        var loc = Substitute.For<ILocalizationService>();
+        loc.GetLocal("Sync.AuthFailed").Returns("localised-auth-failed");
+        var accountFilesViewServices = new AccountFilesViewServices(authService, loc, Substitute.For<IGraphService>(), Substitute.For<ISyncRuleService>());
 
         return new AccountFilesViewModel(BuildAccount(), accountFilesViewServices, fileSystemServices, Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(Substitute.For<IGraphService>(), Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>(), new LocalFolderLister(new MockFileSystem())));
     }
@@ -76,7 +78,7 @@ public sealed class GivenAnAccountFilesViewModelWithAuthFailure
 
         await sut.LoadCommand.ExecuteAsync(null);
 
-        sut.LoadError.ShouldBe("Authentication failed.");
+        sut.LoadError.ShouldBe("localised-auth-failed");
     }
 
     [Fact]
