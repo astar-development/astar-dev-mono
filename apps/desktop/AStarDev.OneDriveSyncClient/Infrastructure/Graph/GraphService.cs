@@ -156,7 +156,7 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
         }
         catch (Exception ex) when (ex is not OperationCanceledException and not SyncReAuthRequiredException)
         {
-            return new Ok<Option<string>, string>(Option.None<string>());
+            return new Fail<Option<string>, string>(ex.Message);
         }
     }
 

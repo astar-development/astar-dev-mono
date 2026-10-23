@@ -134,7 +134,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
         string? folderId = rule.RemoteItemId is Option<string>.Some existingId
             ? existingId.Value
             : TryResolveFromSyncedItems(syncedItems, rule.RemotePath)
-                ?? (await graphService.GetFolderIdByPathAsync(tokenFactory, driveId, rule.RemotePath, cancellationToken).ConfigureAwait(false)).Match(found => found.Match(id => id, () => (string?)null), _ => null);
+                ?? await LookUpFolderIdAsync(tokenFactory, driveId, rule.RemotePath, cancellationToken).ConfigureAwait(false);
 
         if (folderId is not null && rule.RemoteItemId.Match(resolvedId => resolvedId != folderId, () => true))
         {
@@ -143,6 +143,20 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
         }
 
         return folderId;
+    }
+
+    private async Task<string?> LookUpFolderIdAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, string remotePath, CancellationToken cancellationToken)
+    {
+        var lookup = await graphService.GetFolderIdByPathAsync(tokenFactory, driveId, remotePath, cancellationToken).ConfigureAwait(false);
+
+        return lookup.Match(
+            found => found.Match(folderId => (string?)folderId, () => null),
+            error =>
+            {
+                OneDriveSyncClientMessages.RemoteFolderEnumeratorFailed(logger, remotePath, error);
+
+                return null;
+            });
     }
 
     private static string? TryResolveFromSyncedItems(ConcurrentDictionary<string, SyncedItemEntity> syncedItems, string remotePath)

@@ -68,11 +68,17 @@ public sealed class RemoteFolderCreator(IGraphService graphService, ISyncRuleRep
 
     private async Task<Result<string, string>> EnsureFolderAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, string remotePath, CancellationToken cancellationToken)
     {
-        string? existingId = (await graphService.GetFolderIdByPathAsync(tokenFactory, driveId, remotePath, cancellationToken).ConfigureAwait(false)).Match(found => found.Match(id => id, () => (string?)null), _ => null);
+        var lookup = await graphService.GetFolderIdByPathAsync(tokenFactory, driveId, remotePath, cancellationToken).ConfigureAwait(false);
 
-        if (existingId is not null)
-            return new Ok<string, string>(existingId);
+        return await lookup.MatchAsync(
+            found => found.MatchAsync(
+                existingId => Task.FromResult<Result<string, string>>(new Ok<string, string>(existingId)),
+                () => CreateMissingFolderAsync(accountId, tokenFactory, driveId, remotePath, cancellationToken)),
+            error => Task.FromResult<Result<string, string>>(new Fail<string, string>(error))).ConfigureAwait(false);
+    }
 
+    private async Task<Result<string, string>> CreateMissingFolderAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, string remotePath, CancellationToken cancellationToken)
+    {
         int separatorIndex = remotePath.LastIndexOf('/');
         string parentPath = remotePath[..separatorIndex];
         string folderName = remotePath[(separatorIndex + 1)..];
@@ -94,11 +100,11 @@ public sealed class RemoteFolderCreator(IGraphService graphService, ISyncRuleRep
 
     private async Task<Result<string, string>> FindExistingFolderAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, string remotePath, string createError, CancellationToken cancellationToken)
     {
-        string? existingId = (await graphService.GetFolderIdByPathAsync(tokenFactory, driveId, remotePath, cancellationToken).ConfigureAwait(false)).Match(found => found.Match(id => id, () => (string?)null), _ => null);
+        var lookup = await graphService.GetFolderIdByPathAsync(tokenFactory, driveId, remotePath, cancellationToken).ConfigureAwait(false);
 
-        return existingId is null
-            ? new Fail<string, string>(createError)
-            : new Ok<string, string>(existingId);
+        return lookup.Match(
+            found => found.Match(existingId => (Result<string, string>)new Ok<string, string>(existingId), () => new Fail<string, string>(createError)),
+            _ => new Fail<string, string>(createError));
     }
 
     private static bool IsTracked(ConcurrentDictionary<string, SyncedItemEntity> syncedItems, string remotePath)
