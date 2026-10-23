@@ -3,9 +3,11 @@ namespace AStarDev.OneDriveSyncClient.Infrastructure.Tray;
 /// <inheritdoc />
 public sealed class ShutdownCoordinator : IShutdownCoordinator
 {
-    /// <inheritdoc />
-    public void RequestQuit() => throw new NotImplementedException();
+    private volatile CloseAction pendingAction = CloseActionFactory.CreateHideToTray();
 
     /// <inheritdoc />
-    public CloseAction DecideOnWindowClose() => throw new NotImplementedException();
+    public void RequestQuit() => pendingAction = CloseActionFactory.CreateExitApplication();
+
+    /// <inheritdoc />
+    public CloseAction DecideOnWindowClose() => pendingAction;
 }

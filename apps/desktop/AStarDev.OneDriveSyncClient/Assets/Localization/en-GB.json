@@ -239,5 +239,9 @@
   "Update.ReleaseNotesLabel": "What's new",
   "Update.RestartNow": "Restart now",
   "Update.Later": "Later",
-  "Update.Downloading": "Downloading..."
+  "Update.Downloading": "Downloading...",
+  "Tray.Open": "Open",
+  "Tray.SyncNow": "Sync now: {0}",
+  "Tray.Quit": "Quit",
+  "Tray.Tooltip": "AStar OneDrive Sync"
 }
