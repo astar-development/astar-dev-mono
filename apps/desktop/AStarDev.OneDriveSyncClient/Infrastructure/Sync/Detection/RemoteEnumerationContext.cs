@@ -28,8 +28,8 @@ public sealed class RemoteEnumerationContext
     /// <summary>True when enumeration could not be completed in full (drive or folder unresolved, or a Graph error), so this pass must not advance the stored delta state.</summary>
     public bool HadEnumerationFailures { get; internal set; }
 
-    /// <summary>Number of local deletions propagated to the remote drive during this pass.</summary>
-    public int LocalDeletionCount { get; internal set; }
+    /// <summary>Number of deletions propagated in either direction (local to remote, remote to local) during this pass.</summary>
+    public int PropagatedDeletionCount { get; internal set; }
 
     /// <summary>Remote item IDs seen so far; populated as items are yielded.</summary>
     public HashSet<string> SeenRemoteIds { get; } = new(StringComparer.OrdinalIgnoreCase);

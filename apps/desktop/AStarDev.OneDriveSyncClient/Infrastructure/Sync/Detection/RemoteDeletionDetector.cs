@@ -12,9 +12,10 @@ namespace AStarDev.OneDriveSyncClient.Infrastructure.Sync.Detection;
 public sealed class RemoteDeletionDetector(ISyncedItemRepository syncedItemRepository, IFileSystem fileSystem, ILogger<RemoteDeletionDetector> logger) : IRemoteDeletionDetector
 {
     /// <inheritdoc />
-    public async Task DetectAndApplyAsync(AccountId accountId, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, IReadOnlySet<string> seenRemoteIds, IReadOnlyList<SyncRuleEntity> rules, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<SyncedItemEntity>> DetectAndApplyAsync(AccountId accountId, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, IReadOnlySet<string> seenRemoteIds, IReadOnlyList<SyncRuleEntity> rules, CancellationToken cancellationToken)
     {
         List<OneDriveItemId> deletedRemoteIds = [];
+        List<SyncedItemEntity> deletedItems = [];
 
         foreach (var (remoteId, knownItem) in syncedItems.ToList())
         {
@@ -30,16 +31,22 @@ public sealed class RemoteDeletionDetector(ISyncedItemRepository syncedItemRepos
             OneDriveSyncClientMessages.RemoteDeletionDetectorNotPresent(logger, knownItem.RemotePath);
             DeleteLocalItem(knownItem);
             deletedRemoteIds.Add(knownItem.RemoteItemId);
+            deletedItems.Add(knownItem);
         }
 
         if (deletedRemoteIds.Count == 0)
-            return;
+            return [];
 
         await syncedItemRepository.DeleteManyByRemoteIdAsync(accountId, deletedRemoteIds, cancellationToken).ConfigureAwait(false);
 
         foreach (var remoteId in deletedRemoteIds)
             syncedItems.TryRemove(remoteId.Value, out _);
+
+        return [.. deletedItems.Where(item => !IsInsideDeletedFolder(item, deletedItems))];
     }
+
+    private static bool IsInsideDeletedFolder(SyncedItemEntity item, List<SyncedItemEntity> deletedItems)
+        => deletedItems.Any(other => other.IsFolder && item.RemotePath.StartsWith(other.RemotePath.TrimEnd('/') + "/", StringComparison.OrdinalIgnoreCase));
 
     private void DeleteLocalItem(SyncedItemEntity knownItem)
     {

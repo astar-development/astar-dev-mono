@@ -86,7 +86,7 @@ internal sealed class SyncPassOrchestrator(ISyncPassRepositories syncPassReposit
         if (context.HadNoRules)
             return SyncPassResultFactory.Create(didRun: false, failedJobCount: 0);
 
-        if (!hasJobs && context.LocalDeletionCount == 0)
+        if (!hasJobs && context.PropagatedDeletionCount == 0)
             onProgress?.Invoke(new SyncProgressEventArgs(account.Id.Value, string.Empty, 0, 0, localizationService.GetLocal("Sync.NoChanges"), SyncState.Idle));
 
         await syncPassRepositories.AccountRepository.GetByIdAsync(account.Id, cancellationToken)
@@ -124,7 +124,7 @@ internal sealed class SyncPassOrchestrator(ISyncPassRepositories syncPassReposit
             RaiseProgress(account.Id.Value, 0, 0, localizationService.GetLocal("Sync.DetectingLocalChanges"), onProgress);
             stageStarted = Stopwatch.GetTimestamp();
             var locallyDeletedItems = await dependencies.LocalDeletionDetector.DetectAndApplyAsync(account.Id, tokenFactory, context.SyncedItems, cancellationToken).ConfigureAwait(false);
-            await ReportLocalDeletionsAsync(account.Id, locallyDeletedItems, context, onJobCompleted).ConfigureAwait(false);
+            await ReportDeletionsAsync(account.Id, locallyDeletedItems, context, onJobCompleted).ConfigureAwait(false);
             LogStageTiming(account.Id.Value, LocalDeletionDetectionStage, stageStarted);
 
             stageStarted = Stopwatch.GetTimestamp();
@@ -155,7 +155,8 @@ internal sealed class SyncPassOrchestrator(ISyncPassRepositories syncPassReposit
             {
                 RaiseProgress(account.Id.Value, 0, 0, localizationService.GetLocal("Sync.DetectingRemoteDeletions"), onProgress);
                 stageStarted = Stopwatch.GetTimestamp();
-                await dependencies.RemoteDeletionDetector.DetectAndApplyAsync(account.Id, context.SyncedItems, context.SeenRemoteIds, context.Rules, cancellationToken).ConfigureAwait(false);
+                var remotelyDeletedItems = await dependencies.RemoteDeletionDetector.DetectAndApplyAsync(account.Id, context.SyncedItems, context.SeenRemoteIds, context.Rules, cancellationToken).ConfigureAwait(false);
+                await ReportDeletionsAsync(account.Id, remotelyDeletedItems, context, onJobCompleted).ConfigureAwait(false);
                 LogStageTiming(account.Id.Value, RemoteDeletionDetectionStage, stageStarted);
             }
 
@@ -192,11 +193,11 @@ internal sealed class SyncPassOrchestrator(ISyncPassRepositories syncPassReposit
         }
     }
 
-    private static async Task ReportLocalDeletionsAsync(AccountId accountId, IReadOnlyList<SyncedItemEntity> deletedItems, RemoteEnumerationContext context, Func<JobCompletedEventArgs, Task>? onJobCompleted)
+    private static async Task ReportDeletionsAsync(AccountId accountId, IReadOnlyList<SyncedItemEntity> deletedItems, RemoteEnumerationContext context, Func<JobCompletedEventArgs, Task>? onJobCompleted)
     {
         foreach (var deletedItem in deletedItems)
         {
-            context.LocalDeletionCount++;
+            context.PropagatedDeletionCount++;
 
             if (onJobCompleted is null)
                 continue;
