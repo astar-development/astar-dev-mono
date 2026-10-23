@@ -1,5 +1,6 @@
 using AStarDev.OneDriveSyncClient.Classifications;
 using AStarDev.OneDriveSyncClient.Data.Repositories;
+using AStarDev.OneDriveSyncClient.Infrastructure.Notifications;
 using Microsoft.Extensions.Logging;
 
 namespace AStarDev.OneDriveSyncClient.Infrastructure.Logging;
@@ -448,4 +449,16 @@ public static partial class OneDriveSyncClientMessages
     /// <param name="level">The Level of the classification category.</param>
     [LoggerMessage(EventId = 3402, Level = LogLevel.Information, Message = "[ClassificationDataMigrationService] Add succeeded for {Name} with ID {Id} and Level: {Level}")]
     public static partial void ClassificationRowAdded(ILogger<FileClassificationExportImportService> logger, string name, int id, int level);
+
+    // Notifications (3500-3599)
+
+    /// <summary>
+    /// Logs that an OS notification could not be shown because the platform command failed to start.
+    /// </summary>
+    /// <param name="logger">The logger instance.</param>
+    /// <param name="command">The command that failed to start.</param>
+    /// <param name="error">The error message.</param>
+    /// <param name="ex">The exception.</param>
+    [LoggerMessage(EventId = 3500, Level = LogLevel.Warning, Message = "[ProcessNotificationSender] Could not show notification using {Command}: {Error}")]
+    public static partial void NotificationFailed(ILogger<ProcessNotificationSender> logger, string command, string error, Exception ex);
 }
