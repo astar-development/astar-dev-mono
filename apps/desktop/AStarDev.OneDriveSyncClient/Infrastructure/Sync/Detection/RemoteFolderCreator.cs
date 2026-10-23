@@ -85,11 +85,20 @@ public sealed class RemoteFolderCreator(IGraphService graphService, ISyncRuleRep
             {
                 var created = await graphService.CreateFolderAsync(accountId, tokenFactory, parentId, folderName, cancellationToken).ConfigureAwait(false);
 
-                return created.Match(
-                    folder => (Result<string, string>)new Ok<string, string>(folder.Id),
-                    error => new Fail<string, string>(error));
+                return await created.MatchAsync(
+                    folder => Task.FromResult<Result<string, string>>(new Ok<string, string>(folder.Id)),
+                    createError => FindExistingFolderAsync(tokenFactory, driveId, remotePath, createError, cancellationToken)).ConfigureAwait(false);
             },
             error => new Fail<string, string>(error)).ConfigureAwait(false);
+    }
+
+    private async Task<Result<string, string>> FindExistingFolderAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, string remotePath, string createError, CancellationToken cancellationToken)
+    {
+        string? existingId = await graphService.GetFolderIdByPathAsync(tokenFactory, driveId, remotePath, cancellationToken).ConfigureAwait(false);
+
+        return existingId is null
+            ? new Fail<string, string>(createError)
+            : new Ok<string, string>(existingId);
     }
 
     private static bool IsTracked(ConcurrentDictionary<string, SyncedItemEntity> syncedItems, string remotePath)
