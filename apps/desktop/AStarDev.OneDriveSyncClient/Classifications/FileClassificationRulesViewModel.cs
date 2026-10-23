@@ -31,6 +31,7 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
         this.confirmationDialogService = confirmationDialogService;
         this.categoryEditDialogService = categoryEditDialogService;
         this.localizationService = localizationService;
+        Text = ClassificationTextFactory.Create(localizationService);
         this.fileSystem = fileSystem;
         Categories.CollectionChanged += (_, e) =>
         {
@@ -128,6 +129,9 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
         IsLoading = true;
     }
 
+    /// <summary>Localised display text for the classification views and dialogs.</summary>
+    public ClassificationText Text { get; }
+
     /// <summary>Localised text to display while loading.</summary>
     public string LoadingText => localizationService.GetLocal("Common.Loading");
 
@@ -202,7 +206,7 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
     /// <summary>Exports the current taxonomy to a user-selected JSON file.</summary>
     public async Task ExportAsync(IStorageProvider storageProvider, CancellationToken cancellationToken = default)
     {
-        string? path = await filePickerService.PickSaveFileAsync(storageProvider, "Export classifications", "classifications.json", "json", cancellationToken).ConfigureAwait(false);
+        string? path = await filePickerService.PickSaveFileAsync(storageProvider, Text.ExportDialogTitleText, "classifications.json", "json", cancellationToken).ConfigureAwait(false);
         if (path is null)
             return;
 
@@ -212,11 +216,11 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
     /// <summary>Imports a taxonomy from a user-selected JSON file, replacing all existing data after confirmation.</summary>
     public async Task ImportAsync(IStorageProvider storageProvider, CancellationToken cancellationToken = default)
     {
-        string? path = await filePickerService.PickOpenFileAsync(storageProvider, "Import classifications", "json", cancellationToken).ConfigureAwait(false);
+        string? path = await filePickerService.PickOpenFileAsync(storageProvider, Text.ImportDialogTitleText, "json", cancellationToken).ConfigureAwait(false);
         if (path is null)
             return;
 
-        if (!await confirmationDialogService.ConfirmAsync("Import classifications", "This will update ALL existing classifications and add new ones. Continue?", cancellationToken).ConfigureAwait(false))
+        if (!await confirmationDialogService.ConfirmAsync(Text.ImportDialogTitleText, Text.ImportConfirmMessageText, cancellationToken).ConfigureAwait(false))
             return;
 
         await exportImportService.ImportAsync(fileSystem.FileInfo.New(path), cancellationToken).ConfigureAwait(false);

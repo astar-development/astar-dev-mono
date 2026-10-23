@@ -14,18 +14,18 @@
               Margin="24,20,24,12">
             <StackPanel Grid.Column="0"
                         Spacing="4">
-                <TextBlock Text="File classifications"
+                <TextBlock Text="{Binding Text.TitleText}"
                            FontSize="{StaticResource FontSizeXl}"
                            FontWeight="Medium"
                            Foreground="{DynamicResource TextPrimaryBrush}"/>
-                <TextBlock Text="Manage the category hierarchy used to classify files during sync."
+                <TextBlock Text="{Binding Text.DescriptionText}"
                            FontSize="{StaticResource FontSizeSm}"
                            Foreground="{DynamicResource TextTertiaryBrush}"
                            TextWrapping="Wrap"/>
             </StackPanel>
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                 <TextBox Text="{Binding FilterText}"
-                         PlaceholderText="Filter by name"
+                         PlaceholderText="{Binding Text.FilterPlaceholderText}"
                          FontSize="{StaticResource FontSizeSm}"
                          CornerRadius="{StaticResource RadiusMd}"
                          MinWidth="180"
@@ -34,7 +34,7 @@
                               IsChecked="{Binding ShowOnlyIncludedInSearch}"
                               FontSize="{StaticResource FontSizeSm}"
                               VerticalAlignment="Center"/>
-                <Button Content="Export"
+                <Button Content="{Binding Text.ExportText}"
                         Padding="8,4"
                         CornerRadius="{StaticResource RadiusMd}"
                         Background="Transparent"
@@ -42,7 +42,7 @@
                         BorderThickness="1"
                         FontSize="{StaticResource FontSizeSm}"
                         Click="OnExportClick"/>
-                <Button Content="Import"
+                <Button Content="{Binding Text.ImportText}"
                         Padding="8,4"
                         CornerRadius="{StaticResource RadiusMd}"
                         Background="{DynamicResource TextAccentBrush}"
@@ -68,7 +68,7 @@
 
             <!-- Empty state -->
             <TextBlock Grid.Row="1"
-                       Text="No classification categories defined."
+                       Text="{Binding Text.EmptyText}"
                        FontSize="{StaticResource FontSizeSm}"
                        Foreground="{DynamicResource TextTertiaryBrush}"
                        IsVisible="{Binding HasNoCategories}"/>
@@ -141,7 +141,7 @@
                                                     CornerRadius="{StaticResource RadiusSm}"
                                                     Padding="4,1"
                                                     IsVisible="{Binding IsFamous}">
-                                                <TextBlock Text="Famous"
+                                                <TextBlock Text="{Binding $parent[UserControl].((classifications:FileClassificationRulesViewModel)DataContext).Text.FamousText}"
                                                            FontSize="{StaticResource FontSizeXs}"
                                                            Foreground="White"/>
                                             </Border>
@@ -149,13 +149,13 @@
                                                     CornerRadius="{StaticResource RadiusSm}"
                                                     Padding="4,1"
                                                     IsVisible="{Binding IsInternet}">
-                                                <TextBlock Text="Internet"
+                                                <TextBlock Text="{Binding $parent[UserControl].((classifications:FileClassificationRulesViewModel)DataContext).Text.InternetText}"
                                                            FontSize="{StaticResource FontSizeXs}"
                                                            Foreground="White"/>
                                             </Border>
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                            <Button Content="Edit"
+                                            <Button Content="{Binding $parent[UserControl].((classifications:FileClassificationRulesViewModel)DataContext).Text.EditText}"
                                                     Padding="8,4"
                                                     CornerRadius="{StaticResource RadiusMd}"
                                                     Background="Transparent"
@@ -164,7 +164,7 @@
                                                     FontSize="{StaticResource FontSizeXs}"
                                                     Command="{Binding EditCommand}"
                                                     IsEnabled="{Binding !IsEditing}"/>
-                                            <Button Content="Delete"
+                                            <Button Content="{Binding $parent[UserControl].((classifications:FileClassificationRulesViewModel)DataContext).Text.DeleteText}"
                                                     Padding="8,4"
                                                     CornerRadius="{StaticResource RadiusMd}"
                                                     Background="Transparent"
@@ -179,11 +179,11 @@
                                     <StackPanel Orientation="Horizontal"
                                                 Spacing="6">
                                         <TextBox Text="{Binding NewChildCategoryName}"
-                                                 PlaceholderText="New sub-category"
+                                                 PlaceholderText="{Binding $parent[UserControl].((classifications:FileClassificationRulesViewModel)DataContext).Text.NewSubCategoryPlaceholderText}"
                                                  FontSize="{StaticResource FontSizeSm}"
                                                  CornerRadius="{StaticResource RadiusSm}"
                                                  MinWidth="180"/>
-                                        <Button Content="Add sub-category"
+                                        <Button Content="{Binding $parent[UserControl].((classifications:FileClassificationRulesViewModel)DataContext).Text.AddSubCategoryText}"
                                                 Padding="8,4"
                                                 CornerRadius="{StaticResource RadiusMd}"
                                                 Background="Transparent"
@@ -212,24 +212,24 @@
                 Padding="12"
                 Margin="24,0,24,20">
             <StackPanel Spacing="8">
-                <TextBlock Text="Add category"
+                <TextBlock Text="{Binding Text.AddCategoryText}"
                            FontSize="{StaticResource FontSizeXs}"
                            Foreground="{DynamicResource TextTertiaryBrush}"/>
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <TextBox Text="{Binding NewCategoryName}"
-                            PlaceholderText="Category name"
+                            PlaceholderText="{Binding Text.CategoryNamePlaceholderText}"
                             FontSize="{StaticResource FontSizeSm}"
                             CornerRadius="{StaticResource RadiusMd}"
                             MinWidth="220"/>
-                    <CheckBox Content="Famous"
+                    <CheckBox Content="{Binding Text.FamousText}"
                             IsChecked="{Binding IsFamous}"
                             FontSize="{StaticResource FontSizeSm}"
                             VerticalAlignment="Center"/>
-                    <CheckBox Content="Internet"
+                    <CheckBox Content="{Binding Text.InternetText}"
                             IsChecked="{Binding IsInternet}"
                             FontSize="{StaticResource FontSizeSm}"
                             VerticalAlignment="Center"/>
-                    <Button Content="Add"
+                    <Button Content="{Binding Text.AddText}"
                             Padding="14,6"
                             CornerRadius="{StaticResource RadiusMd}"
                             Background="{DynamicResource TextAccentBrush}"

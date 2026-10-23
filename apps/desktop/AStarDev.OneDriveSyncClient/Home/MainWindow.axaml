@@ -104,7 +104,7 @@
                     <Border DockPanel.Dock="Top"
                             Height="{StaticResource IconRailWidth}"
                             Width="{StaticResource IconRailWidth}"
-                            ToolTip.Tip="OneDrive Sync">
+                            ToolTip.Tip="{Binding ApplicationTooltipText}">
                         <Viewbox Width="22" Height="22">
                             <Canvas Width="24" Height="24">
                                 <Path Fill="{DynamicResource TextAccentBrush}"

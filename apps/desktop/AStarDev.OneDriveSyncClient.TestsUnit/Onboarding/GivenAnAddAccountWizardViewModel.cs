@@ -439,13 +439,14 @@ public sealed class GivenAnAddAccountWizardViewModel
     [Fact]
     public async Task when_sign_in_returns_unknown_error_type_then_sign_in_status_text_is_set()
     {
+        _localizationService.GetLocal("Wizard.AddAccount.UnexpectedAuthError").Returns("localised-unexpected-auth-error");
         _authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
             .Returns(new Fail<AuthResult, AuthError>(new UnknownAuthError()));
         var sut = CreateSut();
 
         await sut.OpenBrowserCommand.ExecuteAsync(null);
 
-        sut.SignInStatusText.ShouldNotBeNullOrEmpty();
+        sut.SignInStatusText.ShouldBe("localised-unexpected-auth-error");
     }
 
     [Fact]

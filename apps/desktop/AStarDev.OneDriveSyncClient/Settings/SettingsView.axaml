@@ -15,11 +15,11 @@
         <StackPanel Grid.Row="0"
                     Margin="24,20,24,12"
                     Spacing="4">
-            <TextBlock Text="Settings"
+            <TextBlock Text="{Binding TitleText}"
                        FontSize="{StaticResource FontSizeXl}"
                        FontWeight="Medium"
                        Foreground="{DynamicResource TextPrimaryBrush}"/>
-            <TextBlock Text="Configure application preferences and account sync settings."
+            <TextBlock Text="{Binding DescriptionText}"
                        FontSize="{StaticResource FontSizeSm}"
                        Foreground="{DynamicResource TextTertiaryBrush}"
                        TextWrapping="Wrap"/>
@@ -34,7 +34,7 @@
 
             <!-- ── Appearance ── -->
             <StackPanel Spacing="12">
-                <TextBlock Text="Appearance"
+                <TextBlock Text="{Binding AppearanceHeadingText}"
                            FontSize="{StaticResource FontSizeXl}"
                            FontWeight="Medium"
                            Foreground="{DynamicResource TextPrimaryBrush}"/>
@@ -46,10 +46,10 @@
                         Padding="16">
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Text="Theme"
+                            <TextBlock Text="{Binding ThemeLabelText}"
                                        FontSize="{StaticResource FontSizeMd}"
                                        Foreground="{DynamicResource TextPrimaryBrush}"/>
-                            <TextBlock Text="Choose a colour theme for the application."
+                            <TextBlock Text="{Binding ThemeDescriptionText}"
                                        FontSize="{StaticResource FontSizeSm}"
                                        Foreground="{DynamicResource TextTertiaryBrush}"/>
                         </StackPanel>
@@ -82,7 +82,7 @@
 
             <!-- ── Language ── -->
             <StackPanel Spacing="12">
-                <TextBlock Text="Language"
+                <TextBlock Text="{Binding LanguageHeadingText}"
                            FontSize="{StaticResource FontSizeXl}"
                            FontWeight="Medium"
                            Foreground="{DynamicResource TextPrimaryBrush}"/>
@@ -94,7 +94,7 @@
                         Padding="16">
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Text="Display language"
+                            <TextBlock Text="{Binding DisplayLanguageLabelText}"
                                        FontSize="{StaticResource FontSizeMd}"
                                        Foreground="{DynamicResource TextPrimaryBrush}"/>
                             <TextBlock Text="{Binding LanguageDescriptionText}"
@@ -130,7 +130,7 @@
 
             <!-- ── Sync policy ── -->
             <StackPanel Spacing="12">
-                <TextBlock Text="Sync policy"
+                <TextBlock Text="{Binding SyncPolicyHeadingText}"
                            FontSize="{StaticResource FontSizeXl}"
                            FontWeight="Medium"
                            Foreground="{DynamicResource TextPrimaryBrush}"/>
@@ -143,10 +143,10 @@
                         Padding="16">
                     <StackPanel Spacing="10">
                         <StackPanel Spacing="2">
-                            <TextBlock Text="Default conflict resolution"
+                            <TextBlock Text="{Binding DefaultConflictPolicyLabelText}"
                                        FontSize="{StaticResource FontSizeMd}"
                                        Foreground="{DynamicResource TextPrimaryBrush}"/>
-                            <TextBlock Text="Applied to new accounts and when no per-account policy is set."
+                            <TextBlock Text="{Binding DefaultConflictPolicyDescriptionText}"
                                        FontSize="{StaticResource FontSizeSm}"
                                        Foreground="{DynamicResource TextTertiaryBrush}"/>
                         </StackPanel>
@@ -185,10 +185,10 @@
                         Padding="16">
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Text="Sync interval"
+                            <TextBlock Text="{Binding SyncIntervalLabelText}"
                                        FontSize="{StaticResource FontSizeMd}"
                                        Foreground="{DynamicResource TextPrimaryBrush}"/>
-                            <TextBlock Text="How often to automatically check for changes."
+                            <TextBlock Text="{Binding SyncIntervalDescriptionText}"
                                        FontSize="{StaticResource FontSizeSm}"
                                        Foreground="{DynamicResource TextTertiaryBrush}"/>
                         </StackPanel>
@@ -226,10 +226,10 @@
                         Padding="16">
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Text="Concurrent downloads/uploads"
+                            <TextBlock Text="{Binding ConcurrentWorkersLabelText}"
                                        FontSize="{StaticResource FontSizeMd}"
                                        Foreground="{DynamicResource TextPrimaryBrush}"/>
-                            <TextBlock Text="Number of files to sync simultaneously."
+                            <TextBlock Text="{Binding ConcurrentWorkersDescriptionText}"
                                        FontSize="{StaticResource FontSizeSm}"
                                        Foreground="{DynamicResource TextTertiaryBrush}"/>
                         </StackPanel>
@@ -285,12 +285,12 @@
 
             <!-- ── Per-account settings ── -->
             <StackPanel Spacing="12">
-                <TextBlock Text="Account sync paths"
+                <TextBlock Text="{Binding AccountSyncPathsHeadingText}"
                            FontSize="{StaticResource FontSizeXl}"
                            FontWeight="Medium"
                            Foreground="{DynamicResource TextPrimaryBrush}"/>
 
-                <TextBlock Text="Set the local folder where each account's files will be synced."
+                <TextBlock Text="{Binding AccountSyncPathsDescriptionText}"
                            FontSize="{StaticResource FontSizeSm}"
                            Foreground="{DynamicResource TextTertiaryBrush}"/>
 

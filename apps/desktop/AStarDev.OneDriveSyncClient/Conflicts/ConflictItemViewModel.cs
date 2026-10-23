@@ -51,6 +51,27 @@ public sealed partial class ConflictItemViewModel : ObservableObject
     /// <summary>Label for the expand/collapse toggle button, localised for the current culture.</summary>
     public string CollapseExpandLabel => loc.GetLocal(IsExpanded ? "Conflict.Collapse" : "Conflict.Resolve");
 
+    /// <summary>Localised local file heading.</summary>
+    public string LocalFileText => loc.GetLocal("Conflict.LocalFile");
+
+    /// <summary>Localised remote file heading.</summary>
+    public string RemoteFileText => loc.GetLocal("Conflict.RemoteFile");
+
+    /// <summary>Localised separator between the local and remote file.</summary>
+    public string VersusText => loc.GetLocal("Conflict.Versus");
+
+    /// <summary>Localised resolution heading.</summary>
+    public string ResolutionText => loc.GetLocal("Conflict.Resolution");
+
+    /// <summary>Localised in-progress message.</summary>
+    public string ResolvingText => loc.GetLocal("Conflict.Resolving");
+
+    /// <summary>Localised dismiss button label.</summary>
+    public string DismissText => loc.GetLocal("Conflict.Dismiss");
+
+    /// <summary>Localised apply button label.</summary>
+    public string ApplyText => loc.GetLocal("Conflict.Apply");
+
     /// <summary>Localised "resolved" badge label.</summary>
     public string ResolvedText => loc.GetLocal("Activity.Conflict.Resolved");
 
@@ -110,6 +131,13 @@ public sealed partial class ConflictItemViewModel : ObservableObject
         OnPropertyChanged(nameof(PolicyOptions));
         OnPropertyChanged(nameof(CollapseExpandLabel));
         OnPropertyChanged(nameof(ResolvedText));
+        OnPropertyChanged(nameof(LocalFileText));
+        OnPropertyChanged(nameof(RemoteFileText));
+        OnPropertyChanged(nameof(VersusText));
+        OnPropertyChanged(nameof(ResolutionText));
+        OnPropertyChanged(nameof(ResolvingText));
+        OnPropertyChanged(nameof(DismissText));
+        OnPropertyChanged(nameof(ApplyText));
     }
 
     private static string FormatDateTime(DateTimeOffset dt)

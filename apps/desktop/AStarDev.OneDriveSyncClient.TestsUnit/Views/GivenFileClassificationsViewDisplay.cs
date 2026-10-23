@@ -48,7 +48,7 @@ public sealed class GivenFileClassificationsViewDisplay
 
         var sut = CreateViewWithViewModel(viewModel);
 
-        var emptyStateBlock = sut.GetLogicalDescendants().OfType<TextBlock>().First(tb => tb.Text == "No classification categories defined.");
+        var emptyStateBlock = sut.GetLogicalDescendants().OfType<TextBlock>().First(tb => tb.Text == "Classifications.Empty");
         emptyStateBlock.IsVisible.ShouldBeFalse("Empty-state text should be hidden while loading is in progress");
     }
 
@@ -60,7 +60,7 @@ public sealed class GivenFileClassificationsViewDisplay
 
         viewModel.IsLoading = false;
 
-        var emptyStateBlock = sut.GetLogicalDescendants().OfType<TextBlock>().First(tb => tb.Text == "No classification categories defined.");
+        var emptyStateBlock = sut.GetLogicalDescendants().OfType<TextBlock>().First(tb => tb.Text == "Classifications.Empty");
         emptyStateBlock.IsVisible.ShouldBeTrue("Empty-state text should appear when loading completes with no categories");
     }
 
@@ -204,7 +204,7 @@ public sealed class GivenFileClassificationsViewDisplay
         window.Show();
         Dispatcher.UIThread.RunJobs();
         window.UpdateLayout();
-        var editButton = view.GetLogicalDescendants().OfType<Button>().First(button => button.Content as string == "Edit" && button.IsVisible);
+        var editButton = view.GetLogicalDescendants().OfType<Button>().First(button => button.Content as string == "Classifications.Edit" && button.IsVisible);
 
         editButton.Command!.Execute(editButton.CommandParameter);
         Dispatcher.UIThread.RunJobs();

@@ -113,7 +113,7 @@
                             Background="Transparent"
                             BorderThickness="0"
                             Command="{Binding OpenInFileManagerCommand}"
-                            ToolTip.Tip="Open in file manager">
+                            ToolTip.Tip="{Binding OpenInFileManagerTooltipText}">
                         <Viewbox Width="14" Height="14">
                             <Canvas Width="24" Height="24">
                                 <Path Stroke="{DynamicResource TextTertiaryBrush}"
@@ -130,7 +130,7 @@
                             Background="Transparent"
                             BorderThickness="0"
                             Command="{Binding ViewActivityCommand}"
-                            ToolTip.Tip="View folder activity">
+                            ToolTip.Tip="{Binding ViewActivityTooltipText}">
                         <Viewbox Width="14" Height="14">
                             <Canvas Width="24" Height="24">
                                 <Path Stroke="{DynamicResource TextTertiaryBrush}"

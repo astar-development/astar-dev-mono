@@ -1,3 +1,4 @@
+using AStarDev.OneDriveSyncClient.Localization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -8,13 +9,13 @@ using Avalonia.Threading;
 namespace AStarDev.OneDriveSyncClient.Infrastructure.Shell;
 
 /// <inheritdoc />
-public sealed class AvaloniaConfirmationDialogService : IConfirmationDialogService
+public sealed class AvaloniaConfirmationDialogService(ILocalizationService loc) : IConfirmationDialogService
 {
     /// <inheritdoc />
     public async Task<bool> ConfirmAsync(string title, string message, CancellationToken cancellationToken = default)
         => await Dispatcher.UIThread.InvokeAsync(() => ShowDialogAsync(title, message, cancellationToken));
 
-    private static async Task<bool> ShowDialogAsync(string title, string message, CancellationToken cancellationToken)
+    private async Task<bool> ShowDialogAsync(string title, string message, CancellationToken cancellationToken)
     {
         var mainWindow = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
         if (mainWindow is null)
@@ -29,8 +30,8 @@ public sealed class AvaloniaConfirmationDialogService : IConfirmationDialogServi
             Margin = new Thickness(0, 0, 0, 16)
         };
 
-        var cancelButton = new Button { Content = "Cancel", Margin = new Thickness(0, 0, 8, 0) };
-        var yesButton = new Button { Content = "Yes" };
+        var cancelButton = new Button { Content = loc.GetLocal("Common.Cancel"), Margin = new Thickness(0, 0, 8, 0) };
+        var yesButton = new Button { Content = loc.GetLocal("Common.Yes") };
 
         var buttonRow = new StackPanel
         {

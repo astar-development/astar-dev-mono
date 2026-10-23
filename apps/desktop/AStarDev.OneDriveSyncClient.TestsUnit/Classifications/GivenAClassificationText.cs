@@ -12,7 +12,7 @@ public sealed class GivenAClassificationText
     public GivenAClassificationText()
     {
         loc.GetLocal(Arg.Any<string>()).Returns(x => x.ArgAt<string>(0));
-        sut = new ClassificationText(loc);
+        sut = ClassificationTextFactory.Create(loc);
     }
 
     public static TheoryData<string, string> TextProperties => new()
