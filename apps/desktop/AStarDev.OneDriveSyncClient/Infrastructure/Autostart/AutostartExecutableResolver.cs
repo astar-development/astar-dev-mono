@@ -4,5 +4,5 @@ namespace AStarDev.OneDriveSyncClient.Infrastructure.Autostart;
 public static class AutostartExecutableResolver
 {
     /// <summary>Returns the AppImage path when running from an AppImage, otherwise the process path.</summary>
-    public static string Resolve(string? processPath, string? appImagePath) => throw new NotImplementedException("Red phase for #1173");
+    public static string Resolve(string? processPath, string? appImagePath) => string.IsNullOrWhiteSpace(appImagePath) ? processPath ?? string.Empty : appImagePath;
 }

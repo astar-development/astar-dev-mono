@@ -8,5 +8,5 @@ namespace AStarDev.OneDriveSyncClient.Infrastructure.Autostart;
 public sealed class AutostartContextProvider : IAutostartContextProvider
 {
     /// <inheritdoc />
-    public AutostartContext Current() => AutostartContextFactory.Create(DesktopPlatformFactory.CreateCurrent(), Environment.ProcessPath, Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), Environment.GetEnvironmentVariable("XDG_CONFIG_HOME"));
+    public AutostartContext Current() => AutostartContextFactory.Create(DesktopPlatformFactory.CreateCurrent(), AutostartExecutableResolver.Resolve(Environment.ProcessPath, Environment.GetEnvironmentVariable("APPIMAGE")), Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), Environment.GetEnvironmentVariable("XDG_CONFIG_HOME"));
 }
