@@ -59,7 +59,7 @@ internal sealed class SyncPassOrchestrator(ISyncPassRepositories syncPassReposit
         var jobChannel = Channel.CreateBounded<SyncJob>(new BoundedChannelOptions(workerCount * 4) { FullMode = BoundedChannelFullMode.Wait, SingleReader = false, SingleWriter = true });
         var firstJobSignal = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        var producerTask = Task.Run(() => RunProducerAsync(account, syncConfig, tokenFactory, conflictCallback, enumerationProgress, stageChanged, context, onProgress, jobChannel.Writer, firstJobSignal, mappings, cancellationToken), CancellationToken.None);
+        var producerTask = Task.Run(() => RunProducerAsync(account, syncConfig, tokenFactory, conflictCallback, enumerationProgress, stageChanged, context, onProgress, onJobCompleted, jobChannel.Writer, firstJobSignal, mappings, cancellationToken), CancellationToken.None);
 
         bool hasJobs;
         try
@@ -86,7 +86,7 @@ internal sealed class SyncPassOrchestrator(ISyncPassRepositories syncPassReposit
         if (context.HadNoRules)
             return SyncPassResultFactory.Create(didRun: false, failedJobCount: 0);
 
-        if (!hasJobs)
+        if (!hasJobs && context.LocalDeletionCount == 0)
             onProgress?.Invoke(new SyncProgressEventArgs(account.Id.Value, string.Empty, 0, 0, localizationService.GetLocal("Sync.NoChanges"), SyncState.Idle));
 
         await syncPassRepositories.AccountRepository.GetByIdAsync(account.Id, cancellationToken)
@@ -105,7 +105,7 @@ internal sealed class SyncPassOrchestrator(ISyncPassRepositories syncPassReposit
         return SyncPassResultFactory.Create(didRun: true, failedJobCount: failedJobCount);
     }
 
-    private async Task RunProducerAsync(OneDriveAccount account, AccountSyncConfig syncConfig, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncConflict, Task> conflictCallback, Action<string, int>? enumerationProgress, Action<string>? stageChanged, RemoteEnumerationContext context, Action<SyncProgressEventArgs>? onProgress, ChannelWriter<SyncJob> writer, TaskCompletionSource<bool> firstJobSignal, IReadOnlyList<FileClassificationCategory> mappings, CancellationToken cancellationToken)
+    private async Task RunProducerAsync(OneDriveAccount account, AccountSyncConfig syncConfig, Func<CancellationToken, Task<string>> tokenFactory, Func<SyncConflict, Task> conflictCallback, Action<string, int>? enumerationProgress, Action<string>? stageChanged, RemoteEnumerationContext context, Action<SyncProgressEventArgs>? onProgress, Func<JobCompletedEventArgs, Task>? onJobCompleted, ChannelWriter<SyncJob> writer, TaskCompletionSource<bool> firstJobSignal, IReadOnlyList<FileClassificationCategory> mappings, CancellationToken cancellationToken)
     {
         bool signaled = false;
         try
@@ -123,7 +123,8 @@ internal sealed class SyncPassOrchestrator(ISyncPassRepositories syncPassReposit
 
             RaiseProgress(account.Id.Value, 0, 0, localizationService.GetLocal("Sync.DetectingLocalChanges"), onProgress);
             stageStarted = Stopwatch.GetTimestamp();
-            await dependencies.LocalDeletionDetector.DetectAndApplyAsync(account.Id, tokenFactory, context.SyncedItems, cancellationToken).ConfigureAwait(false);
+            var locallyDeletedItems = await dependencies.LocalDeletionDetector.DetectAndApplyAsync(account.Id, tokenFactory, context.SyncedItems, cancellationToken).ConfigureAwait(false);
+            await ReportLocalDeletionsAsync(account.Id, locallyDeletedItems, context, onJobCompleted).ConfigureAwait(false);
             LogStageTiming(account.Id.Value, LocalDeletionDetectionStage, stageStarted);
 
             stageStarted = Stopwatch.GetTimestamp();
@@ -188,6 +189,24 @@ internal sealed class SyncPassOrchestrator(ISyncPassRepositories syncPassReposit
         {
             firstJobSignal.TrySetResult(false);
             writer.TryComplete();
+        }
+    }
+
+    private static async Task ReportLocalDeletionsAsync(AccountId accountId, IReadOnlyList<SyncedItemEntity> deletedItems, RemoteEnumerationContext context, Func<JobCompletedEventArgs, Task>? onJobCompleted)
+    {
+        foreach (var deletedItem in deletedItems)
+        {
+            context.LocalDeletionCount++;
+
+            if (onJobCompleted is null)
+                continue;
+
+            var remote = RemoteItemRefFactory.Create(accountId, new OneDriveFolderId(deletedItem.RemoteParentId), deletedItem.RemoteItemId);
+            var target = SyncFileTargetFactory.Create(deletedItem.LocalPath, deletedItem.RemotePath);
+            var metadata = SyncFileMetadataFactory.Create(deletedItem.SizeInBytes ?? 0, deletedItem.RemoteModifiedAt);
+            var completedJob = SyncJobFactory.CreateDelete(remote, target, metadata).Complete();
+
+            await onJobCompleted(new JobCompletedEventArgs(completedJob)).ConfigureAwait(false);
         }
     }
 
