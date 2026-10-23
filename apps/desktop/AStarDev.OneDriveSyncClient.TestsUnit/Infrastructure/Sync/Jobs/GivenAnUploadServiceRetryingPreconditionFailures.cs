@@ -4,6 +4,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.Graph.Models.ODataErrors;
 using Microsoft.Kiota.Http.HttpClientLibrary;
+using WireMock.Types;
+using WireMock.Util;
 using WireMockRequest = WireMock.RequestBuilders.Request;
 
 namespace AStarDev.OneDriveSyncClient.TestsUnit.Infrastructure.Sync.Jobs;
@@ -49,6 +51,14 @@ public sealed class GivenAnUploadServiceRetryingPreconditionFailures
         return await upload;
     }
 
+    private static ResponseMessage JsonResponse(int statusCode, string body)
+        => new()
+        {
+            StatusCode = statusCode,
+            Headers = new Dictionary<string, WireMockList<string>> { ["Content-Type"] = new("application/json") },
+            BodyData = new BodyData { DetectedBodyType = BodyType.String, BodyAsString = body }
+        };
+
     private static void StubChunkUpload(WireMockServer server)
         => server.Given(WireMockRequest.Create().UsingPut().WithPath("/chunk-upload"))
             .RespondWith(Response.Create().WithStatusCode(201).WithHeader("Content-Type", "application/json").WithBody("{\"id\":\"item-1\"}"));
@@ -57,10 +67,11 @@ public sealed class GivenAnUploadServiceRetryingPreconditionFailures
     public async Task when_session_creation_returns_412_once_then_the_upload_is_retried_and_succeeds()
     {
         using var server = WireMockServer.Start();
-        server.Given(WireMockRequest.Create().UsingPost()).InScenario("etag").WhenStateIs("Started").WillSetStateTo("recovered")
-            .RespondWith(Response.Create().WithStatusCode(412).WithHeader("Content-Type", "application/json").WithBody(ErrorJson));
-        server.Given(WireMockRequest.Create().UsingPost()).InScenario("etag").WhenStateIs("recovered")
-            .RespondWith(Response.Create().WithStatusCode(200).WithHeader("Content-Type", "application/json").WithBody($"{{\"uploadUrl\":\"{server.Urls[0]}/chunk-upload\"}}"));
+        int sessionRequests = 0;
+        server.Given(WireMockRequest.Create().UsingPost())
+            .RespondWith(Response.Create().WithCallback(_ => Interlocked.Increment(ref sessionRequests) == 1
+                ? JsonResponse(412, ErrorJson)
+                : JsonResponse(200, $"{{\"uploadUrl\":\"{server.Urls[0]}/chunk-upload\"}}")));
         StubChunkUpload(server);
 
         var result = await UploadAsync(server);
