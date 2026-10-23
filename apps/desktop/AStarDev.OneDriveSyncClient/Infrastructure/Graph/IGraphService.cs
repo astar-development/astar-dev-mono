@@ -28,8 +28,8 @@ public interface IGraphService
     /// <summary>Reads every drive change since the supplied delta link, following all pages. Returns <see cref="DeltaResyncRequired"/> when the link has expired or is unusable.</summary>
     Task<Result<DeltaQueryResult, string>> GetDeltaChangesAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, string deltaLink, CancellationToken cancellationToken = default);
 
-    /// <summary>Resolves the OneDrive item ID for a path relative to the drive root. Returns null if the path does not exist.</summary>
-    Task<string?> GetFolderIdByPathAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, string remotePath, CancellationToken cancellationToken = default);
+    /// <summary>Resolves the OneDrive item ID for a path relative to the drive root. Returns <c>None</c> if the path does not exist and a failure when the lookup itself fails.</summary>
+    Task<Result<Option<string>, string>> GetFolderIdByPathAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, string remotePath, CancellationToken cancellationToken = default);
 
     /// <summary>Fetches the pre-authenticated download URL for a specific drive item.</summary>
     Task<Result<string, string>> GetDownloadUrlAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, string itemId, CancellationToken cancellationToken = default);

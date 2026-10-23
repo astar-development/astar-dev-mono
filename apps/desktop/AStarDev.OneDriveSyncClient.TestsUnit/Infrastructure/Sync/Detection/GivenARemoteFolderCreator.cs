@@ -24,7 +24,7 @@ public sealed class GivenARemoteFolderCreator
         graphService.GetDriveIdAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
             .Returns(new Ok<DriveId, string>(Drive));
         graphService.GetFolderIdByPathAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Drive, Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns((string?)null);
+            .Returns(new Ok<Option<string>, string>(Option.None<string>()));
         graphService.CreateFolderAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(callInfo => new Ok<DriveFolder, string>(new DriveFolder($"new-{callInfo.ArgAt<string>(3)}", callInfo.ArgAt<string>(3), callInfo.ArgAt<string>(2))));
     }
@@ -74,7 +74,7 @@ public sealed class GivenARemoteFolderCreator
     public async Task when_the_parent_exists_remotely_then_the_folder_is_created_under_the_parent()
     {
         fileSystem.Directory.CreateDirectory("/sync-root/Docs/Notes");
-        graphService.GetFolderIdByPathAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Drive, "/Docs", Arg.Any<CancellationToken>()).Returns("docs-id");
+        graphService.GetFolderIdByPathAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Drive, "/Docs", Arg.Any<CancellationToken>()).Returns(new Ok<Option<string>, string>(Option.Some("docs-id")));
 
         await Run(ContextWith(Rule("/Docs/Notes")));
 
@@ -99,7 +99,7 @@ public sealed class GivenARemoteFolderCreator
     public async Task when_the_folder_already_exists_remotely_then_it_is_not_created_and_its_id_is_stored()
     {
         fileSystem.Directory.CreateDirectory("/sync-root/Drafts");
-        graphService.GetFolderIdByPathAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Drive, "/Drafts", Arg.Any<CancellationToken>()).Returns("existing-id");
+        graphService.GetFolderIdByPathAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Drive, "/Drafts", Arg.Any<CancellationToken>()).Returns(new Ok<Option<string>, string>(Option.Some("existing-id")));
 
         await Run(ContextWith(Rule("/Drafts")));
 

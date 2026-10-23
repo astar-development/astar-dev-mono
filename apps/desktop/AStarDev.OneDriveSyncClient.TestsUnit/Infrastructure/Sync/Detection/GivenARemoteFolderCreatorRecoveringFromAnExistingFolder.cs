@@ -45,7 +45,7 @@ public sealed class GivenARemoteFolderCreatorRecoveringFromAnExistingFolder
     public async Task when_create_reports_the_folder_already_exists_then_the_existing_id_is_looked_up_and_stored()
     {
         graphService.GetFolderIdByPathAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Drive, "/Drafts", Arg.Any<CancellationToken>())
-            .Returns((string?)null, "existing-id");
+            .Returns(new Ok<Option<string>, string>(Option.None<string>()), new Ok<Option<string>, string>(Option.Some("existing-id")));
 
         await Run();
 
@@ -56,7 +56,7 @@ public sealed class GivenARemoteFolderCreatorRecoveringFromAnExistingFolder
     public async Task when_create_fails_and_the_folder_still_cannot_be_found_then_the_rule_is_not_updated()
     {
         graphService.GetFolderIdByPathAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Drive, "/Drafts", Arg.Any<CancellationToken>())
-            .Returns((string?)null);
+            .Returns(new Ok<Option<string>, string>(Option.None<string>()));
 
         await Run();
 

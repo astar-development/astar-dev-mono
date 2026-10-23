@@ -68,7 +68,7 @@ public sealed class RemoteFolderCreator(IGraphService graphService, ISyncRuleRep
 
     private async Task<Result<string, string>> EnsureFolderAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, string remotePath, CancellationToken cancellationToken)
     {
-        string? existingId = await graphService.GetFolderIdByPathAsync(tokenFactory, driveId, remotePath, cancellationToken).ConfigureAwait(false);
+        string? existingId = (await graphService.GetFolderIdByPathAsync(tokenFactory, driveId, remotePath, cancellationToken).ConfigureAwait(false)).Match(found => found.Match(id => id, () => (string?)null), _ => null);
 
         if (existingId is not null)
             return new Ok<string, string>(existingId);
@@ -94,7 +94,7 @@ public sealed class RemoteFolderCreator(IGraphService graphService, ISyncRuleRep
 
     private async Task<Result<string, string>> FindExistingFolderAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, string remotePath, string createError, CancellationToken cancellationToken)
     {
-        string? existingId = await graphService.GetFolderIdByPathAsync(tokenFactory, driveId, remotePath, cancellationToken).ConfigureAwait(false);
+        string? existingId = (await graphService.GetFolderIdByPathAsync(tokenFactory, driveId, remotePath, cancellationToken).ConfigureAwait(false)).Match(found => found.Match(id => id, () => (string?)null), _ => null);
 
         return existingId is null
             ? new Fail<string, string>(createError)

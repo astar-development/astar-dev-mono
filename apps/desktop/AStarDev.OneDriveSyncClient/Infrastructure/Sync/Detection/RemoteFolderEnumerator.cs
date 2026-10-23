@@ -134,7 +134,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
         string? folderId = rule.RemoteItemId is Option<string>.Some existingId
             ? existingId.Value
             : TryResolveFromSyncedItems(syncedItems, rule.RemotePath)
-                ?? await graphService.GetFolderIdByPathAsync(tokenFactory, driveId, rule.RemotePath, cancellationToken).ConfigureAwait(false);
+                ?? (await graphService.GetFolderIdByPathAsync(tokenFactory, driveId, rule.RemotePath, cancellationToken).ConfigureAwait(false)).Match(found => found.Match(id => id, () => (string?)null), _ => null);
 
         if (folderId is not null && rule.RemoteItemId.Match(resolvedId => resolvedId != folderId, () => true))
         {

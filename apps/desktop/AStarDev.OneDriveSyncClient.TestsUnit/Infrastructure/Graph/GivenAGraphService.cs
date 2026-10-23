@@ -261,7 +261,7 @@ public sealed class GivenAGraphService : IDisposable
     }
 
     [Fact]
-    public async Task when_get_folder_id_by_path_receives_a_404_then_null_is_returned()
+    public async Task when_get_folder_id_by_path_receives_a_404_then_none_is_returned()
     {
         server.Given(Request.Create().UsingAnyMethod())
             .RespondWith(Response.Create()
@@ -269,9 +269,9 @@ public sealed class GivenAGraphService : IDisposable
                 .WithHeader("Content-Type", "application/json")
                 .WithBodyAsJson(new { error = new { code = "itemNotFound", message = "The resource could not be found." } }));
 
-        string? result = await CreateSut().GetFolderIdByPathAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyRemotePath, TestContext.Current.CancellationToken);
+        var result = await CreateSut().GetFolderIdByPathAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyRemotePath, TestContext.Current.CancellationToken);
 
-        result.ShouldBeNull();
+        result.ShouldBeAssignableTo<Ok<Option<string>, string>>().Value.ShouldBeOfType<Option<string>.None>();
     }
 
     [Fact]
@@ -530,9 +530,9 @@ public sealed class GivenAGraphService : IDisposable
                 .WithHeader("Content-Type", "application/json")
                 .WithBodyAsJson(new { error = new { code = "generalException", message = "Server error" } }));
 
-        string? result = await CreateSut().GetFolderIdByPathAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyRemotePath, TestContext.Current.CancellationToken);
+        var result = await CreateSut().GetFolderIdByPathAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyRemotePath, TestContext.Current.CancellationToken);
 
-        result.ShouldBeNull();
+        result.ShouldBeAssignableTo<Ok<Option<string>, string>>().Value.ShouldBeOfType<Option<string>.None>();
     }
 
     [Fact]
