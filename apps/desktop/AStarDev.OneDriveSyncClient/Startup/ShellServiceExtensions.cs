@@ -14,6 +14,7 @@ using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Detection;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Jobs;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Pipeline;
 using AStarDev.OneDriveSyncClient.Infrastructure.Theme;
+using AStarDev.OneDriveSyncClient.Infrastructure.Tray;
 using AStarDev.OneDriveSyncClient.Infrastructure.Versioning;
 using AStarDev.OneDriveSyncClient.Updates;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
@@ -74,6 +75,9 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<ISettingsService, SettingsService>();
         _ = services.AddSingleton<IFolderPickerService, AvaloniaFolderPickerService>();
         _ = services.AddSingleton<IThemeService, ThemeService>();
+        _ = services.AddSingleton<IShutdownCoordinator, ShutdownCoordinator>();
+        _ = services.AddSingleton<ITrayMenuBuilder, TrayMenuBuilder>();
+        _ = services.AddSingleton<TrayIconService>();
         _ = services.AddSingleton<IJobHandler, DownloadJobHandler>();
         _ = services.AddSingleton<IJobHandler, UploadJobHandler>();
         _ = services.AddSingleton<IJobHandler, DeleteJobHandler>();
