@@ -14,6 +14,7 @@ public interface IRemoteDeletionDetector
     /// Cross-references <paramref name="syncedItems"/> against <paramref name="seenRemoteIds"/> from
     /// the current enumeration pass. For each absent remote ID, deletes the local file or directory
     /// and removes the tracking record from the repository.
+    /// Returns the items removed locally; a deleted folder is reported once, not once per descendant.
     /// </summary>
-    Task DetectAndApplyAsync(AccountId accountId, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, IReadOnlySet<string> seenRemoteIds, IReadOnlyList<SyncRuleEntity> rules, CancellationToken cancellationToken);
+    Task<IReadOnlyList<SyncedItemEntity>> DetectAndApplyAsync(AccountId accountId, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, IReadOnlySet<string> seenRemoteIds, IReadOnlyList<SyncRuleEntity> rules, CancellationToken cancellationToken);
 }
