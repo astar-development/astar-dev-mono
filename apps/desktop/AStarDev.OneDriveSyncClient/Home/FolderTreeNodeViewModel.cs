@@ -55,6 +55,12 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
         _ => loc.GetLocal("Files.FolderStatus.Excluded")
     };
 
+    /// <summary>Localised tooltip for the open in file manager button.</summary>
+    public string OpenInFileManagerTooltipText => loc.GetLocal("Files.OpenInFileManager");
+
+    /// <summary>Localised tooltip for the view folder activity button.</summary>
+    public string ViewActivityTooltipText => loc.GetLocal("Files.ViewFolderActivity");
+
     public string ToggleLabel => loc.GetLocal(IsIncluded ? "Files.Exclude" : "Files.Include");
     public string ToggleTooltip => loc.GetLocal(IsIncluded ? "Files.Exclude.Tooltip" : "Files.Include.Tooltip", Name);
 
@@ -104,6 +110,8 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
         OnPropertyChanged(nameof(ToggleLabel));
         OnPropertyChanged(nameof(ToggleTooltip));
         OnPropertyChanged(nameof(LocalOnlyBadgeText));
+        OnPropertyChanged(nameof(OpenInFileManagerTooltipText));
+        OnPropertyChanged(nameof(ViewActivityTooltipText));
     }
 
     [RelayCommand]

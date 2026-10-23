@@ -37,7 +37,7 @@
                         CornerRadius="{StaticResource RadiusMd}"
                         Padding="12">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="Local file"
+                        <TextBlock Text="{Binding LocalFileText}"
                                    FontSize="{StaticResource FontSizeXs}"
                                    Foreground="{DynamicResource TextTertiaryBrush}"
                                    FontWeight="Medium"/>
@@ -52,7 +52,7 @@
 
                 <!-- vs divider -->
                 <TextBlock Grid.Column="1"
-                           Text="vs"
+                           Text="{Binding VersusText}"
                            FontSize="{StaticResource FontSizeXs}"
                            Foreground="{DynamicResource TextTertiaryBrush}"
                            HorizontalAlignment="Center"
@@ -66,7 +66,7 @@
                         CornerRadius="{StaticResource RadiusMd}"
                         Padding="12">
                     <StackPanel Spacing="4">
-                        <TextBlock Text="Remote file"
+                        <TextBlock Text="{Binding RemoteFileText}"
                                    FontSize="{StaticResource FontSizeXs}"
                                    Foreground="{DynamicResource TextTertiaryBrush}"
                                    FontWeight="Medium"/>
@@ -83,7 +83,7 @@
 
             <!-- Policy picker -->
             <StackPanel Grid.Row="2" Spacing="6">
-                <TextBlock Text="Resolution"
+                <TextBlock Text="{Binding ResolutionText}"
                            FontSize="{StaticResource FontSizeXs}"
                            Foreground="{DynamicResource TextTertiaryBrush}"
                            FontWeight="Medium"/>
@@ -117,14 +117,14 @@
             <Grid Grid.Row="4" ColumnDefinitions="*,Auto,8,Auto">
 
                 <TextBlock Grid.Column="0"
-                           Text="Resolving ..."
+                           Text="{Binding ResolvingText}"
                            IsVisible="{Binding IsResolving}"
                            FontSize="{StaticResource FontSizeSm}"
                            Foreground="{DynamicResource TextTertiaryBrush}"
                            VerticalAlignment="Center"/>
 
                 <Button Grid.Column="1"
-                        Content="Dismiss"
+                        Content="{Binding DismissText}"
                         Padding="12,6"
                         CornerRadius="{StaticResource RadiusMd}"
                         Background="Transparent"
@@ -133,7 +133,7 @@
                         Command="{Binding DismissCommand}"/>
 
                 <Button Grid.Column="3"
-                        Content="Apply"
+                        Content="{Binding ApplyText}"
                         Padding="16,6"
                         CornerRadius="{StaticResource RadiusMd}"
                         Background="{DynamicResource TextAccentBrush}"

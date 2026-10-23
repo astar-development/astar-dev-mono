@@ -160,6 +160,7 @@ public sealed class GivenAnAddAccountWizardViewModel
     [Fact]
     public async Task when_graph_service_throws_then_folder_load_error_is_set()
     {
+        _localizationService.GetLocal("Wizard.AddAccount.LoadFoldersFailed", Arg.Any<object[]>()).Returns("localised-load-folders-failed");
         var sut = CreateSut();
         await SignInAsync(sut);
         _graphService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<CancellationToken>())
@@ -167,7 +168,7 @@ public sealed class GivenAnAddAccountWizardViewModel
 
         await sut.NextCommand.ExecuteAsync(null);
 
-        sut.FolderLoadError.ShouldNotBeNullOrEmpty();
+        sut.FolderLoadError.ShouldBe("localised-load-folders-failed");
         sut.IsLoadingFolders.ShouldBeFalse();
     }
 
@@ -438,13 +439,14 @@ public sealed class GivenAnAddAccountWizardViewModel
     [Fact]
     public async Task when_sign_in_returns_unknown_error_type_then_sign_in_status_text_is_set()
     {
+        _localizationService.GetLocal("Wizard.AddAccount.UnexpectedAuthError").Returns("localised-unexpected-auth-error");
         _authService.SignInInteractiveAsync(Arg.Any<CancellationToken>())
             .Returns(new Fail<AuthResult, AuthError>(new UnknownAuthError()));
         var sut = CreateSut();
 
         await sut.OpenBrowserCommand.ExecuteAsync(null);
 
-        sut.SignInStatusText.ShouldNotBeNullOrEmpty();
+        sut.SignInStatusText.ShouldBe("localised-unexpected-auth-error");
     }
 
     [Fact]

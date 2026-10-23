@@ -297,6 +297,16 @@ public sealed class GivenAFolderTreeNodeViewModel
         sut.StatusBadgeText.ShouldBe("Files.FolderStatus.Excluded");
     }
 
+    [Theory]
+    [InlineData("OpenInFileManagerTooltipText", "Files.OpenInFileManager")]
+    [InlineData("ViewActivityTooltipText", "Files.ViewFolderActivity")]
+    public void when_tooltip_text_property_is_read_then_it_comes_from_the_localisation_service(string propertyName, string key)
+    {
+        var sut = BuildIncludedRootVm(BuildGraphServiceWithChild());
+
+        ((string?)typeof(FolderTreeNodeViewModel).GetProperty(propertyName)?.GetValue(sut)).ShouldBe(key);
+    }
+
     private static IGraphService BuildGraphServiceWithChild()
     {
         var graphService = Substitute.For<IGraphService>();

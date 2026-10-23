@@ -133,4 +133,39 @@ public sealed class GivenAConflictItemViewModel
 
         firedProperties.ShouldContain(nameof(sut.CollapseExpandLabel));
     }
+
+    [Theory]
+    [InlineData("LocalFileText", "Conflict.LocalFile")]
+    [InlineData("RemoteFileText", "Conflict.RemoteFile")]
+    [InlineData("VersusText", "Conflict.Versus")]
+    [InlineData("ResolutionText", "Conflict.Resolution")]
+    [InlineData("ResolvingText", "Conflict.Resolving")]
+    [InlineData("DismissText", "Conflict.Dismiss")]
+    [InlineData("ApplyText", "Conflict.Apply")]
+    public void when_panel_text_property_is_read_then_it_comes_from_the_localisation_service(string propertyName, string key)
+    {
+        var sut = new ConflictItemViewModel(BuildConflict(), Substitute.For<ISyncService>(), BuildLocalizationService());
+
+        ((string?)typeof(ConflictItemViewModel).GetProperty(propertyName)?.GetValue(sut)).ShouldBe(key);
+    }
+
+    [Theory]
+    [InlineData("LocalFileText")]
+    [InlineData("RemoteFileText")]
+    [InlineData("VersusText")]
+    [InlineData("ResolutionText")]
+    [InlineData("ResolvingText")]
+    [InlineData("DismissText")]
+    [InlineData("ApplyText")]
+    public void when_culture_changes_then_panel_text_property_change_is_raised(string propertyName)
+    {
+        var loc = BuildLocalizationService();
+        var sut = new ConflictItemViewModel(BuildConflict(), Substitute.For<ISyncService>(), loc);
+        var raised = new List<string?>();
+        sut.PropertyChanged += (_, args) => raised.Add(args.PropertyName);
+
+        loc.CultureChanged += Raise.Event<EventHandler<CultureInfo>>(loc, CultureInfo.GetCultureInfo("en-US"));
+
+        raised.ShouldContain(propertyName);
+    }
 }

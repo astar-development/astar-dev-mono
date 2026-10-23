@@ -236,7 +236,7 @@
                                                IsVisible="{Binding TagName, Converter={StaticResource StringNotEmptyConverter}}"/>
 
                                     <!-- Open button -->
-                                    <Button Content="Open"
+                                    <Button Content="{Binding OpenButtonText}"
                                             Command="{Binding OpenFileCommand}"
                                             HorizontalAlignment="Stretch"
                                             Padding="8,4"

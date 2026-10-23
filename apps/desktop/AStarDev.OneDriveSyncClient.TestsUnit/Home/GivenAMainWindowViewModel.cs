@@ -172,4 +172,13 @@ public sealed class GivenAMainWindowViewModel
 
         sut.IsSearchActive.ShouldBeTrue();
     }
+
+    [Fact]
+    public void when_application_tooltip_text_is_read_then_it_comes_from_the_localisation_service()
+    {
+        _localizationService.GetLocal("App.Title").Returns("localised-app-title");
+        var sut = CreateSut();
+
+        ((string?)typeof(MainWindowViewModel).GetProperty("ApplicationTooltipText")?.GetValue(sut)).ShouldBe("localised-app-title");
+    }
 }

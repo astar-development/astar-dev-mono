@@ -104,6 +104,9 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
     /// <summary>Localised tooltip for the Search nav rail button.</summary>
     public string NavTooltipSearchText => localizationService.GetLocal("Nav.Tooltip.Search");
 
+    /// <summary>Localised tooltip for the application logo.</summary>
+    public string ApplicationTooltipText => localizationService.GetLocal("App.Title");
+
     [RelayCommand]
     private void Navigate(NavSection section) => ActiveSection = section;
 

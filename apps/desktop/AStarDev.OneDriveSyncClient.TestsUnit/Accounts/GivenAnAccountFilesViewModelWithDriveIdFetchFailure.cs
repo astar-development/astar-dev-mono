@@ -35,7 +35,7 @@ public sealed class GivenAnAccountFilesViewModelWithDriveIdFetchFailure
 
         await sut.LoadCommand.ExecuteAsync(null);
 
-        sut.LoadError.ShouldBe($"Failed to retrieve drive ID: {DriveIdErrorMessage}");
+        sut.LoadError.ShouldBe($"localised-drive-id-failure:{DriveIdErrorMessage}");
     }
 
     [Fact]
@@ -71,7 +71,9 @@ public sealed class GivenAnAccountFilesViewModelWithDriveIdFetchFailure
             .Returns(new Fail<DriveId, string>(DriveIdErrorMessage));
         var fileSystemServices = new FileSystemServices(Substitute.For<IFileSystem>(), Substitute.For<IFileManagerService>());
 
-        var accountFilesViewServices = new AccountFilesViewServices(authService, Substitute.For<ILocalizationService>(), graphService, new SyncRuleService(syncRuleRepo, Substitute.For<ILogger<SyncRuleService>>()));
+        var loc = Substitute.For<ILocalizationService>();
+        loc.GetLocal("Files.LoadDriveIdFailed", Arg.Any<object[]>()).Returns(x => $"localised-drive-id-failure:{x.ArgAt<object[]>(1)[0]}");
+        var accountFilesViewServices = new AccountFilesViewServices(authService, loc, graphService, new SyncRuleService(syncRuleRepo, Substitute.For<ILogger<SyncRuleService>>()));
         return new AccountFilesViewModel(BuildAccount(), accountFilesViewServices, fileSystemServices, Substitute.For<ILogger<AccountFilesViewModel>>(), new FolderTreeNodeViewModelFactory(graphService, Substitute.For<ILogger<FolderTreeNodeViewModel>>(), Substitute.For<ILocalizationService>(), new LocalFolderLister(new MockFileSystem())));
     }
 

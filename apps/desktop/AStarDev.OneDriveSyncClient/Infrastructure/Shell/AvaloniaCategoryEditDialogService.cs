@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using AStarDev.OneDriveSyncClient.Classifications;
+using AStarDev.OneDriveSyncClient.Localization;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
@@ -7,19 +8,19 @@ using Avalonia.Threading;
 namespace AStarDev.OneDriveSyncClient.Infrastructure.Shell;
 
 /// <inheritdoc />
-public sealed class AvaloniaCategoryEditDialogService : ICategoryEditDialogService
+public sealed class AvaloniaCategoryEditDialogService(ILocalizationService loc) : ICategoryEditDialogService
 {
     /// <inheritdoc />
     public async Task ShowAsync(CategoryNodeViewModel node, CancellationToken cancellationToken = default)
         => await Dispatcher.UIThread.InvokeAsync(() => ShowDialogAsync(node, cancellationToken));
 
-    private static async Task ShowDialogAsync(CategoryNodeViewModel node, CancellationToken cancellationToken)
+    private async Task ShowDialogAsync(CategoryNodeViewModel node, CancellationToken cancellationToken)
     {
         var mainWindow = (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
         if (mainWindow is null)
             return;
 
-        var dialog = new CategoryEditDialog { DataContext = node };
+        var dialog = new CategoryEditDialog { DataContext = node, Text = ClassificationTextFactory.Create(loc) };
 
         void OnNodePropertyChanged(object? sender, PropertyChangedEventArgs e)
         {

@@ -77,7 +77,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAcco
                     ok => ok.AccessToken,
                     error =>
                     {
-                        LoadError = error is AuthFailedError failed ? failed.Message : "Authentication failed.";
+                        LoadError = error is AuthFailedError failed ? failed.Message : accountFilesViewServices.LocalizationService.GetLocal("Sync.AuthFailed");
                         HasLoadError = true;
                         return null;
                     });
@@ -90,7 +90,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAcco
                     id => id,
                     error =>
                     {
-                        LoadError = $"Failed to retrieve drive ID: {error}";
+                        LoadError = accountFilesViewServices.LocalizationService.GetLocal("Files.LoadDriveIdFailed", error);
                         HasLoadError = true;
                         return null;
                     });
@@ -109,7 +109,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAcco
         }
         catch (Exception ex)
         {
-            LoadError = $"Failed to load folders: {ex.Message}";
+            LoadError = accountFilesViewServices.LocalizationService.GetLocal("Files.LoadFoldersFailed", ex.Message);
             HasLoadError = true;
         }
         finally

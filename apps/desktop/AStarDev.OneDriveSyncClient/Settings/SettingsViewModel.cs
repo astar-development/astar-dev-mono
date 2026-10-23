@@ -131,6 +131,54 @@ public sealed partial class SettingsViewModel : ObservableObject
     /// <summary>Localised description for the launch at startup row.</summary>
     public string LaunchAtStartupDescriptionText => loc.GetLocal("Settings.LaunchAtStartup.Description");
 
+    /// <summary>Localised page title.</summary>
+    public string TitleText => loc.GetLocal("Settings.Title");
+
+    /// <summary>Localised page description.</summary>
+    public string DescriptionText => loc.GetLocal("Settings.Description");
+
+    /// <summary>Localised appearance section heading.</summary>
+    public string AppearanceHeadingText => loc.GetLocal("Settings.Section.Appearance");
+
+    /// <summary>Localised theme row label.</summary>
+    public string ThemeLabelText => loc.GetLocal("Settings.Theme");
+
+    /// <summary>Localised theme row description.</summary>
+    public string ThemeDescriptionText => loc.GetLocal("Settings.Theme.Description");
+
+    /// <summary>Localised language section heading.</summary>
+    public string LanguageHeadingText => loc.GetLocal("Settings.Section.Language");
+
+    /// <summary>Localised display language row label.</summary>
+    public string DisplayLanguageLabelText => loc.GetLocal("Settings.Language.DisplayLanguage");
+
+    /// <summary>Localised sync policy section heading.</summary>
+    public string SyncPolicyHeadingText => loc.GetLocal("Settings.Section.SyncPolicy");
+
+    /// <summary>Localised default conflict policy row label.</summary>
+    public string DefaultConflictPolicyLabelText => loc.GetLocal("Settings.DefaultConflictPolicy");
+
+    /// <summary>Localised default conflict policy row description.</summary>
+    public string DefaultConflictPolicyDescriptionText => loc.GetLocal("Settings.DefaultConflictPolicy.Description");
+
+    /// <summary>Localised sync interval row label.</summary>
+    public string SyncIntervalLabelText => loc.GetLocal("Settings.DeltaSyncInterval");
+
+    /// <summary>Localised sync interval row description.</summary>
+    public string SyncIntervalDescriptionText => loc.GetLocal("Settings.DeltaSyncInterval.Description");
+
+    /// <summary>Localised concurrent workers row label.</summary>
+    public string ConcurrentWorkersLabelText => loc.GetLocal("Settings.ConcurrentWorkers.Label");
+
+    /// <summary>Localised concurrent workers row description.</summary>
+    public string ConcurrentWorkersDescriptionText => loc.GetLocal("Settings.ConcurrentWorkers.Description");
+
+    /// <summary>Localised account sync paths section heading.</summary>
+    public string AccountSyncPathsHeadingText => loc.GetLocal("Settings.Section.AccountSyncPaths");
+
+    /// <summary>Localised account sync paths section description.</summary>
+    public string AccountSyncPathsDescriptionText => loc.GetLocal("Settings.Section.AccountSyncPaths.Description");
+
     /// <summary>The available sync interval options, localised for the current culture.</summary>
     public IReadOnlyList<SyncIntervalOption> IntervalOptions { get; private set; }
 
@@ -184,7 +232,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         if (account is null)
             return;
 
-        string? path = await folderPickerService.PickFolderAsync(storageProvider, "Choose local sync folder", cancellationToken).ConfigureAwait(false);
+        string? path = await folderPickerService.PickFolderAsync(storageProvider, loc.GetLocal("Settings.ChooseSyncFolder"), cancellationToken).ConfigureAwait(false);
         if (path is not null)
             account.LocalSyncPath = path;
     }
@@ -244,5 +292,21 @@ public sealed partial class SettingsViewModel : ObservableObject
         OnPropertyChanged(nameof(LanguageDescriptionText));
         OnPropertyChanged(nameof(LaunchAtStartupLabelText));
         OnPropertyChanged(nameof(LaunchAtStartupDescriptionText));
+        OnPropertyChanged(nameof(TitleText));
+        OnPropertyChanged(nameof(DescriptionText));
+        OnPropertyChanged(nameof(AppearanceHeadingText));
+        OnPropertyChanged(nameof(ThemeLabelText));
+        OnPropertyChanged(nameof(ThemeDescriptionText));
+        OnPropertyChanged(nameof(LanguageHeadingText));
+        OnPropertyChanged(nameof(DisplayLanguageLabelText));
+        OnPropertyChanged(nameof(SyncPolicyHeadingText));
+        OnPropertyChanged(nameof(DefaultConflictPolicyLabelText));
+        OnPropertyChanged(nameof(DefaultConflictPolicyDescriptionText));
+        OnPropertyChanged(nameof(SyncIntervalLabelText));
+        OnPropertyChanged(nameof(SyncIntervalDescriptionText));
+        OnPropertyChanged(nameof(ConcurrentWorkersLabelText));
+        OnPropertyChanged(nameof(ConcurrentWorkersDescriptionText));
+        OnPropertyChanged(nameof(AccountSyncPathsHeadingText));
+        OnPropertyChanged(nameof(AccountSyncPathsDescriptionText));
     }
 }

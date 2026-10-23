@@ -196,7 +196,7 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
         {
             case AuthCancelledError: SetCancelledLoginState(); break;
             case AuthFailedError failed: SetFailedLoginState(failed); break;
-            default: SetFailedLoginState(new AuthFailedError("Unexpected authentication error.")); break;
+            default: SetFailedLoginState(new AuthFailedError(loc.GetLocal("Wizard.AddAccount.UnexpectedAuthError"))); break;
         }
     }
 
@@ -275,7 +275,7 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
                     f => f,
                     error =>
                     {
-                        FolderLoadError = $"Could not load folders: {error}";
+                        FolderLoadError = loc.GetLocal("Wizard.AddAccount.LoadFoldersFailed", error);
                         return null;
                     });
 
@@ -292,7 +292,7 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
         }
         catch (Exception ex)
         {
-            FolderLoadError = $"Could not load folders: {ex.Message}";
+            FolderLoadError = loc.GetLocal("Wizard.AddAccount.LoadFoldersFailed", ex.Message);
         }
         finally
         {

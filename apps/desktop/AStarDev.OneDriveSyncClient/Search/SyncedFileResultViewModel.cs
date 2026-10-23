@@ -52,6 +52,9 @@ public sealed partial class SyncedFileResultViewModel : ObservableObject
     /// <summary>Card opacity — reduced when the local file is absent.</summary>
     public double CardOpacity => IsLocalPresent ? 1.0 : 0.4;
 
+    /// <summary>Localised label for the open button.</summary>
+    public string OpenButtonText => loc.GetLocal("Search.Result.Open.Button");
+
     /// <summary>Localised label for the delete button.</summary>
     public string DeleteButtonText => loc.GetLocal("Search.Result.Delete.Button");
 
