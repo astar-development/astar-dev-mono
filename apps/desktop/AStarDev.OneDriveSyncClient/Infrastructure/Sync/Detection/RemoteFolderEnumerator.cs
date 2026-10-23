@@ -117,7 +117,10 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
                         break;
 
                     itemCount++;
-                    context.SeenRemoteIds.Add(folderEnumerator.Current.Id.Value);
+
+                    if (!context.SeenRemoteIds.Add(folderEnumerator.Current.Id.Value))
+                        continue;
+
                     yield return folderEnumerator.Current;
                 }
             }
