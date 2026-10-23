@@ -249,5 +249,7 @@
   "Notification.Conflict.Title": "US-Sync conflict",
   "Notification.Conflict.Body": "US-{0} changed on both sides ({1})",
   "Notification.SyncError.Title": "US-Sync error",
-  "Notification.SyncError.Body": "US-{0}: {1}"
+  "Notification.SyncError.Body": "US-{0}: {1}",
+  "Settings.LaunchAtStartup.Label": "US-Launch at startup",
+  "Settings.LaunchAtStartup.Description": "US-Start the application automatically when you log in."
 }

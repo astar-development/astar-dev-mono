@@ -4,6 +4,7 @@ using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStarDev.OneDriveSyncClient.Accounts;
 using AStarDev.OneDriveSyncClient.Conflicts;
 using AStarDev.OneDriveSyncClient.Data.Repositories;
+using AStarDev.OneDriveSyncClient.Infrastructure.Autostart;
 using AStarDev.OneDriveSyncClient.Infrastructure.Shell;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync;
 using AStarDev.OneDriveSyncClient.Infrastructure.Theme;
@@ -22,10 +23,11 @@ public sealed partial class SettingsViewModel : ObservableObject
     private readonly IAccountRepository repository;
     private readonly ILocalizationService loc;
     private readonly IFolderPickerService folderPickerService;
+    private readonly IAutostartService autostartService;
     private readonly bool isLoaded;
     private bool isRefreshing;
 
-    public SettingsViewModel(ISettingsService settingsService, IThemeService themeService, ISyncScheduler scheduler, IAccountRepository repository, ILocalizationService loc, IFolderPickerService folderPickerService)
+    public SettingsViewModel(ISettingsService settingsService, IThemeService themeService, ISyncScheduler scheduler, IAccountRepository repository, ILocalizationService loc, IFolderPickerService folderPickerService, IAutostartService autostartService)
     {
         this.settingsService = settingsService;
         this.themeService = themeService;
@@ -33,10 +35,12 @@ public sealed partial class SettingsViewModel : ObservableObject
         this.repository = repository;
         this.loc = loc;
         this.folderPickerService = folderPickerService;
+        this.autostartService = autostartService;
         Theme = settingsService.Current.Theme;
         DefaultConflictPolicy = settingsService.Current.DefaultConflictPolicy;
         SyncIntervalMinutes = settingsService.Current.SyncIntervalMinutes;
         ConcurrentWorkerCount = settingsService.Current.ConcurrentWorkerCount;
+        LaunchAtStartup = settingsService.Current.LaunchAtStartup;
         ThemeOptions = ThemeOptionFactory.Create(loc, Theme);
         IntervalOptions = BuildIntervalOptions();
         PolicyOptions = ConflictPolicyOptionFactory.Create(loc, DefaultConflictPolicy);
@@ -107,6 +111,25 @@ public sealed partial class SettingsViewModel : ObservableObject
         WorkerCountOptions = WorkerCountOptionFactory.Create(loc, value);
         OnPropertyChanged(nameof(WorkerCountOptions));
     }
+
+    [ObservableProperty]
+    public partial bool LaunchAtStartup { get; set; }
+
+    partial void OnLaunchAtStartupChanged(bool value)
+    {
+        if (!isLoaded || isRefreshing)
+            return;
+
+        settingsService.Current.LaunchAtStartup = value;
+        _ = settingsService.SaveAsync();
+        _ = autostartService.Apply(value);
+    }
+
+    /// <summary>Localised label for the launch at startup row.</summary>
+    public string LaunchAtStartupLabelText => loc.GetLocal("Settings.LaunchAtStartup.Label");
+
+    /// <summary>Localised description for the launch at startup row.</summary>
+    public string LaunchAtStartupDescriptionText => loc.GetLocal("Settings.LaunchAtStartup.Description");
 
     /// <summary>The available sync interval options, localised for the current culture.</summary>
     public IReadOnlyList<SyncIntervalOption> IntervalOptions { get; private set; }
@@ -194,6 +217,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         DefaultConflictPolicy = settings.DefaultConflictPolicy;
         SyncIntervalMinutes = settings.SyncIntervalMinutes;
         ConcurrentWorkerCount = settings.ConcurrentWorkerCount;
+        LaunchAtStartup = settings.LaunchAtStartup;
         isRefreshing = false;
         ThemeOptions = ThemeOptionFactory.Create(loc, Theme);
         OnPropertyChanged(nameof(ThemeOptions));
@@ -218,5 +242,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         LanguageOptions = LanguageOptionFactory.Create(loc);
         OnPropertyChanged(nameof(LanguageOptions));
         OnPropertyChanged(nameof(LanguageDescriptionText));
+        OnPropertyChanged(nameof(LaunchAtStartupLabelText));
+        OnPropertyChanged(nameof(LaunchAtStartupDescriptionText));
     }
 }

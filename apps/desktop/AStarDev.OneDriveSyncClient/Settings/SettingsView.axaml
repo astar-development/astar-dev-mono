@@ -258,6 +258,29 @@
                         </ItemsControl>
                     </Grid>
                 </Border>
+
+                <!-- Launch at startup -->
+                <Border Background="{DynamicResource BackgroundSecondaryBrush}"
+                        BorderBrush="{DynamicResource BorderSubtleBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource RadiusLg}"
+                        Padding="16">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding LaunchAtStartupLabelText}"
+                                       FontSize="{StaticResource FontSizeMd}"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock Text="{Binding LaunchAtStartupDescriptionText}"
+                                       FontSize="{StaticResource FontSizeSm}"
+                                       Foreground="{DynamicResource TextTertiaryBrush}"/>
+                        </StackPanel>
+
+                        <ToggleSwitch Grid.Column="1"
+                                      IsChecked="{Binding LaunchAtStartup, Mode=TwoWay}"
+                                      OnContent=""
+                                      OffContent=""/>
+                    </Grid>
+                </Border>
             </StackPanel>
 
             <!-- ── Per-account settings ── -->

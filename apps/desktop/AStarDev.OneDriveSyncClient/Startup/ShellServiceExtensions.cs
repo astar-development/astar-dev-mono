@@ -87,7 +87,7 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<SyncNotificationService>();
         _ = services.AddSingleton<IAutostartContextProvider, AutostartContextProvider>();
         _ = services.AddSingleton<IWindowsRunKey, WindowsRunKey>();
-        _ = services.AddSingleton<AutostartService>();
+        _ = services.AddSingleton<IAutostartService, AutostartService>();
         _ = services.AddSingleton<IJobHandler, DownloadJobHandler>();
         _ = services.AddSingleton<IJobHandler, UploadJobHandler>();
         _ = services.AddSingleton<IJobHandler, DeleteJobHandler>();

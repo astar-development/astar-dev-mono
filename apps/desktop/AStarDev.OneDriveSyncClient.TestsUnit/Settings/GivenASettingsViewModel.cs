@@ -1,3 +1,4 @@
+using AStarDev.OneDriveSyncClient.Infrastructure.Autostart;
 using System.Globalization;
 using AStarDev.OneDriveSyncClient.Accounts;
 using AStarDev.OneDriveSyncClient.Data.Repositories;
@@ -39,7 +40,7 @@ public sealed class GivenASettingsViewModel
         return loc;
     }
 
-    private static SettingsViewModel BuildSut(ISettingsService? settingsService = null, IThemeService? themeService = null, ISyncScheduler? scheduler = null, IAccountRepository? repository = null, ILocalizationService? localizationService = null, IFolderPickerService? folderPickerService = null)
+    private static SettingsViewModel BuildSut(ISettingsService? settingsService = null, IThemeService? themeService = null, ISyncScheduler? scheduler = null, IAccountRepository? repository = null, ILocalizationService? localizationService = null, IFolderPickerService? folderPickerService = null, IAutostartService? autostartService = null)
     {
         settingsService ??= BuildSettingsService();
         themeService ??= Substitute.For<IThemeService>();
@@ -47,8 +48,9 @@ public sealed class GivenASettingsViewModel
         repository ??= Substitute.For<IAccountRepository>();
         localizationService ??= BuildLocalizationService();
         folderPickerService ??= Substitute.For<IFolderPickerService>();
+        autostartService ??= Substitute.For<IAutostartService>();
 
-        return new SettingsViewModel(settingsService, themeService, scheduler, repository, localizationService, folderPickerService);
+        return new SettingsViewModel(settingsService, themeService, scheduler, repository, localizationService, folderPickerService, autostartService);
     }
 
     private static OneDriveAccount BuildAccount(string accountId) => new()
