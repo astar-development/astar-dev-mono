@@ -461,4 +461,22 @@ public static partial class OneDriveSyncClientMessages
     /// <param name="ex">The exception.</param>
     [LoggerMessage(EventId = 3500, Level = LogLevel.Warning, Message = "[ProcessNotificationSender] Could not show notification using {Command}: {Error}")]
     public static partial void NotificationFailed(ILogger<ProcessNotificationSender> logger, string command, string error, Exception ex);
+
+    // Autostart (3600-3699)
+
+    /// <summary>
+    /// Logs that the application was registered to launch at OS startup.
+    /// </summary>
+    /// <param name="logger">The logger instance.</param>
+    /// <param name="location">The file or registry value that was written.</param>
+    [LoggerMessage(EventId = 3600, Level = LogLevel.Information, Message = "[Autostart] Registered to launch at startup via {Location}")]
+    public static partial void AutostartRegistered(ILogger<App> logger, string location);
+
+    /// <summary>
+    /// Logs that registering the application to launch at OS startup failed.
+    /// </summary>
+    /// <param name="logger">The logger instance.</param>
+    /// <param name="reason">The reason registration failed.</param>
+    [LoggerMessage(EventId = 3601, Level = LogLevel.Warning, Message = "[Autostart] Could not register to launch at startup: {Reason}")]
+    public static partial void AutostartFailed(ILogger<App> logger, string reason);
 }
