@@ -68,6 +68,11 @@ Never await `Task<Result<T,E>>` into a variable then call `.Match()` — chain `
 
 Error-branch logic belongs INSIDE the error lambda. Never use `is Result<T,E>.Ok` pattern matching.
 
+## Sync Pipelines
+
+- Code that builds sync jobs from more than one rule, folder or source MUST de-duplicate by normalised local path (ordinal ignore case) before queuing.
+- A change to such code needs a test with overlapping rules and a casing variant.
+
 ## Utilities
 
 Use `AStarDev.Utilities` helpers. e.g. `"dir1".CombinePaths("dir2")` not `Path.Combine(...)` — `Path.Combine` silently drops parameters.
