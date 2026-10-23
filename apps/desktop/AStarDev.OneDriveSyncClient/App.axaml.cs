@@ -4,7 +4,6 @@ using AStarDev.OneDriveSyncClient.Home;
 using AStarDev.OneDriveSyncClient.Infrastructure;
 using AStarDev.OneDriveSyncClient.Infrastructure.ApplicationConfiguration;
 using AStarDev.OneDriveSyncClient.Infrastructure.Autostart;
-using AStarDev.OneDriveSyncClient.Infrastructure.Logging;
 using AStarDev.OneDriveSyncClient.Infrastructure.Notifications;
 using AStarDev.OneDriveSyncClient.Infrastructure.Shell;
 using AStarDev.OneDriveSyncClient.Infrastructure.Tray;
@@ -56,7 +55,7 @@ public class App : Application, IDisposable
             services.GetRequiredService<TrayIconService>().Attach(desktop, mainWindow);
             services.GetRequiredService<AvaloniaAppActivityProvider>().Attach(mainWindow);
             services.GetRequiredService<SyncNotificationService>().Start();
-            LogAutostartOutcome(services.GetRequiredService<AutostartService>().EnsureRegistered());
+            _ = services.GetRequiredService<IAutostartService>().Apply(services.GetRequiredService<ISettingsService>().Current.LaunchAtStartup);
             splashWindow.Close();
 
             _ = services.GetRequiredService<IUpdateNotificationService>().CheckAndNotifyAsync();
@@ -68,21 +67,6 @@ public class App : Application, IDisposable
             ApplicationMessages.Stopping(logger, ApplicationMetadata.ApplicationName);
             services.Dispose();
         };
-    }
-
-    private void LogAutostartOutcome(AutostartOutcome outcome)
-    {
-        var logger = services!.GetRequiredService<ILogger<App>>();
-
-        switch (outcome)
-        {
-            case AutostartOutcome.Registered registered:
-                OneDriveSyncClientMessages.AutostartRegistered(logger, registered.Location);
-                break;
-            case AutostartOutcome.Failed failed:
-                OneDriveSyncClientMessages.AutostartFailed(logger, failed.Reason);
-                break;
-        }
     }
 
     private static ServiceProvider BuildServiceProvider()

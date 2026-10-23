@@ -1,6 +1,8 @@
 using System.IO.Abstractions;
 using System.Security;
 using AStar.Dev.Velopack.Publishing;
+using AStarDev.FunctionalParadigm;
+using AStarDev.OneDriveSyncClient.Infrastructure.Logging;
 using AStarDev.OneDriveSyncClient.Infrastructure.Notifications;
 using Microsoft.Extensions.Logging;
 
@@ -13,6 +15,7 @@ public sealed class AutostartService(IFileSystem fileSystem, IAutostartContextPr
     private const string LinuxEntryFileName = "astar-onedrive-sync.desktop";
     private const string MacAgentLabel = "com.astar.onedrive-sync";
     private const string WindowsRunValueName = "AStarOneDriveSync";
+    private const string HomeDirectoryUnknown = "The home directory is unknown.";
 
     /// <inheritdoc />
     public AutostartOutcome EnsureRegistered()
@@ -20,28 +23,42 @@ public sealed class AutostartService(IFileSystem fileSystem, IAutostartContextPr
         if (!velopackUpdateService.IsInstalled)
             return AutostartOutcomeFactory.CreateNotInstalled();
 
-        var context = contextProvider.Current();
+        return Run(context => context.Platform switch
+        {
+            DesktopPlatform.Windows => RegisterWindows(context),
+            DesktopPlatform.MacOs => MacAgentPath(context).Match(path => WriteFile(path, AutostartEntryBuilder.BuildLaunchAgent(MacAgentLabel, context.ExecutablePath)), FailHomeUnknown),
+            _ => LinuxEntryPath(context).Match(path => WriteFile(path, AutostartEntryBuilder.BuildDesktopEntry(context.ExecutablePath, StartupDelaySeconds)), FailHomeUnknown)
+        });
+    }
 
+    /// <inheritdoc />
+    public AutostartOutcome EnsureUnregistered() => Run(context => context.Platform switch
+    {
+        DesktopPlatform.Windows => UnregisterWindows(),
+        DesktopPlatform.MacOs => MacAgentPath(context).Match(DeleteFile, FailHomeUnknown),
+        _ => LinuxEntryPath(context).Match(DeleteFile, FailHomeUnknown)
+    });
+
+    /// <inheritdoc />
+    public AutostartOutcome Apply(bool launchAtStartup)
+    {
+        var outcome = launchAtStartup ? EnsureRegistered() : EnsureUnregistered();
+        LogOutcome(outcome);
+
+        return outcome;
+    }
+
+    private AutostartOutcome Run(Func<AutostartContext, AutostartOutcome> action)
+    {
         try
         {
-            return context.Platform switch
-            {
-                DesktopPlatform.Windows => RegisterWindows(context),
-                DesktopPlatform.MacOs => RegisterMacOs(context),
-                _ => RegisterLinux(context)
-            };
+            return action(contextProvider.Current());
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or SecurityException)
         {
             return AutostartOutcomeFactory.CreateFailed(ex.Message);
         }
     }
-
-    /// <inheritdoc />
-    public AutostartOutcome EnsureUnregistered() => throw new NotImplementedException(logger.ToString());
-
-    /// <inheritdoc />
-    public AutostartOutcome Apply(bool launchAtStartup) => throw new NotImplementedException(launchAtStartup.ToString());
 
     private AutostartOutcome RegisterWindows(AutostartContext context)
     {
@@ -50,33 +67,57 @@ public sealed class AutostartService(IFileSystem fileSystem, IAutostartContextPr
         return AutostartOutcomeFactory.CreateRegistered(WindowsRunValueName);
     }
 
-    private AutostartOutcome RegisterMacOs(AutostartContext context)
+    private AutostartOutcome UnregisterWindows()
     {
-        if (context.HomeDirectory.Length == 0)
-            return AutostartOutcomeFactory.CreateFailed("The home directory is unknown.");
+        windowsRunKey.DeleteValue(WindowsRunValueName);
 
-        string directory = fileSystem.Path.Combine(context.HomeDirectory, "Library", "LaunchAgents");
-
-        return WriteFile(directory, $"{MacAgentLabel}.plist", AutostartEntryBuilder.BuildLaunchAgent(MacAgentLabel, context.ExecutablePath));
+        return AutostartOutcomeFactory.CreateUnregistered(WindowsRunValueName);
     }
 
-    private AutostartOutcome RegisterLinux(AutostartContext context)
+    private Option<string> MacAgentPath(AutostartContext context) => context.HomeDirectory.Length == 0
+        ? Option.None<string>()
+        : Option.Some(fileSystem.Path.Combine(context.HomeDirectory, "Library", "LaunchAgents", $"{MacAgentLabel}.plist"));
+
+    private Option<string> LinuxEntryPath(AutostartContext context) => (context.XdgConfigHome.Length, context.HomeDirectory.Length) switch
     {
-        if (context.XdgConfigHome.Length == 0 && context.HomeDirectory.Length == 0)
-            return AutostartOutcomeFactory.CreateFailed("The home directory is unknown.");
+        (0, 0) => Option.None<string>(),
+        (0, _) => Option.Some(fileSystem.Path.Combine(context.HomeDirectory, ".config", "autostart", LinuxEntryFileName)),
+        _ => Option.Some(fileSystem.Path.Combine(context.XdgConfigHome, "autostart", LinuxEntryFileName))
+    };
 
-        string configHome = context.XdgConfigHome.Length > 0 ? context.XdgConfigHome : fileSystem.Path.Combine(context.HomeDirectory, ".config");
-        string directory = fileSystem.Path.Combine(configHome, "autostart");
+    private static AutostartOutcome FailHomeUnknown() => AutostartOutcomeFactory.CreateFailed(HomeDirectoryUnknown);
 
-        return WriteFile(directory, LinuxEntryFileName, AutostartEntryBuilder.BuildDesktopEntry(context.ExecutablePath, StartupDelaySeconds));
-    }
-
-    private AutostartOutcome WriteFile(string directory, string fileName, string content)
+    private AutostartOutcome WriteFile(string path, string content)
     {
-        string path = fileSystem.Path.Combine(directory, fileName);
-        _ = fileSystem.Directory.CreateDirectory(directory);
+        _ = fileSystem.Directory.CreateDirectory(fileSystem.Path.GetDirectoryName(path)!);
         fileSystem.File.WriteAllText(path, content);
 
         return AutostartOutcomeFactory.CreateRegistered(path);
+    }
+
+    private AutostartOutcome DeleteFile(string path)
+    {
+        if (!fileSystem.File.Exists(path))
+            return AutostartOutcomeFactory.CreateNotRegistered();
+
+        fileSystem.File.Delete(path);
+
+        return AutostartOutcomeFactory.CreateUnregistered(path);
+    }
+
+    private void LogOutcome(AutostartOutcome outcome)
+    {
+        switch (outcome)
+        {
+            case AutostartOutcome.Registered registered:
+                OneDriveSyncClientMessages.AutostartRegistered(logger, registered.Location);
+                break;
+            case AutostartOutcome.Unregistered unregistered:
+                OneDriveSyncClientMessages.AutostartUnregistered(logger, unregistered.Location);
+                break;
+            case AutostartOutcome.Failed failed:
+                OneDriveSyncClientMessages.AutostartFailed(logger, failed.Reason);
+                break;
+        }
     }
 }

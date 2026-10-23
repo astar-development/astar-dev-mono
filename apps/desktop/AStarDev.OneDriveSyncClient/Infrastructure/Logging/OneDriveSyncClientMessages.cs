@@ -1,5 +1,6 @@
 using AStarDev.OneDriveSyncClient.Classifications;
 using AStarDev.OneDriveSyncClient.Data.Repositories;
+using AStarDev.OneDriveSyncClient.Infrastructure.Autostart;
 using AStarDev.OneDriveSyncClient.Infrastructure.Notifications;
 using Microsoft.Extensions.Logging;
 
@@ -470,7 +471,15 @@ public static partial class OneDriveSyncClientMessages
     /// <param name="logger">The logger instance.</param>
     /// <param name="location">The file or registry value that was written.</param>
     [LoggerMessage(EventId = 3600, Level = LogLevel.Information, Message = "[Autostart] Registered to launch at startup via {Location}")]
-    public static partial void AutostartRegistered(ILogger<App> logger, string location);
+    public static partial void AutostartRegistered(ILogger<AutostartService> logger, string location);
+
+    /// <summary>
+    /// Logs that the launch-at-OS-startup registration was removed.
+    /// </summary>
+    /// <param name="logger">The logger instance.</param>
+    /// <param name="location">The file or registry value that was removed.</param>
+    [LoggerMessage(EventId = 3602, Level = LogLevel.Information, Message = "[Autostart] Removed launch at startup registration {Location}")]
+    public static partial void AutostartUnregistered(ILogger<AutostartService> logger, string location);
 
     /// <summary>
     /// Logs that registering the application to launch at OS startup failed.
@@ -478,5 +487,5 @@ public static partial class OneDriveSyncClientMessages
     /// <param name="logger">The logger instance.</param>
     /// <param name="reason">The reason registration failed.</param>
     [LoggerMessage(EventId = 3601, Level = LogLevel.Warning, Message = "[Autostart] Could not register to launch at startup: {Reason}")]
-    public static partial void AutostartFailed(ILogger<App> logger, string reason);
+    public static partial void AutostartFailed(ILogger<AutostartService> logger, string reason);
 }

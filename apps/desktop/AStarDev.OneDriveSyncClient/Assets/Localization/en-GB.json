@@ -249,5 +249,7 @@
   "Notification.Conflict.Title": "Sync conflict",
   "Notification.Conflict.Body": "{0} changed on both sides ({1})",
   "Notification.SyncError.Title": "Sync error",
-  "Notification.SyncError.Body": "{0}: {1}"
+  "Notification.SyncError.Body": "{0}: {1}",
+  "Settings.LaunchAtStartup.Label": "Launch at startup",
+  "Settings.LaunchAtStartup.Description": "Start the application automatically when you log in."
 }
