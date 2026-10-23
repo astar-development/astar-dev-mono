@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.Graph.Drives.Item.Items.Item.CreateUploadSession;
 using Microsoft.Graph.Models;
+using Microsoft.Graph.Models.ODataErrors;
 
 namespace AStarDev.OneDriveSyncClient.Infrastructure.Sync.Jobs;
 
@@ -26,6 +27,7 @@ namespace AStarDev.OneDriveSyncClient.Infrastructure.Sync.Jobs;
 public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSystem fileSystem, ILogger<UploadService> logger, TimeProvider timeProvider) : IUploadService
 {
     private const int ChunkSize10Mb = 10 * 1024 * 1024;
+    private const int PreconditionFailedStatusCode = 412;
     private const string UploadCompletedWithoutItemIdError = "Upload completed without receiving item ID from Graph API.";
 
     /// <summary>
@@ -40,7 +42,7 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
 
         OneDriveSyncClientMessages.UploadServiceStarting(logger, remotePath, fileInfo.Length / (1024.0 * 1024));
 
-        var sessionResult = await CreateUploadSessionAsync(client, driveId.Value, parentFolderId, remotePath, fileInfo.LastWriteTimeUtc, cancellationToken).ConfigureAwait(false);
+        var sessionResult = await CreateUploadSessionWithRetryAsync(client, driveId.Value, parentFolderId, remotePath, fileInfo.LastWriteTimeUtc, cancellationToken).ConfigureAwait(false);
 
         return await sessionResult.MatchAsync(
             async sessionUrl =>
@@ -50,6 +52,28 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
                 return result.Tap(_ => OneDriveSyncClientMessages.UploadServiceCompleted(logger, remotePath));
             },
             error => new Fail<string, string>(error)).ConfigureAwait(false);
+    }
+
+    private async Task<Result<string, string>> CreateUploadSessionWithRetryAsync(GraphServiceClient client, string driveId, string parentFolderId, string remotePath, DateTime lastModified, CancellationToken cancellationToken)
+    {
+        int attempt = 0;
+
+        while (true)
+        {
+            attempt++;
+
+            try
+            {
+                return await CreateUploadSessionAsync(client, driveId, parentFolderId, remotePath, lastModified, cancellationToken).ConfigureAwait(false);
+            }
+            catch (ODataError error) when (error.ResponseStatusCode == PreconditionFailedStatusCode && attempt <= HttpRetryPolicy.MaxRetries)
+            {
+                var delay = HttpRetryPolicy.GetBackoffDelay(attempt);
+                OneDriveSyncClientMessages.UploadSessionPreconditionFailed(logger, remotePath, delay.TotalSeconds, attempt, HttpRetryPolicy.MaxRetries);
+
+                await Task.Delay(delay, timeProvider, cancellationToken).ConfigureAwait(false);
+            }
+        }
     }
 
     private static async Task<Result<string, string>> CreateUploadSessionAsync(GraphServiceClient client, string driveId, string parentFolderId, string remotePath, DateTime lastModified, CancellationToken cancellationToken)

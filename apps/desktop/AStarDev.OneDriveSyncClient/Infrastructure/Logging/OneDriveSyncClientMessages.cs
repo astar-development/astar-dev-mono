@@ -282,6 +282,10 @@ public static partial class OneDriveSyncClientMessages
     [LoggerMessage(EventId = 2805, Level = LogLevel.Warning, Message = "[UploadService] Network error on chunk {Start}-{End}, retrying in {Delay:F1}s (attempt {A}/{Max})")]
     public static partial void UploadChunkNetworkError(ILogger logger, long start, long end, double delay, int a, int max);
 
+    /// <summary>Logs HTTP 412 precondition failure when creating an upload session, before a retry.</summary>
+    [LoggerMessage(EventId = 2806, Level = LogLevel.Warning, Message = "[UploadService] 412 creating upload session for {Path}, retrying in {Delay:F1}s (attempt {A}/{Max})")]
+    public static partial void UploadSessionPreconditionFailed(ILogger logger, string path, double delay, int a, int max);
+
     // Sync Rules & Items (2900-2999)
 
     /// <summary>Logs persisting sync rule.</summary>
