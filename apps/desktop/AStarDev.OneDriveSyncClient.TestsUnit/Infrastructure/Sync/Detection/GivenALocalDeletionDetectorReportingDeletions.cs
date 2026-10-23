@@ -54,7 +54,7 @@ public sealed class GivenALocalDeletionDetectorReportingDeletions
     public async Task when_graph_delete_fails_then_nothing_is_reported()
     {
         _graphService.DeleteItemAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(new Error<System.Reactive.Unit, string>("boom"));
+            .Returns(new Fail<System.Reactive.Unit, string>("boom"));
         var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity> { ["file-1"] = Item("file-1", "/file.txt", false) };
 
         var deleted = await CreateSut().DetectAndApplyAsync(_accountId, _ => Task.FromResult("token"), syncedItems, TestContext.Current.CancellationToken);
