@@ -4,6 +4,7 @@ using AStarDev.OneDriveSyncClient.Home;
 using AStarDev.OneDriveSyncClient.Infrastructure;
 using AStarDev.OneDriveSyncClient.Infrastructure.ApplicationConfiguration;
 using AStarDev.OneDriveSyncClient.Infrastructure.Shell;
+using AStarDev.OneDriveSyncClient.Infrastructure.Tray;
 using AStarDev.OneDriveSyncClient.Splash;
 using AStarDev.OneDriveSyncClient.Startup;
 using AStar.Dev.Velopack.Publishing;
@@ -49,6 +50,7 @@ public class App : Application, IDisposable
             var mainWindow = services.GetRequiredService<MainWindow>();
             desktop.MainWindow = mainWindow;
             mainWindow.Show();
+            services.GetRequiredService<TrayIconService>().Attach(desktop, mainWindow);
             splashWindow.Close();
 
             _ = services.GetRequiredService<IUpdateNotificationService>().CheckAndNotifyAsync();
