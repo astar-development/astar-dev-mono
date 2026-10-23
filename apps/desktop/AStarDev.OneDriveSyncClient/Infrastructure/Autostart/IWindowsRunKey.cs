@@ -5,4 +5,7 @@ public interface IWindowsRunKey
 {
     /// <summary>Sets the named value to the command launched at user logon.</summary>
     void SetValue(string valueName, string command);
+
+    /// <summary>Removes the named value if it exists.</summary>
+    void DeleteValue(string valueName);
 }

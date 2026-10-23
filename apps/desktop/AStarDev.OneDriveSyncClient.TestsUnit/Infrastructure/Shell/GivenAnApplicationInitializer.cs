@@ -1,3 +1,4 @@
+using AStarDev.OneDriveSyncClient.Infrastructure.Autostart;
 using AStarDev.FunctionalParadigm;
 using AStarDev.OneDriveSyncClient.Accounts;
 using AStarDev.OneDriveSyncClient.Activity;
@@ -58,7 +59,7 @@ public sealed class GivenAnApplicationInitializer
     private FilesViewModel CreateFilesViewModel() => new(accountFilesViewModelFactory, _localizationService);
     private DashboardViewModel CreateDashboardViewModel() => new(_localizationService, _syncEventAggregator, new DashboardAccountViewModelFactory(_scheduler, _accountRepository, _localizationService, new ActivityItemViewModelFactory(_localizationService), Substitute.For<ILogger<DashboardAccountViewModel>>()), new ActivityItemViewModelFactory(_localizationService), new ManualUiTimer());
     private ActivityViewModel CreateActivityViewModel() => new(_syncRepository, _syncEventAggregator, new ConflictItemViewModelFactory(_syncService, _localizationService), new ActivityItemViewModelFactory(_localizationService), new InlineUiDispatcher(), _localizationService);
-    private SettingsViewModel CreateSettingsViewModel() => new(_settingsService, _themeService, _scheduler, _accountRepository, _localizationService, Substitute.For<IFolderPickerService>());
+    private SettingsViewModel CreateSettingsViewModel() => new(_settingsService, _themeService, _scheduler, _accountRepository, _localizationService, Substitute.For<IFolderPickerService>(), Substitute.For<IAutostartService>());
 
     private SyncedFileSearchViewModel CreateSearchViewModel() => new(Substitute.For<ISyncedItemRepository>(), Substitute.For<IFileOpenerService>(), Substitute.For<IFileTypeClassifier>(), new InlineUiDispatcher(), _localizationService);
 

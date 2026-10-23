@@ -1,3 +1,4 @@
+using AStarDev.OneDriveSyncClient.Infrastructure.Autostart;
 using AStarDev.OneDriveSyncClient.Accounts;
 using AStarDev.OneDriveSyncClient.Activity;
 using AStarDev.OneDriveSyncClient.Classifications;
@@ -60,7 +61,7 @@ public sealed class GivenAMainWindowViewModel
         return new FileClassificationRulesViewModel(repo, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), Substitute.For<ICategoryEditDialogService>(), _localizationService, _fileSystem);
     }
 
-    private SettingsViewModel CreateSettingsViewModel() => new(_settingsService, _themeService, _scheduler, _accountRepository, _localizationService, Substitute.For<IFolderPickerService>());
+    private SettingsViewModel CreateSettingsViewModel() => new(_settingsService, _themeService, _scheduler, _accountRepository, _localizationService, Substitute.For<IFolderPickerService>(), Substitute.For<IAutostartService>());
     private SyncedFileSearchViewModel CreateSearchViewModel() => new(Substitute.For<ISyncedItemRepository>(), Substitute.For<IFileOpenerService>(), Substitute.For<IFileTypeClassifier>(), Substitute.For<IUiDispatcher>(), _localizationService);
 
     private MainWindowViewModel CreateSut()

@@ -14,4 +14,5 @@ public sealed class AppSettings
     public ConflictPolicy DefaultConflictPolicy { get; set; } = ConflictPolicy.Ignore;
     public int SyncIntervalMinutes { get; set; } = 60;
     public int ConcurrentWorkerCount { get; set; } = 4;
+    public bool LaunchAtStartup { get; set; }
 }

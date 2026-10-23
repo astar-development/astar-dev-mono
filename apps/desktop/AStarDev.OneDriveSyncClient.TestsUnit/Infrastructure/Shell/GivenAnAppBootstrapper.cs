@@ -1,3 +1,4 @@
+using AStarDev.OneDriveSyncClient.Infrastructure.Autostart;
 using System.Globalization;
 using AStarDev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb;
@@ -86,7 +87,7 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
         var classificationRepo = Substitute.For<IFileClassificationRepository>();
         classificationRepo.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                           .Returns(Task.FromResult<IReadOnlyList<FileClassificationCategory>>([]));
-        var settings = new SettingsViewModel(settingsServiceForViewModel, themeServiceForViewModel, schedulerForViewModel, accountRepository, localizationService, Substitute.For<IFolderPickerService>());
+        var settings = new SettingsViewModel(settingsServiceForViewModel, themeServiceForViewModel, schedulerForViewModel, accountRepository, localizationService, Substitute.For<IFolderPickerService>(), Substitute.For<IAutostartService>());
         var statusBar = new StatusBarViewModel(accounts, localizationService);
 
         return new MainWindowViewModel(applicationInitializer, syncScheduler, accounts, files, dashboard, activity, settings, new FileClassificationRulesViewModel(classificationRepo, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), Substitute.For<ICategoryEditDialogService>(), localizationService, fileSystem), new SyncedFileSearchViewModel(Substitute.For<ISyncedItemRepository>(), Substitute.For<IFileOpenerService>(), Substitute.For<IFileTypeClassifier>(), new InlineUiDispatcher(), localizationService), statusBar, localizationService, Substitute.For<ILogger<MainWindowViewModel>>());

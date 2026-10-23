@@ -1,3 +1,4 @@
+using AStarDev.OneDriveSyncClient.Infrastructure.Autostart;
 using System.Globalization;
 using AStarDev.OneDriveSyncClient.Accounts;
 using AStarDev.OneDriveSyncClient.Data.Repositories;
@@ -36,7 +37,7 @@ public sealed class GivenASettingsViewModelWithLocalSyncPathApply
     }
 
     private static SettingsViewModel BuildSut()
-        => new(BuildSettingsService(), Substitute.For<IThemeService>(), Substitute.For<ISyncScheduler>(), Substitute.For<IAccountRepository>(), BuildLocalizationService(), Substitute.For<IFolderPickerService>());
+        => new(BuildSettingsService(), Substitute.For<IThemeService>(), Substitute.For<ISyncScheduler>(), Substitute.For<IAccountRepository>(), BuildLocalizationService(), Substitute.For<IFolderPickerService>(), Substitute.For<IAutostartService>());
 
     private static OneDriveAccount BuildAccount(string accountId) => new()
     {

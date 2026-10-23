@@ -1,3 +1,4 @@
+using AStarDev.OneDriveSyncClient.Infrastructure.Autostart;
 using AStarDev.OneDriveSyncClient.Accounts;
 using AStarDev.OneDriveSyncClient.Data.Repositories;
 using AStarDev.OneDriveSyncClient.Infrastructure.Shell;
@@ -29,7 +30,7 @@ public sealed class GivenSettingsViewDisplay
         var repository = Substitute.For<IAccountRepository>();
         var folderPickerService = Substitute.For<IFolderPickerService>();
 
-        return new SettingsViewModel(settingsService, themeService, scheduler, repository, localization, folderPickerService);
+        return new SettingsViewModel(settingsService, themeService, scheduler, repository, localization, folderPickerService, Substitute.For<IAutostartService>());
     }
 
     private static SettingsView CreateViewWithViewModel(SettingsViewModel viewModel)

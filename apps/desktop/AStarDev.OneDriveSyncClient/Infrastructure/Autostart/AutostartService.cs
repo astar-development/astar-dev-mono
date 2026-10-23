@@ -2,18 +2,19 @@ using System.IO.Abstractions;
 using System.Security;
 using AStar.Dev.Velopack.Publishing;
 using AStarDev.OneDriveSyncClient.Infrastructure.Notifications;
+using Microsoft.Extensions.Logging;
 
 namespace AStarDev.OneDriveSyncClient.Infrastructure.Autostart;
 
 /// <summary>Registers the installed application to launch at OS startup.</summary>
-public sealed class AutostartService(IFileSystem fileSystem, IAutostartContextProvider contextProvider, IVelopackUpdateService velopackUpdateService, IWindowsRunKey windowsRunKey)
+public sealed class AutostartService(IFileSystem fileSystem, IAutostartContextProvider contextProvider, IVelopackUpdateService velopackUpdateService, IWindowsRunKey windowsRunKey, ILogger<AutostartService> logger) : IAutostartService
 {
     private const int StartupDelaySeconds = 30;
     private const string LinuxEntryFileName = "astar-onedrive-sync.desktop";
     private const string MacAgentLabel = "com.astar.onedrive-sync";
     private const string WindowsRunValueName = "AStarOneDriveSync";
 
-    /// <summary>Registers the application for the current platform. Never throws.</summary>
+    /// <inheritdoc />
     public AutostartOutcome EnsureRegistered()
     {
         if (!velopackUpdateService.IsInstalled)
@@ -35,6 +36,12 @@ public sealed class AutostartService(IFileSystem fileSystem, IAutostartContextPr
             return AutostartOutcomeFactory.CreateFailed(ex.Message);
         }
     }
+
+    /// <inheritdoc />
+    public AutostartOutcome EnsureUnregistered() => throw new NotImplementedException(logger.ToString());
+
+    /// <inheritdoc />
+    public AutostartOutcome Apply(bool launchAtStartup) => throw new NotImplementedException(launchAtStartup.ToString());
 
     private AutostartOutcome RegisterWindows(AutostartContext context)
     {
