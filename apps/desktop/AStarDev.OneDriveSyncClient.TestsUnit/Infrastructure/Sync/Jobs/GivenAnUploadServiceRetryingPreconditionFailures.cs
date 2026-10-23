@@ -77,7 +77,7 @@ public sealed class GivenAnUploadServiceRetryingPreconditionFailures
 
         await Should.ThrowAsync<ODataError>(() => UploadAsync(server));
 
-        server.LogEntries.Count().ShouldBe(6);
+        server.LogEntries.Count.ShouldBe(6);
     }
 
     [Fact]
@@ -89,6 +89,6 @@ public sealed class GivenAnUploadServiceRetryingPreconditionFailures
 
         await Should.ThrowAsync<ODataError>(() => UploadAsync(server));
 
-        server.LogEntries.Count().ShouldBe(1);
+        server.LogEntries.Count.ShouldBe(1);
     }
 }
