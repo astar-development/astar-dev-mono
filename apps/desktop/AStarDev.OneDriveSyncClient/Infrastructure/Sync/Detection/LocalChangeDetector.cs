@@ -30,9 +30,11 @@ public sealed class LocalChangeDetector(IFileSystem fileSystem, ILogger<LocalCha
             ScanDirectory(accountId, localBasePath, localFolderPath, rules, syncedItemsByLocalPath, jobs);
         }
 
-        OneDriveSyncClientMessages.LocalChangeDetectorFound(logger, jobs.Count, localBasePath);
+        var distinctJobs = jobs.DistinctBy(job => job.Target.LocalPath, StringComparer.OrdinalIgnoreCase).ToList();
 
-        return jobs;
+        OneDriveSyncClientMessages.LocalChangeDetectorFound(logger, distinctJobs.Count, localBasePath);
+
+        return distinctJobs;
     }
 
     private void ScanDirectory(string accountId, string localBasePath, string localDir, IReadOnlyList<SyncRuleEntity> rules, IReadOnlyDictionary<string, SyncedItemEntity> syncedItemsByLocalPath, List<SyncJob> jobs)
