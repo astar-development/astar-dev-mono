@@ -246,7 +246,7 @@ public sealed class GivenASyncPassOrchestrator
             .Returns(_ =>
             {
                 observedOperations.Add("local-deletion");
-                return Task.CompletedTask;
+                return Task.FromResult<IReadOnlyList<SyncedItemEntity>>([]);
             });
 
         var sut = CreateSut();

@@ -16,10 +16,11 @@ namespace AStarDev.OneDriveSyncClient.Infrastructure.Sync.Detection;
 public sealed class LocalDeletionDetector(IGraphService graphService, ISyncedItemRepository syncedItemRepository, IFileSystem fileSystem, ILogger<LocalDeletionDetector> logger) : ILocalDeletionDetector
 {
     /// <inheritdoc />
-    public async Task DetectAndApplyAsync(AccountId accountId, Func<CancellationToken, Task<string>> tokenFactory, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<SyncedItemEntity>> DetectAndApplyAsync(AccountId accountId, Func<CancellationToken, Task<string>> tokenFactory, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, CancellationToken cancellationToken)
     {
         var missingItems = syncedItems.Values.Where(HasMissingLocalPath).ToList();
         List<OneDriveItemId> successfullyDeletedIds = [];
+        List<SyncedItemEntity> deletedItems = [];
         HashSet<string> coveredRemoteIds = new(StringComparer.OrdinalIgnoreCase);
 
         foreach (var knownItem in missingItems.OrderBy(item => item.IsFolder ? 0 : 1).ThenBy(item => item.RemotePath.Length))
@@ -43,6 +44,8 @@ public sealed class LocalDeletionDetector(IGraphService graphService, ISyncedIte
                         var coveredItems = knownItem.IsFolder
                             ? missingItems.Where(item => IsSameOrDescendantPath(item.RemotePath, knownItem.RemotePath))
                             : [knownItem];
+
+                        deletedItems.Add(knownItem);
 
                         foreach (var coveredItem in coveredItems)
                         {
@@ -71,6 +74,8 @@ public sealed class LocalDeletionDetector(IGraphService graphService, ISyncedIte
             foreach (var remoteId in successfullyDeletedIds)
                 syncedItems.TryRemove(remoteId.Value, out _);
         }
+
+        return deletedItems;
     }
 
     private bool HasMissingLocalPath(SyncedItemEntity item)

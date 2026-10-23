@@ -40,7 +40,7 @@ public sealed class GivenASyncPassOrchestratorKeepingTheCallerThreadFree
             {
                 localDeletionDetectionThreadId = Environment.CurrentManagedThreadId;
 
-                return Task.CompletedTask;
+                return Task.FromResult<IReadOnlyList<SyncedItemEntity>>([]);
             });
     }
 
