@@ -243,5 +243,11 @@
   "Tray.Open": "Open",
   "Tray.SyncNow": "Sync now: {0}",
   "Tray.Quit": "Quit",
-  "Tray.Tooltip": "AStar OneDrive Sync"
+  "Tray.Tooltip": "AStar OneDrive Sync",
+  "Notification.SyncComplete.Title": "Sync complete",
+  "Notification.SyncComplete.Body": "{0} is up to date",
+  "Notification.Conflict.Title": "Sync conflict",
+  "Notification.Conflict.Body": "{0} changed on both sides ({1})",
+  "Notification.SyncError.Title": "Sync error",
+  "Notification.SyncError.Body": "{0}: {1}"
 }

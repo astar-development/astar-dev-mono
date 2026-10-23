@@ -3,6 +3,7 @@ using AStarDev.OneDriveSyncClient.Data;
 using AStarDev.OneDriveSyncClient.Home;
 using AStarDev.OneDriveSyncClient.Infrastructure;
 using AStarDev.OneDriveSyncClient.Infrastructure.ApplicationConfiguration;
+using AStarDev.OneDriveSyncClient.Infrastructure.Notifications;
 using AStarDev.OneDriveSyncClient.Infrastructure.Shell;
 using AStarDev.OneDriveSyncClient.Infrastructure.Tray;
 using AStarDev.OneDriveSyncClient.Splash;
@@ -51,6 +52,8 @@ public class App : Application, IDisposable
             desktop.MainWindow = mainWindow;
             mainWindow.Show();
             services.GetRequiredService<TrayIconService>().Attach(desktop, mainWindow);
+            services.GetRequiredService<AvaloniaAppActivityProvider>().Attach(mainWindow);
+            services.GetRequiredService<SyncNotificationService>().Start();
             splashWindow.Close();
 
             _ = services.GetRequiredService<IUpdateNotificationService>().CheckAndNotifyAsync();
