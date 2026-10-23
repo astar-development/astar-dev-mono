@@ -179,6 +179,40 @@ public sealed class GivenARemoteFolderEnumerator
     }
 
     [Fact]
+    public async Task when_two_root_rules_differ_only_in_casing_then_each_remote_item_is_streamed_once()
+    {
+        _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns([IncludeRule("/Pictures", remoteItemId: "folder-1"), IncludeRule("/pictures", remoteItemId: "folder-1")]);
+        _graphService.EnumerateFolderAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
+            .Returns(_ => ItemStream(FileItem("item-a", "a.txt", "/Pictures/a.txt")));
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
+        var context = new RemoteEnumerationContext();
+        var items = new List<DeltaItem>();
+
+        await foreach (var item in CreateSut().StreamAsync(CreateAccount(), tokenFactory, context, cancellationToken: TestContext.Current.CancellationToken))
+            items.Add(item);
+
+        items.ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public async Task when_two_root_rules_resolve_to_the_same_folder_then_each_remote_item_is_streamed_once()
+    {
+        _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
+            .Returns([IncludeRule("/Docs", remoteItemId: "folder-1"), IncludeRule("/Documents", remoteItemId: "folder-1")]);
+        _graphService.EnumerateFolderAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
+            .Returns(_ => ItemStream(FileItem("item-a", "a.txt", "/Docs/a.txt"), FileItem("item-b", "b.txt", "/Docs/b.txt")));
+        Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
+        var context = new RemoteEnumerationContext();
+        var items = new List<DeltaItem>();
+
+        await foreach (var item in CreateSut().StreamAsync(CreateAccount(), tokenFactory, context, cancellationToken: TestContext.Current.CancellationToken))
+            items.Add(item);
+
+        items.Count.ShouldBe(2);
+    }
+
+    [Fact]
     public async Task when_stream_completes_then_context_rules_contains_all_configured_rules()
     {
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
