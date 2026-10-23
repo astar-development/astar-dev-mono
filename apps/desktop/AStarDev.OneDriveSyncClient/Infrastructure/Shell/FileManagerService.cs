@@ -13,5 +13,11 @@ public sealed class FileManagerService : IFileManagerService
         _ = Process.Start(opener, path);
     }
 
+    internal static ProcessStartInfo CreateStartInfo(string path)
+        => new(GetOpener()) { Arguments = path, UseShellExecute = false };
+
+    internal static string GetOpener()
+        => OperatingSystem.IsWindows() ? "explorer" : SetAppropriateNonWindowsCommand();
+
     private static string SetAppropriateNonWindowsCommand() => OperatingSystem.IsMacOS() ? "open" : "xdg-open";
 }
