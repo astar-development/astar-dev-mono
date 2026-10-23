@@ -461,4 +461,30 @@ public sealed class GivenALocalChangeDetector
         jobs.Count.ShouldBe(1);
         jobs[0].Target.RelativePath.ShouldBe("Documents/2024/report.txt");
     }
+
+    [Fact]
+    public void when_include_rules_overlap_then_each_file_produces_exactly_one_job()
+    {
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile($"{BasePath}/fedora-docs/New Folder Test/Text File.txt").Which(m => m.HasStringContent("data"));
+        var sut = CreateSut(mockFileSystem);
+        var rules = new[] { Rule("/fedora-docs", RuleType.Include), Rule("/fedora-docs/New Folder Test", RuleType.Include) };
+
+        var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
+
+        jobs.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public void when_include_rules_differ_only_in_casing_then_each_file_produces_exactly_one_job()
+    {
+        var mockFileSystem = new MockFileSystem();
+        mockFileSystem.Initialize().WithFile($"{BasePath}/Pictures/photo.jpg").Which(m => m.HasStringContent("data"));
+        var sut = CreateSut(mockFileSystem);
+        var rules = new[] { Rule("/Pictures", RuleType.Include), Rule("/pictures", RuleType.Include) };
+
+        var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, rules, EmptyLookup());
+
+        jobs.Count.ShouldBe(1);
+    }
 }
