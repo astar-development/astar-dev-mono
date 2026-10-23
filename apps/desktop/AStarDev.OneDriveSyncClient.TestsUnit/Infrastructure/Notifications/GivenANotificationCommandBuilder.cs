@@ -5,6 +5,14 @@ namespace AStarDev.OneDriveSyncClient.TestsUnit.Infrastructure.Notifications;
 
 public sealed class GivenANotificationCommandBuilder
 {
+    private static void AssertCommand(Option<ProcessCommand> actual, ProcessCommand expected)
+    {
+        var command = actual.Match(c => c, () => throw new ShouldAssertException("Expected a command but none was returned"));
+
+        command.FileName.ShouldBe(expected.FileName);
+        command.Arguments.ShouldBe(expected.Arguments);
+    }
+
     [Fact]
     public void when_platform_is_linux_then_notify_send_is_used_with_arguments_after_the_option_terminator()
     {
@@ -12,7 +20,7 @@ public sealed class GivenANotificationCommandBuilder
 
         var command = NotificationCommandBuilder.Build(notification, DesktopPlatformFactory.CreateLinux());
 
-        command.ShouldBe(Option.Some(ProcessCommandFactory.Create("notify-send", "--app-name=AStar OneDrive Sync", "--", "Sync complete", "Alice")));
+        AssertCommand(command, ProcessCommandFactory.Create("notify-send", "--app-name=AStar OneDrive Sync", "--", "Sync complete", "Alice"));
     }
 
     [Fact]
@@ -32,7 +40,7 @@ public sealed class GivenANotificationCommandBuilder
 
         var command = NotificationCommandBuilder.Build(notification, DesktopPlatformFactory.CreateMacOs());
 
-        command.ShouldBe(Option.Some(ProcessCommandFactory.Create("osascript", "-e", "display notification \"Alice\" with title \"Sync complete\"")));
+        AssertCommand(command, ProcessCommandFactory.Create("osascript", "-e", "display notification \"Alice\" with title \"Sync complete\""));
     }
 
     [Fact]
@@ -42,7 +50,7 @@ public sealed class GivenANotificationCommandBuilder
 
         var command = NotificationCommandBuilder.Build(notification, DesktopPlatformFactory.CreateMacOs());
 
-        command.ShouldBe(Option.Some(ProcessCommandFactory.Create("osascript", "-e", "display notification \"a\\\\b\\\" & do shell script \\\"x\" with title \"T\\\"itle\"")));
+        AssertCommand(command, ProcessCommandFactory.Create("osascript", "-e", "display notification \"a\\\\b\\\" & do shell script \\\"x\" with title \"T\\\"itle\""));
     }
 
     [Fact]
