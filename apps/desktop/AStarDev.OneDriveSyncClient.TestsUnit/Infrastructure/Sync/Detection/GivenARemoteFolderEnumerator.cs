@@ -102,7 +102,7 @@ public sealed class GivenARemoteFolderEnumerator
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([IncludeRule("/Documents")]);
         _graphService.GetFolderIdByPathAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns((string?)null);
+            .Returns(new Ok<Option<string>, string>(Option.None<string>()));
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var context = new RemoteEnumerationContext();
 
@@ -117,7 +117,7 @@ public sealed class GivenARemoteFolderEnumerator
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([IncludeRule("/Documents", remoteItemId: null)]);
         _graphService.GetFolderIdByPathAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns("folder-resolved");
+            .Returns(new Ok<Option<string>, string>(Option.Some("folder-resolved")));
         _graphService.EnumerateFolderAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Action<int>?>(), Arg.Any<CancellationToken>())
             .Returns(EmptyStream());
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
@@ -284,7 +284,7 @@ public sealed class GivenARemoteFolderEnumerator
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>())
             .Returns([IncludeRule("/Documents")]);
         _graphService.GetFolderIdByPathAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns((string?)null);
+            .Returns(new Ok<Option<string>, string>(Option.None<string>()));
         Func<CancellationToken, Task<string>> tokenFactory = _ => Task.FromResult("token");
         var context = new RemoteEnumerationContext();
         var stages = new List<string>();

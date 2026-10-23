@@ -129,7 +129,7 @@ public sealed class GivenARemoteFolderEnumeratorUsingTheChangeGate
     {
         GivenDecision(RemoteWalkDecisionFactory.CreateWalk(WalkReasons.NoDeltaLink, Option.None<string>()));
         _syncRuleRepository.GetByAccountIdAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns([new SyncRuleEntity { RemotePath = "/Missing", RuleType = RuleType.Include }]);
-        _graphService.GetFolderIdByPathAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns((string?)null);
+        _graphService.GetFolderIdByPathAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<DriveId>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(new Ok<Option<string>, string>(Option.None<string>()));
 
         var (_, context) = await RunAsync();
 

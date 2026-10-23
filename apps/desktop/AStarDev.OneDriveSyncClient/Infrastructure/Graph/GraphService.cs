@@ -139,7 +139,7 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
         => graphFolderEnumerator.EnumerateFolderAsync(tokenFactory, driveId, folderId, remotePath, onItemDiscovered, cancellationToken);
 
     /// <inheritdoc />
-    public async Task<string?> GetFolderIdByPathAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, string remotePath, CancellationToken cancellationToken = default)
+    public async Task<Result<Option<string>, string>> GetFolderIdByPathAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, string remotePath, CancellationToken cancellationToken = default)
     {
         var client = graphClientFactory.CreateClient(tokenFactory);
 
@@ -148,15 +148,15 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
             var item = await client.Drives[driveId.Value].Items[$"{RootPathMarker}:{remotePath}"]
                 .GetAsync(req => req.QueryParameters.Select = ["id"], cancellationToken).ConfigureAwait(false);
 
-            return item?.Id;
+            return new Ok<Option<string>, string>(item?.Id is { } id ? Option.Some(id) : Option.None<string>());
         }
         catch (ApiException ex) when (ex.ResponseStatusCode == 404)
         {
-            return null;
+            return new Ok<Option<string>, string>(Option.None<string>());
         }
         catch (Exception ex) when (ex is not OperationCanceledException and not SyncReAuthRequiredException)
         {
-            return null;
+            return new Fail<Option<string>, string>(ex.Message);
         }
     }
 
