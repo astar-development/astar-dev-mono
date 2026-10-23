@@ -33,6 +33,7 @@ public sealed class TrayIconService(IShutdownCoordinator shutdownCoordinator, IT
             IsVisible = true
         };
         trayIcon.Clicked += (_, _) => ShowMainWindow();
+        TrayIcon.SetIcons(Application.Current!, [trayIcon]);
         accountsViewModel.Accounts.CollectionChanged += OnAccountsChanged;
     }
 
