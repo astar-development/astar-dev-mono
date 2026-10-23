@@ -522,7 +522,7 @@ public sealed class GivenAGraphService : IDisposable
     }
 
     [Fact]
-    public async Task when_get_folder_id_by_path_returns_server_error_then_null_is_returned()
+    public async Task when_get_folder_id_by_path_returns_server_error_then_a_failure_is_returned()
     {
         server.Given(Request.Create().UsingAnyMethod())
             .RespondWith(Response.Create()
@@ -532,7 +532,7 @@ public sealed class GivenAGraphService : IDisposable
 
         var result = await CreateSut().GetFolderIdByPathAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyRemotePath, TestContext.Current.CancellationToken);
 
-        result.ShouldBeAssignableTo<Ok<Option<string>, string>>().Value.ShouldBeOfType<Option<string>.None>();
+        result.ShouldBeAssignableTo<Fail<Option<string>, string>>();
     }
 
     [Fact]

@@ -96,6 +96,19 @@ public sealed class GivenARemoteFolderCreator
     }
 
     [Fact]
+    public async Task when_the_folder_lookup_fails_then_the_folder_is_not_created_and_the_rule_is_not_updated()
+    {
+        fileSystem.Directory.CreateDirectory("/sync-root/Drafts");
+        graphService.GetFolderIdByPathAsync(Arg.Any<Func<CancellationToken, Task<string>>>(), Drive, "/Drafts", Arg.Any<CancellationToken>())
+            .Returns(new Fail<Option<string>, string>("throttled"));
+
+        await Run(ContextWith(Rule("/Drafts")));
+
+        await graphService.DidNotReceive().CreateFolderAsync(Arg.Any<string>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await syncRuleRepository.DidNotReceive().UpsertAsync(Arg.Any<AccountId>(), Arg.Any<string>(), Arg.Any<RuleType>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task when_the_folder_already_exists_remotely_then_it_is_not_created_and_its_id_is_stored()
     {
         fileSystem.Directory.CreateDirectory("/sync-root/Drafts");
