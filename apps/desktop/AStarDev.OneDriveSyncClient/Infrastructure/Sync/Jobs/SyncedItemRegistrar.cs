@@ -12,7 +12,7 @@ using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 namespace AStarDev.OneDriveSyncClient.Infrastructure.Sync.Jobs;
 
 /// <inheritdoc />
-public sealed class SyncedItemRegistrar(ISyncedItemRepository syncedItemRepository, IFileSystem fileSystem, ILogger<SyncedItemRegistrar> logger, IFileAutoCategorisor fileAutoCategorisor, IFileTypeCategoriser fileTypeCategoriser, ICategoryResolutionService categoryResolutionService, IFileDetailResolver fileDetailResolver, IFileClassificationRepository fileClassificationRepository) : ISyncedItemRegistrar
+public sealed class SyncedItemRegistrar(ISyncedItemRepository syncedItemRepository, IFileSystem fileSystem, ILogger<SyncedItemRegistrar> logger, IFileAutoCategorisor fileAutoCategorisor, IFileTypeCategoriser fileTypeCategoriser, IFolderNameCategoriser folderNameCategoriser, ICategoryResolutionService categoryResolutionService, IFileDetailResolver fileDetailResolver, IFileClassificationRepository fileClassificationRepository) : ISyncedItemRegistrar
 {
     /// <inheritdoc />
     public async Task RegisterFolderAsync(AccountId accountId, FolderDeltaItem item, string remotePath, string localPath, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, CancellationToken cancellationToken)
@@ -76,7 +76,7 @@ public sealed class SyncedItemRegistrar(ISyncedItemRepository syncedItemReposito
     {
         var analyserResult = fileAutoCategorisor.Categorise(remotePath).Match(c => (IReadOnlyList<FileClassification>)[c], () => []);
         var fileTypeResult = fileTypeCategoriser.Categorise(remotePath).Match(c => (IReadOnlyList<FileClassification>)[c], () => []);
-        var classifications = ClassificationCombiner.Combine(FileClassifier.Classify(remotePath, mappings), [.. analyserResult, .. fileTypeResult]);
+        var classifications = ClassificationCombiner.Combine(FileClassifier.Classify(remotePath, mappings), [.. analyserResult, .. fileTypeResult, .. folderNameCategoriser.Categorise(remotePath)]);
 
         return await categoryResolutionService.ResolveManyAsync(classifications, cancellationToken).ConfigureAwait(false);
     }
