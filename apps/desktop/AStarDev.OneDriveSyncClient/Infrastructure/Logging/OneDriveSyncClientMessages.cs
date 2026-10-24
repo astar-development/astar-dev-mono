@@ -434,6 +434,14 @@ public static partial class OneDriveSyncClientMessages
     [LoggerMessage(EventId = 3411, Level = LogLevel.Warning, Message = "[PersonCategoryCleanupService] Cleanup failed: {Error}")]
     public static partial void PersonCategoryCleanupFailed(ILogger logger, string error);
 
+    /// <summary>Logs how many default classification categories were inserted at startup.</summary>
+    [LoggerMessage(EventId = 3412, Level = LogLevel.Information, Message = "[DefaultCategorySeedingService] Seeded {Count} default categories")]
+    public static partial void DefaultCategoriesSeeded(ILogger logger, int count);
+
+    /// <summary>Logs that seeding the default classification categories failed; startup continues.</summary>
+    [LoggerMessage(EventId = 3413, Level = LogLevel.Warning, Message = "[DefaultCategorySeedingService] Seeding failed: {Error}")]
+    public static partial void DefaultCategorySeedingFailed(ILogger logger, string error);
+
     // Classification Data Migration (3400-3499)
 
     /// <summary>Logs total rows migrated from the legacy classification table to the junction table.</summary>

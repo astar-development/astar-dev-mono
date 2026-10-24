@@ -96,6 +96,7 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<IAppBootstrapper, AppBootstrapper>();
         _ = services.AddSingleton<IFileAutoCategorisor, RuleBasedFileAutoCategorisor>();
         _ = services.AddSingleton<IPersonCategoryCleanupService, PersonCategoryCleanupService>();
+        _ = services.AddSingleton<IDefaultCategorySeedingService, DefaultCategorySeedingService>();
         _ = services.AddSingleton<IFilePickerService, AvaloniaFilePickerService>();
         _ = services.AddSingleton<IConfirmationDialogService, AvaloniaConfirmationDialogService>();
         _ = services.AddSingleton<ICategoryEditDialogService, AvaloniaCategoryEditDialogService>();
