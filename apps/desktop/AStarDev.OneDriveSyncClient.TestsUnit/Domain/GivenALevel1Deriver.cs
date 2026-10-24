@@ -189,7 +189,7 @@ public sealed class GivenALevel1Deriver
 
         string result = Level1Deriver.Derive(folderSegments, filenameTokens);
 
-        result.ShouldBe("Color");
+        result.ShouldBe("Colour");
     }
 
     [Fact]
