@@ -102,6 +102,7 @@ internal static class ShellServiceExtensions
         _ = services.AddSingleton<ICategoryEditDialogService, AvaloniaCategoryEditDialogService>();
         _ = services.AddSingleton<IFileClassificationExportImportService, FileClassificationExportImportService>();
         _ = services.AddSingleton<IFileTypeClassifier, SyncClientFileTypeClassifier>();
+        _ = services.AddSingleton<IFileTypeCategoriser, FileTypeCategoriser>();
         _ = services.AddSingleton<IApplicationVersionProvider, ApplicationVersionProvider>();
         _ = services.AddVelopackUpdateNotifications();
         _ = services.AddSingleton<IUpdateDialogTextProvider, LocalizedUpdateDialogTextProvider>();

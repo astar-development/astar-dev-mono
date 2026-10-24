@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using AStarDev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb;
+using AStarDev.OneDriveSyncClient.Classifications;
 using AStarDev.OneDriveSyncClient.Data.Repositories;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Jobs;
 using Microsoft.Extensions.Logging;
@@ -24,6 +25,7 @@ public sealed class GivenASyncedItemRegistrar
     private readonly IDirectory _mockDirectory = Substitute.For<IDirectory>();
     private readonly IFileSystem _fileSystem = Substitute.For<IFileSystem>();
     private readonly IFileAutoCategorisor _fileAutoCategorisor = Substitute.For<IFileAutoCategorisor>();
+    private readonly IFileTypeCategoriser _fileTypeCategoriser = Substitute.For<IFileTypeCategoriser>();
     private readonly ICategoryResolutionService _categoryResolutionService = Substitute.For<ICategoryResolutionService>();
     private readonly IFileDetailResolver _fileDetailResolver = Substitute.For<IFileDetailResolver>();
     private readonly IFileClassificationRepository _fileClassificationRepository = Substitute.For<IFileClassificationRepository>();
@@ -34,12 +36,13 @@ public sealed class GivenASyncedItemRegistrar
         _fileSystem.Directory.Returns(_mockDirectory);
         _fileSystem.FileInfo.New(Arg.Any<string>()).Returns(Substitute.For<IFileInfo>());
         _fileAutoCategorisor.Categorise(Arg.Any<string>()).Returns(FileClassificationFactory.Create("Unclassified", Option.None<string>(), Option.None<string>(), false, false));
+        _fileTypeCategoriser.Categorise(Arg.Any<string>()).Returns(Option.None<FileClassification>());
         _categoryResolutionService.ResolveManyAsync(Arg.Any<IReadOnlyList<FileClassification>>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<int>>([]));
         _fileDetailResolver.FindOrCreateAsync(Arg.Any<string>(), Arg.Any<long?>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(_resolvedFileDetail));
         _fileClassificationRepository.HasClassificationsAsync(Arg.Any<FileId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(false));
     }
 
-    private SyncedItemRegistrar CreateSut() => new(_syncedItemRepository, _fileSystem, Substitute.For<ILogger<SyncedItemRegistrar>>(), _fileAutoCategorisor, _categoryResolutionService, _fileDetailResolver, _fileClassificationRepository);
+    private SyncedItemRegistrar CreateSut() => new(_syncedItemRepository, _fileSystem, Substitute.For<ILogger<SyncedItemRegistrar>>(), _fileAutoCategorisor, _fileTypeCategoriser, _categoryResolutionService, _fileDetailResolver, _fileClassificationRepository);
 
     private static FileClassificationCategory KeywordMap(string name, int level)
         => ((Ok<FileClassificationCategory, string>)FileClassificationCategoryFactory.Create(new FileClassificationCategoryId(), name, level, false, false, Option.None<FileClassificationCategoryId>(), false)).Value;
@@ -261,6 +264,21 @@ public sealed class GivenASyncedItemRegistrar
 
         await _categoryResolutionService.Received(1).ResolveManyAsync(
             Arg.Is<IReadOnlyList<FileClassification>>(list => list.Any(c => c.Level1 == "photos")),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_register_phantom_called_then_the_file_type_classification_is_included_in_the_combined_classifications()
+    {
+        _fileTypeCategoriser.Categorise("/photos/beach.jpg").Returns(FileClassificationFactory.Create("Photo", Option.None<string>(), Option.None<string>(), false, false));
+        var sut = CreateSut();
+        var item = FileItem("file-1", "/photos/beach.jpg");
+        var syncedItems = new ConcurrentDictionary<string, SyncedItemEntity>();
+
+        await sut.RegisterPhantomAsync(new AccountId("user-1"), item, "/photos/beach.jpg", "/sync/photos/beach.jpg", syncedItems, [], TestContext.Current.CancellationToken);
+
+        await _categoryResolutionService.Received(1).ResolveManyAsync(
+            Arg.Is<IReadOnlyList<FileClassification>>(list => list.Any(c => c.Level1 == "Photo")),
             Arg.Any<CancellationToken>());
     }
 

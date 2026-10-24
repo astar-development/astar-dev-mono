@@ -3,6 +3,7 @@ using System.IO.Abstractions;
 using AStar.Dev.Infrastructure.AppDb;
 using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStarDev.OneDriveSyncClient.Classifications;
 using AStarDev.OneDriveSyncClient.Data.Repositories;
 using AStarDev.OneDriveSyncClient.Infrastructure.Logging;
 using Microsoft.Extensions.Logging;
@@ -11,7 +12,7 @@ using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 namespace AStarDev.OneDriveSyncClient.Infrastructure.Sync.Jobs;
 
 /// <inheritdoc />
-public sealed class SyncedItemRegistrar(ISyncedItemRepository syncedItemRepository, IFileSystem fileSystem, ILogger<SyncedItemRegistrar> logger, IFileAutoCategorisor fileAutoCategorisor, ICategoryResolutionService categoryResolutionService, IFileDetailResolver fileDetailResolver, IFileClassificationRepository fileClassificationRepository) : ISyncedItemRegistrar
+public sealed class SyncedItemRegistrar(ISyncedItemRepository syncedItemRepository, IFileSystem fileSystem, ILogger<SyncedItemRegistrar> logger, IFileAutoCategorisor fileAutoCategorisor, IFileTypeCategoriser fileTypeCategoriser, ICategoryResolutionService categoryResolutionService, IFileDetailResolver fileDetailResolver, IFileClassificationRepository fileClassificationRepository) : ISyncedItemRegistrar
 {
     /// <inheritdoc />
     public async Task RegisterFolderAsync(AccountId accountId, FolderDeltaItem item, string remotePath, string localPath, ConcurrentDictionary<string, SyncedItemEntity> syncedItems, CancellationToken cancellationToken)
@@ -73,8 +74,9 @@ public sealed class SyncedItemRegistrar(ISyncedItemRepository syncedItemReposito
 
     private async Task<IReadOnlyList<int>> ResolveClassificationsAsync(string remotePath, IReadOnlyList<FileClassificationCategory> mappings, CancellationToken cancellationToken)
     {
-        var analyserResult = fileAutoCategorisor.Categorise(remotePath);
-        var classifications = ClassificationCombiner.Combine(FileClassifier.Classify(remotePath, mappings), analyserResult.Match(c => (IReadOnlyList<FileClassification>)[c], () => []));
+        var analyserResult = fileAutoCategorisor.Categorise(remotePath).Match(c => (IReadOnlyList<FileClassification>)[c], () => []);
+        var fileTypeResult = fileTypeCategoriser.Categorise(remotePath).Match(c => (IReadOnlyList<FileClassification>)[c], () => []);
+        var classifications = ClassificationCombiner.Combine(FileClassifier.Classify(remotePath, mappings), [.. analyserResult, .. fileTypeResult]);
 
         return await categoryResolutionService.ResolveManyAsync(classifications, cancellationToken).ConfigureAwait(false);
     }
