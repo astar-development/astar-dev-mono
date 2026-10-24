@@ -10,7 +10,7 @@ public sealed class GivenARuleBasedFileAutoCategorisor
         var result = sut.Categorise("a/b/c/d/e/f/g/Photos/a red car on the road.jpg");
         var classification = result.Match(c => c, () => throw new InvalidOperationException("Expected Some"));
 
-        classification.Level1.ShouldBe("Color");
+        classification.Level1.ShouldBe("Colour");
     }
 
     [Fact]
@@ -82,7 +82,7 @@ public sealed class GivenARuleBasedFileAutoCategorisor
         var result = sut.Categorise("a/b/c/d/e/f/g/Photos/a red car on the road.jpg");
         var classification = result.Match(c => c, () => throw new InvalidOperationException("Expected Some"));
 
-        classification.Level1.ShouldBe("Color");
+        classification.Level1.ShouldBe("Colour");
         classification.Level2.Match(v => (string?)v, () => null).ShouldBe("Red");
         classification.Level3.Match(v => (string?)v, () => null).ShouldBe("Red Car");
     }
@@ -93,7 +93,7 @@ public sealed class GivenARuleBasedFileAutoCategorisor
         var result = sut.Categorise("a/b/c/d/e/f/g/Photos/a red dress on the floor.jpg");
         var classification = result.Match(c => c, () => throw new InvalidOperationException("Expected Some"));
 
-        classification.Level1.ShouldBe("Color");
+        classification.Level1.ShouldBe("Colour");
         classification.Level2.Match(v => (string?)v, () => null).ShouldBe("Red");
         classification.Level3.Match(v => (string?)v, () => null).ShouldBe("Red Dress");
     }
@@ -104,7 +104,7 @@ public sealed class GivenARuleBasedFileAutoCategorisor
         var result = sut.Categorise("a/b/c/d/e/f/g/Misc/a file with red in it's name.jpg");
         var classification = result.Match(c => c, () => throw new InvalidOperationException("Expected Some"));
 
-        classification.Level1.ShouldBe("Color");
+        classification.Level1.ShouldBe("Colour");
         classification.Level2.Match(v => (string?)v, () => null).ShouldBe("Red");
         classification.Level3.Match(v => (string?)v, () => null).ShouldBeNull();
     }
@@ -274,7 +274,7 @@ public sealed class GivenARuleBasedFileAutoCategorisor
         var result = sut.Categorise("a/b/c/d/e/f/g/Photos/a blue car on the road.jpg");
         var classification = result.Match(c => c, () => throw new InvalidOperationException("Expected Some"));
 
-        classification.Level1.ShouldBe("Color");
+        classification.Level1.ShouldBe("Colour");
     }
 
     [Fact]
