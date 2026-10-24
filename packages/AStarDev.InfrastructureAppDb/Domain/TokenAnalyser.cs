@@ -71,6 +71,9 @@ public static partial class TokenAnalyser
 
         string stem = Path.GetFileNameWithoutExtension(text);
 
+        if (stem.Contains('.', StringComparison.Ordinal))
+            return Option.None<string>();
+
         if (stem.Contains(':', StringComparison.Ordinal))
         {
             string afterColon = stem[(stem.IndexOf(':', StringComparison.Ordinal) + 1)..];
