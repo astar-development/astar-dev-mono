@@ -161,4 +161,31 @@ public sealed class GivenATokenAnalyser
 
         result.MapOrDefault(v => v, string.Empty).ShouldBe("John Smith");
     }
+
+    [Theory]
+    [InlineData("Add-AzADAppPermission.ps1")]
+    [InlineData("Get-AzWebPubSubClientAccess.ps1")]
+    [InlineData("New-AzCdnUrlRedirectActionObject.md")]
+    [InlineData("Add-AzAccount.ps1")]
+    [InlineData("Az.Advisor.private.dll")]
+    [InlineData("System.Memory.Data.dll")]
+    [InlineData("open-iconic-bootstrap.min.css")]
+    [InlineData("manifest.spdx.json.sha256")]
+    public void when_extract_person_name_called_with_a_code_identifier_then_none_is_returned(string fileName)
+    {
+        var result = TokenAnalyser.ExtractPersonName(fileName);
+
+        result.MapOrDefault(_ => false, true).ShouldBeTrue();
+    }
+
+    [Theory]
+    [InlineData("John-Smith.jpg", "John Smith")]
+    [InlineData("jane_smith_001.jpg", "Jane Smith")]
+    [InlineData("Jane Smith.jpg", "Jane Smith")]
+    public void when_extract_person_name_called_with_separated_plain_words_then_name_is_returned(string fileName, string expected)
+    {
+        var result = TokenAnalyser.ExtractPersonName(fileName);
+
+        result.MapOrDefault(v => v, string.Empty).ShouldBe(expected);
+    }
 }

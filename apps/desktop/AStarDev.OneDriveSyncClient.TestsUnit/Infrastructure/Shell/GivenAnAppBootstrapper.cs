@@ -33,6 +33,7 @@ namespace AStarDev.OneDriveSyncClient.TestsUnit.Infrastructure.Shell;
 public sealed class GivenAnAppBootstrapper : IAsyncDisposable
 {
     private readonly ISettingsService settingsService = Substitute.For<ISettingsService>();
+    private readonly IPersonCategoryCleanupService personCategoryCleanupService = Substitute.For<IPersonCategoryCleanupService>();
     private readonly IThemeService themeService = Substitute.For<IThemeService>();
     private readonly ISyncScheduler syncScheduler = Substitute.For<ISyncScheduler>();
     private readonly IApplicationInitializer applicationInitializer = Substitute.For<IApplicationInitializer>();
@@ -57,6 +58,7 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
 
     public GivenAnAppBootstrapper()
     {
+        personCategoryCleanupService.RemoveInvalidPersonCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<Result<int, string>>(new Ok<int, string>(0)));
         settingsService.Current.Returns(new AppSettings { SyncIntervalMinutes = 30, Theme = AppTheme.System });
         settingsServiceForViewModel.Current.Returns(new AppSettings());
         localizationService.AvailableCultures.Returns([]);
@@ -93,7 +95,29 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
         return new MainWindowViewModel(applicationInitializer, syncScheduler, accounts, files, dashboard, activity, settings, new FileClassificationRulesViewModel(classificationRepo, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), Substitute.For<ICategoryEditDialogService>(), localizationService, fileSystem), new SyncedFileSearchViewModel(Substitute.For<ISyncedItemRepository>(), Substitute.For<IFileOpenerService>(), Substitute.For<IFileTypeClassifier>(), new InlineUiDispatcher(), localizationService), statusBar, localizationService, Substitute.For<ILogger<MainWindowViewModel>>());
     }
 
-    private AppBootstrapper CreateSut() => new(dbContextFactory, settingsService, themeService, localizationService, syncScheduler, CreateMainWindowViewModel(), Substitute.For<ILogger<AppBootstrapper>>());
+    private AppBootstrapper CreateSut() => new(dbContextFactory, settingsService, themeService, localizationService, syncScheduler, CreateMainWindowViewModel(), personCategoryCleanupService, Substitute.For<ILogger<AppBootstrapper>>());
+
+    [Fact]
+    public async Task when_bootstrap_async_is_called_then_invalid_person_categories_are_removed()
+    {
+        personCategoryCleanupService.RemoveInvalidPersonCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<Result<int, string>>(new Ok<int, string>(764)));
+        var sut = CreateSut();
+
+        await sut.BootstrapAsync(new Progress<string>(), TestContext.Current.CancellationToken);
+
+        await personCategoryCleanupService.Received(1).RemoveInvalidPersonCategoriesAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task when_the_person_category_cleanup_fails_then_bootstrap_still_loads_settings()
+    {
+        personCategoryCleanupService.RemoveInvalidPersonCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<Result<int, string>>(new Fail<int, string>("database is locked")));
+        var sut = CreateSut();
+
+        await sut.BootstrapAsync(new Progress<string>(), TestContext.Current.CancellationToken);
+
+        await settingsService.Received(1).LoadAsync(TestContext.Current.CancellationToken);
+    }
 
     [Fact]
     public async Task when_bootstrap_async_is_called_then_settings_load_async_is_called()

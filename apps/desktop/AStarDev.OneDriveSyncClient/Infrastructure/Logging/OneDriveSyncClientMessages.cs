@@ -424,6 +424,16 @@ public static partial class OneDriveSyncClientMessages
     [LoggerMessage(EventId = 3300, Level = LogLevel.Warning, Message = "[FileClassificationRepository] Skipping persisted category {EntityId} — validation failed: {Error}")]
     public static partial void ClassificationRowSkipped(ILogger logger, int entityId, string error);
 
+    // Person Category Cleanup (3410-3419)
+
+    /// <summary>Logs how many invalid Person child categories were removed at startup.</summary>
+    [LoggerMessage(EventId = 3410, Level = LogLevel.Information, Message = "[PersonCategoryCleanupService] Removed {Count} invalid Person categories")]
+    public static partial void PersonCategoryCleanupCompleted(ILogger logger, int count);
+
+    /// <summary>Logs that the startup Person category cleanup failed; startup continues.</summary>
+    [LoggerMessage(EventId = 3411, Level = LogLevel.Warning, Message = "[PersonCategoryCleanupService] Cleanup failed: {Error}")]
+    public static partial void PersonCategoryCleanupFailed(ILogger logger, string error);
+
     // Classification Data Migration (3400-3499)
 
     /// <summary>Logs total rows migrated from the legacy classification table to the junction table.</summary>

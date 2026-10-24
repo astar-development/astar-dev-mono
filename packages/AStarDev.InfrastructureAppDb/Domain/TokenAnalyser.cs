@@ -71,6 +71,9 @@ public static partial class TokenAnalyser
 
         string stem = Path.GetFileNameWithoutExtension(text);
 
+        if (stem.Contains('.', StringComparison.Ordinal))
+            return Option.None<string>();
+
         if (stem.Contains(':', StringComparison.Ordinal))
         {
             string afterColon = stem[(stem.IndexOf(':', StringComparison.Ordinal) + 1)..];
@@ -125,10 +128,21 @@ public static partial class TokenAnalyser
                            && !ConcretePairableNouns.Contains(word)
                            && !AbstractNouns.Contains(word))];
 
-        if (words.Count < 2)
+        if (words.Count < 2 || IsIdentifierLike(words[0]) || IsIdentifierLike(words[1]))
             return Option.None<string>();
 
         return Option.Some(Capitalise(words[0]) + " " + Capitalise(words[1]));
+    }
+
+    private static bool IsIdentifierLike(string word)
+    {
+        for (int index = 1; index < word.Length; index++)
+        {
+            if (char.IsLower(word[index - 1]) && char.IsUpper(word[index]))
+                return true;
+        }
+
+        return false;
     }
 
     private static string Capitalise(string word) => word.ToTitleCase();
