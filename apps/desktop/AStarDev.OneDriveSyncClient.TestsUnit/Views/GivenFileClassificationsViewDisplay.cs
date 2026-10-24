@@ -211,4 +211,29 @@ public sealed class GivenFileClassificationsViewDisplay
 
         categoryEditDialogService.Received(1).ShowAsync(Arg.Is<CategoryNodeViewModel>(node => node.Name == "Category 0"), Arg.Any<CancellationToken>());
     }
+
+    [AvaloniaFact]
+    public void when_a_parent_category_row_is_rendered_then_the_expand_chevron_is_drawn_at_twice_its_layout_size_without_changing_the_layout()
+    {
+        var repository = Substitute.For<IFileClassificationRepository>();
+        IReadOnlyList<FileClassificationCategory> categories =
+        [
+            new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), true),
+            new(new FileClassificationCategoryId(2), "Photos", 2, false, false, Option.Some(new FileClassificationCategoryId(1)), true)
+        ];
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(categories));
+        var localization = Substitute.For<ILocalizationService>();
+        localization.GetLocal(Arg.Any<string>()).Returns(call => call.Arg<string>());
+        var viewModel = new FileClassificationRulesViewModel(repository, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), Substitute.For<ICategoryEditDialogService>(), localization, new MockFileSystem());
+        var view = new FileClassificationsView { DataContext = viewModel };
+        var window = new Window { Content = view, Width = 800, Height = 800 };
+        window.Show();
+        Dispatcher.UIThread.RunJobs();
+        window.UpdateLayout();
+
+        var chevron = view.GetLogicalDescendants().OfType<Button>().First(button => button.DataContext is CategoryNodeViewModel { Name: "Media" } node && ReferenceEquals(button.Command, node.ToggleExpandedCommand));
+
+        (chevron.RenderTransform?.Value.M11).ShouldBe(2d);
+        chevron.Bounds.Size.ShouldBe(new Avalonia.Size(16, 16));
+    }
 }
