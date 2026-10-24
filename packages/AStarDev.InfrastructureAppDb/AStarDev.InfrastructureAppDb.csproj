@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <PackageReleaseNotes>
+        v0.1.5 fix(app-db): emit the Colour root instead of Color
         v0.1.4 fix(onedrive-sync-client): stop classifying code file names as Person and remove the bad categories
         v0.1.3 fix(build): pin SDK and analyzer target framework
         v0.1.2 perf(onedrive-sync-client): skip remote walk when Graph delta shows no relevant changes
