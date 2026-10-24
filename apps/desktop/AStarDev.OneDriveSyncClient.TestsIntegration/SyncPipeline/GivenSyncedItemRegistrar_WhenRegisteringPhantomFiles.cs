@@ -1,5 +1,6 @@
 using AStarDev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb;
+using AStarDev.OneDriveSyncClient.Classifications;
 using AStarDev.OneDriveSyncClient.Data.Repositories;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Jobs;
 using AStarDev.OneDriveSyncClient.TestsIntegration.Infrastructure;
@@ -48,6 +49,7 @@ public sealed class GivenSyncedItemRegistrar_WhenRegisteringPhantomFiles(Integra
         var registrar = fixture.Services.GetRequiredService<ISyncedItemRegistrar>();
         var repository = fixture.Services.GetRequiredService<ISyncedItemRepository>();
         var categorisor = fixture.Services.GetRequiredService<IFileAutoCategorisor>();
+        var fileTypeCategoriser = fixture.Services.GetRequiredService<IFileTypeCategoriser>();
         var accountId = new AccountId("account-phantom-autocategorise");
         const string remotePath = "Documents/test.txt";
         await SeedAccountAsync(accountId);
@@ -55,7 +57,7 @@ public sealed class GivenSyncedItemRegistrar_WhenRegisteringPhantomFiles(Integra
 
         await registrar.RegisterPhantomAsync(accountId, BuildFileItem("phantom-id-autocategorise"), remotePath, "/local/phantom-autocat/test.txt", [], mappings, CancellationToken.None);
 
-        string expectedLevel1 = categorisor.Categorise(remotePath).Match(c => c.Level1, () => "Unclassified");
+        string expectedLevel1 = categorisor.Categorise(remotePath).Match(c => c.Level1, () => fileTypeCategoriser.Categorise(remotePath).Match(c => c.Level1, () => "Unclassified"));
         var items = await repository.GetAllByAccountAsync(accountId, CancellationToken.None);
         var categoryNames = await GetFileClassificationCategoryNamesAsync(items["phantom-id-autocategorise"].Id);
         categoryNames.ShouldContain(name => name == expectedLevel1);
