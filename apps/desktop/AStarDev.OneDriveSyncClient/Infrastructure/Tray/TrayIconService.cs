@@ -35,6 +35,7 @@ public sealed class TrayIconService(IShutdownCoordinator shutdownCoordinator, IT
         trayIcon.Clicked += (_, _) => ShowMainWindow();
         TrayIcon.SetIcons(Application.Current!, [trayIcon]);
         accountsViewModel.Accounts.CollectionChanged += OnAccountsChanged;
+        loc.CultureChanged += OnCultureChanged;
     }
 
     private void OnMainWindowClosing(object? sender, WindowClosingEventArgs e)
@@ -53,6 +54,15 @@ public sealed class TrayIconService(IShutdownCoordinator shutdownCoordinator, IT
     {
         if (trayIcon is not null)
             trayIcon.Menu = BuildMenu();
+    }
+
+    private void OnCultureChanged(object? sender, System.Globalization.CultureInfo culture)
+    {
+        if (trayIcon is null)
+            return;
+
+        trayIcon.ToolTipText = loc.GetLocal("Tray.Tooltip");
+        trayIcon.Menu = BuildMenu();
     }
 
     private NativeMenu BuildMenu()
@@ -107,6 +117,7 @@ public sealed class TrayIconService(IShutdownCoordinator shutdownCoordinator, IT
     /// <inheritdoc />
     public void Dispose()
     {
+        loc.CultureChanged -= OnCultureChanged;
         trayIcon?.Dispose();
         trayIcon = null;
     }

@@ -8,11 +8,11 @@ namespace AStarDev.OneDriveSyncClient.Activity;
 
 public enum ActivityItemType { Downloaded, Uploaded, Deleted, Conflict, Error, Info }
 
-public sealed partial class ActivityItemViewModel : ObservableObject
+public sealed partial class ActivityItemViewModel : LocalizedObservableObject
 {
     private readonly ILocalizationService loc;
 
-    public ActivityItemViewModel(ILocalizationService loc) => this.loc = loc;
+    public ActivityItemViewModel(ILocalizationService loc) : base(loc) => this.loc = loc;
 
     public Guid Id { get; init; } = Guid.NewGuid();
     public string AccountId { get; init; } = string.Empty;

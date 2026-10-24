@@ -6,6 +6,7 @@ using AStarDev.OneDriveSyncClient.Home;
 using AStarDev.OneDriveSyncClient.Infrastructure.Authentication;
 using AStarDev.OneDriveSyncClient.Infrastructure.Logging;
 using AStarDev.OneDriveSyncClient.Infrastructure.Shell;
+using AStarDev.OneDriveSyncClient.Localization;
 using AStarDev.Utilities;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -15,7 +16,7 @@ using FolderTreeNodeViewModel = AStarDev.OneDriveSyncClient.Home.FolderTreeNodeV
 
 namespace AStarDev.OneDriveSyncClient.Accounts;
 
-public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAccountFilesViewServices accountFilesViewServices, FileSystemServices fileSystemServices, ILogger<AccountFilesViewModel> logger, IFolderTreeNodeViewModelFactory folderTreeNodeViewModelFactory) : ObservableObject
+public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAccountFilesViewServices accountFilesViewServices, FileSystemServices fileSystemServices, ILogger<AccountFilesViewModel> logger, IFolderTreeNodeViewModelFactory folderTreeNodeViewModelFactory) : LocalizedObservableObject(accountFilesViewServices.LocalizationService)
 {
     private string? accessToken;
     private Option<DriveId> driveIdOption = DriveIdFactory.Empty;

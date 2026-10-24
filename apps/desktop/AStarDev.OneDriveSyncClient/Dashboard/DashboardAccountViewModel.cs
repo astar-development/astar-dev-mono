@@ -18,7 +18,7 @@ using Microsoft.Extensions.Logging;
 
 namespace AStarDev.OneDriveSyncClient.Dashboard;
 
-public sealed partial class DashboardAccountViewModel : ObservableObject
+public sealed partial class DashboardAccountViewModel : LocalizedObservableObject
 {
     private readonly OneDriveAccount account;
     private readonly ISyncScheduler scheduler;
@@ -107,7 +107,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     /// <summary>Localised "Cancel" button label.</summary>
     public string CancelButtonText => localizationService.GetLocal("Common.Cancel");
 
-    public DashboardAccountViewModel(OneDriveAccount account, ISyncScheduler scheduler, IAccountRepository repository, ILocalizationService localizationService, IActivityItemViewModelFactory activityItemViewModelFactory, ILogger<DashboardAccountViewModel> logger)
+    public DashboardAccountViewModel(OneDriveAccount account, ISyncScheduler scheduler, IAccountRepository repository, ILocalizationService localizationService, IActivityItemViewModelFactory activityItemViewModelFactory, ILogger<DashboardAccountViewModel> logger) : base(localizationService)
     {
         this.account = account;
         this.scheduler = scheduler;
@@ -212,6 +212,13 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
         UpdateLastSyncText(SyncState);
         foreach (var item in RecentActivity)
             item.RefreshTimeAgoText();
+    }
+
+    /// <inheritdoc />
+    protected override void OnCultureChanged()
+    {
+        UpdateLastSyncText(SyncState);
+        base.OnCultureChanged();
     }
 
     private void UpdateLastSyncText(SyncState syncState)

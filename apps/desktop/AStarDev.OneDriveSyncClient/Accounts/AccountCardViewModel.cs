@@ -11,7 +11,7 @@ namespace AStarDev.OneDriveSyncClient.Accounts;
 /// <summary>
 /// Drives a single account card in the left-hand account panel.
 /// </summary>
-public sealed partial class AccountCardViewModel : ObservableObject
+public sealed partial class AccountCardViewModel : LocalizedObservableObject
 {
     private string GetJustNowText() => localizationService.GetLocal("Common.JustNow");
     private string GetMinutesAgoText(TimeSpan elapsed) => localizationService.GetLocal("Common.MinutesAgo", (int)elapsed.TotalMinutes);
@@ -105,7 +105,7 @@ public sealed partial class AccountCardViewModel : ObservableObject
     [RelayCommand]
     private void ReAuthenticate() => ReAuthenticateRequested?.Invoke(this, this);
 
-    public AccountCardViewModel(OneDriveAccount model, ILocalizationService localizationService)
+    public AccountCardViewModel(OneDriveAccount model, ILocalizationService localizationService) : base(localizationService)
     {
         this.model = model;
         this.localizationService = localizationService;
@@ -121,6 +121,13 @@ public sealed partial class AccountCardViewModel : ObservableObject
         OnPropertyChanged(nameof(DisplayName));
         OnPropertyChanged(nameof(Email));
         OnPropertyChanged(nameof(Initials));
+    }
+
+    /// <inheritdoc />
+    protected override void OnCultureChanged()
+    {
+        UpdateLastSyncText();
+        base.OnCultureChanged();
     }
 
     private void UpdateLastSyncText()
