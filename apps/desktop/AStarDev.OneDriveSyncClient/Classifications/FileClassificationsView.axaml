@@ -112,6 +112,7 @@
                                             <Button Content="{Binding ExpandCollapseGlyph}"
                                                     Command="{Binding ToggleExpandedCommand}"
                                                     IsVisible="{Binding !IsLeafNode}"
+                                                    RenderTransform="scale(2)"
                                                     Padding="0"
                                                     Width="16"
                                                     Height="16"
