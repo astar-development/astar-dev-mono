@@ -4,6 +4,7 @@ using AStarDev.OneDriveSyncClient.Home;
 using AStarDev.OneDriveSyncClient.Infrastructure.Graph;
 using AStarDev.OneDriveSyncClient.Localization;
 using Microsoft.Extensions.Logging;
+using AStarDev.OneDriveSyncClient.TestsUnit.TestHelpers;
 
 namespace AStarDev.OneDriveSyncClient.TestsUnit.Home;
 
@@ -136,7 +137,7 @@ public sealed class GivenAFolderTreeNodeViewModel
 
         sut.SyncState = FolderSyncState.Excluded;
 
-        firedProperties.ShouldContain(nameof(sut.ToggleLabel));
+        CultureChangeProbe.Refreshes(firedProperties, nameof(sut.ToggleLabel)).ShouldBeTrue();
     }
 
     [Fact]
@@ -148,7 +149,7 @@ public sealed class GivenAFolderTreeNodeViewModel
 
         sut.SyncState = FolderSyncState.Included;
 
-        firedProperties.ShouldContain(nameof(sut.ToggleLabel));
+        CultureChangeProbe.Refreshes(firedProperties, nameof(sut.ToggleLabel)).ShouldBeTrue();
     }
 
     [Fact]
@@ -156,6 +157,7 @@ public sealed class GivenAFolderTreeNodeViewModel
     {
         var loc = BuildLocalizationService();
         var sut = BuildRootVm(Substitute.For<IGraphService>(), FolderSyncState.Included, loc);
+        sut.PropertyChanged += (_, _) => { _ = sut.ToggleLabel; };
         loc.ClearReceivedCalls();
 
         loc.CultureChanged += Raise.Event<EventHandler<CultureInfo>>(new object(), CultureInfo.GetCultureInfo("fr-FR"));
@@ -173,7 +175,7 @@ public sealed class GivenAFolderTreeNodeViewModel
 
         loc.CultureChanged += Raise.Event<EventHandler<CultureInfo>>(new object(), CultureInfo.GetCultureInfo("fr-FR"));
 
-        firedProperties.ShouldContain(nameof(sut.ToggleLabel));
+        CultureChangeProbe.Refreshes(firedProperties, nameof(sut.ToggleLabel)).ShouldBeTrue();
     }
 
     [Fact]
@@ -201,7 +203,7 @@ public sealed class GivenAFolderTreeNodeViewModel
 
         sut.SyncState = FolderSyncState.Excluded;
 
-        firedProperties.ShouldContain(nameof(sut.ToggleTooltip));
+        CultureChangeProbe.Refreshes(firedProperties, nameof(sut.ToggleTooltip)).ShouldBeTrue();
     }
 
     [Fact]
@@ -213,7 +215,7 @@ public sealed class GivenAFolderTreeNodeViewModel
 
         sut.SyncState = FolderSyncState.Included;
 
-        firedProperties.ShouldContain(nameof(sut.ToggleTooltip));
+        CultureChangeProbe.Refreshes(firedProperties, nameof(sut.ToggleTooltip)).ShouldBeTrue();
     }
 
     [Fact]
@@ -221,6 +223,7 @@ public sealed class GivenAFolderTreeNodeViewModel
     {
         var loc = BuildLocalizationService();
         var sut = BuildRootVm(Substitute.For<IGraphService>(), FolderSyncState.Included, loc);
+        sut.PropertyChanged += (_, _) => { _ = sut.ToggleTooltip; };
         loc.ClearReceivedCalls();
 
         loc.CultureChanged += Raise.Event<EventHandler<CultureInfo>>(new object(), CultureInfo.GetCultureInfo("fr-FR"));
@@ -238,7 +241,7 @@ public sealed class GivenAFolderTreeNodeViewModel
 
         loc.CultureChanged += Raise.Event<EventHandler<CultureInfo>>(new object(), CultureInfo.GetCultureInfo("fr-FR"));
 
-        firedProperties.ShouldContain(nameof(sut.ToggleTooltip));
+        CultureChangeProbe.Refreshes(firedProperties, nameof(sut.ToggleTooltip)).ShouldBeTrue();
     }
 
     [Fact]

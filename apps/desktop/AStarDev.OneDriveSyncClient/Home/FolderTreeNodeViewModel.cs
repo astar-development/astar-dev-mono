@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace AStarDev.OneDriveSyncClient.Home;
 
-public sealed partial class FolderTreeNodeViewModel : ObservableObject
+public sealed partial class FolderTreeNodeViewModel : LocalizedObservableObject
 {
     private readonly IGraphService graphService;
     private readonly Func<CancellationToken, Task<string>> tokenFactory;
@@ -83,7 +83,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
     public event EventHandler<FolderTreeNodeViewModel>? OpenInFileManagerRequested;
     public event EventHandler<FolderTreeNodeViewModel>? ViewActivityRequested;
 
-    public FolderTreeNodeViewModel(FolderTreeNode node, IGraphService graphService, Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, Func<string, FolderSyncState?> ruleStateResolver, Func<string, IReadOnlyList<string>> localFolderLister, ILogger<FolderTreeNodeViewModel> logger, ILocalizationService localizationService, int depth = 0)
+    public FolderTreeNodeViewModel(FolderTreeNode node, IGraphService graphService, Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, Func<string, FolderSyncState?> ruleStateResolver, Func<string, IReadOnlyList<string>> localFolderLister, ILogger<FolderTreeNodeViewModel> logger, ILocalizationService localizationService, int depth = 0) : base(localizationService)
     {
         RemoteId = node.RemoteId;
         Name = node.Name;
@@ -100,18 +100,6 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
         this.logger = logger;
         loc = localizationService;
         NeedsRulePersisted = IsLocalOnly && ruleStateResolver(node.RemotePath) is null;
-        loc.CultureChanged += OnCultureChanged;
-    }
-
-    private void OnCultureChanged(object? sender, System.Globalization.CultureInfo culture)
-    {
-        _ = ToggleLabel;
-        _ = ToggleTooltip;
-        OnPropertyChanged(nameof(ToggleLabel));
-        OnPropertyChanged(nameof(ToggleTooltip));
-        OnPropertyChanged(nameof(LocalOnlyBadgeText));
-        OnPropertyChanged(nameof(OpenInFileManagerTooltipText));
-        OnPropertyChanged(nameof(ViewActivityTooltipText));
     }
 
     [RelayCommand]

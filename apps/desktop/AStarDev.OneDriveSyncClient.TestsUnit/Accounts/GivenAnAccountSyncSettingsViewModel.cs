@@ -4,6 +4,7 @@ using AStarDev.OneDriveSyncClient.Accounts;
 using AStarDev.OneDriveSyncClient.Data.Repositories;
 using AStarDev.OneDriveSyncClient.Localization;
 using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
+using AStarDev.OneDriveSyncClient.TestsUnit.TestHelpers;
 
 namespace AStarDev.OneDriveSyncClient.TestsUnit.Accounts;
 
@@ -379,9 +380,9 @@ public sealed class GivenAnAccountSyncSettingsViewModel
 
         loc.CultureChanged += Raise.Event<EventHandler<CultureInfo>>(new object(), CultureInfo.GetCultureInfo("fr-FR"));
 
-        raisedProperties.ShouldContain(nameof(sut.LocalSyncFolderLabelText));
-        raisedProperties.ShouldContain(nameof(sut.LocalSyncFolderPlaceholderText));
-        raisedProperties.ShouldContain(nameof(sut.BrowseButtonText));
-        raisedProperties.ShouldContain(nameof(sut.SaveButtonText));
+        CultureChangeProbe.Refreshes(raisedProperties, nameof(sut.LocalSyncFolderLabelText)).ShouldBeTrue();
+        CultureChangeProbe.Refreshes(raisedProperties, nameof(sut.LocalSyncFolderPlaceholderText)).ShouldBeTrue();
+        CultureChangeProbe.Refreshes(raisedProperties, nameof(sut.BrowseButtonText)).ShouldBeTrue();
+        CultureChangeProbe.Refreshes(raisedProperties, nameof(sut.SaveButtonText)).ShouldBeTrue();
     }
 }

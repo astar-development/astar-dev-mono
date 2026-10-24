@@ -11,19 +11,18 @@ using CommunityToolkit.Mvvm.Input;
 namespace AStarDev.OneDriveSyncClient.Conflicts;
 
 [ExcludeFromCodeCoverage]
-public sealed partial class ConflictItemViewModel : ObservableObject
+public sealed partial class ConflictItemViewModel : LocalizedObservableObject
 {
     private readonly SyncConflict conflict;
     private readonly ISyncService syncService;
     private readonly ILocalizationService loc;
 
-    public ConflictItemViewModel(SyncConflict conflict, ISyncService syncService, ILocalizationService loc)
+    public ConflictItemViewModel(SyncConflict conflict, ISyncService syncService, ILocalizationService loc) : base(loc)
     {
         this.conflict = conflict;
         this.syncService = syncService;
         this.loc = loc;
         PolicyOptions = ConflictPolicyOptionFactory.Create(loc, SelectedPolicy);
-        loc.CultureChanged += OnCultureChanged;
     }
 
     public Guid Id => conflict.Id;
@@ -125,19 +124,11 @@ public sealed partial class ConflictItemViewModel : ObservableObject
         Resolved?.Invoke(this, this);
     }
 
-    private void OnCultureChanged(object? sender, CultureInfo culture)
+    /// <inheritdoc />
+    protected override void OnCultureChanged()
     {
         PolicyOptions = ConflictPolicyOptionFactory.Create(loc, SelectedPolicy);
-        OnPropertyChanged(nameof(PolicyOptions));
-        OnPropertyChanged(nameof(CollapseExpandLabel));
-        OnPropertyChanged(nameof(ResolvedText));
-        OnPropertyChanged(nameof(LocalFileText));
-        OnPropertyChanged(nameof(RemoteFileText));
-        OnPropertyChanged(nameof(VersusText));
-        OnPropertyChanged(nameof(ResolutionText));
-        OnPropertyChanged(nameof(ResolvingText));
-        OnPropertyChanged(nameof(DismissText));
-        OnPropertyChanged(nameof(ApplyText));
+        base.OnCultureChanged();
     }
 
     private static string FormatDateTime(DateTimeOffset dt)

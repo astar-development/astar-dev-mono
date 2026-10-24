@@ -9,13 +9,13 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace AStarDev.OneDriveSyncClient.Accounts;
 
-public sealed partial class AccountSyncSettingsViewModel : ObservableObject
+public sealed partial class AccountSyncSettingsViewModel : LocalizedObservableObject
 {
     private readonly OneDriveAccount account;
     private readonly IAccountRepository repository;
     private readonly ILocalizationService loc;
 
-    public AccountSyncSettingsViewModel(OneDriveAccount account, IAccountRepository repository, ILocalizationService loc)
+    public AccountSyncSettingsViewModel(OneDriveAccount account, IAccountRepository repository, ILocalizationService loc) : base(loc)
     {
         this.account = account;
         this.repository = repository;
@@ -23,15 +23,13 @@ public sealed partial class AccountSyncSettingsViewModel : ObservableObject
         LocalSyncPath = account.SyncConfig.Match(cfg => cfg.LocalSyncPath.Value, () => string.Empty);
         ConflictPolicy = account.SyncConfig.Match(cfg => cfg.ConflictPolicy, () => ConflictPolicy.Ignore);
         PolicyOptions = ConflictPolicyOptionFactory.Create(loc, ConflictPolicy);
-        loc.CultureChanged += (_, _) =>
-        {
-            PolicyOptions = ConflictPolicyOptionFactory.Create(loc, ConflictPolicy);
-            OnPropertyChanged(nameof(PolicyOptions));
-            OnPropertyChanged(nameof(LocalSyncFolderLabelText));
-            OnPropertyChanged(nameof(LocalSyncFolderPlaceholderText));
-            OnPropertyChanged(nameof(BrowseButtonText));
-            OnPropertyChanged(nameof(SaveButtonText));
-        };
+    }
+
+    /// <inheritdoc />
+    protected override void OnCultureChanged()
+    {
+        PolicyOptions = ConflictPolicyOptionFactory.Create(loc, ConflictPolicy);
+        base.OnCultureChanged();
     }
 
     /// <summary>Raw string account ID — unwrapped at the display boundary.</summary>

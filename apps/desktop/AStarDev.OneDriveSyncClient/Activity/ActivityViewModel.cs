@@ -13,7 +13,7 @@ using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 
 namespace AStarDev.OneDriveSyncClient.Activity;
 
-public sealed partial class ActivityViewModel(ISyncRepository syncRepository, ISyncEventAggregator syncEventAggregator, IConflictItemViewModelFactory conflictItemViewModelFactory, IActivityItemViewModelFactory activityItemViewModelFactory, IUiDispatcher dispatcher, ILocalizationService loc) : ObservableObject
+public sealed partial class ActivityViewModel(ISyncRepository syncRepository, ISyncEventAggregator syncEventAggregator, IConflictItemViewModelFactory conflictItemViewModelFactory, IActivityItemViewModelFactory activityItemViewModelFactory, IUiDispatcher dispatcher, ILocalizationService loc) : LocalizedObservableObject(loc)
 {
     private const int MaxLogSize = 100;
     private string? activeAccountId;
@@ -54,20 +54,16 @@ public sealed partial class ActivityViewModel(ISyncRepository syncRepository, IS
     [ObservableProperty]
     public partial ConflictPolicy SelectedGlobalPolicy { get; set; } = ConflictPolicy.Ignore;
 
-    partial void OnSelectedGlobalPolicyChanged(ConflictPolicy value)
-    {
-        GlobalPolicyOptions = ConflictPolicyOptionFactory.Create(loc, value);
-        OnPropertyChanged(nameof(GlobalPolicyOptions));
-    }
+    partial void OnSelectedGlobalPolicyChanged(ConflictPolicy value) => OnPropertyChanged(nameof(GlobalPolicyOptions));
 
     /// <summary>Policy options for the global resolution picker, with the selected policy flagged.</summary>
-    public IReadOnlyList<ConflictPolicyOption> GlobalPolicyOptions { get; private set; } = ConflictPolicyOptionFactory.Create(loc, ConflictPolicy.Ignore);
+    public IReadOnlyList<ConflictPolicyOption> GlobalPolicyOptions => ConflictPolicyOptionFactory.Create(Localization, SelectedGlobalPolicy);
 
     /// <summary>Localised heading for the global resolution picker.</summary>
-    public string GlobalResolutionText => loc.GetLocal("Conflict.GlobalResolution");
+    public string GlobalResolutionText => Localization.GetLocal("Conflict.GlobalResolution");
 
     /// <summary>Localised "Resolve all" button label.</summary>
-    public string ResolveAllText => loc.GetLocal("Conflict.ResolveAll");
+    public string ResolveAllText => Localization.GetLocal("Conflict.ResolveAll");
 
     [RelayCommand]
     private void SelectGlobalPolicy(ConflictPolicy policy) => SelectedGlobalPolicy = policy;
@@ -83,40 +79,40 @@ public sealed partial class ActivityViewModel(ISyncRepository syncRepository, IS
     }
 
     /// <summary>Localised "Activity log" tab label.</summary>
-    public string LogTabText => loc.GetLocal("Activity.LogTab");
+    public string LogTabText => Localization.GetLocal("Activity.LogTab");
 
     /// <summary>Localised "Conflicts" tab label.</summary>
-    public string ConflictsTabText => loc.GetLocal("Activity.ConflictsTab");
+    public string ConflictsTabText => Localization.GetLocal("Activity.ConflictsTab");
 
     /// <summary>Localised "All" filter chip label.</summary>
-    public string FilterAllText => loc.GetLocal("Activity.Filter.All");
+    public string FilterAllText => Localization.GetLocal("Activity.Filter.All");
 
     /// <summary>Localised "↓ downloads" filter chip label.</summary>
-    public string FilterDownloadsText => loc.GetLocal("Activity.Filter.Downloads");
+    public string FilterDownloadsText => Localization.GetLocal("Activity.Filter.Downloads");
 
     /// <summary>Localised "↑ uploads" filter chip label.</summary>
-    public string FilterUploadsText => loc.GetLocal("Activity.Filter.Uploads");
+    public string FilterUploadsText => Localization.GetLocal("Activity.Filter.Uploads");
 
     /// <summary>Localised "⚠ errors" filter chip label.</summary>
-    public string FilterErrorsText => loc.GetLocal("Activity.Filter.Errors");
+    public string FilterErrorsText => Localization.GetLocal("Activity.Filter.Errors");
 
     /// <summary>Localised "Clear" filter chip label.</summary>
-    public string FilterClearText => loc.GetLocal("Activity.Filter.Clear");
+    public string FilterClearText => Localization.GetLocal("Activity.Filter.Clear");
 
     /// <summary>Localised "No activity yet" empty state heading.</summary>
-    public string NoActivityYetText => loc.GetLocal("Activity.NoActivityYet");
+    public string NoActivityYetText => Localization.GetLocal("Activity.NoActivityYet");
 
     /// <summary>Localised "Sync activity will appear here." empty state detail.</summary>
-    public string SyncActivityWillAppearHereText => loc.GetLocal("Activity.SyncActivityWillAppearHere");
+    public string SyncActivityWillAppearHereText => Localization.GetLocal("Activity.SyncActivityWillAppearHere");
 
     /// <summary>Localised "No conflicts" empty state heading.</summary>
-    public string NoConflictsText => loc.GetLocal("Activity.NoConflicts");
+    public string NoConflictsText => Localization.GetLocal("Activity.NoConflicts");
 
     /// <summary>Localised "Any sync conflicts will appear here for resolution." empty state detail.</summary>
-    public string NoConflictsHintText => loc.GetLocal("Activity.NoConflictsHint");
+    public string NoConflictsHintText => Localization.GetLocal("Activity.NoConflictsHint");
 
     /// <summary>Localised "resolved" badge label.</summary>
-    public string ResolvedText => loc.GetLocal("Activity.Conflict.Resolved");
+    public string ResolvedText => Localization.GetLocal("Activity.Conflict.Resolved");
 
     public void SubscribeToSyncEvents()
     {

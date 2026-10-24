@@ -11,7 +11,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace AStarDev.OneDriveSyncClient.Dashboard;
 
-public sealed partial class DashboardViewModel(ILocalizationService localizationService, ISyncEventAggregator syncEventAggregator, IDashboardAccountViewModelFactory dashboardAccountViewModelFactory, IActivityItemViewModelFactory activityItemViewModelFactory, IUiTimer uiTimer) : ObservableObject
+public sealed partial class DashboardViewModel(ILocalizationService localizationService, ISyncEventAggregator syncEventAggregator, IDashboardAccountViewModelFactory dashboardAccountViewModelFactory, IActivityItemViewModelFactory activityItemViewModelFactory, IUiTimer uiTimer) : LocalizedObservableObject(localizationService)
 {
     public ObservableCollection<DashboardAccountViewModel> AccountSections { get; } = [];
 
@@ -38,34 +38,34 @@ public sealed partial class DashboardViewModel(ILocalizationService localization
 
     public string OverallStatusText => (AnySyncing, AnyErrors, TotalConflicts) switch
     {
-        (true, _, _) => localizationService.GetLocal("StatusBar.Syncing"),
-        (_, true, _) => localizationService.GetLocal("StatusBar.Error"),
+        (true, _, _) => Localization.GetLocal("StatusBar.Syncing"),
+        (_, true, _) => Localization.GetLocal("StatusBar.Error"),
         (_, _, > 0) => TotalConflicts == 1
-            ? localizationService.GetLocal("StatusBar.Conflict", TotalConflicts)
-            : localizationService.GetLocal("StatusBar.Conflicts", TotalConflicts),
-        _ => localizationService.GetLocal("Dashboard.AllSynced")
+            ? Localization.GetLocal("StatusBar.Conflict", TotalConflicts)
+            : Localization.GetLocal("StatusBar.Conflicts", TotalConflicts),
+        _ => Localization.GetLocal("Dashboard.AllSynced")
     };
 
     /// <summary>Localised "accounts" stat label.</summary>
-    public string AccountsLabelText => localizationService.GetLocal("Dashboard.Accounts");
+    public string AccountsLabelText => Localization.GetLocal("Dashboard.Accounts");
 
     /// <summary>Localised "folders synced" stat label.</summary>
-    public string FoldersSyncedLabelText => localizationService.GetLocal("Dashboard.FoldersSynced");
+    public string FoldersSyncedLabelText => Localization.GetLocal("Dashboard.FoldersSynced");
 
     /// <summary>Localised "conflicts" stat label.</summary>
-    public string ConflictsLabelText => localizationService.GetLocal("Dashboard.Conflicts");
+    public string ConflictsLabelText => Localization.GetLocal("Dashboard.Conflicts");
 
     /// <summary>Localised "overall status" stat label.</summary>
-    public string OverallStatusLabelText => localizationService.GetLocal("Dashboard.OverallStatus");
+    public string OverallStatusLabelText => Localization.GetLocal("Dashboard.OverallStatus");
 
     /// <summary>Localised "last sync" stat label.</summary>
-    public string LastSyncLabelText => localizationService.GetLocal("Dashboard.LastSync");
+    public string LastSyncLabelText => Localization.GetLocal("Dashboard.LastSync");
 
     /// <summary>Localised "No accounts connected" empty-state heading.</summary>
-    public string NoAccountsConnectedText => localizationService.GetLocal("Dashboard.NoAccountsConnected");
+    public string NoAccountsConnectedText => Localization.GetLocal("Dashboard.NoAccountsConnected");
 
     /// <summary>Localised "Add an account to see your sync health here." empty-state detail.</summary>
-    public string NoAccountsConnectedHintText => localizationService.GetLocal("Dashboard.NoAccountsConnectedHint");
+    public string NoAccountsConnectedHintText => Localization.GetLocal("Dashboard.NoAccountsConnectedHint");
 
     public void SubscribeToSyncEvents()
     {
@@ -202,6 +202,16 @@ public sealed partial class DashboardViewModel(ILocalizationService localization
         RecalculateGlobals();
     }
 
+    /// <inheritdoc />
+    protected override void OnCultureChanged()
+    {
+        foreach (var section in AccountSections)
+            section.RefreshTimeDisplays();
+
+        RecalculateGlobals();
+        base.OnCultureChanged();
+    }
+
     private void RecalculateGlobals()
     {
         TotalAccounts = AccountSections.Count;
@@ -212,7 +222,7 @@ public sealed partial class DashboardViewModel(ILocalizationService localization
 
         var mostRecent = AccountSections.FirstOrDefault(s => s.HasEverSynced);
 
-        LastSyncText = mostRecent?.LastSyncText ?? localizationService.GetLocal("Common.Never");
+        LastSyncText = mostRecent?.LastSyncText ?? Localization.GetLocal("Common.Never");
         OnPropertyChanged(nameof(OverallStatusText));
     }
 }

@@ -5,43 +5,11 @@ using CommunityToolkit.Mvvm.ComponentModel;
 namespace AStarDev.OneDriveSyncClient.Classifications;
 
 /// <summary>Localised display text for the file classification views and dialogs, refreshed when the culture changes.</summary>
-public sealed class ClassificationText : ObservableObject
+public sealed class ClassificationText : LocalizedObservableObject
 {
-    private static readonly string[] allTextProperties =
-    [
-        nameof(TitleText),
-        nameof(DescriptionText),
-        nameof(FilterPlaceholderText),
-        nameof(ExportText),
-        nameof(ImportText),
-        nameof(EmptyText),
-        nameof(FamousText),
-        nameof(InternetText),
-        nameof(EditText),
-        nameof(DeleteText),
-        nameof(NewSubCategoryPlaceholderText),
-        nameof(AddSubCategoryText),
-        nameof(AddCategoryText),
-        nameof(CategoryNamePlaceholderText),
-        nameof(AddText),
-        nameof(ExportDialogTitleText),
-        nameof(ImportDialogTitleText),
-        nameof(ImportConfirmMessageText),
-        nameof(EditDialogTitleText),
-        nameof(EditDialogNameText),
-        nameof(IncludeInSearchText),
-        nameof(ParentText),
-        nameof(CancelText),
-        nameof(SaveText)
-    ];
-
     private readonly ILocalizationService loc;
 
-    internal ClassificationText(ILocalizationService loc)
-    {
-        this.loc = loc;
-        loc.CultureChanged += OnCultureChanged;
-    }
+    internal ClassificationText(ILocalizationService loc) : base(loc) => this.loc = loc;
 
     /// <summary>Localised page title.</summary>
     public string TitleText => loc.GetLocal("Classifications.Title");
@@ -114,10 +82,4 @@ public sealed class ClassificationText : ObservableObject
 
     /// <summary>Localised save button label.</summary>
     public string SaveText => loc.GetLocal("Common.Save");
-
-    private void OnCultureChanged(object? sender, CultureInfo culture)
-    {
-        foreach (string propertyName in allTextProperties)
-            OnPropertyChanged(propertyName);
-    }
 }

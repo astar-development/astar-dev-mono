@@ -8,11 +8,11 @@ namespace AStarDev.OneDriveSyncClient.Activity;
 
 public enum ActivityItemType { Downloaded, Uploaded, Deleted, Conflict, Error, Info }
 
-public sealed partial class ActivityItemViewModel : ObservableObject
+public sealed partial class ActivityItemViewModel : LocalizedObservableObject
 {
     private readonly ILocalizationService loc;
 
-    public ActivityItemViewModel(ILocalizationService loc) => this.loc = loc;
+    public ActivityItemViewModel(ILocalizationService loc) : base(loc) => this.loc = loc;
 
     public Guid Id { get; init; } = Guid.NewGuid();
     public string AccountId { get; init; } = string.Empty;
@@ -55,10 +55,10 @@ public sealed partial class ActivityItemViewModel : ObservableObject
             return elapsed switch
             {
                 { TotalSeconds: < 60 } => loc.GetLocal("Common.JustNow"),
-                { TotalMinutes: < 60 } td => $"{(int)td.TotalMinutes}m ago",
-                { TotalHours: < 24 } td => $"{(int)td.TotalHours}h ago",
+                { TotalMinutes: < 60 } td => (int)td.TotalMinutes == 1 ? loc.GetLocal("Common.MinuteAgo", (int)td.TotalMinutes) : loc.GetLocal("Common.MinutesAgo", (int)td.TotalMinutes),
+                { TotalHours: < 24 } td => (int)td.TotalHours == 1 ? loc.GetLocal("Common.HourAgo", (int)td.TotalHours) : loc.GetLocal("Common.HoursAgo", (int)td.TotalHours),
                 { TotalDays: < 2 } => loc.GetLocal("Common.Yesterday"),
-                var td => $"{(int)td.TotalDays}d ago"
+                var td => loc.GetLocal("Common.DaysAgo", (int)td.TotalDays)
             };
         }
     }

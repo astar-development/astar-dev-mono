@@ -11,7 +11,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 namespace AStarDev.OneDriveSyncClient.Onboarding;
 
-public sealed partial class AddAccountWizardViewModel : ObservableObject, IDisposable
+public sealed partial class AddAccountWizardViewModel : LocalizedObservableObject, IDisposable
 {
     private readonly IAuthService authService;
     private readonly IGraphService graphService;
@@ -22,12 +22,11 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
     private CancellationTokenSource? authCts;
     private bool disposed;
 
-    public AddAccountWizardViewModel(IAuthService authService, IGraphService graphService, ILocalizationService localizationService)
+    public AddAccountWizardViewModel(IAuthService authService, IGraphService graphService, ILocalizationService localizationService) : base(localizationService)
     {
         this.authService = authService;
         this.graphService = graphService;
         loc = localizationService;
-        loc.CultureChanged += OnCultureChanged;
     }
 
     [ObservableProperty]
@@ -311,24 +310,6 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
         Completed?.Invoke(this, account);
     }
 
-    private void OnCultureChanged(object? sender, CultureInfo culture)
-    {
-        OnPropertyChanged(nameof(NextLabel));
-        OnPropertyChanged(nameof(TitleText));
-        OnPropertyChanged(nameof(SignInPromptText));
-        OnPropertyChanged(nameof(BrowserPromptText));
-        OnPropertyChanged(nameof(OpenBrowserSignInText));
-        OnPropertyChanged(nameof(WhichFoldersText));
-        OnPropertyChanged(nameof(ChooseFolderHintText));
-        OnPropertyChanged(nameof(LoadingFoldersText));
-        OnPropertyChanged(nameof(SkipFoldersText));
-        OnPropertyChanged(nameof(ReadyToConnectText));
-        OnPropertyChanged(nameof(AccountLabelText));
-        OnPropertyChanged(nameof(FoldersToSyncText));
-        OnPropertyChanged(nameof(BackText));
-        OnPropertyChanged(nameof(CancelText));
-    }
-
     public void Dispose()
     {
         Dispose(true);
@@ -345,7 +326,6 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject, IDispo
         if (!disposing)
             return;
 
-        loc.CultureChanged -= OnCultureChanged;
         CancellationTokenSource? toDispose;
         lock (authCtsLock)
         {

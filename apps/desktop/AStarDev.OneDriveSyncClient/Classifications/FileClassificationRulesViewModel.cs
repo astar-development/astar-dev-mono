@@ -13,7 +13,7 @@ using CommunityToolkit.Mvvm.Input;
 namespace AStarDev.OneDriveSyncClient.Classifications;
 
 /// <summary>View model for the file classification rules tree view.</summary>
-public sealed partial class FileClassificationRulesViewModel : ObservableObject
+public sealed partial class FileClassificationRulesViewModel : LocalizedObservableObject
 {
     private readonly IFileClassificationRepository repository;
     private readonly IFileClassificationExportImportService exportImportService;
@@ -23,7 +23,7 @@ public sealed partial class FileClassificationRulesViewModel : ObservableObject
     private readonly ILocalizationService localizationService;
     private readonly IFileSystem fileSystem;
 
-    public FileClassificationRulesViewModel(IFileClassificationRepository repository, IFileClassificationExportImportService exportImportService, IFilePickerService filePickerService, IConfirmationDialogService confirmationDialogService, ICategoryEditDialogService categoryEditDialogService, ILocalizationService localizationService, IFileSystem fileSystem)
+    public FileClassificationRulesViewModel(IFileClassificationRepository repository, IFileClassificationExportImportService exportImportService, IFilePickerService filePickerService, IConfirmationDialogService confirmationDialogService, ICategoryEditDialogService categoryEditDialogService, ILocalizationService localizationService, IFileSystem fileSystem) : base(localizationService)
     {
         this.repository = repository;
         this.exportImportService = exportImportService;

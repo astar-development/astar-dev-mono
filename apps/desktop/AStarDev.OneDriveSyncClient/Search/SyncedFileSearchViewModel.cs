@@ -11,7 +11,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace AStarDev.OneDriveSyncClient.Search;
 
-public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repository, IFileOpenerService fileOpenerService, IFileTypeClassifier fileTypeClassifier, IUiDispatcher dispatcher, ILocalizationService loc) : ObservableObject
+public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repository, IFileOpenerService fileOpenerService, IFileTypeClassifier fileTypeClassifier, IUiDispatcher dispatcher, ILocalizationService loc) : LocalizedObservableObject(loc)
 {
     private const int SearchResultCap = 500;
 
@@ -53,57 +53,65 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
     public ObservableCollection<string> SelectedTags { get; } = [];
     public ObservableCollection<string> AvailableTags { get; } = [];
 
-    public IReadOnlyList<string> AvailableSortOrders { get; } =
+    public IReadOnlyList<string> AvailableSortOrders =>
     [
-        loc.GetLocal("Search.SortOrder.NameAsc"),
-        loc.GetLocal("Search.SortOrder.NameDesc"),
-        loc.GetLocal("Search.SortOrder.SizeAsc"),
-        loc.GetLocal("Search.SortOrder.SizeDesc")
+        Localization.GetLocal("Search.SortOrder.NameAsc"),
+        Localization.GetLocal("Search.SortOrder.NameDesc"),
+        Localization.GetLocal("Search.SortOrder.SizeAsc"),
+        Localization.GetLocal("Search.SortOrder.SizeDesc")
     ];
 
     public bool ShowDuplicateDisclaimer => DuplicatesOnly;
 
+    /// <inheritdoc />
+    protected override void OnCultureChanged()
+    {
+        int selectedSortOrderIndex = SelectedSortOrderIndex;
+        base.OnCultureChanged();
+        SelectedSortOrderIndex = selectedSortOrderIndex;
+    }
+
     /// <summary>Localised "Search files" heading.</summary>
-    public string SearchTitleText => loc.GetLocal("Search.Title");
+    public string SearchTitleText => Localization.GetLocal("Search.Title");
 
     /// <summary>Localised "Name" field label.</summary>
-    public string NameLabelText => loc.GetLocal("Search.Name.Label");
+    public string NameLabelText => Localization.GetLocal("Search.Name.Label");
 
     /// <summary>Localised placeholder for the name text field.</summary>
-    public string NamePlaceholderText => loc.GetLocal("Search.Name.Placeholder");
+    public string NamePlaceholderText => Localization.GetLocal("Search.Name.Placeholder");
 
     /// <summary>Localised "Min size (bytes)" label.</summary>
-    public string MinSizeLabelText => loc.GetLocal("Search.MinSize.Label");
+    public string MinSizeLabelText => Localization.GetLocal("Search.MinSize.Label");
 
     /// <summary>Localised "Max size (bytes)" label.</summary>
-    public string MaxSizeLabelText => loc.GetLocal("Search.MaxSize.Label");
+    public string MaxSizeLabelText => Localization.GetLocal("Search.MaxSize.Label");
 
     /// <summary>Localised "Tags" label.</summary>
-    public string TagsLabelText => loc.GetLocal("Search.Tags.Label");
+    public string TagsLabelText => Localization.GetLocal("Search.Tags.Label");
 
     /// <summary>Localised message shown while categories are being loaded.</summary>
-    public string TagsLoadingText => loc.GetLocal("Search.Tags.Loading");
+    public string TagsLoadingText => Localization.GetLocal("Search.Tags.Loading");
 
     /// <summary>Localised message shown when no classifications exist for the active account.</summary>
-    public string TagsNoClassificationsText => loc.GetLocal("Search.Tags.NoClassifications");
+    public string TagsNoClassificationsText => Localization.GetLocal("Search.Tags.NoClassifications");
 
     /// <summary>Localised "Duplicates only" toggle label.</summary>
-    public string DuplicatesOnlyLabelText => loc.GetLocal("Search.DuplicatesOnly.Label");
+    public string DuplicatesOnlyLabelText => Localization.GetLocal("Search.DuplicatesOnly.Label");
 
     /// <summary>Localised "Search" button label.</summary>
-    public string SearchButtonText => loc.GetLocal("Search.Button");
+    public string SearchButtonText => Localization.GetLocal("Search.Button");
 
     /// <summary>Localised disclaimer shown when DuplicatesOnly is active.</summary>
-    public string DuplicateDisclaimerText => loc.GetLocal("Search.DuplicateDisclaimer");
+    public string DuplicateDisclaimerText => Localization.GetLocal("Search.DuplicateDisclaimer");
 
     /// <summary>Localised "No results found." empty-state message.</summary>
-    public string NoResultsText => loc.GetLocal("Search.NoResults");
+    public string NoResultsText => Localization.GetLocal("Search.NoResults");
 
     /// <summary>Localised "Sort by" label for the sort order selector.</summary>
-    public string SortOrderLabelText => loc.GetLocal("Search.SortOrder.Label");
+    public string SortOrderLabelText => Localization.GetLocal("Search.SortOrder.Label");
 
     /// <summary>Localised notice shown when results are capped at the search limit.</summary>
-    public string CappedNoticeText => loc.GetLocal("Search.ResultsCapped");
+    public string CappedNoticeText => Localization.GetLocal("Search.ResultsCapped");
 
     [RelayCommand]
     private void ToggleTag(string tag)
@@ -196,7 +204,7 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
                 foreach (var result in displayResults)
                 {
                     SyncedFileResultViewModel vm = null!;
-                    vm = new SyncedFileResultViewModel(result, fileTypeClassifier, fileOpenerService, dispatcher, loc, async ct =>
+                    vm = new SyncedFileResultViewModel(result, fileTypeClassifier, fileOpenerService, dispatcher, Localization, async ct =>
                     {
                         if (File.Exists(result.LocalPath))
                             File.Delete(result.LocalPath);

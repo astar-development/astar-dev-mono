@@ -9,7 +9,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace AStarDev.OneDriveSyncClient.Search;
 
-public sealed partial class SyncedFileResultViewModel : ObservableObject
+public sealed partial class SyncedFileResultViewModel : LocalizedObservableObject
 {
     private readonly IFileOpenerService fileOpenerService;
     private readonly IUiDispatcher dispatcher;
@@ -17,7 +17,7 @@ public sealed partial class SyncedFileResultViewModel : ObservableObject
     private readonly Func<CancellationToken, Task> onDeleteAsync;
     private CancellationTokenSource? thumbnailCts;
 
-    public SyncedFileResultViewModel(SyncedItemSearchResult result, IFileTypeClassifier fileTypeClassifier, IFileOpenerService fileOpenerService, IUiDispatcher dispatcher, ILocalizationService loc, Func<CancellationToken, Task> onDeleteAsync)
+    public SyncedFileResultViewModel(SyncedItemSearchResult result, IFileTypeClassifier fileTypeClassifier, IFileOpenerService fileOpenerService, IUiDispatcher dispatcher, ILocalizationService loc, Func<CancellationToken, Task> onDeleteAsync) : base(loc)
     {
         this.fileOpenerService = fileOpenerService;
         this.dispatcher = dispatcher;

@@ -184,19 +184,43 @@ public sealed class GivenAnActivityItemViewModel
     }
 
     [Fact]
-    public void when_occurred_at_is_5_minutes_ago_then_time_ago_text_returns_minutes_ago()
+    public void when_occurred_at_is_5_minutes_ago_then_time_ago_text_uses_the_localised_minutes_ago_template()
     {
-        var sut = new ActivityItemViewModel(BuildLocalizationService()) { OccurredAt = DateTimeOffset.UtcNow.AddMinutes(-5) };
+        var loc = BuildLocalizationService();
+        loc.GetLocal("Common.MinutesAgo", 5).Returns("5 minutes ago");
+        var sut = new ActivityItemViewModel(loc) { OccurredAt = DateTimeOffset.UtcNow.AddMinutes(-5).AddSeconds(-1) };
 
-        sut.TimeAgoText.ShouldBe("5m ago");
+        sut.TimeAgoText.ShouldBe("5 minutes ago");
     }
 
     [Fact]
-    public void when_occurred_at_is_3_hours_ago_then_time_ago_text_returns_hours_ago()
+    public void when_occurred_at_is_1_minute_ago_then_time_ago_text_uses_the_localised_minute_ago_template()
     {
-        var sut = new ActivityItemViewModel(BuildLocalizationService()) { OccurredAt = DateTimeOffset.UtcNow.AddHours(-3) };
+        var loc = BuildLocalizationService();
+        loc.GetLocal("Common.MinuteAgo", 1).Returns("1 minute ago");
+        var sut = new ActivityItemViewModel(loc) { OccurredAt = DateTimeOffset.UtcNow.AddMinutes(-1).AddSeconds(-1) };
 
-        sut.TimeAgoText.ShouldBe("3h ago");
+        sut.TimeAgoText.ShouldBe("1 minute ago");
+    }
+
+    [Fact]
+    public void when_occurred_at_is_3_hours_ago_then_time_ago_text_uses_the_localised_hours_ago_template()
+    {
+        var loc = BuildLocalizationService();
+        loc.GetLocal("Common.HoursAgo", 3).Returns("3 hours ago");
+        var sut = new ActivityItemViewModel(loc) { OccurredAt = DateTimeOffset.UtcNow.AddHours(-3).AddSeconds(-1) };
+
+        sut.TimeAgoText.ShouldBe("3 hours ago");
+    }
+
+    [Fact]
+    public void when_occurred_at_is_1_hour_ago_then_time_ago_text_uses_the_localised_hour_ago_template()
+    {
+        var loc = BuildLocalizationService();
+        loc.GetLocal("Common.HourAgo", 1).Returns("1 hour ago");
+        var sut = new ActivityItemViewModel(loc) { OccurredAt = DateTimeOffset.UtcNow.AddHours(-1).AddSeconds(-1) };
+
+        sut.TimeAgoText.ShouldBe("1 hour ago");
     }
 
     [Fact]
@@ -219,11 +243,13 @@ public sealed class GivenAnActivityItemViewModel
     }
 
     [Fact]
-    public void when_occurred_at_is_5_days_ago_then_time_ago_text_returns_days_ago()
+    public void when_occurred_at_is_5_days_ago_then_time_ago_text_uses_the_localised_days_ago_template()
     {
-        var sut = new ActivityItemViewModel(BuildLocalizationService()) { OccurredAt = DateTimeOffset.UtcNow.AddDays(-5) };
+        var loc = BuildLocalizationService();
+        loc.GetLocal("Common.DaysAgo", 5).Returns("5 days ago");
+        var sut = new ActivityItemViewModel(loc) { OccurredAt = DateTimeOffset.UtcNow.AddDays(-5).AddSeconds(-1) };
 
-        sut.TimeAgoText.ShouldBe("5d ago");
+        sut.TimeAgoText.ShouldBe("5 days ago");
     }
 
     [Fact]

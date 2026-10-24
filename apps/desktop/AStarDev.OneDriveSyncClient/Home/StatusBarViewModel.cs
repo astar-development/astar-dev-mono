@@ -10,20 +10,19 @@ namespace AStarDev.OneDriveSyncClient.Home;
 /// Drives the bottom status bar. Reacts to <see cref="AccountsViewModel.ActiveAccount"/>
 /// changes directly, keeping itself in sync without requiring external coordination.
 /// </summary>
-public sealed partial class StatusBarViewModel : ObservableObject
+public sealed partial class StatusBarViewModel : LocalizedObservableObject
 {
     private readonly AccountsViewModel accounts;
     private readonly ILocalizationService loc;
     private AccountCardViewModel? trackedCard;
 
-    public StatusBarViewModel(AccountsViewModel accounts, ILocalizationService localizationService)
+    public StatusBarViewModel(AccountsViewModel accounts, ILocalizationService localizationService) : base(localizationService)
     {
         this.accounts = accounts;
         accounts.PropertyChanged += OnAccountsPropertyChanged;
         accounts.ActiveAccountStateChanged += OnActiveAccountStateChanged;
         ApplyActiveAccount(accounts.ActiveAccount);
         loc = localizationService;
-        loc.CultureChanged += OnCultureChanged;
     }
 
     [ObservableProperty]
@@ -75,12 +74,6 @@ public sealed partial class StatusBarViewModel : ObservableObject
     partial void OnSyncStateChanged(SyncState value) => OnPropertyChanged(nameof(StatusLabel));
     partial void OnPendingCountChanged(int value) => OnPropertyChanged(nameof(StatusLabel));
     partial void OnConflictCountChanged(int value) => OnPropertyChanged(nameof(StatusLabel));
-
-    private void OnCultureChanged(object? sender, System.Globalization.CultureInfo culture)
-    {
-        OnPropertyChanged(nameof(StatusLabel));
-        OnPropertyChanged(nameof(NoAccountSelectedText));
-    }
 
     private void OnAccountsPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
