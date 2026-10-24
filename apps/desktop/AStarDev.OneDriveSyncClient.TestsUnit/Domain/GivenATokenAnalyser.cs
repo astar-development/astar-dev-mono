@@ -167,7 +167,11 @@ public sealed class GivenATokenAnalyser
     [InlineData("Get-AzWebPubSubClientAccess.ps1")]
     [InlineData("New-AzCdnUrlRedirectActionObject.md")]
     [InlineData("Add-AzAccount.ps1")]
-    public void when_extract_person_name_called_with_a_camel_case_identifier_then_none_is_returned(string fileName)
+    [InlineData("Az.Advisor.private.dll")]
+    [InlineData("System.Memory.Data.dll")]
+    [InlineData("open-iconic-bootstrap.min.css")]
+    [InlineData("manifest.spdx.json.sha256")]
+    public void when_extract_person_name_called_with_a_code_identifier_then_none_is_returned(string fileName)
     {
         var result = TokenAnalyser.ExtractPersonName(fileName);
 
