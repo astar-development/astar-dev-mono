@@ -4,6 +4,7 @@ using AStarDev.OneDriveSyncClient.Infrastructure.Sync;
 using AStarDev.OneDriveSyncClient.Localization;
 using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId;
+using AStarDev.OneDriveSyncClient.TestsUnit.TestHelpers;
 
 namespace AStarDev.OneDriveSyncClient.TestsUnit.Conflicts;
 
@@ -92,7 +93,7 @@ public sealed class GivenAConflictItemViewModel
 
         loc.CultureChanged += Raise.Event<EventHandler<CultureInfo>>(new object(), CultureInfo.GetCultureInfo("fr-FR"));
 
-        firedProperties.ShouldContain(nameof(sut.PolicyOptions));
+        CultureChangeProbe.Refreshes(firedProperties, nameof(sut.PolicyOptions)).ShouldBeTrue();
     }
 
     [Fact]
@@ -131,7 +132,7 @@ public sealed class GivenAConflictItemViewModel
 
         loc.CultureChanged += Raise.Event<EventHandler<CultureInfo>>(new object(), CultureInfo.GetCultureInfo("fr-FR"));
 
-        firedProperties.ShouldContain(nameof(sut.CollapseExpandLabel));
+        CultureChangeProbe.Refreshes(firedProperties, nameof(sut.CollapseExpandLabel)).ShouldBeTrue();
     }
 
     [Theory]
@@ -166,6 +167,6 @@ public sealed class GivenAConflictItemViewModel
 
         loc.CultureChanged += Raise.Event<EventHandler<CultureInfo>>(loc, CultureInfo.GetCultureInfo("en-US"));
 
-        raised.ShouldContain(propertyName);
+        CultureChangeProbe.Refreshes(raised, propertyName).ShouldBeTrue();
     }
 }

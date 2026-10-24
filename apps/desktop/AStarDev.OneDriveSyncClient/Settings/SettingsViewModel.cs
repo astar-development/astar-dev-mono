@@ -14,7 +14,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace AStarDev.OneDriveSyncClient.Settings;
 
-public sealed partial class SettingsViewModel : ObservableObject
+public sealed partial class SettingsViewModel : LocalizedObservableObject
 {
     private const string SyncIntervalMinutesMessage = "Settings.DeltaSyncInterval.Minutes";
     private readonly ISettingsService settingsService;
@@ -27,7 +27,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     private readonly bool isLoaded;
     private bool isRefreshing;
 
-    public SettingsViewModel(ISettingsService settingsService, IThemeService themeService, ISyncScheduler scheduler, IAccountRepository repository, ILocalizationService loc, IFolderPickerService folderPickerService, IAutostartService autostartService)
+    public SettingsViewModel(ISettingsService settingsService, IThemeService themeService, ISyncScheduler scheduler, IAccountRepository repository, ILocalizationService loc, IFolderPickerService folderPickerService, IAutostartService autostartService) : base(loc)
     {
         this.settingsService = settingsService;
         this.themeService = themeService;
@@ -46,7 +46,6 @@ public sealed partial class SettingsViewModel : ObservableObject
         PolicyOptions = ConflictPolicyOptionFactory.Create(loc, DefaultConflictPolicy);
         WorkerCountOptions = WorkerCountOptionFactory.Create(loc, ConcurrentWorkerCount);
         LanguageOptions = LanguageOptionFactory.Create(loc);
-        loc.CultureChanged += OnCultureChanged;
         settingsService.SettingsChanged += OnSettingsServiceChanged;
         isLoaded = true;
     }
@@ -277,36 +276,15 @@ public sealed partial class SettingsViewModel : ObservableObject
         OnPropertyChanged(nameof(WorkerCountOptions));
     }
 
-    private void OnCultureChanged(object? sender, CultureInfo culture)
+    /// <inheritdoc />
+    protected override void OnCultureChanged()
     {
         ThemeOptions = ThemeOptionFactory.Create(loc, Theme);
-        OnPropertyChanged(nameof(ThemeOptions));
         IntervalOptions = BuildIntervalOptions();
-        OnPropertyChanged(nameof(IntervalOptions));
         PolicyOptions = ConflictPolicyOptionFactory.Create(loc, DefaultConflictPolicy);
-        OnPropertyChanged(nameof(PolicyOptions));
         WorkerCountOptions = WorkerCountOptionFactory.Create(loc, ConcurrentWorkerCount);
-        OnPropertyChanged(nameof(WorkerCountOptions));
         LanguageOptions = LanguageOptionFactory.Create(loc);
-        OnPropertyChanged(nameof(LanguageOptions));
-        OnPropertyChanged(nameof(LanguageDescriptionText));
-        OnPropertyChanged(nameof(LaunchAtStartupLabelText));
-        OnPropertyChanged(nameof(LaunchAtStartupDescriptionText));
-        OnPropertyChanged(nameof(TitleText));
-        OnPropertyChanged(nameof(DescriptionText));
-        OnPropertyChanged(nameof(AppearanceHeadingText));
-        OnPropertyChanged(nameof(ThemeLabelText));
-        OnPropertyChanged(nameof(ThemeDescriptionText));
-        OnPropertyChanged(nameof(LanguageHeadingText));
-        OnPropertyChanged(nameof(DisplayLanguageLabelText));
-        OnPropertyChanged(nameof(SyncPolicyHeadingText));
-        OnPropertyChanged(nameof(DefaultConflictPolicyLabelText));
-        OnPropertyChanged(nameof(DefaultConflictPolicyDescriptionText));
-        OnPropertyChanged(nameof(SyncIntervalLabelText));
-        OnPropertyChanged(nameof(SyncIntervalDescriptionText));
-        OnPropertyChanged(nameof(ConcurrentWorkersLabelText));
-        OnPropertyChanged(nameof(ConcurrentWorkersDescriptionText));
-        OnPropertyChanged(nameof(AccountSyncPathsHeadingText));
-        OnPropertyChanged(nameof(AccountSyncPathsDescriptionText));
+        base.OnCultureChanged();
     }
+
 }

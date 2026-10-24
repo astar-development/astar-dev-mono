@@ -1,6 +1,7 @@
 using System.Globalization;
 using AStarDev.OneDriveSyncClient.Classifications;
 using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.OneDriveSyncClient.TestsUnit.TestHelpers;
 
 namespace AStarDev.OneDriveSyncClient.TestsUnit.Classifications;
 
@@ -56,7 +57,7 @@ public sealed class GivenAClassificationText
 
         loc.CultureChanged += Raise.Event<EventHandler<CultureInfo>>(loc, CultureInfo.GetCultureInfo("en-US"));
 
-        raised.ShouldContain(propertyName);
+        CultureChangeProbe.Refreshes(raised, propertyName).ShouldBeTrue();
         key.ShouldNotBeEmpty();
     }
 }

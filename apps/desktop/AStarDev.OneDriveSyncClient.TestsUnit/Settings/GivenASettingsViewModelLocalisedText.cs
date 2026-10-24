@@ -6,6 +6,7 @@ using AStarDev.OneDriveSyncClient.Infrastructure.Sync;
 using AStarDev.OneDriveSyncClient.Infrastructure.Theme;
 using AStarDev.OneDriveSyncClient.Localization;
 using AStarDev.OneDriveSyncClient.Settings;
+using AStarDev.OneDriveSyncClient.TestsUnit.TestHelpers;
 
 namespace AStarDev.OneDriveSyncClient.TestsUnit.Settings;
 
@@ -59,7 +60,7 @@ public sealed class GivenASettingsViewModelLocalisedText
 
         loc.CultureChanged += Raise.Event<EventHandler<CultureInfo>>(loc, CultureInfo.GetCultureInfo("en-US"));
 
-        raised.ShouldContain(propertyName);
+        CultureChangeProbe.Refreshes(raised, propertyName).ShouldBeTrue();
         key.ShouldNotBeEmpty();
     }
 }
