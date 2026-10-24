@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 namespace AStarDev.OneDriveSyncClient.Infrastructure.Shell;
 
 /// <inheritdoc />
-public sealed class AppBootstrapper(IDbContextFactory<AppDbContext> dbContextFactory, ISettingsService settingsService, IThemeService themeService, ILocalizationService loc, ISyncScheduler syncScheduler, MainWindowViewModel mainWindowViewModel, IPersonCategoryCleanupService personCategoryCleanupService, ILogger<AppBootstrapper> logger) : IAppBootstrapper
+public sealed class AppBootstrapper(IDbContextFactory<AppDbContext> dbContextFactory, ISettingsService settingsService, IThemeService themeService, ILocalizationService loc, ISyncScheduler syncScheduler, MainWindowViewModel mainWindowViewModel, IPersonCategoryCleanupService personCategoryCleanupService, IDefaultCategorySeedingService defaultCategorySeedingService, ILogger<AppBootstrapper> logger) : IAppBootstrapper
 {
     /// <inheritdoc />
     public async Task BootstrapAsync(IProgress<string> progress, CancellationToken cancellationToken = default)
@@ -35,6 +35,18 @@ public sealed class AppBootstrapper(IDbContextFactory<AppDbContext> dbContextFac
 
             if (removedCategories > 0)
                 OneDriveSyncClientMessages.PersonCategoryCleanupCompleted(logger, removedCategories);
+
+            int seededCategories = await defaultCategorySeedingService.SeedDefaultCategoriesAsync(cancellationToken)
+                .MatchAsync(seeded => seeded, error =>
+                {
+                    OneDriveSyncClientMessages.DefaultCategorySeedingFailed(logger, error);
+
+                    return 0;
+                })
+                .ConfigureAwait(false);
+
+            if (seededCategories > 0)
+                OneDriveSyncClientMessages.DefaultCategoriesSeeded(logger, seededCategories);
 
             progress.Report("Loading settings…");
             await settingsService.LoadAsync(cancellationToken).ConfigureAwait(false);
