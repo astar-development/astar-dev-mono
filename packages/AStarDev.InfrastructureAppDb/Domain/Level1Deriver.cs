@@ -35,7 +35,7 @@ public static class Level1Deriver
         return TokenAnalyser.ExtractPersonName(joinedTokens)
             .Match(
                 _ => "Person",
-                () => HasColourToken(filenameTokens) ? "Color" : "Unclassified");
+                () => HasColourToken(filenameTokens) ? "Colour" : "Unclassified");
     }
 
     private static bool HasColourToken(IReadOnlyList<string> filenameTokens)

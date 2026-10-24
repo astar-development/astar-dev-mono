@@ -38,7 +38,7 @@ public sealed partial class RuleBasedFileAutoCategorisor : IFileAutoCategorisor
         return TokenAnalyser.ExtractPersonName(filenameStem)
             .Match(
                 _ => "Person",
-                () => tokens.Any(t => TokenAnalyser.ColourWords.Contains(t)) ? "Color" : "Unclassified"
+                () => tokens.Any(t => TokenAnalyser.ColourWords.Contains(t)) ? "Colour" : "Unclassified"
             );
     }
 
