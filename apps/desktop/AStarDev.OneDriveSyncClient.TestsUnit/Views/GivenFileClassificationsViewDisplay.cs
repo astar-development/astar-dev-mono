@@ -18,7 +18,7 @@ public sealed class GivenFileClassificationsViewDisplay
         localization.GetLocal(Arg.Any<string>()).Returns(call => call.Arg<string>());
         localization.GetLocal(Arg.Any<string>(), Arg.Any<object[]>()).Returns(call => call.Arg<string>());
 
-        return new FileClassificationRulesViewModel(Substitute.For<IFileClassificationRepository>(), Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), Substitute.For<ICategoryEditDialogService>(), localization, Substitute.For<IFileSystem>());
+        return new FileClassificationRulesViewModel(Substitute.For<IFileClassificationRepository>(), Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), Substitute.For<ICategoryEditDialogService>(), localization, Substitute.For<IFileSystem>(), Substitute.For<IFileReclassificationService>());
     }
 
     private static FileClassificationsView CreateViewWithViewModel(FileClassificationRulesViewModel viewModel)
@@ -40,6 +40,32 @@ public sealed class GivenFileClassificationsViewDisplay
         checkBox.IsChecked = true;
 
         viewModel.IncludeInSearch.ShouldBeTrue();
+    }
+
+    [AvaloniaFact]
+    public void when_the_toolbar_is_shown_then_a_reclassify_button_follows_the_import_button_and_runs_the_reclassify_command()
+    {
+        var viewModel = CreateViewModel();
+        var sut = CreateViewWithViewModel(viewModel);
+        var buttons = sut.GetLogicalDescendants().OfType<Button>().ToList();
+
+        var reclassify = buttons.First(button => (string?)button.Content == "Classifications.Reclassify");
+
+        buttons.IndexOf(reclassify).ShouldBe(buttons.FindIndex(button => (string?)button.Content == "Classifications.Import") + 1);
+        reclassify.Command.ShouldBe(viewModel.ReclassifyCommand);
+    }
+
+    [AvaloniaFact]
+    public void when_a_reclassify_is_running_then_a_cancel_button_runs_the_cancel_command_and_the_status_is_shown()
+    {
+        var viewModel = CreateViewModel();
+        var sut = CreateViewWithViewModel(viewModel);
+
+        viewModel.ReclassifyStatusText = "Reclassifying: 2 of 7 files";
+
+        var cancel = sut.GetLogicalDescendants().OfType<Button>().First(button => (string?)button.Content == "Common.Cancel" && ReferenceEquals(button.Command, viewModel.CancelReclassifyCommand));
+        cancel.ShouldNotBeNull();
+        sut.GetLogicalDescendants().OfType<TextBlock>().First(block => block.Text == "Reclassifying: 2 of 7 files").IsVisible.ShouldBeTrue();
     }
 
     [AvaloniaFact]
@@ -137,7 +163,7 @@ public sealed class GivenFileClassificationsViewDisplay
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(categories));
         var localization = Substitute.For<ILocalizationService>();
         localization.GetLocal(Arg.Any<string>()).Returns(call => call.Arg<string>());
-        var viewModel = new FileClassificationRulesViewModel(repository, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), Substitute.For<ICategoryEditDialogService>(), localization, Substitute.For<IFileSystem>());
+        var viewModel = new FileClassificationRulesViewModel(repository, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), Substitute.For<ICategoryEditDialogService>(), localization, Substitute.For<IFileSystem>(), Substitute.For<IFileReclassificationService>());
         var view = new FileClassificationsView { DataContext = viewModel };
         var window = new Window { Content = view, Width = 800, Height = 800 };
         window.Show();
@@ -164,7 +190,7 @@ public sealed class GivenFileClassificationsViewDisplay
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(categories));
         var localization = Substitute.For<ILocalizationService>();
         localization.GetLocal(Arg.Any<string>()).Returns(call => call.Arg<string>());
-        var viewModel = new FileClassificationRulesViewModel(repository, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), Substitute.For<ICategoryEditDialogService>(), localization, Substitute.For<IFileSystem>());
+        var viewModel = new FileClassificationRulesViewModel(repository, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), Substitute.For<ICategoryEditDialogService>(), localization, Substitute.For<IFileSystem>(), Substitute.For<IFileReclassificationService>());
         var view = new FileClassificationsView { DataContext = viewModel };
         var window = new Window { Content = view, Width = 800, Height = 400 };
         window.Show();
@@ -210,7 +236,7 @@ public sealed class GivenFileClassificationsViewDisplay
         localization.GetLocal(Arg.Any<string>()).Returns(call => call.Arg<string>());
         var categoryEditDialogService = Substitute.For<ICategoryEditDialogService>();
         categoryEditDialogService.ShowAsync(Arg.Any<CategoryNodeViewModel>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
-        var viewModel = new FileClassificationRulesViewModel(repository, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), categoryEditDialogService, localization, Substitute.For<IFileSystem>());
+        var viewModel = new FileClassificationRulesViewModel(repository, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), categoryEditDialogService, localization, Substitute.For<IFileSystem>(), Substitute.For<IFileReclassificationService>());
         var view = new FileClassificationsView { DataContext = viewModel };
         var window = new Window { Content = view, Width = 800, Height = 400 };
         window.Show();
@@ -236,7 +262,7 @@ public sealed class GivenFileClassificationsViewDisplay
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(categories));
         var localization = Substitute.For<ILocalizationService>();
         localization.GetLocal(Arg.Any<string>()).Returns(call => call.Arg<string>());
-        var viewModel = new FileClassificationRulesViewModel(repository, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), Substitute.For<ICategoryEditDialogService>(), localization, new MockFileSystem());
+        var viewModel = new FileClassificationRulesViewModel(repository, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), Substitute.For<ICategoryEditDialogService>(), localization, new MockFileSystem(), Substitute.For<IFileReclassificationService>());
         var view = new FileClassificationsView { DataContext = viewModel };
         var window = new Window { Content = view, Width = 800, Height = 800 };
         window.Show();

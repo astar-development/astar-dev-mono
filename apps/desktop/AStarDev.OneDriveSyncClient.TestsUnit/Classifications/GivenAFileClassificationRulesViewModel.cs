@@ -16,6 +16,7 @@ public sealed class GivenAFileClassificationRulesViewModel
     private readonly ICategoryEditDialogService categoryEditDialogService;
     private readonly ILocalizationService localizationService;
     private readonly IFileSystem fileSystem;
+    private readonly IFileReclassificationService reclassificationService;
 
     public GivenAFileClassificationRulesViewModel()
     {
@@ -27,11 +28,139 @@ public sealed class GivenAFileClassificationRulesViewModel
         categoryEditDialogService.ShowAsync(Arg.Any<CategoryNodeViewModel>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
         localizationService = Substitute.For<ILocalizationService>();
         fileSystem = new MockFileSystem();
+        reclassificationService = Substitute.For<IFileReclassificationService>();
+        localizationService.GetLocal(Arg.Any<string>()).Returns(call => call.Arg<string>());
+        localizationService.GetLocal(Arg.Any<string>(), Arg.Any<object[]>()).Returns(call => $"{call.ArgAt<string>(0)}:{string.Join(",", call.ArgAt<object[]>(1))}");
+        confirmationDialogService.ConfirmAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(true);
 
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult<IReadOnlyList<FileClassificationCategory>>([]));
         repository.AddCategoryAsync(Arg.Any<FileClassificationCategory>(), Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult<Result<FileClassificationCategoryId, string>>(new Ok<FileClassificationCategoryId, string>(new FileClassificationCategoryId(1))));
+    }
+
+    private FileClassificationRulesViewModel CreateSut() => new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
+
+    [Fact]
+    public async Task when_reclassify_is_declined_then_the_service_is_not_called()
+    {
+        confirmationDialogService.ConfirmAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(false);
+        var sut = CreateSut();
+
+        await sut.ReclassifyCommand.ExecuteAsync(null);
+
+        await reclassificationService.DidNotReceive().ReclassifyAllAsync(Arg.Any<IProgress<ReclassificationProgress>>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_reclassify_is_confirmed_then_the_service_is_called()
+    {
+        reclassificationService.ReclassifyAllAsync(Arg.Any<IProgress<ReclassificationProgress>>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<Result<ReclassificationSummary, string>>(ReclassificationSummaryFactory.Create(3, 5)));
+        var sut = CreateSut();
+
+        await sut.ReclassifyCommand.ExecuteAsync(null);
+
+        await reclassificationService.Received(1).ReclassifyAllAsync(Arg.Any<IProgress<ReclassificationProgress>>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_reclassify_succeeds_then_the_status_shows_the_summary()
+    {
+        reclassificationService.ReclassifyAllAsync(Arg.Any<IProgress<ReclassificationProgress>>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<Result<ReclassificationSummary, string>>(ReclassificationSummaryFactory.Create(3, 5)));
+        var sut = CreateSut();
+
+        await sut.ReclassifyCommand.ExecuteAsync(null);
+
+        sut.ReclassifyStatusText.ShouldBe("Classifications.ReclassifyComplete:3,5");
+    }
+
+    [Fact]
+    public async Task when_reclassify_fails_then_the_status_shows_the_error()
+    {
+        reclassificationService.ReclassifyAllAsync(Arg.Any<IProgress<ReclassificationProgress>>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<Result<ReclassificationSummary, string>>("disk on fire"));
+        var sut = CreateSut();
+
+        await sut.ReclassifyCommand.ExecuteAsync(null);
+
+        sut.ReclassifyStatusText.ShouldBe("Classifications.ReclassifyFailed:disk on fire");
+    }
+
+    [Fact]
+    public async Task when_reclassify_is_cancelled_then_the_status_shows_cancelled()
+    {
+        reclassificationService.ReclassifyAllAsync(Arg.Any<IProgress<ReclassificationProgress>>(), Arg.Any<CancellationToken>())
+            .Returns<Task<Result<ReclassificationSummary, string>>>(_ => throw new OperationCanceledException());
+        var sut = CreateSut();
+
+        await sut.ReclassifyCommand.ExecuteAsync(null);
+
+        sut.ReclassifyStatusText.ShouldBe("Classifications.ReclassifyCancelled");
+    }
+
+    [Fact]
+    public async Task when_the_service_reports_progress_then_the_status_shows_it()
+    {
+        var release = new TaskCompletionSource<Result<ReclassificationSummary, string>>();
+        reclassificationService.ReclassifyAllAsync(Arg.Do<IProgress<ReclassificationProgress>>(reported => reported.Report(ReclassificationProgressFactory.Create(2, 7))), Arg.Any<CancellationToken>())
+            .Returns(release.Task);
+        var sut = CreateSut();
+
+        var running = sut.ReclassifyCommand.ExecuteAsync(null);
+        await Task.Delay(50, TestContext.Current.CancellationToken);
+
+        sut.ReclassifyStatusText.ShouldBe("Classifications.ReclassifyProgress:2,7");
+        release.SetResult(ReclassificationSummaryFactory.Create(7, 0));
+        await running;
+    }
+
+    [Fact]
+    public async Task when_reclassify_is_running_then_it_cannot_be_started_again_and_can_be_cancelled()
+    {
+        var release = new TaskCompletionSource<Result<ReclassificationSummary, string>>();
+        reclassificationService.ReclassifyAllAsync(Arg.Any<IProgress<ReclassificationProgress>>(), Arg.Any<CancellationToken>()).Returns(release.Task);
+        var sut = CreateSut();
+
+        var running = sut.ReclassifyCommand.ExecuteAsync(null);
+        await Task.Delay(50, TestContext.Current.CancellationToken);
+
+        sut.IsReclassifying.ShouldBeTrue();
+        sut.ReclassifyCommand.CanExecute(null).ShouldBeFalse();
+        sut.CancelReclassifyCommand.CanExecute(null).ShouldBeTrue();
+        release.SetResult(ReclassificationSummaryFactory.Create(0, 0));
+        await running;
+    }
+
+    [Fact]
+    public async Task when_cancel_is_requested_during_a_run_then_the_service_token_is_cancelled()
+    {
+        CancellationToken captured = default;
+        var release = new TaskCompletionSource<Result<ReclassificationSummary, string>>();
+        reclassificationService.ReclassifyAllAsync(Arg.Any<IProgress<ReclassificationProgress>>(), Arg.Do<CancellationToken>(token => captured = token)).Returns(release.Task);
+        var sut = CreateSut();
+
+        var running = sut.ReclassifyCommand.ExecuteAsync(null);
+        await Task.Delay(50, TestContext.Current.CancellationToken);
+        sut.CancelReclassifyCommand.Execute(null);
+
+        captured.IsCancellationRequested.ShouldBeTrue();
+        release.SetResult(ReclassificationSummaryFactory.Create(0, 0));
+        await running;
+    }
+
+    [Fact]
+    public async Task when_reclassify_finishes_then_it_can_be_started_again()
+    {
+        reclassificationService.ReclassifyAllAsync(Arg.Any<IProgress<ReclassificationProgress>>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<Result<ReclassificationSummary, string>>(ReclassificationSummaryFactory.Create(0, 0)));
+        var sut = CreateSut();
+
+        await sut.ReclassifyCommand.ExecuteAsync(null);
+
+        sut.IsReclassifying.ShouldBeFalse();
+        sut.ReclassifyCommand.CanExecute(null).ShouldBeTrue();
     }
 
     [Fact]
@@ -44,7 +173,7 @@ public sealed class GivenAFileClassificationRulesViewModel
         ];
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult(categories));
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
 
         await sut.LoadAsync(CancellationToken.None);
 
@@ -61,7 +190,7 @@ public sealed class GivenAFileClassificationRulesViewModel
         ];
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult(categories));
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
 
         await sut.LoadAsync(CancellationToken.None);
 
@@ -72,7 +201,7 @@ public sealed class GivenAFileClassificationRulesViewModel
     [Fact]
     public async Task when_add_category_command_executed_then_category_persisted_and_added()
     {
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem)
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService)
         {
             NewCategoryName = "Media"
         };
@@ -86,7 +215,7 @@ public sealed class GivenAFileClassificationRulesViewModel
     [Fact]
     public async Task when_add_category_command_executed_then_new_category_name_cleared()
     {
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem)
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService)
         {
             NewCategoryName = "Media"
         };
@@ -99,7 +228,7 @@ public sealed class GivenAFileClassificationRulesViewModel
     [Fact]
     public void when_new_category_name_empty_then_add_category_command_disabled()
     {
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem)
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService)
         {
             NewCategoryName = string.Empty
         };
@@ -110,7 +239,7 @@ public sealed class GivenAFileClassificationRulesViewModel
     [Fact]
     public async Task when_no_categories_loaded_then_has_no_categories_is_true()
     {
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
 
         await sut.LoadAsync(CancellationToken.None);
 
@@ -126,7 +255,7 @@ public sealed class GivenAFileClassificationRulesViewModel
         ];
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult(categories));
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
 
         await sut.LoadAsync(CancellationToken.None);
 
@@ -144,7 +273,7 @@ public sealed class GivenAFileClassificationRulesViewModel
                                  .Returns(Task.FromResult(true));
         exportImportService.ImportAsync(Arg.Any<IFileInfo>(), Arg.Any<CancellationToken>())
                            .Returns(Task.CompletedTask);
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
 
         await sut.ImportAsync(storageProvider, CancellationToken.None);
 
@@ -158,7 +287,7 @@ public sealed class GivenAFileClassificationRulesViewModel
         var storageProvider = Substitute.For<IStorageProvider>();
         filePickerService.PickSaveFileAsync(storageProvider, Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
                          .Returns(Task.FromResult<string?>(null));
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
 
         await sut.ExportAsync(storageProvider, CancellationToken.None);
 
@@ -172,7 +301,7 @@ public sealed class GivenAFileClassificationRulesViewModel
         const string exportFilePath = "/some/export.json";
         filePickerService.PickSaveFileAsync(storageProvider, Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
                          .Returns(Task.FromResult<string?>(exportFilePath));
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
 
         await sut.ExportAsync(storageProvider, CancellationToken.None);
 
@@ -182,7 +311,7 @@ public sealed class GivenAFileClassificationRulesViewModel
     [Fact]
     public void when_view_model_constructed_then_is_loading_is_true()
     {
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
 
         sut.IsLoading.ShouldBeTrue();
     }
@@ -190,7 +319,7 @@ public sealed class GivenAFileClassificationRulesViewModel
     [Fact]
     public void when_view_model_constructed_then_is_loaded_is_false()
     {
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
 
         sut.IsLoaded.ShouldBeFalse();
     }
@@ -198,7 +327,7 @@ public sealed class GivenAFileClassificationRulesViewModel
     [Fact]
     public async Task when_load_async_completes_then_is_loaded_is_true()
     {
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
 
         await sut.LoadAsync(CancellationToken.None);
 
@@ -211,7 +340,7 @@ public sealed class GivenAFileClassificationRulesViewModel
         using var cts = new CancellationTokenSource();
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(callInfo => Task.FromCanceled<IReadOnlyList<FileClassificationCategory>>(callInfo.Arg<CancellationToken>()));
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
         cts.Cancel();
 
         await Should.ThrowAsync<OperationCanceledException>(() => sut.LoadAsync(cts.Token));
@@ -222,7 +351,7 @@ public sealed class GivenAFileClassificationRulesViewModel
     [Fact]
     public async Task when_load_async_completes_then_is_loading_is_false()
     {
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
 
         await sut.LoadAsync(CancellationToken.None);
 
@@ -232,7 +361,7 @@ public sealed class GivenAFileClassificationRulesViewModel
     [Fact]
     public void when_is_loading_is_true_then_has_no_categories_is_false()
     {
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
 
         sut.IsLoading.ShouldBeTrue();
         sut.HasNoCategories.ShouldBeFalse();
@@ -241,7 +370,7 @@ public sealed class GivenAFileClassificationRulesViewModel
     [Fact]
     public async Task when_load_async_completes_with_no_categories_then_has_no_categories_is_true()
     {
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
 
         await sut.LoadAsync(CancellationToken.None);
 
@@ -257,7 +386,7 @@ public sealed class GivenAFileClassificationRulesViewModel
         ];
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult(categories));
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
 
         await sut.LoadAsync(CancellationToken.None);
 
@@ -267,7 +396,7 @@ public sealed class GivenAFileClassificationRulesViewModel
     [Fact]
     public void when_prepare_for_load_called_then_is_loading_is_true()
     {
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
 
         sut.PrepareForLoad();
 
@@ -277,7 +406,7 @@ public sealed class GivenAFileClassificationRulesViewModel
     [Fact]
     public void when_prepare_for_load_called_then_is_loaded_is_false()
     {
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
 
         sut.PrepareForLoad();
 
@@ -293,7 +422,7 @@ public sealed class GivenAFileClassificationRulesViewModel
         ];
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult(categories));
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
         await sut.LoadAsync(CancellationToken.None);
 
         sut.PrepareForLoad();
@@ -306,7 +435,7 @@ public sealed class GivenAFileClassificationRulesViewModel
     {
         const string expectedText = "Loading...";
         localizationService.GetLocal("Common.Loading").Returns(expectedText);
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
 
         sut.LoadingText.ShouldBe(expectedText);
     }
@@ -322,7 +451,7 @@ public sealed class GivenAFileClassificationRulesViewModel
         ];
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult(categories));
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
 
         await sut.LoadAsync(CancellationToken.None);
 
@@ -343,7 +472,7 @@ public sealed class GivenAFileClassificationRulesViewModel
         ];
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult(categories));
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
 
         await sut.LoadAsync(CancellationToken.None);
 
@@ -364,7 +493,7 @@ public sealed class GivenAFileClassificationRulesViewModel
         ];
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult(categories));
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
 
         await sut.LoadAsync(CancellationToken.None);
 
@@ -381,7 +510,7 @@ public sealed class GivenAFileClassificationRulesViewModel
         ];
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult(categories));
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
         await sut.LoadAsync(CancellationToken.None);
         var media = sut.VisibleCategories.Single(node => node.Name == "Media");
 
@@ -401,7 +530,7 @@ public sealed class GivenAFileClassificationRulesViewModel
         ];
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult(categories));
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
         await sut.LoadAsync(CancellationToken.None);
         var media = sut.VisibleCategories.Single(node => node.Name == "Media");
         media.ToggleExpandedCommand.Execute(null);
@@ -423,7 +552,7 @@ public sealed class GivenAFileClassificationRulesViewModel
         ];
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult(categories));
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
         await sut.LoadAsync(CancellationToken.None);
 
         sut.FilterText = "Holiday";
@@ -440,7 +569,7 @@ public sealed class GivenAFileClassificationRulesViewModel
         ];
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult(categories));
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
 
         await sut.LoadAsync(CancellationToken.None);
 
@@ -457,7 +586,7 @@ public sealed class GivenAFileClassificationRulesViewModel
         ];
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult(categories));
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
 
         await sut.LoadAsync(CancellationToken.None);
 
@@ -475,7 +604,7 @@ public sealed class GivenAFileClassificationRulesViewModel
         ];
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult(categories));
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
 
         await sut.LoadAsync(CancellationToken.None);
 
@@ -492,7 +621,7 @@ public sealed class GivenAFileClassificationRulesViewModel
         ];
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult(categories));
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
         await sut.LoadAsync(CancellationToken.None);
         sut.Categories.Single(node => node.Name == "Media").ToggleExpandedCommand.Execute(null);
         sut.ShowOnlyIncludedInSearch = false;
@@ -512,7 +641,7 @@ public sealed class GivenAFileClassificationRulesViewModel
                   .Returns(Task.FromResult(categories));
         repository.AddCategoryAsync(Arg.Any<FileClassificationCategory>(), Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult<Result<FileClassificationCategoryId, string>>(new Ok<FileClassificationCategoryId, string>(new FileClassificationCategoryId(3))));
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
         await sut.LoadAsync(CancellationToken.None);
         var media = sut.Categories.Single(category => category.Name == "Media");
         media.NewChildCategoryName = "Photos";
@@ -531,7 +660,7 @@ public sealed class GivenAFileClassificationRulesViewModel
         ];
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult(categories));
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
 
         await sut.LoadAsync(CancellationToken.None);
 
@@ -541,7 +670,7 @@ public sealed class GivenAFileClassificationRulesViewModel
     [Fact]
     public async Task when_add_category_command_executed_then_include_in_search_passed_to_new_category()
     {
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem)
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService)
         {
             NewCategoryName = "Media",
             IncludeInSearch = true
@@ -564,7 +693,7 @@ public sealed class GivenAFileClassificationRulesViewModel
                   .Returns(Task.FromResult(categories));
         repository.DeleteCategoryAsync(Arg.Any<FileClassificationCategoryId>(), Arg.Any<CancellationToken>())
                   .Returns(Task.CompletedTask);
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
         await sut.LoadAsync(CancellationToken.None);
         var media = sut.Categories.Single(category => category.Name == "Media");
 
@@ -576,7 +705,7 @@ public sealed class GivenAFileClassificationRulesViewModel
     [Fact]
     public void when_view_model_created_then_show_only_included_in_search_defaults_to_true()
     {
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
 
         sut.ShowOnlyIncludedInSearch.ShouldBeTrue();
     }
@@ -591,7 +720,7 @@ public sealed class GivenAFileClassificationRulesViewModel
         ];
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult(categories));
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
         await sut.LoadAsync(CancellationToken.None);
 
         sut.ShowOnlyIncludedInSearch = true;
@@ -609,7 +738,7 @@ public sealed class GivenAFileClassificationRulesViewModel
         ];
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult(categories));
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
         await sut.LoadAsync(CancellationToken.None);
         sut.ShowOnlyIncludedInSearch = true;
 
@@ -621,7 +750,7 @@ public sealed class GivenAFileClassificationRulesViewModel
     [Fact]
     public async Task when_show_only_included_in_search_is_true_then_label_reflects_included()
     {
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
         await sut.LoadAsync(CancellationToken.None);
 
         sut.ShowOnlyIncludedInSearch = true;
@@ -632,7 +761,7 @@ public sealed class GivenAFileClassificationRulesViewModel
     [Fact]
     public async Task when_show_only_included_in_search_is_false_then_label_reflects_excluded()
     {
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
         await sut.LoadAsync(CancellationToken.None);
 
         sut.ShowOnlyIncludedInSearch = false;
@@ -643,7 +772,7 @@ public sealed class GivenAFileClassificationRulesViewModel
     [Fact]
     public void when_view_model_created_then_filter_text_defaults_to_empty()
     {
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
 
         sut.FilterText.ShouldBeEmpty();
     }
@@ -658,7 +787,7 @@ public sealed class GivenAFileClassificationRulesViewModel
         ];
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult(categories));
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
         await sut.LoadAsync(CancellationToken.None);
 
         sut.FilterText = "doc";
@@ -676,7 +805,7 @@ public sealed class GivenAFileClassificationRulesViewModel
         ];
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult(categories));
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
         await sut.LoadAsync(CancellationToken.None);
 
         sut.FilterText = "Photos";
@@ -694,7 +823,7 @@ public sealed class GivenAFileClassificationRulesViewModel
         ];
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult(categories));
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
         await sut.LoadAsync(CancellationToken.None);
         sut.FilterText = "doc";
 
@@ -713,7 +842,7 @@ public sealed class GivenAFileClassificationRulesViewModel
         ];
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult(categories));
-        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem);
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
         await sut.LoadAsync(CancellationToken.None);
 
         sut.FilterText = "Document";
