@@ -42,6 +42,10 @@ public sealed class GivenAClassificationText
         { "ParentText", "Classifications.EditDialog.Parent" },
         { "CancelText", "Common.Cancel" },
         { "SaveText", "Common.Save" },
+        { "ReclassifyText", "Classifications.Reclassify" },
+        { "ReclassifyDialogTitleText", "Classifications.ReclassifyDialogTitle" },
+        { "ReclassifyConfirmMessageText", "Classifications.ReclassifyConfirmMessage" },
+        { "ReclassifyCancelledText", "Classifications.ReclassifyCancelled" },
     };
 
     [Theory]
@@ -59,5 +63,29 @@ public sealed class GivenAClassificationText
 
         CultureChangeProbe.Refreshes(raised, propertyName).ShouldBeTrue();
         key.ShouldNotBeEmpty();
+    }
+
+    [Fact]
+    public void when_reclassify_progress_is_read_then_it_uses_the_progress_key_with_both_counts()
+    {
+        sut.ReclassifyProgress(2, 7);
+
+        loc.Received(1).GetLocal("Classifications.ReclassifyProgress", Arg.Is<object[]>(args => args.SequenceEqual(new object[] { 2, 7 })));
+    }
+
+    [Fact]
+    public void when_reclassify_complete_is_read_then_it_uses_the_complete_key_with_both_counts()
+    {
+        sut.ReclassifyComplete(3, 5);
+
+        loc.Received(1).GetLocal("Classifications.ReclassifyComplete", Arg.Is<object[]>(args => args.SequenceEqual(new object[] { 3, 5 })));
+    }
+
+    [Fact]
+    public void when_reclassify_failed_is_read_then_it_uses_the_failed_key_with_the_error()
+    {
+        sut.ReclassifyFailed("boom");
+
+        loc.Received(1).GetLocal("Classifications.ReclassifyFailed", Arg.Is<object[]>(args => args.SequenceEqual(new object[] { "boom" })));
     }
 }

@@ -153,7 +153,7 @@ public sealed class GivenViewModelsThatDisplayLocalisedText
     public void when_the_culture_changes_then_the_classification_rules_view_model_refreshes_its_text()
     {
         var localization = Substitute.For<ILocalizationService>();
-        var sut = new FileClassificationRulesViewModel(Substitute.For<IFileClassificationRepository>(), Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), Substitute.For<ICategoryEditDialogService>(), localization, new MockFileSystem());
+        var sut = new FileClassificationRulesViewModel(Substitute.For<IFileClassificationRepository>(), Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), Substitute.For<ICategoryEditDialogService>(), localization, new MockFileSystem(), Substitute.For<IFileReclassificationService>());
 
         var raised = CultureChangeProbe.RaisedPropertyNamesAfterCultureChange(sut, localization);
 

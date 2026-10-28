@@ -82,4 +82,25 @@ public sealed class ClassificationText : LocalizedObservableObject
 
     /// <summary>Localised save button label.</summary>
     public string SaveText => loc.GetLocal("Common.Save");
+
+    /// <summary>Localised reclassify button label.</summary>
+    public string ReclassifyText => loc.GetLocal("Classifications.Reclassify");
+
+    /// <summary>Localised reclassify confirmation dialog title.</summary>
+    public string ReclassifyDialogTitleText => loc.GetLocal("Classifications.ReclassifyDialogTitle");
+
+    /// <summary>Localised reclassify confirmation message.</summary>
+    public string ReclassifyConfirmMessageText => loc.GetLocal("Classifications.ReclassifyConfirmMessage");
+
+    /// <summary>Localised message shown when a reclassify run is cancelled.</summary>
+    public string ReclassifyCancelledText => loc.GetLocal("Classifications.ReclassifyCancelled");
+
+    /// <summary>Localised reclassify progress message.</summary>
+    public string ReclassifyProgress(int processed, int total) => loc.GetLocal("Classifications.ReclassifyProgress", processed, total);
+
+    /// <summary>Localised message shown when a reclassify run completes.</summary>
+    public string ReclassifyComplete(int filesProcessed, int classificationsAdded) => loc.GetLocal("Classifications.ReclassifyComplete", filesProcessed, classificationsAdded);
+
+    /// <summary>Localised message shown when a reclassify run fails.</summary>
+    public string ReclassifyFailed(string error) => loc.GetLocal("Classifications.ReclassifyFailed", error);
 }

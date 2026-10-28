@@ -22,8 +22,9 @@ public sealed partial class FileClassificationRulesViewModel : LocalizedObservab
     private readonly ICategoryEditDialogService categoryEditDialogService;
     private readonly ILocalizationService localizationService;
     private readonly IFileSystem fileSystem;
+    private readonly IFileReclassificationService reclassificationService;
 
-    public FileClassificationRulesViewModel(IFileClassificationRepository repository, IFileClassificationExportImportService exportImportService, IFilePickerService filePickerService, IConfirmationDialogService confirmationDialogService, ICategoryEditDialogService categoryEditDialogService, ILocalizationService localizationService, IFileSystem fileSystem) : base(localizationService)
+    public FileClassificationRulesViewModel(IFileClassificationRepository repository, IFileClassificationExportImportService exportImportService, IFilePickerService filePickerService, IConfirmationDialogService confirmationDialogService, ICategoryEditDialogService categoryEditDialogService, ILocalizationService localizationService, IFileSystem fileSystem, IFileReclassificationService reclassificationService) : base(localizationService)
     {
         this.repository = repository;
         this.exportImportService = exportImportService;
@@ -33,6 +34,7 @@ public sealed partial class FileClassificationRulesViewModel : LocalizedObservab
         this.localizationService = localizationService;
         Text = ClassificationTextFactory.Create(localizationService);
         this.fileSystem = fileSystem;
+        this.reclassificationService = reclassificationService;
         Categories.CollectionChanged += (_, e) =>
         {
             OnPropertyChanged(nameof(HasNoCategories));
@@ -226,6 +228,55 @@ public sealed partial class FileClassificationRulesViewModel : LocalizedObservab
         await exportImportService.ImportAsync(fileSystem.FileInfo.New(path), cancellationToken).ConfigureAwait(false);
         await LoadAsync(cancellationToken).ConfigureAwait(false);
     }
+
+    /// <summary>True while a reclassify run is in progress.</summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ReclassifyCommand))]
+    [NotifyCanExecuteChangedFor(nameof(CancelReclassifyCommand))]
+    public partial bool IsReclassifying { get; set; }
+
+    /// <summary>Progress or result message for the latest reclassify run.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasReclassifyStatus))]
+    public partial string ReclassifyStatusText { get; set; } = string.Empty;
+
+    /// <summary>True when there is a reclassify message to show.</summary>
+    public bool HasReclassifyStatus => !string.IsNullOrEmpty(ReclassifyStatusText);
+
+    private bool CanReclassify => !IsReclassifying;
+
+    private CancellationTokenSource? reclassifyCancellation;
+
+    [RelayCommand(CanExecute = nameof(CanReclassify))]
+    private async Task ReclassifyAsync()
+    {
+        using var cancellation = new CancellationTokenSource();
+        reclassifyCancellation = cancellation;
+
+        try
+        {
+            if (!await confirmationDialogService.ConfirmAsync(Text.ReclassifyDialogTitleText, Text.ReclassifyConfirmMessageText, cancellation.Token))
+                return;
+
+            IsReclassifying = true;
+            ReclassifyStatusText = Text.ReclassifyProgress(0, 0);
+            var progress = new Progress<ReclassificationProgress>(reported => ReclassifyStatusText = Text.ReclassifyProgress(reported.Processed, reported.Total));
+            ReclassifyStatusText = await reclassificationService.ReclassifyAllAsync(progress, cancellation.Token)
+                .MatchAsync(summary => Text.ReclassifyComplete(summary.FilesProcessed, summary.ClassificationsAdded), error => Text.ReclassifyFailed(error));
+        }
+        catch (OperationCanceledException)
+        {
+            ReclassifyStatusText = Text.ReclassifyCancelledText;
+        }
+        finally
+        {
+            reclassifyCancellation = null;
+            IsReclassifying = false;
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(IsReclassifying))]
+    private void CancelReclassify() => reclassifyCancellation?.Cancel();
 
     private bool CanAddCategory => !string.IsNullOrWhiteSpace(NewCategoryName);
 
