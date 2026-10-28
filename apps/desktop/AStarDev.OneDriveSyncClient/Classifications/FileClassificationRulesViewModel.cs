@@ -260,7 +260,7 @@ public sealed partial class FileClassificationRulesViewModel : LocalizedObservab
 
             IsReclassifying = true;
             ReclassifyStatusText = Text.ReclassifyProgress(0, 0);
-            var progress = new Progress<ReclassificationProgress>(reported => ReclassifyStatusText = Text.ReclassifyProgress(reported.Processed, reported.Total));
+            var progress = new Progress<ReclassificationProgress>(reported => ShowReclassifyProgress(reported));
             ReclassifyStatusText = await reclassificationService.ReclassifyAllAsync(progress, cancellation.Token)
                 .MatchAsync(summary => Text.ReclassifyComplete(summary.FilesProcessed, summary.ClassificationsAdded), error => Text.ReclassifyFailed(error));
         }
@@ -273,6 +273,12 @@ public sealed partial class FileClassificationRulesViewModel : LocalizedObservab
             reclassifyCancellation = null;
             IsReclassifying = false;
         }
+    }
+
+    private void ShowReclassifyProgress(ReclassificationProgress reported)
+    {
+        if (IsReclassifying)
+            ReclassifyStatusText = Text.ReclassifyProgress(reported.Processed, reported.Total);
     }
 
     [RelayCommand(CanExecute = nameof(IsReclassifying))]

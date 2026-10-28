@@ -15,7 +15,7 @@ public sealed class FileReclassificationService(IDbContextFactory<AppDbContext> 
     {
         try
         {
-            return await ReclassifyAsync(progress, cancellationToken).ConfigureAwait(false);
+            return await Task.Run(() => ReclassifyAsync(progress, cancellationToken), cancellationToken).ConfigureAwait(false);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
