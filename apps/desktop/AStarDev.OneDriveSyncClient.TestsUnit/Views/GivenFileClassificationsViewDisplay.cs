@@ -31,6 +31,18 @@ public sealed class GivenFileClassificationsViewDisplay
     }
 
     [AvaloniaFact]
+    public void when_add_category_form_is_shown_then_include_in_search_checkbox_is_bound_to_the_view_model()
+    {
+        var viewModel = CreateViewModel();
+        var sut = CreateViewWithViewModel(viewModel);
+        var checkBox = sut.GetLogicalDescendants().OfType<CheckBox>().First(cb => (string?)cb.Content == "Classifications.EditDialog.IncludeInSearch");
+
+        checkBox.IsChecked = true;
+
+        viewModel.IncludeInSearch.ShouldBeTrue();
+    }
+
+    [AvaloniaFact]
     public void when_view_model_is_loading_then_loading_text_is_visible()
     {
         var viewModel = CreateViewModel();
