@@ -22,6 +22,10 @@
                            FontSize="{StaticResource FontSizeSm}"
                            Foreground="{DynamicResource TextTertiaryBrush}"
                            TextWrapping="Wrap"/>
+                <TextBlock Text="{Binding ReclassifyStatusText}"
+                           FontSize="{StaticResource FontSizeSm}"
+                           Foreground="{DynamicResource TextAccentBrush}"
+                           IsVisible="{Binding HasReclassifyStatus}"/>
             </StackPanel>
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                 <TextBox Text="{Binding FilterText}"
@@ -50,6 +54,23 @@
                         BorderThickness="0"
                         FontSize="{StaticResource FontSizeSm}"
                         Click="OnImportClick"/>
+                <Button Content="{Binding Text.ReclassifyText}"
+                        Padding="8,4"
+                        CornerRadius="{StaticResource RadiusMd}"
+                        Background="Transparent"
+                        BorderBrush="{DynamicResource BorderDefaultBrush}"
+                        BorderThickness="1"
+                        FontSize="{StaticResource FontSizeSm}"
+                        Command="{Binding ReclassifyCommand}"/>
+                <Button Content="{Binding Text.CancelText}"
+                        Padding="8,4"
+                        CornerRadius="{StaticResource RadiusMd}"
+                        Background="Transparent"
+                        BorderBrush="{DynamicResource BorderDefaultBrush}"
+                        BorderThickness="1"
+                        FontSize="{StaticResource FontSizeSm}"
+                        IsVisible="{Binding IsReclassifying}"
+                        Command="{Binding CancelReclassifyCommand}"/>
             </StackPanel>
         </Grid>
 

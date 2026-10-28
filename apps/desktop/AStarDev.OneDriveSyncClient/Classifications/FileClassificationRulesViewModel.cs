@@ -245,13 +245,38 @@ public sealed partial class FileClassificationRulesViewModel : LocalizedObservab
 
     private bool CanReclassify => !IsReclassifying;
 
+    private CancellationTokenSource? reclassifyCancellation;
+
     [RelayCommand(CanExecute = nameof(CanReclassify))]
-    private Task ReclassifyAsync() => reclassificationService is null ? Task.CompletedTask : Task.CompletedTask;
+    private async Task ReclassifyAsync()
+    {
+        if (!await confirmationDialogService.ConfirmAsync(Text.ReclassifyDialogTitleText, Text.ReclassifyConfirmMessageText))
+            return;
+
+        using var cancellation = new CancellationTokenSource();
+        reclassifyCancellation = cancellation;
+        IsReclassifying = true;
+        ReclassifyStatusText = Text.ReclassifyProgress(0, 0);
+
+        try
+        {
+            var progress = new Progress<ReclassificationProgress>(reported => ReclassifyStatusText = Text.ReclassifyProgress(reported.Processed, reported.Total));
+            ReclassifyStatusText = await reclassificationService.ReclassifyAllAsync(progress, cancellation.Token)
+                .MatchAsync(summary => Text.ReclassifyComplete(summary.FilesProcessed, summary.ClassificationsAdded), error => Text.ReclassifyFailed(error));
+        }
+        catch (OperationCanceledException)
+        {
+            ReclassifyStatusText = Text.ReclassifyCancelledText;
+        }
+        finally
+        {
+            reclassifyCancellation = null;
+            IsReclassifying = false;
+        }
+    }
 
     [RelayCommand(CanExecute = nameof(IsReclassifying))]
-    private void CancelReclassify()
-    {
-    }
+    private void CancelReclassify() => reclassifyCancellation?.Cancel();
 
     private bool CanAddCategory => !string.IsNullOrWhiteSpace(NewCategoryName);
 
