@@ -53,6 +53,18 @@ public sealed class GivenAFileClassificationRulesViewModel
     }
 
     [Fact]
+    public async Task when_reclassify_asks_for_confirmation_then_a_cancellable_token_is_passed()
+    {
+        CancellationToken captured = default;
+        confirmationDialogService.ConfirmAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Do<CancellationToken>(token => captured = token)).Returns(false);
+        var sut = CreateSut();
+
+        await sut.ReclassifyCommand.ExecuteAsync(null);
+
+        captured.CanBeCanceled.ShouldBeTrue();
+    }
+
+    [Fact]
     public async Task when_reclassify_is_confirmed_then_the_service_is_called()
     {
         reclassificationService.ReclassifyAllAsync(Arg.Any<IProgress<ReclassificationProgress>>(), Arg.Any<CancellationToken>())
