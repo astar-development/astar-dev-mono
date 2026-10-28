@@ -129,6 +129,21 @@ public sealed class GivenAFileClassificationRulesViewModel
     }
 
     [Fact]
+    public async Task when_progress_is_reported_after_the_run_has_finished_then_the_completed_status_is_kept()
+    {
+        IProgress<ReclassificationProgress>? captured = null;
+        reclassificationService.ReclassifyAllAsync(Arg.Do<IProgress<ReclassificationProgress>>(reported => captured = reported), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<Result<ReclassificationSummary, string>>(ReclassificationSummaryFactory.Create(3, 5)));
+        var sut = CreateSut();
+        await sut.ReclassifyCommand.ExecuteAsync(null);
+
+        captured!.Report(ReclassificationProgressFactory.Create(3, 3));
+        await Task.Delay(50, TestContext.Current.CancellationToken);
+
+        sut.ReclassifyStatusText.ShouldBe("Classifications.ReclassifyComplete:3,5");
+    }
+
+    [Fact]
     public async Task when_reclassify_is_running_then_it_cannot_be_started_again_and_can_be_cancelled()
     {
         var release = new TaskCompletionSource<Result<ReclassificationSummary, string>>();
