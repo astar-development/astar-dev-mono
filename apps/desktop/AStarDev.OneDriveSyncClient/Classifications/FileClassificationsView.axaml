@@ -230,6 +230,10 @@
                             IsChecked="{Binding IsInternet}"
                             FontSize="{StaticResource FontSizeSm}"
                             VerticalAlignment="Center"/>
+                    <CheckBox Content="{Binding Text.IncludeInSearchText}"
+                            IsChecked="{Binding IncludeInSearch}"
+                            FontSize="{StaticResource FontSizeSm}"
+                            VerticalAlignment="Center"/>
                     <Button Content="{Binding Text.AddText}"
                             Padding="14,6"
                             CornerRadius="{StaticResource RadiusMd}"
