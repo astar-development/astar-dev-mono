@@ -250,16 +250,16 @@ public sealed partial class FileClassificationRulesViewModel : LocalizedObservab
     [RelayCommand(CanExecute = nameof(CanReclassify))]
     private async Task ReclassifyAsync()
     {
-        if (!await confirmationDialogService.ConfirmAsync(Text.ReclassifyDialogTitleText, Text.ReclassifyConfirmMessageText))
-            return;
-
         using var cancellation = new CancellationTokenSource();
         reclassifyCancellation = cancellation;
-        IsReclassifying = true;
-        ReclassifyStatusText = Text.ReclassifyProgress(0, 0);
 
         try
         {
+            if (!await confirmationDialogService.ConfirmAsync(Text.ReclassifyDialogTitleText, Text.ReclassifyConfirmMessageText, cancellation.Token))
+                return;
+
+            IsReclassifying = true;
+            ReclassifyStatusText = Text.ReclassifyProgress(0, 0);
             var progress = new Progress<ReclassificationProgress>(reported => ReclassifyStatusText = Text.ReclassifyProgress(reported.Processed, reported.Total));
             ReclassifyStatusText = await reclassificationService.ReclassifyAllAsync(progress, cancellation.Token)
                 .MatchAsync(summary => Text.ReclassifyComplete(summary.FilesProcessed, summary.ClassificationsAdded), error => Text.ReclassifyFailed(error));
