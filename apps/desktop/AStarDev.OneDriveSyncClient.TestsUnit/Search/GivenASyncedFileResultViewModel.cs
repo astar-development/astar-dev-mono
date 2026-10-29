@@ -126,4 +126,20 @@ public sealed class GivenASyncedFileResultViewModel
 
         ((string?)typeof(SyncedFileResultViewModel).GetProperty("OpenButtonText")?.GetValue(vm)).ShouldBe("Open-localised");
     }
+
+    [Fact]
+    public void when_created_then_folder_path_is_the_full_directory_of_the_local_path()
+    {
+        var sut = CreateSut("/home/user/OneDrive/Photos/2026/image.png");
+
+        sut.FolderPath.ShouldBe("/home/user/OneDrive/Photos/2026");
+    }
+
+    [Fact]
+    public void when_local_path_has_no_directory_then_folder_path_is_empty()
+    {
+        var sut = CreateSut("image.png");
+
+        sut.FolderPath.ShouldBeEmpty();
+    }
 }
