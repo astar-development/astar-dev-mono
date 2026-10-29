@@ -81,6 +81,7 @@ on:
 
 permissions:
   contents: write
+  checks: write
 
 env:
   DOTNET_NOLOGO: true
