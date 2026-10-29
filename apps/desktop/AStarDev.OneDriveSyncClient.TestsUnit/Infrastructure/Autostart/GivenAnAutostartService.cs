@@ -10,7 +10,7 @@ public sealed class GivenAnAutostartService
     private const string LinuxEntryPath = "/home/test/.config/autostart/astar-onedrive-sync.desktop";
     private const string MacAgentPath = "/Users/test/Library/LaunchAgents/com.astar.onedrive-sync.plist";
 
-    private readonly MockFileSystem fileSystem = new();
+    private readonly MockFileSystem fileSystem = new(options => options.SimulatingOperatingSystem(SimulationMode.Linux));
     private readonly IAutostartContextProvider contextProvider = Substitute.For<IAutostartContextProvider>();
     private readonly IVelopackUpdateService velopack = Substitute.For<IVelopackUpdateService>();
     private readonly IWindowsRunKey windowsRunKey = Substitute.For<IWindowsRunKey>();
