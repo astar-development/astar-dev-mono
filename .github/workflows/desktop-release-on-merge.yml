@@ -45,6 +45,7 @@ on:
 
 permissions:
   contents: write
+  checks: write
 
 jobs:
   detect:
