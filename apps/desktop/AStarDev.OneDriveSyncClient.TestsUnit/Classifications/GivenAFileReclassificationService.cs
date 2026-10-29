@@ -156,6 +156,19 @@ public sealed class GivenAFileReclassificationService : IDisposable
     }
 
     [Fact]
+    public async Task when_run_then_the_work_does_not_happen_on_the_calling_thread()
+    {
+        await AddFileAsync("/Pictures/one.jpg");
+        int callingThreadId = Environment.CurrentManagedThreadId;
+        List<int> reportingThreadIds = [];
+        var progress = new ThreadRecordingProgress(reportingThreadIds);
+
+        await sut.ReclassifyAllAsync(progress, TestContext.Current.CancellationToken);
+
+        reportingThreadIds.ShouldNotContain(callingThreadId);
+    }
+
+    [Fact]
     public async Task when_cancelled_then_operation_cancelled_is_thrown()
     {
         await AddFileAsync("/Pictures/holiday.jpg");
@@ -168,5 +181,10 @@ public sealed class GivenAFileReclassificationService : IDisposable
     private sealed class SynchronousProgress(List<ReclassificationProgress> reported) : IProgress<ReclassificationProgress>
     {
         public void Report(ReclassificationProgress value) => reported.Add(value);
+    }
+
+    private sealed class ThreadRecordingProgress(List<int> threadIds) : IProgress<ReclassificationProgress>
+    {
+        public void Report(ReclassificationProgress value) => threadIds.Add(Environment.CurrentManagedThreadId);
     }
 }
