@@ -581,4 +581,27 @@ public sealed class GivenASyncedFileSearchViewModel
 
         captured!.Tags.ShouldBeEmpty();
     }
+
+    [Fact]
+    public void when_duplicates_only_is_turned_on_then_sort_order_is_size_largest_first()
+    {
+        var sut = CreateSut();
+
+        sut.DuplicatesOnly = true;
+
+        sut.SelectedSortOrderIndex.ShouldBe(3);
+    }
+
+    [Fact]
+    public async Task when_duplicates_only_is_turned_on_then_search_criteria_sorts_by_size_descending()
+    {
+        SyncedItemSearchCriteria? captured = null;
+        repository.SearchAsync(Arg.Do<SyncedItemSearchCriteria>(c => captured = c), Arg.Any<CancellationToken>()).Returns([]);
+        var sut = CreateSut();
+        sut.DuplicatesOnly = true;
+
+        await sut.SearchCommand.ExecuteAsync(null);
+
+        captured!.SortOrder.ShouldBe(SearchSortOrder.SizeDescending);
+    }
 }

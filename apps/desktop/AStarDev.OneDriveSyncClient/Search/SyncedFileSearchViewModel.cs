@@ -14,6 +14,7 @@ namespace AStarDev.OneDriveSyncClient.Search;
 public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repository, IFileOpenerService fileOpenerService, IFileTypeClassifier fileTypeClassifier, IUiDispatcher dispatcher, ILocalizationService loc) : LocalizedObservableObject(loc)
 {
     private const int SearchResultCap = 500;
+    private const int SizeDescendingSortOrderIndex = 3;
 
     private AccountId? activeAccountId;
     private int cachedTagCount;
@@ -62,6 +63,12 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
     ];
 
     public bool ShowDuplicateDisclaimer => DuplicatesOnly;
+
+    partial void OnDuplicatesOnlyChanged(bool value)
+    {
+        if (value)
+            SelectedSortOrderIndex = SizeDescendingSortOrderIndex;
+    }
 
     /// <inheritdoc />
     protected override void OnCultureChanged()
@@ -234,7 +241,7 @@ public sealed partial class SyncedFileSearchViewModel(ISyncedItemRepository repo
     {
         1 => SearchSortOrder.NameDescending,
         2 => SearchSortOrder.SizeAscending,
-        3 => SearchSortOrder.SizeDescending,
+        SizeDescendingSortOrderIndex => SearchSortOrder.SizeDescending,
         _ => SearchSortOrder.NameAscending
     };
 }
