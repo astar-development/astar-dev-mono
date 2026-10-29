@@ -159,12 +159,19 @@ public sealed class GivenAFileReclassificationService : IDisposable
     public async Task when_run_then_the_work_does_not_happen_on_the_calling_thread()
     {
         await AddFileAsync("/Pictures/one.jpg");
-        int callingThreadId = Environment.CurrentManagedThreadId;
+        int callingThreadId = 0;
         List<int> reportingThreadIds = [];
         var progress = new ThreadRecordingProgress(reportingThreadIds);
+        var callingThread = new Thread(() =>
+        {
+            callingThreadId = Environment.CurrentManagedThreadId;
+            _ = sut.ReclassifyAllAsync(progress, TestContext.Current.CancellationToken).GetAwaiter().GetResult();
+        });
 
-        await sut.ReclassifyAllAsync(progress, TestContext.Current.CancellationToken);
+        callingThread.Start();
+        callingThread.Join();
 
+        reportingThreadIds.ShouldNotBeEmpty();
         reportingThreadIds.ShouldNotContain(callingThreadId);
     }
 
