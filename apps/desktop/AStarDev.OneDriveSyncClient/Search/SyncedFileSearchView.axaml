@@ -238,6 +238,7 @@
                                     <!-- Open button -->
                                     <Button Content="{Binding OpenButtonText}"
                                             Command="{Binding OpenFileCommand}"
+                                            ToolTip.Tip="{Binding FolderPath}"
                                             HorizontalAlignment="Stretch"
                                             Padding="8,4"
                                             FontSize="{StaticResource FontSizeXs}"

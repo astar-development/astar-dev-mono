@@ -27,6 +27,7 @@ public sealed partial class SyncedFileResultViewModel : LocalizedObservableObjec
         FormattedSize = FormatSize(result.SizeInBytes);
         TagName = string.Join(", ", result.TagNames);
         LocalPath = result.LocalPath;
+        FolderPath = Path.GetDirectoryName(result.LocalPath) ?? string.Empty;
         FileType = fileTypeClassifier.Classify(Path.GetExtension(result.LocalPath));
         IsLocalPresent = File.Exists(result.LocalPath);
     }
@@ -42,6 +43,9 @@ public sealed partial class SyncedFileResultViewModel : LocalizedObservableObjec
 
     /// <summary>Absolute local path of the synced file.</summary>
     public string LocalPath { get; }
+
+    /// <summary>Full folder name containing the file; shown as the Open button tooltip.</summary>
+    public string FolderPath { get; }
 
     /// <summary>Classified type of the file (Image, Document, etc.).</summary>
     public FileType FileType { get; }
