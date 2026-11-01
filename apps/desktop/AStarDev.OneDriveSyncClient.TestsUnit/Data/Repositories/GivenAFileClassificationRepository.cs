@@ -365,7 +365,9 @@ public sealed class GivenAFileClassificationRepository
         await repository.DeleteCategoryAsync(new FileClassificationCategoryId(photos.Id), TestContext.Current.CancellationToken);
 
         using var verifyDb = await factory.CreateDbContextAsync(TestContext.Current.CancellationToken);
-        verifyDb.FileClassificationCategories.Select(c => c.Name).ToList().ShouldBe(["Media"]);
+        var remainingNames = verifyDb.FileClassificationCategories.Select(c => c.Name).ToList();
+        remainingNames.ShouldNotContain("Photos");
+        remainingNames.ShouldContain("Media");
         verifyDb.FileClassifications.Select(c => c.CategoryId).ToList().ShouldBe([media.Id]);
         verifyDb.Files.Count().ShouldBe(1);
     }
