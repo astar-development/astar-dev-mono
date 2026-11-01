@@ -348,4 +348,25 @@ public sealed class GivenAFileClassificationRepository
 
         await factory.DidNotReceive().CreateDbContextAsync(Arg.Any<CancellationToken>());
     }
+
+    [Fact]
+    public async Task when_delete_category_is_called_for_a_category_in_use_then_the_category_and_its_links_are_removed_but_the_file_remains()
+    {
+        var (db, factory) = CreateInMemoryFactory();
+        var repository = new FileClassificationRepository(factory, CreateLogger());
+        var fileDetail = await SeedFileDetailAsync(db);
+        var photos = new FileClassificationCategoryEntity { Name = "Photos", Level = 1 };
+        var media = new FileClassificationCategoryEntity { Name = "Media", Level = 1 };
+        db.FileClassificationCategories.AddRange(photos, media);
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        db.FileClassifications.AddRange(new FileClassificationEntity { FileDetailId = fileDetail.Id, CategoryId = photos.Id }, new FileClassificationEntity { FileDetailId = fileDetail.Id, CategoryId = media.Id });
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        await repository.DeleteCategoryAsync(new FileClassificationCategoryId(photos.Id), TestContext.Current.CancellationToken);
+
+        using var verifyDb = await factory.CreateDbContextAsync(TestContext.Current.CancellationToken);
+        verifyDb.FileClassificationCategories.Select(c => c.Name).ToList().ShouldBe(["Media"]);
+        verifyDb.FileClassifications.Select(c => c.CategoryId).ToList().ShouldBe([media.Id]);
+        verifyDb.Files.Count().ShouldBe(1);
+    }
 }
