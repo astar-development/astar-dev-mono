@@ -162,6 +162,10 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
         if (subCategory is not null)
             db.FileClassificationCategories.Remove(subCategory);
 
+        int[] affectedCategoryIds = subCategory is null ? [rawId] : [rawId, subCategory.Id];
+        var classificationLinks = await db.FileClassifications.Where(c => affectedCategoryIds.Contains(c.CategoryId)).ToListAsync(cancellationToken).ConfigureAwait(false);
+        db.FileClassifications.RemoveRange(classificationLinks);
+
         var entity = await db.FileClassificationCategories.FindAsync([rawId], cancellationToken).ConfigureAwait(false);
         if (entity is null)
             return;
