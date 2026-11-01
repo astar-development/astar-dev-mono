@@ -274,6 +274,7 @@
   "Classifications.ReclassifyProgress": "US-Reclassifying: {0} of {1} files",
   "Classifications.ReclassifyComplete": "US-Reclassified {0} files and added {1} classifications.",
   "Classifications.ReclassifyFailed": "US-Reclassify failed: {0}",
+  "Classifications.CategoryDeleteFailed": "US-Category could not be deleted: {0}",
   "Classifications.Empty": "US-No classification categories defined.",
   "Classifications.Famous": "US-Famous",
   "Classifications.Internet": "US-Internet",

@@ -28,8 +28,8 @@ public interface IFileClassificationRepository
     /// <summary>Reassigns a category's parent, recalculating its level and cascading the level change to all of its descendants. Fails if the category or the new parent do not exist, or if the new parent is the category itself or one of its own descendants.</summary>
     Task<Result<FileClassificationCategoryId, string>> ReparentCategoryAsync(FileClassificationCategoryId id, Option<FileClassificationCategoryId> newParentId, CancellationToken cancellationToken = default);
 
-    /// <summary>Deletes a category. No-op if the category does not exist.</summary>
-    Task DeleteCategoryAsync(FileClassificationCategoryId id, CancellationToken cancellationToken = default);
+    /// <summary>Deletes a category and its classification links. Succeeds as a no-op if the category does not exist; fails with the error message if the delete cannot be completed.</summary>
+    Task<Result<FileClassificationCategoryId, string>> DeleteCategoryAsync(FileClassificationCategoryId id, CancellationToken cancellationToken = default);
 
     /// <summary>Deletes all keywords and all categories in the sequence. Used after importing a new taxonomy.</summary>
     Task DeleteAsync(IEnumerable<FileClassificationCategoryId> fileClassificationCategoryIds, CancellationToken cancellationToken = default);
