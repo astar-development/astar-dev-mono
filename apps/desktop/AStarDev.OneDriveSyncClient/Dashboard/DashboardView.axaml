@@ -20,7 +20,7 @@
 
                 <!-- Accounts -->
                 <StackPanel Grid.Column="0" HorizontalAlignment="Center" Spacing="2">
-                    <TextBlock Text="{Binding TotalAccounts}"
+                    <TextBlock Text="{Binding TotalAccounts, StringFormat='{}{0:N0}'}"
                                FontSize="22" FontWeight="Medium"
                                Foreground="{DynamicResource TextPrimaryBrush}"
                                HorizontalAlignment="Center"/>
@@ -36,7 +36,7 @@
 
                 <!-- Folders -->
                 <StackPanel Grid.Column="2" HorizontalAlignment="Center" Spacing="2">
-                    <TextBlock Text="{Binding TotalFolders}"
+                    <TextBlock Text="{Binding TotalFolders, StringFormat='{}{0:N0}'}"
                                FontSize="22" FontWeight="Medium"
                                Foreground="{DynamicResource TextPrimaryBrush}"
                                HorizontalAlignment="Center"/>
@@ -52,7 +52,7 @@
 
                 <!-- Conflicts -->
                 <StackPanel Grid.Column="4" HorizontalAlignment="Center" Spacing="2">
-                    <TextBlock Text="{Binding TotalConflicts}"
+                    <TextBlock Text="{Binding TotalConflicts, StringFormat='{}{0:N0}'}"
                                FontSize="22" FontWeight="Medium"
                                HorizontalAlignment="Center">
                         <TextBlock.Foreground>
@@ -254,7 +254,7 @@
                                         <!-- Quick stats -->
                                         <Grid ColumnDefinitions="*,*,*,*" Margin="0,4,0,0">
                                             <StackPanel Grid.Column="0" Spacing="2">
-                                                <TextBlock Text="{Binding FolderCount}"
+                                                <TextBlock Text="{Binding FolderCount, StringFormat='{}{0:N0}'}"
                                                            FontSize="{StaticResource FontSizeLg}"
                                                            FontWeight="Medium"
                                                            Foreground="{DynamicResource TextPrimaryBrush}"/>
@@ -263,7 +263,7 @@
                                                            Foreground="{DynamicResource TextTertiaryBrush}"/>
                                             </StackPanel>
                                             <StackPanel Grid.Column="1" Spacing="2">
-                                                <TextBlock Text="{Binding FileCount}"
+                                                <TextBlock Text="{Binding FileCount, StringFormat='{}{0:N0}'}"
                                                            FontSize="{StaticResource FontSizeLg}"
                                                            FontWeight="Medium"
                                                            Foreground="{DynamicResource TextPrimaryBrush}"/>
@@ -272,7 +272,7 @@
                                                            Foreground="{DynamicResource TextTertiaryBrush}"/>
                                             </StackPanel>
                                             <StackPanel Grid.Column="2" Spacing="2">
-                                                <TextBlock Text="{Binding ConflictCount}"
+                                                <TextBlock Text="{Binding ConflictCount, StringFormat='{}{0:N0}'}"
                                                            FontSize="{StaticResource FontSizeLg}"
                                                            FontWeight="Medium"
                                                            Foreground="{DynamicResource TextPrimaryBrush}"/>
