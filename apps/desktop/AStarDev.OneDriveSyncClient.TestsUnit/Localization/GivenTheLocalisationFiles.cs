@@ -46,6 +46,7 @@ public sealed class GivenTheLocalisationFiles
     [InlineData("Classifications.ReclassifyProgress")]
     [InlineData("Classifications.ReclassifyComplete")]
     [InlineData("Classifications.ReclassifyFailed")]
+    [InlineData("Classifications.CategoryDeleteFailed")]
     [InlineData("Classifications.Empty")]
     [InlineData("Classifications.Famous")]
     [InlineData("Classifications.Internet")]

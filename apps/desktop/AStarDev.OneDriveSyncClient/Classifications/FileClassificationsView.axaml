@@ -26,6 +26,10 @@
                            FontSize="{StaticResource FontSizeSm}"
                            Foreground="{DynamicResource TextAccentBrush}"
                            IsVisible="{Binding HasReclassifyStatus}"/>
+                <TextBlock Text="{Binding CategoryErrorText}"
+                           FontSize="{StaticResource FontSizeSm}"
+                           Foreground="{DynamicResource TextAccentBrush}"
+                           IsVisible="{Binding HasCategoryError}"/>
             </StackPanel>
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                 <TextBox Text="{Binding FilterText}"

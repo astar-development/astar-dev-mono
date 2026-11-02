@@ -172,6 +172,7 @@ public sealed partial class FileClassificationRulesViewModel : LocalizedObservab
                     : string.Empty;
 
                 var node = new CategoryNodeViewModel(category.Id, category.Name, category.Level, category.IsFamous, category.IsInternet, category.ParentId, category.IncludeInSearch, repository, categoryEditDialogService, self => RemoveFromParent(self, nodeDict), VisibleCategories, () => LoadAsync(CancellationToken.None), ancestorPath);
+                node.DeleteFailed += ShowCategoryError;
                 nodeDict[category.Id] = node;
             }
 
@@ -243,6 +244,16 @@ public sealed partial class FileClassificationRulesViewModel : LocalizedObservab
     /// <summary>True when there is a reclassify message to show.</summary>
     public bool HasReclassifyStatus => !string.IsNullOrEmpty(ReclassifyStatusText);
 
+    /// <summary>Localised message for the latest failed category operation.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasCategoryError))]
+    public partial string CategoryErrorText { get; set; } = string.Empty;
+
+    /// <summary>True when there is a category error message to show.</summary>
+    public bool HasCategoryError => !string.IsNullOrEmpty(CategoryErrorText);
+
+    private void ShowCategoryError(string error) => CategoryErrorText = Text.CategoryDeleteFailed(error);
+
     private bool CanReclassify => !IsReclassifying;
 
     private CancellationTokenSource? reclassifyCancellation;
@@ -305,6 +316,7 @@ public sealed partial class FileClassificationRulesViewModel : LocalizedObservab
             .TapAsync(newId =>
             {
                 newNode = new CategoryNodeViewModel(newId, trimmedName, 1, IsFamous, IsInternet, Option.None<FileClassificationCategoryId>(), IncludeInSearch, repository, categoryEditDialogService, self => Categories.Remove(self), VisibleCategories, () => LoadAsync(CancellationToken.None));
+                newNode.DeleteFailed += ShowCategoryError;
                 Categories.Add(newNode);
             })
             .ConfigureAwait(false);
