@@ -115,9 +115,9 @@ public sealed partial class SyncedFileResultViewModel : LocalizedObservableObjec
     private static string FormatSize(long? bytes) => bytes switch
     {
         null => string.Empty,
-        < 1024 => $"{bytes} B",
-        < 1024 * 1024 => $"{bytes / 1024.0:F1} KB",
-        < 1024L * 1024 * 1024 => $"{bytes / (1024.0 * 1024):F1} MB",
-        _ => $"{bytes / (1024.0 * 1024 * 1024):F1} GB"
+        < 1024 => $"{bytes:N0} B",
+        < 1024 * 1024 => $"{bytes / 1024.0:N1} KB",
+        < 1024L * 1024 * 1024 => $"{bytes / (1024.0 * 1024):N1} MB",
+        _ => $"{bytes / (1024.0 * 1024 * 1024):N1} GB"
     };
 }
