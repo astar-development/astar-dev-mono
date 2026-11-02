@@ -13,6 +13,34 @@ public sealed class GivenTheLocalisationFiles
         return document.RootElement.EnumerateObject().Select(property => property.Name).ToHashSet(StringComparer.Ordinal);
     }
 
+    private static string ReadValue(string culture, string key)
+    {
+        using var stream = typeof(LocalizationService).Assembly.GetManifestResourceStream($"AStarDev.OneDriveSyncClient.Assets.Localization.{culture}.json");
+        using var document = JsonDocument.Parse(stream!);
+
+        return document.RootElement.GetProperty(key).GetString()!;
+    }
+
+    [Theory]
+    [InlineData("en-GB", "StatusBar.Pending")]
+    [InlineData("en-GB", "StatusBar.Conflict")]
+    [InlineData("en-GB", "StatusBar.Conflicts")]
+    [InlineData("en-GB", "Classifications.ReclassifyProgress")]
+    [InlineData("en-GB", "Classifications.ReclassifyComplete")]
+    [InlineData("en-GB", "Common.DaysAgo")]
+    [InlineData("en-US", "StatusBar.Pending")]
+    [InlineData("en-US", "StatusBar.Conflict")]
+    [InlineData("en-US", "StatusBar.Conflicts")]
+    [InlineData("en-US", "Classifications.ReclassifyProgress")]
+    [InlineData("en-US", "Classifications.ReclassifyComplete")]
+    [InlineData("en-US", "Common.DaysAgo")]
+    public void when_a_count_template_is_read_then_every_placeholder_uses_the_thousands_format(string culture, string key)
+    {
+        var value = ReadValue(culture, key);
+
+        value.ShouldNotMatch(@"\{\d\}");
+    }
+
     [Fact]
     public void when_en_gb_and_en_us_are_compared_then_they_define_the_same_keys()
     {
