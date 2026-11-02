@@ -60,6 +60,7 @@
   "Dashboard.NoAccountsConnectedHint": "US-Add an account to see your sync health here.",
   "Dashboard.Storage": "US-Storage",
   "Dashboard.Folders": "US-folders",
+  "Dashboard.Files": "US-files",
   "Dashboard.RecentActivity": "US-Recent activity",
   "Dashboard.NoRecentActivity": "US-No recent activity",
   "Dashboard.SyncNow": "US-Sync now",

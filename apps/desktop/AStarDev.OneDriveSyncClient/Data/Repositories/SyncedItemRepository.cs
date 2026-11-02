@@ -77,6 +77,14 @@ public sealed class SyncedItemRepository(IDbContextFactory<AppDbContext> dbFacto
         }
     }
 
+    /// <inheritdoc />
+    public async Task<int> CountFilesAsync(AccountId accountId, CancellationToken cancellationToken)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);
+
+        return await db.SyncedItems.CountAsync(i => i.AccountId == accountId && !i.IsFolder, cancellationToken).ConfigureAwait(false);
+    }
+
     public async Task DeleteAllAsync(AccountId accountId, CancellationToken cancellationToken)
     {
         await using var db = await dbFactory.CreateDbContextAsync(cancellationToken);

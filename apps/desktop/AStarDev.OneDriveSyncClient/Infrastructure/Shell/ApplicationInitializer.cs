@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 namespace AStarDev.OneDriveSyncClient.Infrastructure.Shell;
 
 /// <inheritdoc />
-public sealed class ApplicationInitializer(IStartupService startupService, IQuotaRefreshService quotaRefreshService, AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, ActivityViewModel activity, SettingsViewModel settings, SyncedFileSearchViewModel search, ILogger<ApplicationInitializer> logger) : IApplicationInitializer
+public sealed class ApplicationInitializer(IStartupService startupService, IQuotaRefreshService quotaRefreshService, AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, IDashboardFileCountRefresher fileCountRefresher, ActivityViewModel activity, SettingsViewModel settings, SyncedFileSearchViewModel search, ILogger<ApplicationInitializer> logger) : IApplicationInitializer
 {
     /// <inheritdoc />
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
@@ -23,6 +23,7 @@ public sealed class ApplicationInitializer(IStartupService startupService, IQuot
             activity.SubscribeToSyncEvents();
             dashboard.SubscribeToSyncEvents();
             dashboard.StartRefreshTimer();
+            fileCountRefresher.SubscribeToSyncEvents();
 
             var restored = await startupService.RestoreAccountsAsync()
                 .MatchAsync(
@@ -36,6 +37,7 @@ public sealed class ApplicationInitializer(IStartupService startupService, IQuot
             {
                 files.AddAccount(account);
                 dashboard.AddAccount(account);
+                await fileCountRefresher.RefreshAsync(account, cancellationToken).ConfigureAwait(false);
             }
 
             settings.LoadAccounts(restored);

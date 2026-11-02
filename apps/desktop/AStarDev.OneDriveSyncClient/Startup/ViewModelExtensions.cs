@@ -32,6 +32,7 @@ internal static class ViewModelExtensions
         _ = services.AddSingleton<AccountsViewModel>();
         _ = services.AddSingleton<ActivityViewModel>();
         _ = services.AddSingleton<DashboardViewModel>();
+        _ = services.AddSingleton<IDashboardFileCountRefresher, DashboardFileCountRefresher>();
         _ = services.AddSingleton<FilesViewModel>();
         _ = services.AddSingleton<FileClassificationRulesViewModel>();
         _ = services.AddSingleton<SettingsViewModel>();

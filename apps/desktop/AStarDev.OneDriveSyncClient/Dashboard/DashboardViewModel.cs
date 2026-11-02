@@ -124,6 +124,14 @@ public sealed partial class DashboardViewModel(ILocalizationService localization
         RecalculateGlobals();
     }
 
+    /// <summary>Updates the synced file count for the named account section. No-op if the account is not present.</summary>
+    public void UpdateFileCount(string accountId, int fileCount)
+    {
+        var section = AccountSections.FirstOrDefault(s => s.AccountId == accountId);
+        if (section is not null)
+            section.FileCount = fileCount;
+    }
+
     /// <summary>Updates the storage quota for the named account section. No-op if the account is not present.</summary>
     public void UpdateQuota(string accountId, StorageQuota quota)
     {

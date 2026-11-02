@@ -54,6 +54,9 @@ public sealed partial class DashboardAccountViewModel : LocalizedObservableObjec
     [ObservableProperty]
     public partial int FolderCount { get; set; }
 
+    [ObservableProperty]
+    public partial int FileCount { get; set; }
+
     private readonly ILocalizationService localizationService;
     private readonly IActivityItemViewModelFactory activityItemViewModelFactory;
     private long? syncStartedAt;
@@ -87,6 +90,8 @@ public sealed partial class DashboardAccountViewModel : LocalizedObservableObjec
     public string StorageHeadingText => localizationService.GetLocal("Dashboard.Storage");
 
     /// <summary>Localised "folders" stat label.</summary>
+    public string FilesLabelText => localizationService.GetLocal("Dashboard.Files");
+
     public string FoldersLabelText => localizationService.GetLocal("Dashboard.Folders");
 
     /// <summary>Localised "conflicts" stat label.</summary>
