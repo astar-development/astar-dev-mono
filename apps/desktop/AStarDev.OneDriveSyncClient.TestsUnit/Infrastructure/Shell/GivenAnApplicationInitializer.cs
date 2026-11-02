@@ -1,3 +1,4 @@
+using AStarDev.OneDriveSyncClient.Dashboard.Throughput;
 using AStarDev.OneDriveSyncClient.Infrastructure.Autostart;
 using AStarDev.FunctionalParadigm;
 using AStarDev.OneDriveSyncClient.Accounts;
@@ -64,7 +65,7 @@ public sealed class GivenAnApplicationInitializer
     private SyncedFileSearchViewModel CreateSearchViewModel() => new(Substitute.For<ISyncedItemRepository>(), Substitute.For<IFileOpenerService>(), Substitute.For<IFileTypeClassifier>(), new InlineUiDispatcher(), _localizationService);
 
     private ApplicationInitializer CreateSut(AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, ActivityViewModel activity, SettingsViewModel settings)
-        => new(_startupService, _quotaRefreshService, accounts, files, dashboard, Substitute.For<IDashboardFileCountRefresher>(), activity, settings, CreateSearchViewModel(), Substitute.For<ILogger<ApplicationInitializer>>());
+        => new(_startupService, _quotaRefreshService, accounts, files, dashboard, Substitute.For<IDashboardFileCountRefresher>(), new ThroughputGraphViewModel(Substitute.For<ISyncThroughputRepository>(), Substitute.For<IUiTimer>(), System.TimeProvider.System, Substitute.For<ILocalizationService>(), Substitute.For<ILogger<ThroughputGraphViewModel>>()), Substitute.For<IThroughputRecorder>(), activity, settings, CreateSearchViewModel(), Substitute.For<ILogger<ApplicationInitializer>>());
 
     private static OneDriveAccount BuildAccount(string id = "acc-1", string email = "user@test.com", bool isActive = false)
         => new() { Id = new AccountId(id), Profile = AccountProfileFactory.Create("Test User", email), IsActive = isActive, SelectedFolderIds = [] };

@@ -24,6 +24,7 @@ public static class ModelBuilderExtensions
             typeof(AccountEntity),
     typeof(SyncConflictEntity),
     typeof(SyncJobEntity),
+    typeof(SyncThroughputSampleEntity),
     typeof(FileAccessDetailEntity),
     typeof(DeletionStatusEntity),
     typeof(EventEntity),

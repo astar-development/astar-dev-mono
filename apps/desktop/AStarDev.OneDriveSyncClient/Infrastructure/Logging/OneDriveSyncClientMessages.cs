@@ -414,6 +414,14 @@ public static partial class OneDriveSyncClientMessages
     [LoggerMessage(EventId = 3201, Level = LogLevel.Warning, Message = "[QuotaRefreshService] Graph quota fetch failed for account {AccountId}: {Error}")]
     public static partial void QuotaRefreshFetchFailed(ILogger logger, string accountId, string error);
 
+    /// <summary>Logs a failure recording a completed transfer for the throughput graph — the sample is dropped.</summary>
+    [LoggerMessage(EventId = 3204, Level = LogLevel.Warning, Message = "[ThroughputRecorder] Could not record throughput for account {AccountId}: {Error}")]
+    public static partial void ThroughputRecordFailed(ILogger logger, string accountId, string error, Exception ex);
+
+    /// <summary>Logs a failure refreshing the throughput graph — the previous bars stay displayed.</summary>
+    [LoggerMessage(EventId = 3205, Level = LogLevel.Warning, Message = "[ThroughputGraphViewModel] Throughput refresh failed: {Error}")]
+    public static partial void ThroughputRefreshFailed(ILogger logger, string error, Exception ex);
+
     /// <summary>Logs a failure refreshing the dashboard synced file count for an account — the previous count stays displayed.</summary>
     [LoggerMessage(EventId = 3203, Level = LogLevel.Warning, Message = "[DashboardFileCountRefresher] File count refresh failed for account {AccountId}: {Error}")]
     public static partial void DashboardFileCountRefreshFailed(ILogger logger, string accountId, string error, Exception ex);

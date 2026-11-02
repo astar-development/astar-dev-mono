@@ -61,6 +61,8 @@
   "Dashboard.Storage": "Storage",
   "Dashboard.Folders": "folders",
   "Dashboard.Files": "files",
+  "Dashboard.ThroughputTitle": "Sync throughput (last 2 hours)",
+  "Dashboard.ThroughputNoData": "No data synced yet",
   "Dashboard.RecentActivity": "Recent activity",
   "Dashboard.NoRecentActivity": "No recent activity",
   "Dashboard.SyncNow": "Sync now",
