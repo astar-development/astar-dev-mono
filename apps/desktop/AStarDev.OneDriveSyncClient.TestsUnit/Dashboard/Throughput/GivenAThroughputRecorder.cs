@@ -1,3 +1,4 @@
+using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStarDev.OneDriveSyncClient.Dashboard.Throughput;
 using AStarDev.OneDriveSyncClient.Data.Repositories;
@@ -46,7 +47,7 @@ public sealed class GivenAThroughputRecorder
         _syncEventAggregator.JobCompleted += Raise.EventWith(new JobCompletedEventArgs(Download(2048, SyncJobState.Failed)));
         await Task.Delay(200, TestContext.Current.CancellationToken);
 
-        await _repository.DidNotReceiveWithAnyArgs().RecordAsync(default, default, default, default);
+        await _repository.DidNotReceiveWithAnyArgs().RecordAsync(Arg.Any<AccountId>(), Arg.Any<long>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
