@@ -1,5 +1,6 @@
 using System.Globalization;
 using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStarDev.ClockControls;
 using AStarDev.OneDriveSyncClient.Infrastructure.Theme;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -14,6 +15,12 @@ public partial class SettingsView : UserControl
     {
         if (sender is Button { Tag: AppTheme theme } && DataContext is SettingsViewModel vm)
             vm.Theme = theme;
+    }
+
+    private void OnClockStyleClick(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Button { Tag: ClockStyle style } && DataContext is SettingsViewModel vm)
+            vm.ClockStyle = style;
     }
 
     private void OnLanguageClick(object? sender, RoutedEventArgs e)

@@ -360,6 +360,76 @@
                 </ItemsControl>
             </StackPanel>
 
+            <!-- ── Clock ── -->
+            <StackPanel Spacing="12">
+                <TextBlock Text="{Binding ClockHeadingText}"
+                           FontSize="{StaticResource FontSizeXl}"
+                           FontWeight="Medium"
+                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+
+                <Border Background="{DynamicResource BackgroundSecondaryBrush}"
+                        BorderBrush="{DynamicResource BorderSubtleBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource RadiusLg}"
+                        Padding="16">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding ClockStyleLabelText}"
+                                       FontSize="{StaticResource FontSizeMd}"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock Text="{Binding ClockStyleDescriptionText}"
+                                       FontSize="{StaticResource FontSizeSm}"
+                                       Foreground="{DynamicResource TextTertiaryBrush}"/>
+                        </StackPanel>
+
+                        <ItemsControl Grid.Column="1"
+                                      ItemsSource="{Binding ClockStyleOptions}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="6"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="settings:ClockStyleOption">
+                                    <Button Padding="12,6"
+                                            CornerRadius="{StaticResource RadiusMd}"
+                                            BorderThickness="1"
+                                            FontSize="{StaticResource FontSizeSm}"
+                                            Classes.selected="{Binding IsSelected}"
+                                            Click="OnClockStyleClick"
+                                            Tag="{Binding Style}">
+                                        <TextBlock Text="{Binding Label}"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+                </Border>
+
+                <Border Background="{DynamicResource BackgroundSecondaryBrush}"
+                        BorderBrush="{DynamicResource BorderSubtleBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource RadiusLg}"
+                        Padding="16">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding ShowClockSecondsLabelText}"
+                                       FontSize="{StaticResource FontSizeMd}"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock Text="{Binding ShowClockSecondsDescriptionText}"
+                                       FontSize="{StaticResource FontSizeSm}"
+                                       Foreground="{DynamicResource TextTertiaryBrush}"/>
+                        </StackPanel>
+
+                        <ToggleSwitch Grid.Column="1"
+                                      IsChecked="{Binding ShowClockSeconds, Mode=TwoWay}"
+                                      OnContent=""
+                                      OffContent=""/>
+                    </Grid>
+                </Border>
+            </StackPanel>
+
         </StackPanel>
         </ScrollViewer>
 
