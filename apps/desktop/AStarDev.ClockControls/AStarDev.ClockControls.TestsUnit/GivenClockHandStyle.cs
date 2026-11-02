@@ -1,7 +1,6 @@
 using Avalonia.Media;
-using AStarDev.Clock.Controls;
 
-namespace AStarDev.Clock.TestsUnit.Controls;
+namespace AStarDev.ClockControls.TestsUnit;
 
 public sealed class GivenClockHandStyle
 {

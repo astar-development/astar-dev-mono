@@ -30,6 +30,7 @@
     <EmbeddedResource Remove="src/**" />
     <ProjectReference Include="../../../../packages/core/utilities/AStarDev.VelopackPublishingAvalonia/AStarDev.VelopackPublishingAvalonia.csproj" />
     <ProjectReference Include="../../../../packages/core/utilities/AStarDev.VelopackPublishing/AStarDev.VelopackPublishing.csproj" />
+    <ProjectReference Include="../../AStarDev.ClockControls/AStarDev.ClockControls/AStarDev.ClockControls.csproj" />
     <None Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

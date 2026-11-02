@@ -1,6 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:c="clr-namespace:AStarDev.Clock.Controls"
+        xmlns:c="clr-namespace:AStarDev.ClockControls;assembly=AStarDev.ClockControls"
         xmlns:vm="using:AStarDev.Clock"
         xmlns:theming="using:AStarDev.Clock.Theming"
         x:Class="AStarDev.Clock.MainWindow"
