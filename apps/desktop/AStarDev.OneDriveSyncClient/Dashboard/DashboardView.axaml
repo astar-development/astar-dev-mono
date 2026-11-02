@@ -252,7 +252,7 @@
                                         </StackPanel>
 
                                         <!-- Quick stats -->
-                                        <Grid ColumnDefinitions="*,*,*" Margin="0,4,0,0">
+                                        <Grid ColumnDefinitions="*,*,*,*" Margin="0,4,0,0">
                                             <StackPanel Grid.Column="0" Spacing="2">
                                                 <TextBlock Text="{Binding FolderCount}"
                                                            FontSize="{StaticResource FontSizeLg}"
@@ -263,6 +263,15 @@
                                                            Foreground="{DynamicResource TextTertiaryBrush}"/>
                                             </StackPanel>
                                             <StackPanel Grid.Column="1" Spacing="2">
+                                                <TextBlock Text="{Binding FileCount}"
+                                                           FontSize="{StaticResource FontSizeLg}"
+                                                           FontWeight="Medium"
+                                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                                <TextBlock Text="{Binding FilesLabelText}"
+                                                           FontSize="{StaticResource FontSizeXs}"
+                                                           Foreground="{DynamicResource TextTertiaryBrush}"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="2" Spacing="2">
                                                 <TextBlock Text="{Binding ConflictCount}"
                                                            FontSize="{StaticResource FontSizeLg}"
                                                            FontWeight="Medium"
@@ -271,7 +280,7 @@
                                                            FontSize="{StaticResource FontSizeXs}"
                                                            Foreground="{DynamicResource TextTertiaryBrush}"/>
                                             </StackPanel>
-                                            <StackPanel Grid.Column="2" Spacing="2">
+                                            <StackPanel Grid.Column="3" Spacing="2">
                                                 <TextBlock Text="{Binding LastSyncText}"
                                                            FontSize="{StaticResource FontSizeSm}"
                                                            FontWeight="Medium"
