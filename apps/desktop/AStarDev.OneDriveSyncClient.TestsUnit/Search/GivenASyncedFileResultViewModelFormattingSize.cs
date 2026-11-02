@@ -25,10 +25,16 @@ public sealed class GivenASyncedFileResultViewModelFormattingSize
 
     [Theory]
     [InlineData(null, "")]
+    [InlineData(0L, "0 B")]
     [InlineData(512L, "512 B")]
     [InlineData(1023L, "1,023 B")]
+    [InlineData(1024L, "1.0 KB")]
     [InlineData(1536L, "1.5 KB")]
+    [InlineData(1024L * 1024 - 1, "1,024.0 KB")]
+    [InlineData(1024L * 1024, "1.0 MB")]
     [InlineData(5L * 1024 * 1024, "5.0 MB")]
+    [InlineData(1024L * 1024 * 1024 - 1, "1,024.0 MB")]
+    [InlineData(1024L * 1024 * 1024, "1.0 GB")]
     [InlineData(2L * 1024 * 1024 * 1024, "2.0 GB")]
     [InlineData(1536L * 1024 * 1024 * 1024, "1,536.0 GB")]
     public void when_the_size_is_formatted_then_it_is_human_readable_with_thousands_delimiters(long? sizeInBytes, string expected) => FormattedSizeFor(sizeInBytes).ShouldBe(expected);
