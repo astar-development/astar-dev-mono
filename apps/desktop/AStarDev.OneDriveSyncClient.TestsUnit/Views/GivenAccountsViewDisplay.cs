@@ -1,3 +1,5 @@
+using AStarDev.OneDriveSyncClient.TestsUnit.TestHelpers;
+using AStarDev.OneDriveSyncClient.Clock;
 using AStarDev.OneDriveSyncClient.Dashboard.Throughput;
 using AStarDev.OneDriveSyncClient.Infrastructure.Autostart;
 using AStarDev.OneDriveSyncClient.Accounts;
@@ -55,7 +57,7 @@ public sealed class GivenAccountsViewDisplay
         var classificationRules = new FileClassificationRulesViewModel(Substitute.For<IFileClassificationRepository>(), Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), Substitute.For<ICategoryEditDialogService>(), localization, Substitute.For<IFileSystem>(), Substitute.For<IFileReclassificationService>());
         var statusBar = new StatusBarViewModel(accounts, localization);
 
-        return new MainWindowViewModel(Substitute.For<IApplicationInitializer>(), Substitute.For<ISyncScheduler>(), accounts, files, dashboard, new ThroughputGraphViewModel(Substitute.For<ISyncThroughputRepository>(), Substitute.For<IUiTimer>(), System.TimeProvider.System, Substitute.For<ILocalizationService>(), Substitute.For<ILogger<ThroughputGraphViewModel>>()), activity, settings, classificationRules, new SyncedFileSearchViewModel(Substitute.For<ISyncedItemRepository>(), Substitute.For<IFileOpenerService>(), Substitute.For<IFileTypeClassifier>(), Substitute.For<IUiDispatcher>(), localization), statusBar, localization, Substitute.For<ILogger<MainWindowViewModel>>());
+        return new MainWindowViewModel(Substitute.For<IApplicationInitializer>(), Substitute.For<ISyncScheduler>(), accounts, files, dashboard, new ThroughputGraphViewModel(Substitute.For<ISyncThroughputRepository>(), Substitute.For<IUiTimer>(), System.TimeProvider.System, Substitute.For<ILocalizationService>(), Substitute.For<ILogger<ThroughputGraphViewModel>>()), new ClockViewModel(new StubSettingsService()), activity, settings, classificationRules, new SyncedFileSearchViewModel(Substitute.For<ISyncedItemRepository>(), Substitute.For<IFileOpenerService>(), Substitute.For<IFileTypeClassifier>(), Substitute.For<IUiDispatcher>(), localization), statusBar, localization, Substitute.For<ILogger<MainWindowViewModel>>());
     }
 
     private static AccountsView CreateViewWithViewModel(MainWindowViewModel viewModel)

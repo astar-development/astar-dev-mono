@@ -1,6 +1,5 @@
-using AStarDev.Clock.Controls;
 
-namespace AStarDev.Clock.TestsUnit.Controls;
+namespace AStarDev.ClockControls.TestsUnit;
 
 public sealed class GivenClockHandGeometry
 {

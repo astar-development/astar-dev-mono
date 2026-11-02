@@ -6,7 +6,7 @@ using Avalonia.Styling;
 using Avalonia.Threading;
 using System.Diagnostics.CodeAnalysis;
 
-namespace AStarDev.Clock.Controls;
+namespace AStarDev.ClockControls;
 
 [ExcludeFromCodeCoverage]
 public class AnalogClockControl : Control

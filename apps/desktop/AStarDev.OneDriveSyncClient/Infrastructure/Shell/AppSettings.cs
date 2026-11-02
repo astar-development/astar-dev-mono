@@ -15,4 +15,6 @@ public sealed class AppSettings
     public int SyncIntervalMinutes { get; set; } = 60;
     public int ConcurrentWorkerCount { get; set; } = 4;
     public bool LaunchAtStartup { get; set; } = true;
+    public string ClockStyle { get; set; } = "Analogue";
+    public bool ShowClockSeconds { get; set; } = true;
 }

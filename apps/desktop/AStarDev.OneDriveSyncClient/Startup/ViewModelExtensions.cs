@@ -17,6 +17,7 @@ using AccountSyncSettingsViewModel = AStarDev.OneDriveSyncClient.Accounts.Accoun
 using ActivityViewModel = AStarDev.OneDriveSyncClient.Activity.ActivityViewModel;
 using DashboardViewModel = AStarDev.OneDriveSyncClient.Dashboard.DashboardViewModel;
 using FilesViewModel = AStarDev.OneDriveSyncClient.Home.FilesViewModel;
+using AStarDev.OneDriveSyncClient.Clock;
 using AStarDev.OneDriveSyncClient.Dashboard.Throughput;
 using SettingsViewModel = AStarDev.OneDriveSyncClient.Settings.SettingsViewModel;
 using StatusBarViewModel = AStarDev.OneDriveSyncClient.Home.StatusBarViewModel;
@@ -35,6 +36,7 @@ internal static class ViewModelExtensions
         _ = services.AddSingleton<DashboardViewModel>();
         _ = services.AddSingleton<IDashboardFileCountRefresher, DashboardFileCountRefresher>();
         _ = services.AddSingleton<ThroughputGraphViewModel>();
+        _ = services.AddSingleton<ClockViewModel>();
         _ = services.AddSingleton<IThroughputRecorder, ThroughputRecorder>();
         _ = services.AddSingleton<FilesViewModel>();
         _ = services.AddSingleton<FileClassificationRulesViewModel>();

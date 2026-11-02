@@ -1,3 +1,5 @@
+using AStarDev.OneDriveSyncClient.TestsUnit.TestHelpers;
+using AStarDev.OneDriveSyncClient.Clock;
 using AStarDev.OneDriveSyncClient.Dashboard.Throughput;
 using AStarDev.OneDriveSyncClient.Infrastructure.Autostart;
 using AStarDev.OneDriveSyncClient.Accounts;
@@ -69,7 +71,7 @@ public sealed class GivenAMainWindowViewModel
     {
         var accountsVm = CreateAccountsViewModel();
 
-        return new(_initializer, _scheduler, accountsVm, CreateFilesViewModel(), CreateDashboardViewModel(), new ThroughputGraphViewModel(Substitute.For<ISyncThroughputRepository>(), Substitute.For<IUiTimer>(), System.TimeProvider.System, Substitute.For<ILocalizationService>(), Substitute.For<ILogger<ThroughputGraphViewModel>>()), CreateActivityViewModel(), CreateSettingsViewModel(), CreateClassificationRulesViewModel(), CreateSearchViewModel(), new StatusBarViewModel(accountsVm, _localizationService), _localizationService, Substitute.For<ILogger<MainWindowViewModel>>());
+        return new(_initializer, _scheduler, accountsVm, CreateFilesViewModel(), CreateDashboardViewModel(), new ThroughputGraphViewModel(Substitute.For<ISyncThroughputRepository>(), Substitute.For<IUiTimer>(), System.TimeProvider.System, Substitute.For<ILocalizationService>(), Substitute.For<ILogger<ThroughputGraphViewModel>>()), new ClockViewModel(new StubSettingsService()), CreateActivityViewModel(), CreateSettingsViewModel(), CreateClassificationRulesViewModel(), CreateSearchViewModel(), new StatusBarViewModel(accountsVm, _localizationService), _localizationService, Substitute.For<ILogger<MainWindowViewModel>>());
     }
 
     [Fact]
@@ -137,7 +139,7 @@ public sealed class GivenAMainWindowViewModel
         const string accountIdStr = "active-account-123";
         var accountsVm = CreateAccountsViewModel();
         accountsVm.ActiveAccount = new AccountCardViewModel(new OneDriveAccount { Id = new AccountId(accountIdStr), Profile = AccountProfileFactory.Create("Test User", "test@example.com") }, _localizationService);
-        var sut = new MainWindowViewModel(_initializer, _scheduler, accountsVm, CreateFilesViewModel(), CreateDashboardViewModel(), new ThroughputGraphViewModel(Substitute.For<ISyncThroughputRepository>(), Substitute.For<IUiTimer>(), System.TimeProvider.System, Substitute.For<ILocalizationService>(), Substitute.For<ILogger<ThroughputGraphViewModel>>()), CreateActivityViewModel(), CreateSettingsViewModel(), CreateClassificationRulesViewModel(), CreateSearchViewModel(), new StatusBarViewModel(accountsVm, _localizationService), _localizationService, Substitute.For<ILogger<MainWindowViewModel>>());
+        var sut = new MainWindowViewModel(_initializer, _scheduler, accountsVm, CreateFilesViewModel(), CreateDashboardViewModel(), new ThroughputGraphViewModel(Substitute.For<ISyncThroughputRepository>(), Substitute.For<IUiTimer>(), System.TimeProvider.System, Substitute.For<ILocalizationService>(), Substitute.For<ILogger<ThroughputGraphViewModel>>()), new ClockViewModel(new StubSettingsService()), CreateActivityViewModel(), CreateSettingsViewModel(), CreateClassificationRulesViewModel(), CreateSearchViewModel(), new StatusBarViewModel(accountsVm, _localizationService), _localizationService, Substitute.For<ILogger<MainWindowViewModel>>());
 
         await sut.SyncNowCommand.ExecuteAsync(null);
 
