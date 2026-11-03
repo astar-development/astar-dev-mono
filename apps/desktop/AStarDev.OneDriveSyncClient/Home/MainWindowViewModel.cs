@@ -198,7 +198,9 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
         {
             await Try.RunAsync(async () =>
                 {
-                    ActiveSection = NavSection.Files;
+                    if (ActiveSection == NavSection.Accounts)
+                        ActiveSection = NavSection.Files;
+
                     search.SetActiveAccount(new AccountId(card.Id));
                     await files.ActivateAccountAsync(card.Id);
                     await activity.SetActiveAccountAsync(card.Id, card.Email);
