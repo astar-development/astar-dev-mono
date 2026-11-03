@@ -1,3 +1,4 @@
+using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using AStarDev.OneDriveSyncClient.TestsUnit.TestHelpers;
 using AStarDev.OneDriveSyncClient.Clock;
 using AStarDev.OneDriveSyncClient.Dashboard.Throughput;
@@ -53,7 +54,7 @@ public sealed class GivenAccountsViewDisplay
         var files = new FilesViewModel(Substitute.For<IAccountFilesViewModelFactory>(), localization);
         var dashboard = new DashboardViewModel(localization, Substitute.For<ISyncEventAggregator>(), Substitute.For<IDashboardAccountViewModelFactory>(), Substitute.For<IActivityItemViewModelFactory>(), Substitute.For<IUiTimer>());
         var activity = new ActivityViewModel(Substitute.For<ISyncRepository>(), Substitute.For<ISyncEventAggregator>(), Substitute.For<IConflictItemViewModelFactory>(), Substitute.For<IActivityItemViewModelFactory>(), Substitute.For<IUiDispatcher>(), localization);
-        var settings = new SettingsViewModel(settingsService, Substitute.For<IThemeService>(), Substitute.For<ISyncScheduler>(), Substitute.For<IAccountRepository>(), localization, Substitute.For<IFolderPickerService>(), Substitute.For<IAutostartService>());
+        var settings = new SettingsViewModel(settingsService, Substitute.For<IThemeService>(), Substitute.For<ISyncScheduler>(), Substitute.For<IAccountRepository>(), localization, Substitute.For<IFolderPickerService>(), Substitute.For<IAutostartService>(), Substitute.For<IUpdateNotificationService>());
         var classificationRules = new FileClassificationRulesViewModel(Substitute.For<IFileClassificationRepository>(), Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), Substitute.For<ICategoryEditDialogService>(), localization, Substitute.For<IFileSystem>(), Substitute.For<IFileReclassificationService>());
         var statusBar = new StatusBarViewModel(accounts, localization);
 

@@ -281,6 +281,34 @@
                                       OffContent=""/>
                     </Grid>
                 </Border>
+
+                <Border Background="{DynamicResource BackgroundSecondaryBrush}"
+                        BorderBrush="{DynamicResource BorderSubtleBrush}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource RadiusLg}"
+                        Padding="16">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding CheckForUpdatesLabelText}"
+                                       FontSize="{StaticResource FontSizeMd}"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock Text="{Binding CheckForUpdatesDescriptionText}"
+                                       FontSize="{StaticResource FontSizeSm}"
+                                       Foreground="{DynamicResource TextTertiaryBrush}"/>
+                            <TextBlock Text="{Binding UpdateStatusText}"
+                                       FontSize="{StaticResource FontSizeSm}"
+                                       Foreground="{DynamicResource TextAccentBrush}"/>
+                        </StackPanel>
+
+                        <Button Grid.Column="1"
+                                Padding="10,5"
+                                CornerRadius="{StaticResource RadiusMd}"
+                                BorderThickness="1"
+                                FontSize="{StaticResource FontSizeSm}"
+                                Command="{Binding CheckForUpdatesCommand}"
+                                Content="{Binding CheckForUpdatesButtonText}"/>
+                    </Grid>
+                </Border>
             </StackPanel>
 
             <!-- ── Per-account settings ── -->

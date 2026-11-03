@@ -1,3 +1,4 @@
+using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using AStarDev.ClockControls;
 using AStarDev.OneDriveSyncClient.Data.Repositories;
 using AStarDev.OneDriveSyncClient.Infrastructure.Autostart;
@@ -23,7 +24,7 @@ public sealed class GivenASettingsViewModelWithClockOptions
         _loc.GetLocal(Arg.Any<string>(), Arg.Any<object[]>()).Returns(call => call.Arg<string>());
     }
 
-    private SettingsViewModel CreateSut() => new(_settingsService, Substitute.For<IThemeService>(), Substitute.For<ISyncScheduler>(), Substitute.For<IAccountRepository>(), _loc, Substitute.For<IFolderPickerService>(), Substitute.For<IAutostartService>());
+    private SettingsViewModel CreateSut() => new(_settingsService, Substitute.For<IThemeService>(), Substitute.For<ISyncScheduler>(), Substitute.For<IAccountRepository>(), _loc, Substitute.For<IFolderPickerService>(), Substitute.For<IAutostartService>(), Substitute.For<IUpdateNotificationService>());
 
     [Fact]
     public void when_settings_are_new_then_the_clock_defaults_to_analogue_with_seconds()

@@ -1,3 +1,4 @@
+using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using System.Text.Json;
 using AStarDev.OneDriveSyncClient.Data.Repositories;
 using AStarDev.OneDriveSyncClient.Infrastructure.Autostart;
@@ -25,7 +26,7 @@ public sealed class GivenASettingsViewModelWithLaunchAtStartup
         _ = loc.GetLocal(Arg.Any<string>(), Arg.Any<object[]>()).Returns(call => call.Arg<string>());
     }
 
-    private SettingsViewModel CreateSut() => new(settingsService, Substitute.For<IThemeService>(), Substitute.For<ISyncScheduler>(), Substitute.For<IAccountRepository>(), loc, Substitute.For<IFolderPickerService>(), autostartService);
+    private SettingsViewModel CreateSut() => new(settingsService, Substitute.For<IThemeService>(), Substitute.For<ISyncScheduler>(), Substitute.For<IAccountRepository>(), loc, Substitute.For<IFolderPickerService>(), autostartService, Substitute.For<IUpdateNotificationService>());
 
     [Fact]
     public void when_settings_are_new_then_launch_at_startup_defaults_to_on()

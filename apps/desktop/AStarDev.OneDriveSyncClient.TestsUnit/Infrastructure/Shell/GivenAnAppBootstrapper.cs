@@ -1,3 +1,4 @@
+using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using AStarDev.OneDriveSyncClient.TestsUnit.TestHelpers;
 using AStarDev.OneDriveSyncClient.Clock;
 using AStarDev.OneDriveSyncClient.Dashboard.Throughput;
@@ -94,7 +95,7 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
         var classificationRepo = Substitute.For<IFileClassificationRepository>();
         classificationRepo.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                           .Returns(Task.FromResult<IReadOnlyList<FileClassificationCategory>>([]));
-        var settings = new SettingsViewModel(settingsServiceForViewModel, themeServiceForViewModel, schedulerForViewModel, accountRepository, localizationService, Substitute.For<IFolderPickerService>(), Substitute.For<IAutostartService>());
+        var settings = new SettingsViewModel(settingsServiceForViewModel, themeServiceForViewModel, schedulerForViewModel, accountRepository, localizationService, Substitute.For<IFolderPickerService>(), Substitute.For<IAutostartService>(), Substitute.For<IUpdateNotificationService>());
         var statusBar = new StatusBarViewModel(accounts, localizationService);
 
         return new MainWindowViewModel(applicationInitializer, syncScheduler, accounts, files, dashboard, new ThroughputGraphViewModel(Substitute.For<ISyncThroughputRepository>(), Substitute.For<IUiTimer>(), System.TimeProvider.System, Substitute.For<ILocalizationService>(), Substitute.For<ILogger<ThroughputGraphViewModel>>()), new ClockViewModel(new StubSettingsService()), activity, settings, new FileClassificationRulesViewModel(classificationRepo, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), Substitute.For<ICategoryEditDialogService>(), localizationService, fileSystem, Substitute.For<IFileReclassificationService>()), new SyncedFileSearchViewModel(Substitute.For<ISyncedItemRepository>(), Substitute.For<IFileOpenerService>(), Substitute.For<IFileTypeClassifier>(), new InlineUiDispatcher(), localizationService), statusBar, localizationService, Substitute.For<ILogger<MainWindowViewModel>>());
