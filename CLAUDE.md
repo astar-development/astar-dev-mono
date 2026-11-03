@@ -100,7 +100,7 @@ Plan approved → raise one GitHub issue per phase before writing code.
 ## Definition of Done
 
 1. `dotnet clean && dotnet build --no-restore` — zero errors, zero warnings. Paste exact output. `dotnet clean` mandatory — incremental cache hides analyser warnings.
-2. `dotnet test --no-build` — paste EXACT pass/fail count. New failures = zero. Change broke tests → diagnose + fix, never dismiss as pre-existing.
+2. `dotnet test --no-build` scoped to affected + new test projects/classes only (`--filter` or project path) — NOT full suite. Full suite + coverage runs automatically at session end via `SessionEnd` hook (`code-coverage.sh`, log: `~/.claude/code-coverage.log`). Paste EXACT pass/fail count. New failures = zero. Change broke tests → diagnose + fix, never dismiss as pre-existing.
 3. **Leave better than found.** Pre-existing failures in any touched/reported test project must get fixed same branch, separate commit — never merged around, never left red. Unless failure exposes genuine production bug (raise before changing anything), production behaviour is spec — update test to match. Test for deleted feature gets deleted, not skipped.
 4. Confirm all call sites and test files found and updated.
 5. Commit to branch (not main).
