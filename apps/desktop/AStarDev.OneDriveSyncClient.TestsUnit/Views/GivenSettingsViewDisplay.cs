@@ -1,3 +1,4 @@
+using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using AStarDev.OneDriveSyncClient.Infrastructure.Autostart;
 using AStarDev.OneDriveSyncClient.Accounts;
 using AStarDev.OneDriveSyncClient.Data.Repositories;
@@ -30,7 +31,7 @@ public sealed class GivenSettingsViewDisplay
         var repository = Substitute.For<IAccountRepository>();
         var folderPickerService = Substitute.For<IFolderPickerService>();
 
-        return new SettingsViewModel(settingsService, themeService, scheduler, repository, localization, folderPickerService, Substitute.For<IAutostartService>());
+        return new SettingsViewModel(settingsService, themeService, scheduler, repository, localization, folderPickerService, Substitute.For<IAutostartService>(), Substitute.For<IUpdateNotificationService>());
     }
 
     private static SettingsView CreateViewWithViewModel(SettingsViewModel viewModel)

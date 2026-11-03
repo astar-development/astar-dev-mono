@@ -1,3 +1,4 @@
+using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using AStarDev.OneDriveSyncClient.Infrastructure.Autostart;
 using System.Globalization;
 using AStarDev.OneDriveSyncClient.Accounts;
@@ -50,7 +51,7 @@ public sealed class GivenASettingsViewModel
         folderPickerService ??= Substitute.For<IFolderPickerService>();
         autostartService ??= Substitute.For<IAutostartService>();
 
-        return new SettingsViewModel(settingsService, themeService, scheduler, repository, localizationService, folderPickerService, autostartService);
+        return new SettingsViewModel(settingsService, themeService, scheduler, repository, localizationService, folderPickerService, autostartService, Substitute.For<IUpdateNotificationService>());
     }
 
     private static OneDriveAccount BuildAccount(string accountId) => new()

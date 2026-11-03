@@ -1,3 +1,4 @@
+using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using System.Globalization;
 using AStarDev.OneDriveSyncClient.Data.Repositories;
 using AStarDev.OneDriveSyncClient.Infrastructure.Autostart;
@@ -22,7 +23,7 @@ public sealed class GivenASettingsViewModelLocalisedText
         loc.GetLocal(Arg.Any<string>()).Returns(x => x.ArgAt<string>(0));
         loc.GetLocal(Arg.Any<string>(), Arg.Any<object[]>()).Returns(x => x.ArgAt<string>(0));
         loc.AvailableCultures.Returns([CultureInfo.GetCultureInfo("en-GB")]);
-        sut = new SettingsViewModel(settingsService, Substitute.For<IThemeService>(), Substitute.For<ISyncScheduler>(), Substitute.For<IAccountRepository>(), loc, Substitute.For<IFolderPickerService>(), Substitute.For<IAutostartService>());
+        sut = new SettingsViewModel(settingsService, Substitute.For<IThemeService>(), Substitute.For<ISyncScheduler>(), Substitute.For<IAccountRepository>(), loc, Substitute.For<IFolderPickerService>(), Substitute.For<IAutostartService>(), Substitute.For<IUpdateNotificationService>());
     }
 
     public static TheoryData<string, string> TextProperties => new()

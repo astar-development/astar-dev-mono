@@ -11,7 +11,10 @@ using AStarDev.OneDriveSyncClient.Infrastructure.Sync;
 using AStarDev.OneDriveSyncClient.Infrastructure.Theme;
 using AStarDev.OneDriveSyncClient.Localization;
 using Avalonia.Platform.Storage;
+using AStar.Dev.Velopack.Publishing;
+using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace AStarDev.OneDriveSyncClient.Settings;
 
@@ -25,10 +28,11 @@ public sealed partial class SettingsViewModel : LocalizedObservableObject
     private readonly ILocalizationService loc;
     private readonly IFolderPickerService folderPickerService;
     private readonly IAutostartService autostartService;
+    private readonly IUpdateNotificationService updateNotificationService;
     private readonly bool isLoaded;
     private bool isRefreshing;
 
-    public SettingsViewModel(ISettingsService settingsService, IThemeService themeService, ISyncScheduler scheduler, IAccountRepository repository, ILocalizationService loc, IFolderPickerService folderPickerService, IAutostartService autostartService) : base(loc)
+    public SettingsViewModel(ISettingsService settingsService, IThemeService themeService, ISyncScheduler scheduler, IAccountRepository repository, ILocalizationService loc, IFolderPickerService folderPickerService, IAutostartService autostartService, IUpdateNotificationService updateNotificationService) : base(loc)
     {
         this.settingsService = settingsService;
         this.themeService = themeService;
@@ -37,6 +41,7 @@ public sealed partial class SettingsViewModel : LocalizedObservableObject
         this.loc = loc;
         this.folderPickerService = folderPickerService;
         this.autostartService = autostartService;
+        this.updateNotificationService = updateNotificationService;
         Theme = settingsService.Current.Theme;
         DefaultConflictPolicy = settingsService.Current.DefaultConflictPolicy;
         SyncIntervalMinutes = settingsService.Current.SyncIntervalMinutes;
@@ -128,6 +133,25 @@ public sealed partial class SettingsViewModel : LocalizedObservableObject
         _ = autostartService.Apply(value);
     }
 
+    /// <summary>The outcome of the most recent update check, localised when it was produced.</summary>
+    [ObservableProperty]
+    public partial string UpdateStatusText { get; set; } = string.Empty;
+
+    [RelayCommand]
+    private async Task CheckForUpdatesAsync()
+    {
+        UpdateStatusText = loc.GetLocal("Settings.Updates.Checking");
+        var result = await updateNotificationService.CheckNowAsync();
+        UpdateStatusText = result switch
+        {
+            UpdateFound found => loc.GetLocal("Settings.Updates.Found", found.Info.TargetFullRelease.Version.ToString()),
+            UpToDate => loc.GetLocal("Settings.Updates.UpToDate"),
+            NotInstalled => loc.GetLocal("Settings.Updates.NotInstalled"),
+            CheckFailed failed => loc.GetLocal("Settings.Updates.Failed", failed.Reason),
+            _ => string.Empty
+        };
+    }
+
     [ObservableProperty]
     public partial ClockStyle ClockStyle { get; set; }
 
@@ -178,6 +202,15 @@ public sealed partial class SettingsViewModel : LocalizedObservableObject
 
     /// <summary>Localised description for the launch at startup row.</summary>
     public string LaunchAtStartupDescriptionText => loc.GetLocal("Settings.LaunchAtStartup.Description");
+
+    /// <summary>Localised label for the check for updates row.</summary>
+    public string CheckForUpdatesLabelText => loc.GetLocal("Settings.Updates.Label");
+
+    /// <summary>Localised description for the check for updates row.</summary>
+    public string CheckForUpdatesDescriptionText => loc.GetLocal("Settings.Updates.Description");
+
+    /// <summary>Localised text for the check for updates button.</summary>
+    public string CheckForUpdatesButtonText => loc.GetLocal("Settings.Updates.Button");
 
     /// <summary>Localised page title.</summary>
     public string TitleText => loc.GetLocal("Settings.Title");
