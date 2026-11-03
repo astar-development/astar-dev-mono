@@ -70,4 +70,53 @@ public sealed class GivenAnUpdateNotificationService
 
         await dialogService.Received(1).ShowAsync(viewModel, Arg.Any<CancellationToken>());
     }
+
+    [Fact]
+    public async Task when_checked_now_and_update_found_then_dialog_is_shown_and_found_is_returned()
+    {
+        var (sut, updateCheckService, viewModelFactory, dialogService) = CreateSut();
+        var updateInfo = CreateUpdateInfo();
+        using var viewModel = CreateViewModel(updateInfo);
+        updateCheckService.CheckForUpdatesWithResultAsync(Arg.Any<CancellationToken>()).Returns(UpdateCheckResultFactory.CreateFound(updateInfo));
+        viewModelFactory.Create(updateInfo).Returns(viewModel);
+
+        var result = await sut.CheckNowAsync(TestContext.Current.CancellationToken);
+
+        await dialogService.Received(1).ShowAsync(viewModel, Arg.Any<CancellationToken>());
+        result.ShouldBeOfType<UpdateFound>().Info.ShouldBe(updateInfo);
+    }
+
+    [Fact]
+    public async Task when_checked_now_and_up_to_date_then_dialog_is_not_shown_and_up_to_date_is_returned()
+    {
+        var (sut, updateCheckService, _, dialogService) = CreateSut();
+        updateCheckService.CheckForUpdatesWithResultAsync(Arg.Any<CancellationToken>()).Returns(UpdateCheckResultFactory.CreateUpToDate());
+
+        var result = await sut.CheckNowAsync(TestContext.Current.CancellationToken);
+
+        await dialogService.DidNotReceive().ShowAsync(Arg.Any<UpdateAvailableViewModel>(), Arg.Any<CancellationToken>());
+        result.ShouldBeOfType<UpToDate>();
+    }
+
+    [Fact]
+    public async Task when_checked_now_and_not_installed_then_not_installed_is_returned()
+    {
+        var (sut, updateCheckService, _, _) = CreateSut();
+        updateCheckService.CheckForUpdatesWithResultAsync(Arg.Any<CancellationToken>()).Returns(UpdateCheckResultFactory.CreateNotInstalled());
+
+        var result = await sut.CheckNowAsync(TestContext.Current.CancellationToken);
+
+        result.ShouldBeOfType<NotInstalled>();
+    }
+
+    [Fact]
+    public async Task when_checked_now_and_check_fails_then_check_failed_is_returned()
+    {
+        var (sut, updateCheckService, _, _) = CreateSut();
+        updateCheckService.CheckForUpdatesWithResultAsync(Arg.Any<CancellationToken>()).Returns(UpdateCheckResultFactory.CreateFailed("boom"));
+
+        var result = await sut.CheckNowAsync(TestContext.Current.CancellationToken);
+
+        result.ShouldBeOfType<CheckFailed>().Reason.ShouldBe("boom");
+    }
 }
