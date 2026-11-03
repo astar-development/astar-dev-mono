@@ -48,8 +48,6 @@
     <Folder Name="/packages/AStarDev.ControlDb/" />
     <Folder Name="/packages/core/" />
     <Folder Name="/packages/core/functional/">
-        <Project Path="packages/core/functional/AStar.Dev.Functional.Extensions.TestsUnit/AStar.Dev.Functional.Extensions.TestsUnit.csproj" />
-        <Project Path="packages/core/functional/AStar.Dev.Functional.Extensions/AStar.Dev.Functional.Extensions.csproj" />
         <Project Path="packages/core/functional/AStarDev.FunctionalParadigm.TestsUnit/AStarDev.FunctionalParadigm.TestsUnit.csproj" />
         <Project Path="packages/core/functional/AStarDev.FunctionalParadigm/AStarDev.FunctionalParadigm.csproj" />
     </Folder>
