@@ -19,6 +19,10 @@
             Returns <c>null</c> if no update is available, the app is not installed (e.g. running unpackaged), or the check fails.
             </summary>
         </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.IVelopackUpdateService.CheckForUpdatesWithResultAsync(System.Threading.CancellationToken)">
+            <summary>Checks the configured GitHub releases feed and reports why no update was found, rather than returning <c>null</c>.</summary>
+            <param name="cancellationToken">A token to cancel the check.</param>
+        </member>
         <member name="M:AStar.Dev.Velopack.Publishing.IVelopackUpdateService.DownloadUpdatesAsync(Velopack.UpdateInfo,System.Action{System.Int32},System.Threading.CancellationToken)">
             <summary>Downloads the update described by <paramref name="updateInfo"/> to the local packages directory.</summary>
             <param name="updateInfo">The update to download, as returned by <see cref="M:AStar.Dev.Velopack.Publishing.IVelopackUpdateService.CheckForUpdatesAsync(System.Threading.CancellationToken)"/>.</param>
@@ -27,6 +31,54 @@
         </member>
         <member name="M:AStar.Dev.Velopack.Publishing.IVelopackUpdateService.ApplyUpdatesAndRestart(Velopack.UpdateInfo)">
             <summary>Exits the app, applies the downloaded update, and restarts it.</summary>
+        </member>
+        <member name="T:AStar.Dev.Velopack.Publishing.UpdateCheckResult">
+            <summary>The outcome of an update check.</summary>
+        </member>
+        <member name="T:AStar.Dev.Velopack.Publishing.UpdateFound">
+            <summary>A newer version is available.</summary>
+            <param name="Info">The update that was found.</param>
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.UpdateFound.#ctor(Velopack.UpdateInfo)">
+            <summary>A newer version is available.</summary>
+            <param name="Info">The update that was found.</param>
+        </member>
+        <member name="P:AStar.Dev.Velopack.Publishing.UpdateFound.Info">
+            <summary>The update that was found.</summary>
+        </member>
+        <member name="T:AStar.Dev.Velopack.Publishing.UpToDate">
+            <summary>The installed version is the latest.</summary>
+        </member>
+        <member name="T:AStar.Dev.Velopack.Publishing.NotInstalled">
+            <summary>The app is not running as a Velopack-installed instance, so it cannot be updated.</summary>
+        </member>
+        <member name="T:AStar.Dev.Velopack.Publishing.CheckFailed">
+            <summary>The check could not be completed.</summary>
+            <param name="Reason">Why the check failed.</param>
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.CheckFailed.#ctor(System.String)">
+            <summary>The check could not be completed.</summary>
+            <param name="Reason">Why the check failed.</param>
+        </member>
+        <member name="P:AStar.Dev.Velopack.Publishing.CheckFailed.Reason">
+            <summary>Why the check failed.</summary>
+        </member>
+        <member name="T:AStar.Dev.Velopack.Publishing.UpdateCheckResultFactory">
+            <summary>Creates <see cref="T:AStar.Dev.Velopack.Publishing.UpdateCheckResult"/> cases.</summary>
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.UpdateCheckResultFactory.CreateFound(Velopack.UpdateInfo)">
+            <summary>Creates a result for a found update. A missing <paramref name="updateInfo"/> yields <see cref="T:AStar.Dev.Velopack.Publishing.CheckFailed"/>.</summary>
+            <param name="updateInfo">The update that was found.</param>
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.UpdateCheckResultFactory.CreateUpToDate">
+            <summary>Creates the up-to-date result.</summary>
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.UpdateCheckResultFactory.CreateNotInstalled">
+            <summary>Creates the not-installed result.</summary>
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.UpdateCheckResultFactory.CreateFailed(System.String)">
+            <summary>Creates a failed result. A blank <paramref name="reason"/> is replaced with a default.</summary>
+            <param name="reason">Why the check failed.</param>
         </member>
         <member name="T:AStar.Dev.Velopack.Publishing.VelopackUpdateService">
             <inheritdoc />
@@ -43,6 +95,9 @@
             <inheritdoc />
         </member>
         <member name="M:AStar.Dev.Velopack.Publishing.VelopackUpdateService.CheckForUpdatesAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.VelopackUpdateService.CheckForUpdatesWithResultAsync(System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
         <member name="M:AStar.Dev.Velopack.Publishing.VelopackUpdateService.DownloadUpdatesAsync(Velopack.UpdateInfo,System.Action{System.Int32},System.Threading.CancellationToken)">

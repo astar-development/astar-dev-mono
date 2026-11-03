@@ -52,6 +52,10 @@
         <member name="M:AStar.Dev.Velopack.Publishing.Avalonia.Updates.IUpdateNotificationService.CheckAndNotifyAsync(System.Threading.CancellationToken)">
             <summary>Checks for updates and shows the dialog if one is available. No-op if none is found or the check fails.</summary>
         </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.Avalonia.Updates.IUpdateNotificationService.CheckNowAsync(System.Threading.CancellationToken)">
+            <summary>Checks for updates, shows the dialog if one is available, and returns the outcome so the caller can report it.</summary>
+            <param name="cancellationToken">A token to cancel the check.</param>
+        </member>
         <member name="T:AStar.Dev.Velopack.Publishing.Avalonia.Updates.UpdateAvailableView">
             <summary>The shared update-available dialog window, showing title/version/release notes and a Restart-now/Later choice.</summary>
         </member>
@@ -147,6 +151,9 @@
             <inheritdoc />
         </member>
         <member name="M:AStar.Dev.Velopack.Publishing.Avalonia.Updates.UpdateNotificationService.CheckAndNotifyAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.Avalonia.Updates.UpdateNotificationService.CheckNowAsync(System.Threading.CancellationToken)">
             <inheritdoc />
         </member>
         <member name="T:AStar.Dev.Velopack.Publishing.Avalonia.Updates.UpdateNotificationServiceCollectionExtensions">
