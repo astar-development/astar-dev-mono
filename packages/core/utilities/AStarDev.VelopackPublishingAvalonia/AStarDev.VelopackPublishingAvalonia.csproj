@@ -18,6 +18,7 @@
 
   <PropertyGroup>
         <PackageReleaseNotes>
+        v0.2.0 feat(velopack-publishing): expose update check outcome
         v0.1.0 feat(velopack): show download percentage and MB progress in the update dialog
         </PackageReleaseNotes>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>

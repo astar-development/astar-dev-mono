@@ -41,6 +41,10 @@ public sealed class VelopackUpdateService : IVelopackUpdateService
 
     /// <inheritdoc />
     public async Task<UpdateInfo?> CheckForUpdatesAsync(CancellationToken cancellationToken = default)
+        => await CheckForUpdatesWithResultAsync(cancellationToken).ConfigureAwait(false) is UpdateFound found ? found.Info : null;
+
+    /// <inheritdoc />
+    public async Task<UpdateCheckResult> CheckForUpdatesWithResultAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -48,7 +52,7 @@ public sealed class VelopackUpdateService : IVelopackUpdateService
         {
             LogMessage.Information(logger, nameof(VelopackUpdateService), "Skipping update check: app is not running as a Velopack-installed instance.");
 
-            return null;
+            return UpdateCheckResultFactory.CreateNotInstalled();
         }
 
         try
@@ -62,13 +66,13 @@ public sealed class VelopackUpdateService : IVelopackUpdateService
                     ? $"Up to date. Current version: {updateManager.CurrentVersion}."
                     : $"Update available: {updateManager.CurrentVersion} -> {updateInfo.TargetFullRelease.Version}.");
 
-            return updateInfo;
+            return updateInfo is null ? UpdateCheckResultFactory.CreateUpToDate() : UpdateCheckResultFactory.CreateFound(updateInfo);
         }
         catch (Exception ex)
         {
             LogMessage.LogException(logger, nameof(VelopackUpdateService), ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
 
-            return null;
+            return UpdateCheckResultFactory.CreateFailed(ex.Message);
         }
     }
 

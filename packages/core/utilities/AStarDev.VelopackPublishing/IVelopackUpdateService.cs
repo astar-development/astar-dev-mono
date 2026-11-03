@@ -17,6 +17,10 @@ public interface IVelopackUpdateService
     /// </summary>
     Task<UpdateInfo?> CheckForUpdatesAsync(CancellationToken cancellationToken = default);
 
+    /// <summary>Checks the configured GitHub releases feed and reports why no update was found, rather than returning <c>null</c>.</summary>
+    /// <param name="cancellationToken">A token to cancel the check.</param>
+    Task<UpdateCheckResult> CheckForUpdatesWithResultAsync(CancellationToken cancellationToken = default);
+
     /// <summary>Downloads the update described by <paramref name="updateInfo"/> to the local packages directory.</summary>
     /// <param name="updateInfo">The update to download, as returned by <see cref="CheckForUpdatesAsync"/>.</param>
     /// <param name="progress">An optional callback invoked with the download progress, from 0-100.</param>

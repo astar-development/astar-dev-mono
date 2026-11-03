@@ -13,6 +13,9 @@
   -->
 
   <PropertyGroup>
+        <PackageReleaseNotes>
+        v0.1.0 feat(velopack-publishing): expose update check outcome
+        </PackageReleaseNotes>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <PackageTags>velopack;updates;publishing;astar;astardevelopment</PackageTags>
