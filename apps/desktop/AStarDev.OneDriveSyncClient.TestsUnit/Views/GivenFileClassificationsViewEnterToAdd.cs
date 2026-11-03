@@ -93,7 +93,7 @@ public sealed class GivenFileClassificationsViewEnterToAdd
     {
         var (window, viewModel) = await ShowViewAsync();
         viewModel.VisibleCategories.Single().NewChildCategoryName = "Child";
-        FindTextBox(window, SubPlaceholder).Focus();
+        FindTextBox(window, SubPlaceholder).Focus().ShouldBeTrue();
 
         await PressEnterAsync(window);
 
@@ -104,12 +104,13 @@ public sealed class GivenFileClassificationsViewEnterToAdd
     public async Task when_enter_is_pressed_in_a_sub_category_textbox_then_a_sub_category_textbox_keeps_focus()
     {
         var (window, viewModel) = await ShowViewAsync();
-        viewModel.VisibleCategories.Single().NewChildCategoryName = "Child";
-        FindTextBox(window, SubPlaceholder).Focus();
+        var parent = viewModel.VisibleCategories.Single();
+        parent.NewChildCategoryName = "Child";
+        FindTextBox(window, SubPlaceholder).Focus().ShouldBeTrue();
 
         await PressEnterAsync(window);
 
         await repository.Received(1).AddCategoryAsync(Arg.Any<FileClassificationCategory>(), Arg.Any<CancellationToken>());
-        window.GetVisualDescendants().OfType<TextBox>().Single(textBox => textBox.PlaceholderText == SubPlaceholder && textBox.DataContext == viewModel.VisibleCategories.Single()).IsFocused.ShouldBeTrue();
+        window.GetVisualDescendants().OfType<TextBox>().Single(textBox => textBox.PlaceholderText == SubPlaceholder && textBox.DataContext == parent).IsFocused.ShouldBeTrue();
     }
 }

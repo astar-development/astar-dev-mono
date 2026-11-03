@@ -204,8 +204,13 @@
                                                  PlaceholderText="{Binding $parent[UserControl].((classifications:FileClassificationRulesViewModel)DataContext).Text.NewSubCategoryPlaceholderText}"
                                                  FontSize="{StaticResource FontSizeSm}"
                                                  CornerRadius="{StaticResource RadiusSm}"
-                                                 MinWidth="180"/>
-                                        <Button Content="{Binding $parent[UserControl].((classifications:FileClassificationRulesViewModel)DataContext).Text.AddSubCategoryText}"
+                                                 MinWidth="180">
+                                            <TextBox.KeyBindings>
+                                                <KeyBinding Gesture="Enter" Command="{Binding AddChildCategoryCommand}"/>
+                                            </TextBox.KeyBindings>
+                                        </TextBox>
+                                        <Button Focusable="False"
+                                                Content="{Binding $parent[UserControl].((classifications:FileClassificationRulesViewModel)DataContext).Text.AddSubCategoryText}"
                                                 Padding="8,4"
                                                 CornerRadius="{StaticResource RadiusMd}"
                                                 Background="Transparent"
@@ -242,7 +247,11 @@
                             PlaceholderText="{Binding Text.CategoryNamePlaceholderText}"
                             FontSize="{StaticResource FontSizeSm}"
                             CornerRadius="{StaticResource RadiusMd}"
-                            MinWidth="220"/>
+                            MinWidth="220">
+                        <TextBox.KeyBindings>
+                            <KeyBinding Gesture="Enter" Command="{Binding AddCategoryCommand}"/>
+                        </TextBox.KeyBindings>
+                    </TextBox>
                     <CheckBox Content="{Binding Text.FamousText}"
                             IsChecked="{Binding IsFamous}"
                             FontSize="{StaticResource FontSizeSm}"
@@ -255,7 +264,8 @@
                             IsChecked="{Binding IncludeInSearch}"
                             FontSize="{StaticResource FontSizeSm}"
                             VerticalAlignment="Center"/>
-                    <Button Content="{Binding Text.AddText}"
+                    <Button Focusable="False"
+                            Content="{Binding Text.AddText}"
                             Padding="14,6"
                             CornerRadius="{StaticResource RadiusMd}"
                             Background="{DynamicResource TextAccentBrush}"
