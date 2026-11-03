@@ -28,6 +28,9 @@ public interface ISyncedItemRepository
     /// <summary>Returns all distinct tag names for files belonging to the specified account, whether synced or merely classified under the account's local sync root.</summary>
     Task<IReadOnlyList<string>> GetDistinctTagNamesAsync(AccountId accountId, CancellationToken cancellationToken);
 
+    /// <summary>Returns the number of synced files (excluding folders) for the specified account.</summary>
+    Task<int> CountFilesAsync(AccountId accountId, CancellationToken cancellationToken);
+
     /// <summary>Removes the file detail row with the specified id together with its classification links, clearing any synced-item references to it first.</summary>
     Task DeleteFileDetailAsync(FileId fileDetailId, CancellationToken cancellationToken);
 }

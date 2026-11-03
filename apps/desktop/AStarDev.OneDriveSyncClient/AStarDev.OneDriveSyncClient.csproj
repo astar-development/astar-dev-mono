@@ -64,6 +64,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AStarDev.ClockControls\AStarDev.ClockControls\AStarDev.ClockControls.csproj" />
     <ProjectReference Include="..\..\..\packages\AStarDev.InfrastructureAppDb\AStarDev.InfrastructureAppDb.csproj" />
     <ProjectReference Include="../../../packages/core/logging/AStarDev.LoggingExtensions/AStarDev.LoggingExtensions.csproj" />
     <ProjectReference Include="..\..\..\packages\core\functional\AStarDev.FunctionalParadigm\AStarDev.FunctionalParadigm.csproj" />

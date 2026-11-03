@@ -88,4 +88,12 @@ public sealed class GivenAClassificationText
 
         loc.Received(1).GetLocal("Classifications.ReclassifyFailed", Arg.Is<object[]>(args => args.SequenceEqual(new object[] { "boom" })));
     }
+
+    [Fact]
+    public void when_category_delete_failed_is_read_then_it_uses_the_delete_failed_key_with_the_error()
+    {
+        sut.CategoryDeleteFailed("boom");
+
+        loc.Received(1).GetLocal("Classifications.CategoryDeleteFailed", Arg.Is<object[]>(args => args.SequenceEqual(new object[] { "boom" })));
+    }
 }

@@ -6,6 +6,7 @@
         xmlns:controls="clr-namespace:AStarDev.OneDriveSyncClient.Controls"
         xmlns:local="clr-namespace:AStarDev.OneDriveSyncClient"
         xmlns:accounts="clr-namespace:AStarDev.OneDriveSyncClient.Accounts"
+        xmlns:clockControls="clr-namespace:AStarDev.ClockControls;assembly=AStarDev.ClockControls"
         mc:Ignorable="d"
         x:Class="AStarDev.OneDriveSyncClient.Home.MainWindow"
         x:DataType="vmHome:MainWindowViewModel"
@@ -179,7 +180,7 @@
                     Background="{DynamicResource BackgroundAccountPanelBrush}"
                     BorderThickness="0,0,1,0"
                     BorderBrush="{DynamicResource BorderSubtleBrush}">
-                <Grid RowDefinitions="Auto,Auto,*,Auto">
+                <Grid RowDefinitions="Auto,Auto,*,Auto,Auto,Auto">
 
                     <Border Grid.Row="0"
                             Height="{StaticResource IconRailWidth}"
@@ -273,6 +274,66 @@
                     </ScrollViewer>
 
                     <Border Grid.Row="3"
+                            BorderThickness="0,1,0,0"
+                            BorderBrush="{DynamicResource BorderSubtleBrush}"
+                            Padding="12,8">
+                        <Grid>
+                            <clockControls:AnalogClockControl IsVisible="{Binding Clock.IsAnalogue}"
+                                                              ShowSecondHand="{Binding Clock.ShowSeconds}"
+                                                              Height="120"/>
+                            <clockControls:DigitalClockControl IsVisible="{Binding Clock.IsDigital}"
+                                                               ShowSeconds="{Binding Clock.ShowSeconds}"
+                                                               FontSize="{StaticResource FontSizeXl}"
+                                                               FontWeight="Medium"
+                                                               Foreground="{DynamicResource TextPrimaryBrush}"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center"/>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Row="4"
+                            BorderThickness="0,1,0,0"
+                            BorderBrush="{DynamicResource BorderSubtleBrush}"
+                            Padding="12,8">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="{Binding ThroughputGraph.TitleText}"
+                                       FontSize="{StaticResource FontSizeXs}"
+                                       Foreground="{DynamicResource TextTertiaryBrush}"
+                                       TextWrapping="Wrap"/>
+                            <Grid>
+                                <ItemsControl ItemsSource="{Binding ThroughputGraph.Bars}"
+                                              Height="48">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <UniformGrid Rows="1"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <ProgressBar Orientation="Vertical"
+                                                         Minimum="0" Maximum="1"
+                                                         Value="{Binding HeightFraction}"
+                                                         Margin="1,0"
+                                                         MinWidth="0"
+                                                         HorizontalAlignment="Stretch"
+                                                         VerticalAlignment="Stretch"
+                                                         Background="Transparent"
+                                                         Foreground="{DynamicResource TextTertiaryBrush}"
+                                                         ToolTip.Tip="{Binding Tooltip}"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <TextBlock Text="{Binding ThroughputGraph.NoDataText}"
+                                           IsVisible="{Binding !ThroughputGraph.HasData}"
+                                           FontSize="{StaticResource FontSizeXs}"
+                                           Foreground="{DynamicResource TextTertiaryBrush}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Row="5"
                             BorderThickness="0,1,0,0"
                             BorderBrush="{DynamicResource BorderSubtleBrush}"
                             Padding="8">

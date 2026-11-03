@@ -1,6 +1,6 @@
 using Avalonia.Media;
 
-namespace AStarDev.Clock.Controls;
+namespace AStarDev.ClockControls;
 
 /// <summary>Defines the stroke thickness and brush used to draw each clock hand.</summary>
 public static class ClockHandStyle

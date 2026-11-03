@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
 using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStarDev.ClockControls;
 using AStarDev.OneDriveSyncClient.Accounts;
 using AStarDev.OneDriveSyncClient.Conflicts;
 using AStarDev.OneDriveSyncClient.Data.Repositories;
@@ -41,6 +42,9 @@ public sealed partial class SettingsViewModel : LocalizedObservableObject
         SyncIntervalMinutes = settingsService.Current.SyncIntervalMinutes;
         ConcurrentWorkerCount = settingsService.Current.ConcurrentWorkerCount;
         LaunchAtStartup = settingsService.Current.LaunchAtStartup;
+        ClockStyle = ClockStyleFactory.Create(settingsService.Current.ClockStyle);
+        ShowClockSeconds = settingsService.Current.ShowClockSeconds;
+        ClockStyleOptions = ClockStyleOptionFactory.Create(loc, ClockStyle);
         ThemeOptions = ThemeOptionFactory.Create(loc, Theme);
         IntervalOptions = BuildIntervalOptions();
         PolicyOptions = ConflictPolicyOptionFactory.Create(loc, DefaultConflictPolicy);
@@ -123,6 +127,51 @@ public sealed partial class SettingsViewModel : LocalizedObservableObject
         _ = settingsService.SaveAsync();
         _ = autostartService.Apply(value);
     }
+
+    [ObservableProperty]
+    public partial ClockStyle ClockStyle { get; set; }
+
+    partial void OnClockStyleChanged(ClockStyle value)
+    {
+        ClockStyleOptions = ClockStyleOptionFactory.Create(loc, value);
+        OnPropertyChanged(nameof(ClockStyleOptions));
+
+        if (!isLoaded || isRefreshing)
+            return;
+
+        settingsService.Current.ClockStyle = value.ToKey();
+        _ = settingsService.SaveAsync();
+    }
+
+    [ObservableProperty]
+    public partial bool ShowClockSeconds { get; set; }
+
+    partial void OnShowClockSecondsChanged(bool value)
+    {
+        if (!isLoaded || isRefreshing)
+            return;
+
+        settingsService.Current.ShowClockSeconds = value;
+        _ = settingsService.SaveAsync();
+    }
+
+    /// <summary>The available clock style options, localised for the current culture.</summary>
+    public IReadOnlyList<ClockStyleOption> ClockStyleOptions { get; private set; } = [];
+
+    /// <summary>Localised clock section heading.</summary>
+    public string ClockHeadingText => loc.GetLocal("Settings.Section.Clock");
+
+    /// <summary>Localised clock style row label.</summary>
+    public string ClockStyleLabelText => loc.GetLocal("Settings.Clock.Style");
+
+    /// <summary>Localised clock style row description.</summary>
+    public string ClockStyleDescriptionText => loc.GetLocal("Settings.Clock.Style.Description");
+
+    /// <summary>Localised show seconds row label.</summary>
+    public string ShowClockSecondsLabelText => loc.GetLocal("Settings.Clock.ShowSeconds");
+
+    /// <summary>Localised show seconds row description.</summary>
+    public string ShowClockSecondsDescriptionText => loc.GetLocal("Settings.Clock.ShowSeconds.Description");
 
     /// <summary>Localised label for the launch at startup row.</summary>
     public string LaunchAtStartupLabelText => loc.GetLocal("Settings.LaunchAtStartup.Label");
@@ -265,6 +314,8 @@ public sealed partial class SettingsViewModel : LocalizedObservableObject
         SyncIntervalMinutes = settings.SyncIntervalMinutes;
         ConcurrentWorkerCount = settings.ConcurrentWorkerCount;
         LaunchAtStartup = settings.LaunchAtStartup;
+        ClockStyle = ClockStyleFactory.Create(settings.ClockStyle);
+        ShowClockSeconds = settings.ShowClockSeconds;
         isRefreshing = false;
         ThemeOptions = ThemeOptionFactory.Create(loc, Theme);
         OnPropertyChanged(nameof(ThemeOptions));

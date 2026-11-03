@@ -61,6 +61,8 @@ public sealed class GivenACategoryNodeViewModel
     [Fact]
     public async Task when_delete_self_command_executed_then_on_delete_self_callback_invoked()
     {
+        repository.DeleteCategoryAsync(Arg.Any<FileClassificationCategoryId>(), Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult<Result<FileClassificationCategoryId, string>>(new Ok<FileClassificationCategoryId, string>(new FileClassificationCategoryId(1))));
         bool callbackInvoked = false;
         CategoryNodeViewModel sut = new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), false, repository, categoryEditDialogService, _ => callbackInvoked = true, [], () => Task.CompletedTask);
 

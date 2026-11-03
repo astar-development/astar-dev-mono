@@ -49,7 +49,7 @@ public sealed partial class ActivityViewModel(ISyncRepository syncRepository, IS
     public partial int ConflictCount { get; set; }
 
     public bool HasConflicts => ConflictCount > 0;
-    public string ConflictBadgeText => ConflictCount > 0 ? ConflictCount.ToString(CultureInfo.CurrentCulture) : string.Empty;
+    public string ConflictBadgeText => ConflictCount > 0 ? ConflictCount.ToString("N0", CultureInfo.CurrentCulture) : string.Empty;
 
     [ObservableProperty]
     public partial ConflictPolicy SelectedGlobalPolicy { get; set; } = ConflictPolicy.Ignore;

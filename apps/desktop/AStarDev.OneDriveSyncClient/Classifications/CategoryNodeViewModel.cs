@@ -44,6 +44,9 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
         Children.CollectionChanged += (_, _) => OnPropertyChanged(nameof(IsLeafNode));
     }
 
+    /// <summary>Raised with the failure message when deleting this category (or a descendant) fails.</summary>
+    public event Action<string>? DeleteFailed;
+
     /// <summary>The database identifier for this category.</summary>
     public FileClassificationCategoryId CategoryId { get; }
 
@@ -265,6 +268,7 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
             .TapAsync(newId =>
             {
                 var newChild = new CategoryNodeViewModel(newId, trimmedName, childLevel, IsFamous, IsInternet, Option.Some(CategoryId), IncludeInSearch, repository, categoryEditDialogService, self => Children.Remove(self), allCategories, reloadAsync, childAncestorPath);
+                newChild.DeleteFailed += error => DeleteFailed?.Invoke(error);
                 Children.Add(newChild);
                 IsExpanded = true;
             })
@@ -279,7 +283,10 @@ public sealed partial class CategoryNodeViewModel : ObservableObject
     [RelayCommand]
     private async Task DeleteSelfAsync()
     {
-        await repository.DeleteCategoryAsync(CategoryId, CancellationToken.None).ConfigureAwait(false);
-        onDeleteSelf(this);
+        await repository.DeleteCategoryAsync(CategoryId, CancellationToken.None)
+            .TapAsync(_ => onDeleteSelf(this), RaiseDeleteFailed)
+            .ConfigureAwait(false);
     }
+
+    private void RaiseDeleteFailed(string error) => DeleteFailed?.Invoke(error);
 }

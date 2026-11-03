@@ -6,6 +6,7 @@ using AStarDev.OneDriveSyncClient.Infrastructure.Logging;
 using AStarDev.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using LogMessage = AStarDev.LoggingExtensions.LogMessage;
 
 namespace AStarDev.OneDriveSyncClient.Data.Repositories;
 
@@ -153,25 +154,36 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
     }
 
     /// <inheritdoc />
-    public async Task DeleteCategoryAsync(FileClassificationCategoryId id, CancellationToken cancellationToken = default)
+    public async Task<Result<FileClassificationCategoryId, string>> DeleteCategoryAsync(FileClassificationCategoryId id, CancellationToken cancellationToken = default)
     {
-        int rawId = id.Value;
-        await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            int rawId = id.Value;
+            await using var db = await dbFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
 
-        var subCategory = await db.FileClassificationCategories.FirstOrDefaultAsync(c => c.ParentId == rawId, cancellationToken).ConfigureAwait(false);
-        if (subCategory is not null)
-            db.FileClassificationCategories.Remove(subCategory);
+            var subCategory = await db.FileClassificationCategories.FirstOrDefaultAsync(c => c.ParentId == rawId, cancellationToken).ConfigureAwait(false);
+            if (subCategory is not null)
+                db.FileClassificationCategories.Remove(subCategory);
 
-        int[] affectedCategoryIds = subCategory is null ? [rawId] : [rawId, subCategory.Id];
-        var classificationLinks = await db.FileClassifications.Where(c => affectedCategoryIds.Contains(c.CategoryId)).ToListAsync(cancellationToken).ConfigureAwait(false);
-        db.FileClassifications.RemoveRange(classificationLinks);
+            int[] affectedCategoryIds = subCategory is null ? [rawId] : [rawId, subCategory.Id];
+            var classificationLinks = await db.FileClassifications.Where(c => affectedCategoryIds.Contains(c.CategoryId)).ToListAsync(cancellationToken).ConfigureAwait(false);
+            db.FileClassifications.RemoveRange(classificationLinks);
 
-        var entity = await db.FileClassificationCategories.FindAsync([rawId], cancellationToken).ConfigureAwait(false);
-        if (entity is null)
-            return;
+            var entity = await db.FileClassificationCategories.FindAsync([rawId], cancellationToken).ConfigureAwait(false);
+            if (entity is null)
+                return new Ok<FileClassificationCategoryId, string>(id);
 
-        db.FileClassificationCategories.Remove(entity);
-        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            db.FileClassificationCategories.Remove(entity);
+            await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+            return new Ok<FileClassificationCategoryId, string>(id);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            LogMessage.Error(logger, $"Failed to delete category {id.Value}", ex);
+
+            return new Fail<FileClassificationCategoryId, string>(ex.Message);
+        }
     }
 
     /// <inheritdoc />

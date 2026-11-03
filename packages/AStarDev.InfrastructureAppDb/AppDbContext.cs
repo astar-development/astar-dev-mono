@@ -17,6 +17,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     /// <summary>The sync jobs queued or completed across all accounts.</summary>
     public DbSet<SyncJobEntity> SyncJobs => Set<SyncJobEntity>();
 
+    /// <summary>Completed transfers used to graph recent sync throughput.</summary>
+    public DbSet<SyncThroughputSampleEntity> SyncThroughputSamples => Set<SyncThroughputSampleEntity>();
+
     /// <summary>The last-known drive state for each account.</summary>
     public DbSet<DriveStateEntity> DriveStates => Set<DriveStateEntity>();
 

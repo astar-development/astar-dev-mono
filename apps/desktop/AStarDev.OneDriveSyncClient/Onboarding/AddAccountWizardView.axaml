@@ -183,7 +183,7 @@
                                    FontSize="{StaticResource FontSizeSm}"
                                    Foreground="{DynamicResource TextTertiaryBrush}"/>
                         <TextBlock Grid.Column="1"
-                                   Text="{Binding ConfirmedFolderCount, StringFormat='{}{0} selected'}"
+                                   Text="{Binding ConfirmedFolderCount, StringFormat='{}{0:N0} selected'}"
                                    FontSize="{StaticResource FontSizeSm}"
                                    Foreground="{DynamicResource TextPrimaryBrush}"/>
                     </Grid>

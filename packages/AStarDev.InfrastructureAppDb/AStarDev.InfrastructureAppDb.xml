@@ -21,6 +21,9 @@
         <member name="P:AStar.Dev.Infrastructure.AppDb.AppDbContext.SyncJobs">
             <summary>The sync jobs queued or completed across all accounts.</summary>
         </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.AppDbContext.SyncThroughputSamples">
+            <summary>Completed transfers used to graph recent sync throughput.</summary>
+        </member>
         <member name="P:AStar.Dev.Infrastructure.AppDb.AppDbContext.DriveStates">
             <summary>The last-known drive state for each account.</summary>
         </member>
@@ -190,6 +193,12 @@
             <summary>EF Core configuration for <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.SyncRuleEntity"/>.</summary>
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.Configuration.SyncRuleEntityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStar.Dev.Infrastructure.AppDb.Entities.SyncRuleEntity})">
+            <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.Configuration.SyncThroughputSampleEntityConfiguration">
+            <summary>EF Core configuration for <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.SyncThroughputSampleEntity"/>.</summary>
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Configuration.SyncThroughputSampleEntityConfiguration.Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder{AStar.Dev.Infrastructure.AppDb.Entities.SyncThroughputSampleEntity})">
             <inheritdoc />
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Configuration.TagToIgnoreEntityConfiguration">
@@ -1827,6 +1836,24 @@
         <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.SyncRuleEntity.Account">
             <summary>Navigation property to the associated AccountEntity.</summary>
         </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.SyncThroughputSampleEntity">
+            <summary>A single completed transfer, recorded so recent sync throughput can be graphed after a restart.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.SyncThroughputSampleEntity.Id">
+            <summary>Primary key for the sample.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.SyncThroughputSampleEntity.AccountId">
+            <summary>The account the transfer belongs to.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.SyncThroughputSampleEntity.CompletedAt">
+            <summary>When the transfer completed.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.SyncThroughputSampleEntity.Bytes">
+            <summary>The number of bytes transferred.</summary>
+        </member>
+        <member name="P:AStar.Dev.Infrastructure.AppDb.Entities.SyncThroughputSampleEntity.Account">
+            <summary>The owning account.</summary>
+        </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.Entities.TagId">
             <summary>
             A strongly-typed identifier for a <see cref="T:AStar.Dev.Infrastructure.AppDb.Entities.TagToIgnoreEntity"/>.
@@ -2002,6 +2029,18 @@
             <inheritdoc />
         </member>
         <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddDriveStateFullEnumerationTracking.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.Infrastructure.AppDb.Migrations.AddSyncThroughputSamples">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddSyncThroughputSamples.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddSyncThroughputSamples.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Infrastructure.AppDb.Migrations.AddSyncThroughputSamples.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
         <member name="T:AStar.Dev.Infrastructure.AppDb.ModelBuilderExtensions">

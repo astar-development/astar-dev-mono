@@ -719,7 +719,7 @@ public sealed class GivenAFileClassificationRulesViewModel
         repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
                   .Returns(Task.FromResult(categories));
         repository.DeleteCategoryAsync(Arg.Any<FileClassificationCategoryId>(), Arg.Any<CancellationToken>())
-                  .Returns(Task.CompletedTask);
+                  .Returns(Task.FromResult<Result<FileClassificationCategoryId, string>>(new FileClassificationCategoryId(1)));
         FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
         await sut.LoadAsync(CancellationToken.None);
         var media = sut.Categories.Single(category => category.Name == "Media");
@@ -727,6 +727,28 @@ public sealed class GivenAFileClassificationRulesViewModel
         await media.DeleteSelfCommand.ExecuteAsync(null);
 
         sut.VisibleCategories.Select(node => node.Name).ShouldBe(["Documents"]);
+    }
+
+    [Fact]
+    public async Task when_category_delete_fails_then_the_category_remains_and_the_localised_error_is_shown()
+    {
+        IReadOnlyList<FileClassificationCategory> categories =
+        [
+            new(new FileClassificationCategoryId(1), "Media", 1, false, false, Option.None<FileClassificationCategoryId>(), true)
+        ];
+        repository.GetAllCategoriesAsync(Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult(categories));
+        repository.DeleteCategoryAsync(Arg.Any<FileClassificationCategoryId>(), Arg.Any<CancellationToken>())
+                  .Returns(Task.FromResult<Result<FileClassificationCategoryId, string>>("database is locked"));
+        FileClassificationRulesViewModel sut = new(repository, exportImportService, filePickerService, confirmationDialogService, categoryEditDialogService, localizationService, fileSystem, reclassificationService);
+        await sut.LoadAsync(CancellationToken.None);
+        var media = sut.Categories.Single(category => category.Name == "Media");
+
+        await media.DeleteSelfCommand.ExecuteAsync(null);
+
+        sut.VisibleCategories.Select(node => node.Name).ShouldBe(["Media"]);
+        sut.CategoryErrorText.ShouldBe("Classifications.CategoryDeleteFailed:database is locked");
+        sut.HasCategoryError.ShouldBeTrue();
     }
 
     [Fact]

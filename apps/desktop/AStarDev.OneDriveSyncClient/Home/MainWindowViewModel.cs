@@ -5,7 +5,9 @@ using AStarDev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStarDev.OneDriveSyncClient.Accounts;
 using AStarDev.OneDriveSyncClient.Classifications;
+using AStarDev.OneDriveSyncClient.Clock;
 using AStarDev.OneDriveSyncClient.Dashboard;
+using AStarDev.OneDriveSyncClient.Dashboard.Throughput;
 using AStarDev.OneDriveSyncClient.Infrastructure.Logging;
 using AStarDev.OneDriveSyncClient.Infrastructure.Shell;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync;
@@ -24,7 +26,7 @@ using SettingsViewModel = AStarDev.OneDriveSyncClient.Settings.SettingsViewModel
 namespace AStarDev.OneDriveSyncClient.Home;
 
 [ExcludeFromCodeCoverage]
-public sealed partial class MainWindowViewModel(IApplicationInitializer initializer, ISyncScheduler scheduler, AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, ActivityViewModel activity, SettingsViewModel settings, FileClassificationRulesViewModel classificationRules, SyncedFileSearchViewModel search, StatusBarViewModel statusBar, ILocalizationService localizationService, ILogger<MainWindowViewModel> logger) : LocalizedObservableObject(localizationService)
+public sealed partial class MainWindowViewModel(IApplicationInitializer initializer, ISyncScheduler scheduler, AccountsViewModel accounts, FilesViewModel files, DashboardViewModel dashboard, ThroughputGraphViewModel throughputGraph, ClockViewModel clock, ActivityViewModel activity, SettingsViewModel settings, FileClassificationRulesViewModel classificationRules, SyncedFileSearchViewModel search, StatusBarViewModel statusBar, ILocalizationService localizationService, ILogger<MainWindowViewModel> logger) : LocalizedObservableObject(localizationService)
 {
     private readonly ILogger<MainWindowViewModel> logger = logger;
 
@@ -149,6 +151,12 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
     public ActivityViewModel Activity => activity;
 
     public DashboardViewModel Dashboard => dashboard;
+
+    /// <summary>The sync throughput graph shown in the account panel.</summary>
+    public ThroughputGraphViewModel ThroughputGraph => throughputGraph;
+
+    /// <summary>The clock shown above the throughput graph.</summary>
+    public ClockViewModel Clock => clock;
 
     public SettingsViewModel Settings => settings;
 

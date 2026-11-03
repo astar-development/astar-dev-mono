@@ -740,4 +740,21 @@ public sealed class GivenASyncedItemRepository
         db.SyncedItems.Count().ShouldBe(1);
         db.SyncedItems.Single().AccountId.ShouldBe(new AccountId("user-2"));
     }
+
+    [Fact]
+    public async Task when_count_files_is_called_then_only_files_for_that_account_are_counted()
+    {
+        var (db, factory, connection) = CreateSqliteFactory();
+        await using var connectionScope = connection;
+        var repository = new SyncedItemRepository(factory);
+        db.SyncedItems.Add(FileItem(accountId: "user-1", remotePath: "/a.txt"));
+        db.SyncedItems.Add(FileItem(accountId: "user-1", remotePath: "/b.txt"));
+        db.SyncedItems.Add(FileItem(accountId: "user-1", remotePath: "/folder", isFolder: true));
+        db.SyncedItems.Add(FileItem(accountId: "user-2", remotePath: "/c.txt"));
+        _ = await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+
+        int count = await repository.CountFilesAsync(new AccountId("user-1"), TestContext.Current.CancellationToken);
+
+        count.ShouldBe(2);
+    }
 }

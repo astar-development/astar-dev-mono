@@ -142,7 +142,7 @@
                     <Border Background="{DynamicResource BackgroundTertiaryBrush}"
                             CornerRadius="{StaticResource RadiusSm}"
                             Padding="8,3">
-                        <TextBlock Text="{Binding ResultCount}"
+                        <TextBlock Text="{Binding ResultCount, StringFormat='{}{0:N0}'}"
                                    FontSize="{StaticResource FontSizeXs}"
                                    Foreground="{DynamicResource TextSecondaryBrush}"/>
                     </Border>

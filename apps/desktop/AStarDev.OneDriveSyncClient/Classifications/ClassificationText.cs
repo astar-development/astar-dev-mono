@@ -103,4 +103,7 @@ public sealed class ClassificationText : LocalizedObservableObject
 
     /// <summary>Localised message shown when a reclassify run fails.</summary>
     public string ReclassifyFailed(string error) => loc.GetLocal("Classifications.ReclassifyFailed", error);
+
+    /// <summary>Localised message shown when deleting a category fails.</summary>
+    public string CategoryDeleteFailed(string error) => loc.GetLocal("Classifications.CategoryDeleteFailed", error);
 }

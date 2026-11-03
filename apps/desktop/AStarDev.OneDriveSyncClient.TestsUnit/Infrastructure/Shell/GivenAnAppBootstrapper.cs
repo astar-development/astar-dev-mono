@@ -1,3 +1,6 @@
+using AStarDev.OneDriveSyncClient.TestsUnit.TestHelpers;
+using AStarDev.OneDriveSyncClient.Clock;
+using AStarDev.OneDriveSyncClient.Dashboard.Throughput;
 using AStarDev.OneDriveSyncClient.Infrastructure.Autostart;
 using System.Globalization;
 using AStarDev.FunctionalParadigm;
@@ -94,7 +97,7 @@ public sealed class GivenAnAppBootstrapper : IAsyncDisposable
         var settings = new SettingsViewModel(settingsServiceForViewModel, themeServiceForViewModel, schedulerForViewModel, accountRepository, localizationService, Substitute.For<IFolderPickerService>(), Substitute.For<IAutostartService>());
         var statusBar = new StatusBarViewModel(accounts, localizationService);
 
-        return new MainWindowViewModel(applicationInitializer, syncScheduler, accounts, files, dashboard, activity, settings, new FileClassificationRulesViewModel(classificationRepo, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), Substitute.For<ICategoryEditDialogService>(), localizationService, fileSystem, Substitute.For<IFileReclassificationService>()), new SyncedFileSearchViewModel(Substitute.For<ISyncedItemRepository>(), Substitute.For<IFileOpenerService>(), Substitute.For<IFileTypeClassifier>(), new InlineUiDispatcher(), localizationService), statusBar, localizationService, Substitute.For<ILogger<MainWindowViewModel>>());
+        return new MainWindowViewModel(applicationInitializer, syncScheduler, accounts, files, dashboard, new ThroughputGraphViewModel(Substitute.For<ISyncThroughputRepository>(), Substitute.For<IUiTimer>(), System.TimeProvider.System, Substitute.For<ILocalizationService>(), Substitute.For<ILogger<ThroughputGraphViewModel>>()), new ClockViewModel(new StubSettingsService()), activity, settings, new FileClassificationRulesViewModel(classificationRepo, Substitute.For<IFileClassificationExportImportService>(), Substitute.For<IFilePickerService>(), Substitute.For<IConfirmationDialogService>(), Substitute.For<ICategoryEditDialogService>(), localizationService, fileSystem, Substitute.For<IFileReclassificationService>()), new SyncedFileSearchViewModel(Substitute.For<ISyncedItemRepository>(), Substitute.For<IFileOpenerService>(), Substitute.For<IFileTypeClassifier>(), new InlineUiDispatcher(), localizationService), statusBar, localizationService, Substitute.For<ILogger<MainWindowViewModel>>());
     }
 
     private AppBootstrapper CreateSut() => new(dbContextFactory, settingsService, themeService, localizationService, syncScheduler, CreateMainWindowViewModel(), personCategoryCleanupService, defaultCategorySeedingService, Substitute.For<ILogger<AppBootstrapper>>());

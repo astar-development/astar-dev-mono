@@ -371,4 +371,31 @@ public sealed class GivenAFileClassificationRepository
         verifyDb.FileClassifications.Select(c => c.CategoryId).ToList().ShouldBe([media.Id]);
         verifyDb.Files.Count().ShouldBe(1);
     }
+
+    [Fact]
+    public async Task when_delete_category_is_called_for_an_existing_category_then_ok_with_its_id_is_returned()
+    {
+        var (db, factory) = CreateInMemoryFactory();
+        var repository = new FileClassificationRepository(factory, CreateLogger());
+        var photos = new FileClassificationCategoryEntity { Name = "Photos", Level = 1 };
+        db.FileClassificationCategories.Add(photos);
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var id = new FileClassificationCategoryId(photos.Id);
+
+        var result = await repository.DeleteCategoryAsync(id, TestContext.Current.CancellationToken);
+
+        result.ShouldBeOfType<Ok<FileClassificationCategoryId, string>>().Value.ShouldBe(id);
+    }
+
+    [Fact]
+    public async Task when_delete_category_is_called_and_the_database_throws_then_fail_with_the_error_is_returned()
+    {
+        var factory = Substitute.For<IDbContextFactory<AppDbContext>>();
+        factory.CreateDbContextAsync(Arg.Any<CancellationToken>()).Returns<Task<AppDbContext>>(_ => throw new InvalidOperationException("database is locked"));
+        var repository = new FileClassificationRepository(factory, CreateLogger());
+
+        var result = await repository.DeleteCategoryAsync(new FileClassificationCategoryId(1), TestContext.Current.CancellationToken);
+
+        result.ShouldBeOfType<Fail<FileClassificationCategoryId, string>>().Error.ShouldBe("database is locked");
+    }
 }
