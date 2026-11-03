@@ -1,16 +1,24 @@
+using System.Collections.Specialized;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 namespace AStarDev.OneDriveSyncClient.Classifications;
 
 public partial class FileClassificationsView : UserControl, IDisposable
 {
     private CancellationTokenSource? cts;
+    private CategoryNodeViewModel? pendingFocusNode;
 
-    public FileClassificationsView() => InitializeComponent();
+    public FileClassificationsView()
+    {
+        InitializeComponent();
+        AddHandler(GotFocusEvent, OnPreviewGotFocus, RoutingStrategies.Bubble);
+        AddHandler(PointerPressedEvent, OnPreviewPointerPressed, RoutingStrategies.Tunnel);
+    }
 
     public void Dispose()
     {
@@ -33,6 +41,7 @@ public partial class FileClassificationsView : UserControl, IDisposable
         if (DataContext is not FileClassificationRulesViewModel vm)
             return;
         vm.PrepareForLoad();
+        vm.VisibleCategories.CollectionChanged += OnVisibleCategoriesChanged;
         cts = new CancellationTokenSource();
         Dispatcher.UIThread.InvokeAsync(() => vm.LoadAsync(cts.Token), DispatcherPriority.Background);
     }
@@ -40,6 +49,9 @@ public partial class FileClassificationsView : UserControl, IDisposable
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
+        if (DataContext is FileClassificationRulesViewModel vm)
+            vm.VisibleCategories.CollectionChanged -= OnVisibleCategoriesChanged;
+        pendingFocusNode = null;
         cts?.Cancel();
         cts?.Dispose();
         cts = null;
@@ -70,6 +82,26 @@ public partial class FileClassificationsView : UserControl, IDisposable
         await vm.ImportAsync(topLevel.StorageProvider, cancellationToken: cts?.Token ?? CancellationToken.None);
     }
 #pragma warning restore IDE1006 // Naming Styles
+
+    private void OnPreviewGotFocus(object? sender, FocusChangedEventArgs e) => pendingFocusNode = e.Source is TextBox { DataContext: CategoryNodeViewModel node } ? node : null;
+
+    private void OnPreviewPointerPressed(object? sender, PointerPressedEventArgs e) => pendingFocusNode = null;
+
+    private void OnVisibleCategoriesChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (pendingFocusNode is not null)
+            Dispatcher.UIThread.Post(RestoreSubCategoryFocus, DispatcherPriority.Background);
+    }
+
+    private void RestoreSubCategoryFocus()
+    {
+        UpdateLayout();
+        var target = this.GetVisualDescendants().OfType<TextBox>().FirstOrDefault(textBox => ReferenceEquals(textBox.DataContext, pendingFocusNode));
+        if (target is null)
+            return;
+
+        target.Focus();
+    }
 
     private void OnKeyDown(object? sender, KeyEventArgs e)
     {

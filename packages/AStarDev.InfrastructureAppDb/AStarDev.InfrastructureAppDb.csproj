@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <PackageReleaseNotes>
+        v0.3.0 feat(onedrive-sync-client): Enter adds category and name textbox keeps focus
         v0.2.0 feat(onedrive-sync-client): show sync throughput bar graph in the account panel
         v0.1.5 fix(app-db): emit the Colour root instead of Color
         v0.1.4 fix(onedrive-sync-client): stop classifying code file names as Person and remove the bad categories
