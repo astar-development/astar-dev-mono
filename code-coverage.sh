@@ -7,6 +7,13 @@ rm -rf CoverageReport
 dotnet clean --nologo
 dotnet build --no-restore --nologo
 
-dotnet test --no-build --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura || true
+testExitCode=0
+dotnet test --no-build --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura || testExitCode=$?
 
 reportgenerator -reports:**/TestResults/**/coverage.cobertura.xml -targetdir:CoverageReport
+
+if [[ "${COVERAGE_IGNORE_TEST_FAILURES:-0}" == "1" ]]; then
+  exit 0
+fi
+
+exit "$testExitCode"
