@@ -184,4 +184,36 @@ public sealed class GivenAMainWindowViewModel
 
         ((string?)typeof(MainWindowViewModel).GetProperty("ApplicationTooltipText")?.GetValue(sut)).ShouldBe("localised-app-title");
     }
+
+    private async Task<(MainWindowViewModel Sut, AccountCardViewModel Card)> CreateSutWithOneAccountAsync()
+    {
+        var sut = CreateSut();
+        var account = OneDriveAccountFactory.CreateFromWizardResult("acc-1", AccountProfileFactory.Create("Name", "a@b.com"), []);
+        sut.Accounts.RestoreAccounts([account]);
+        await sut.InitialiseAsync();
+
+        return (sut, sut.Accounts.Accounts[0]);
+    }
+
+    [Fact]
+    public async Task when_account_selected_while_on_activity_then_section_stays_activity()
+    {
+        var (sut, card) = await CreateSutWithOneAccountAsync();
+        sut.NavigateCommand.Execute(NavSection.Activity);
+
+        card.SelectCommand.Execute(null);
+
+        sut.ActiveSection.ShouldBe(NavSection.Activity);
+    }
+
+    [Fact]
+    public async Task when_account_selected_while_on_accounts_then_section_becomes_files()
+    {
+        var (sut, card) = await CreateSutWithOneAccountAsync();
+        sut.NavigateCommand.Execute(NavSection.Accounts);
+
+        card.SelectCommand.Execute(null);
+
+        sut.ActiveSection.ShouldBe(NavSection.Files);
+    }
 }
