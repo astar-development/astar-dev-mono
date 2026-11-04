@@ -37,6 +37,14 @@ public class GivenASyncPairViewModel
     }
 
     [Fact]
+    public void when_paused_then_the_progress_is_empty()
+    {
+        var pair = CreatePair(SyncDirectionFactory.CreateTwoWay(), SyncStatusFactory.CreatePaused());
+
+        pair.Progress.ShouldBe(0);
+    }
+
+    [Fact]
     public void when_created_then_the_file_count_and_last_sync_are_summarised()
     {
         var pair = CreatePair(SyncDirectionFactory.CreateTwoWay(), SyncStatusFactory.CreateUpToDate());
