@@ -1,5 +1,6 @@
 using AStarDev.CloudSync.Core;
 using AStarDev.CloudSync.ViewModels;
+using AStarDev.FunctionalParadigm;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AStarDev.CloudSync.TestsUnit.ViewModels;
@@ -87,7 +88,7 @@ public class GivenALayoutBViewModel
     public async Task when_the_overview_has_no_accounts_then_there_is_no_account_detail()
     {
         var source = Substitute.For<ISyncOverviewSource>();
-        source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([], [], [], [], [], 0));
+        source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([], [], [], [], [], 0, Option.None<DateTimeOffset>()));
         var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         var layout = new LayoutBViewModel(overview, TestData.CreateLocalPathFormatter(), TestData.CreateLocalization());
 

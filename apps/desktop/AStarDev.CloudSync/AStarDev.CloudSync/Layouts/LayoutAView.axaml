@@ -346,7 +346,7 @@
                 BorderThickness="0,1,0,0">
             <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
                 <TextBlock Grid.Column="0" Classes="muted" Text="{Binding StatusSummaryText}" />
-                <TextBlock Grid.Column="1" Classes="muted" Text="{Binding Overview.Throughput.CurrentText}" />
+                <TextBlock Grid.Column="1" Classes="muted" Text="{Binding StatusCheckedText}" />
             </Grid>
         </Border>
     </Grid>

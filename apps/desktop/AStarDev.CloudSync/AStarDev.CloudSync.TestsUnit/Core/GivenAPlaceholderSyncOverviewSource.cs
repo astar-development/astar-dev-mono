@@ -1,4 +1,5 @@
 using AStarDev.CloudSync.Core;
+using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.TestsUnit.Core;
 
@@ -66,5 +67,13 @@ public class GivenAPlaceholderSyncOverviewSource
         var overview = await TestData.CreateOverviewAsync();
 
         overview.BytesMovedToday.ShouldBeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task when_read_then_sync_was_last_checked_ten_minutes_ago()
+    {
+        var overview = await TestData.CreateOverviewAsync();
+
+        overview.LastChecked.ShouldBe(Option.Some(TestData.Now.AddMinutes(-10)));
     }
 }
