@@ -1,0 +1,325 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AStarDev.CloudSync.ViewModels"
+             xmlns:controls="using:AStarDev.CloudSync.Controls"
+             x:Class="AStarDev.CloudSync.Layouts.LayoutAView"
+             x:DataType="vm:LayoutAViewModel"
+             VerticalContentAlignment="Stretch"
+             HorizontalContentAlignment="Stretch"
+             Background="{DynamicResource CloudSyncBackgroundBrush}"
+             Foreground="{DynamicResource CloudSyncTextPrimaryBrush}"
+             FontSize="13">
+
+    <UserControl.Styles>
+        <Style Selector="Button.rail">
+            <Setter Property="Width" Value="44" />
+            <Setter Property="Height" Value="44" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <Style Selector="Button.rail Path">
+            <Setter Property="Width" Value="24" />
+            <Setter Property="Height" Value="24" />
+            <Setter Property="StrokeThickness" Value="2" />
+            <Setter Property="Stroke" Value="{DynamicResource CloudSyncTextMutedBrush}" />
+        </Style>
+        <Style Selector="Button.rail.active">
+            <Setter Property="Background" Value="{DynamicResource CloudSyncAccentSoftBrush}" />
+        </Style>
+        <Style Selector="Button.rail.active Path">
+            <Setter Property="Stroke" Value="{DynamicResource CloudSyncAccentBrush}" />
+        </Style>
+
+        <Style Selector="Button.chip">
+            <Setter Property="Height" Value="26" />
+            <Setter Property="MinHeight" Value="26" />
+            <Setter Property="Padding" Value="10,0" />
+            <Setter Property="CornerRadius" Value="13" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CloudSyncBorderBrush}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource CloudSyncTextMutedBrush}" />
+        </Style>
+        <Style Selector="Button.chip.selected">
+            <Setter Property="BorderBrush" Value="{DynamicResource CloudSyncAccentBrush}" />
+            <Setter Property="Background" Value="{DynamicResource CloudSyncAccentSoftBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource CloudSyncTextPrimaryBrush}" />
+        </Style>
+
+        <Style Selector="Ellipse.status-dot">
+            <Setter Property="Width" Value="8" />
+            <Setter Property="Height" Value="8" />
+            <Setter Property="Fill" Value="{DynamicResource CloudSyncIdleBrush}" />
+        </Style>
+        <Style Selector="Ellipse.status-dot.syncing">
+            <Setter Property="Fill" Value="{DynamicResource CloudSyncAccentBrush}" />
+        </Style>
+        <Style Selector="Ellipse.status-dot.uptodate">
+            <Setter Property="Fill" Value="{DynamicResource CloudSyncOkBrush}" />
+        </Style>
+        <Style Selector="Ellipse.status-dot.conflicts">
+            <Setter Property="Fill" Value="{DynamicResource CloudSyncWarnBrush}" />
+        </Style>
+
+        <Style Selector="Button.add-account">
+            <Setter Property="Height" Value="40" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CloudSyncBorderBrush}" />
+            <Setter Property="Background" Value="{DynamicResource CloudSyncSurfaceBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource CloudSyncAccentBrush}" />
+        </Style>
+
+        <Style Selector="Border.account-card">
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CloudSyncBorderBrush}" />
+            <Setter Property="Background" Value="{DynamicResource CloudSyncSurfaceBrush}" />
+        </Style>
+        <Style Selector="Button.card-action">
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Padding" Value="14,0" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CloudSyncBorderBrush}" />
+            <Setter Property="Background" Value="{DynamicResource CloudSyncSurface2Brush}" />
+            <Setter Property="Foreground" Value="{DynamicResource CloudSyncTextPrimaryBrush}" />
+        </Style>
+        <Style Selector="TextBlock.figure">
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="TextBlock.figure.warn">
+            <Setter Property="Foreground" Value="{DynamicResource CloudSyncWarnBrush}" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="*,Auto"
+          ColumnDefinitions="56,264,*"
+          HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch">
+
+        <Border Grid.Row="0" Grid.Column="0"
+                Background="{DynamicResource CloudSyncPanelBrush}"
+                BorderBrush="{DynamicResource CloudSyncBorderBrush}"
+                BorderThickness="0,0,1,0">
+            <Grid RowDefinitions="Auto,*,Auto">
+                <StackPanel Grid.Row="0" Margin="0,12" Spacing="6">
+                    <Button Classes="rail active" ToolTip.Tip="{Binding DashboardText}" AutomationProperties.Name="{Binding DashboardText}">
+                        <Path Data="M3,3 h7 v7 h-7 Z M14,3 h7 v7 h-7 Z M3,14 h7 v7 h-7 Z M14,14 h7 v7 h-7 Z" />
+                    </Button>
+                    <Button Classes="rail" ToolTip.Tip="{Binding FoldersText}" AutomationProperties.Name="{Binding FoldersText}">
+                        <Path Data="M3,7 A2,2 0 0 1 5,5 H9 L11,7 H19 A2,2 0 0 1 21,9 V17 A2,2 0 0 1 19,19 H5 A2,2 0 0 1 3,17 Z" />
+                    </Button>
+                    <Button Classes="rail" ToolTip.Tip="{Binding ActivityText}" AutomationProperties.Name="{Binding ActivityText}">
+                        <Path Data="M3,12 H7 L10,4 L14,20 L17,12 H21" />
+                    </Button>
+                    <Button Classes="rail" ToolTip.Tip="{Binding ConflictsText}" AutomationProperties.Name="{Binding ConflictsText}">
+                        <Path Data="M12,3 L2,20 H22 Z M12,10 V14 M12,17 V17.5" />
+                    </Button>
+                    <Button Classes="rail" ToolTip.Tip="{Binding SearchText}" AutomationProperties.Name="{Binding SearchText}">
+                        <Path Data="M18,11 A7,7 0 1 1 4,11 A7,7 0 1 1 18,11 Z M20,20 L16,16" />
+                    </Button>
+                </StackPanel>
+                <Button Grid.Row="2" Classes="rail" Margin="0,12" ToolTip.Tip="{Binding SettingsText}" AutomationProperties.Name="{Binding SettingsText}">
+                    <Path Data="M15,12 A3,3 0 1 1 9,12 A3,3 0 1 1 15,12 Z M12,2 V5 M12,19 V22 M2,12 H5 M19,12 H22 M4.9,4.9 L7,7 M17,17 L19.1,19.1 M4.9,19.1 L7,17 M17,7 L19.1,4.9" />
+                </Button>
+            </Grid>
+        </Border>
+
+        <Border Grid.Row="0" Grid.Column="1"
+                Background="{DynamicResource CloudSyncPanelBrush}"
+                BorderBrush="{DynamicResource CloudSyncBorderBrush}"
+                BorderThickness="0,0,1,0">
+            <Grid RowDefinitions="Auto,Auto,*,Auto,Auto">
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="16,16,16,8">
+                    <TextBlock Grid.Column="0" Classes="muted" Text="{Binding AccountsTitle}" FontSize="11" FontWeight="SemiBold" LetterSpacing="0.6" />
+                    <TextBlock Grid.Column="1" Classes="muted" Text="{Binding AccountCountText}" FontSize="11" />
+                </Grid>
+
+                <ItemsControl Grid.Row="1" Margin="16,0,16,12" ItemsSource="{Binding ProviderChips}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel ItemSpacing="6" LineSpacing="6" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:LayoutAProviderChipViewModel">
+                            <Button Classes="chip" Classes.selected="{Binding IsSelected}" Content="{Binding Label}" Command="{Binding SelectCommand}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <ItemsControl Grid.Row="2" Margin="8,0" ItemsSource="{Binding VisibleAccounts}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Spacing="2" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:LayoutAAccountCardViewModel">
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" Margin="8">
+                                <controls:ProviderBadge Grid.Column="0" VerticalAlignment="Center" DataContext="{Binding Account.Provider}" />
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Account.Name}" FontWeight="Medium" />
+                                    <TextBlock Classes="muted" Text="{Binding Account.Email}" TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+                                <Ellipse Grid.Column="2"
+                                         Classes="status-dot"
+                                         Classes.syncing="{Binding Account.Status.IsSyncing}"
+                                         Classes.uptodate="{Binding Account.Status.IsUpToDate}"
+                                         Classes.conflicts="{Binding Account.Status.HasConflicts}"
+                                         VerticalAlignment="Center"
+                                         ToolTip.Tip="{Binding Account.Status.Text}"
+                                         AutomationProperties.Name="{Binding Account.Status.Text}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <Border Grid.Row="3"
+                        Padding="16"
+                        BorderBrush="{DynamicResource CloudSyncBorderBrush}"
+                        BorderThickness="0,1,0,0">
+                    <controls:ThroughputSparkline DataContext="{Binding Overview.Throughput}" />
+                </Border>
+
+                <Button Grid.Row="4" Classes="add-account" Margin="16,0,16,16" Content="{Binding AddAccountText}" />
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="0" Grid.Column="2"
+              RowDefinitions="Auto,*"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch">
+
+            <Border Grid.Row="0"
+                    Background="{DynamicResource CloudSyncPanelBrush}"
+                    BorderBrush="{DynamicResource CloudSyncBorderBrush}"
+                    BorderThickness="0,0,0,1">
+                <ItemsControl ItemsSource="{Binding Overview.Stats}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Rows="1" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:StatTileViewModel">
+                            <Border Padding="20,14"
+                                    BorderBrush="{DynamicResource CloudSyncBorderBrush}"
+                                    BorderThickness="0,0,1,0">
+                                <controls:StatTile />
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Border>
+
+            <ScrollViewer Grid.Row="1"
+                          x:Name="AccountCards"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          MinHeight="0"
+                          Padding="20">
+                <ItemsControl ItemsSource="{Binding VisibleAccounts}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Spacing="14" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:LayoutAAccountCardViewModel">
+                            <Border Classes="account-card">
+                                <Grid RowDefinitions="Auto,Auto">
+                                    <Border Grid.Row="0"
+                                            Padding="16,14"
+                                            BorderBrush="{DynamicResource CloudSyncBorderBrush}"
+                                            BorderThickness="0,0,0,1">
+                                        <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
+                                            <controls:ProviderBadge Grid.Column="0" VerticalAlignment="Center" DataContext="{Binding Account.Provider}" />
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Account.Name}" FontSize="14" FontWeight="SemiBold" />
+                                                <TextBlock Classes="muted" Text="{Binding EmailAndProviderText}" TextTrimming="CharacterEllipsis" />
+                                            </StackPanel>
+                                            <controls:StatusPill Grid.Column="2" VerticalAlignment="Center" DataContext="{Binding Account.Status}" />
+                                            <Button Grid.Column="3" Classes="card-action" Content="{Binding ActionText}" />
+                                        </Grid>
+                                    </Border>
+
+                                    <Grid Grid.Row="1" ColumnDefinitions="*,340">
+                                        <Border Grid.Column="0"
+                                                Padding="16,12"
+                                                BorderBrush="{DynamicResource CloudSyncBorderBrush}"
+                                                BorderThickness="0,0,1,0">
+                                            <StackPanel Spacing="10">
+                                                <TextBlock Classes="muted" Text="{Binding StorageLabel}" />
+                                                <controls:StorageBar DataContext="{Binding Account.Storage}" />
+                                                <StackPanel Orientation="Horizontal" Spacing="32">
+                                                    <StackPanel>
+                                                        <TextBlock Classes="figure" Text="{Binding Account.FoldersText}" />
+                                                        <TextBlock Classes="muted" Text="{Binding FoldersLabel}" />
+                                                    </StackPanel>
+                                                    <StackPanel>
+                                                        <TextBlock Classes="figure" Text="{Binding Account.FilesText}" />
+                                                        <TextBlock Classes="muted" Text="{Binding FilesLabel}" />
+                                                    </StackPanel>
+                                                    <StackPanel>
+                                                        <TextBlock Classes="figure" Classes.warn="{Binding Account.Status.HasConflicts}" Text="{Binding Account.ConflictsText}" />
+                                                        <TextBlock Classes="muted" Text="{Binding ConflictsLabel}" />
+                                                    </StackPanel>
+                                                    <StackPanel>
+                                                        <TextBlock Classes="figure" Text="{Binding Account.LastSyncText}" />
+                                                        <TextBlock Classes="muted" Text="{Binding LastSyncLabel}" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <StackPanel Grid.Column="1" Margin="16,12" Spacing="6">
+                                            <TextBlock Classes="muted" Text="{Binding RecentActivityLabel}" />
+                                            <ItemsControl ItemsSource="{Binding Account.RecentActivity}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Spacing="6" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="vm:ActivityItemViewModel">
+                                                        <controls:ActivityRow />
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
+
+        <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+                Height="26"
+                Padding="12,0"
+                Background="{DynamicResource CloudSyncPanelBrush}"
+                BorderBrush="{DynamicResource CloudSyncBorderBrush}"
+                BorderThickness="0,1,0,0">
+            <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                <TextBlock Grid.Column="0" Classes="muted" Text="{Binding StatusSummaryText}" />
+                <TextBlock Grid.Column="1" Classes="muted" Text="{Binding Overview.Throughput.CurrentText}" />
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

@@ -13,7 +13,7 @@ namespace AStarDev.CloudSync;
 /// <summary>Registers the application's services with the dependency injection container.</summary>
 public static class ServiceCollectionExtensions
 {
-    /// <summary>Registers localisation, the Velopack update services, the placeholder sync data and the view models.</summary>
+    /// <summary>Registers localisation, the Velopack update services, the placeholder sync data and the view models, including layout A.</summary>
     /// <param name="services">The service collection to register the application's services with.</param>
     /// <param name="configuration">The application configuration used to bind the options sections.</param>
     /// <returns>The <paramref name="services" /> collection to allow further chaining.</returns>
@@ -26,5 +26,6 @@ public static class ServiceCollectionExtensions
             .AddSingleton(TimeProvider.System)
             .AddSingleton<ISyncOverviewSource, PlaceholderSyncOverviewSource>()
             .AddSingleton<SyncOverviewViewModel>()
+            .AddSingleton<LayoutAViewModel>()
             .AddSingleton<MainWindowViewModel>();
 }
