@@ -1,5 +1,7 @@
 using AStarDev.CloudSync.Core;
 using AStarDev.Localization;
+using AStarDev.LoggingExtensions;
+using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync.ViewModels;
 
@@ -7,7 +9,8 @@ namespace AStarDev.CloudSync.ViewModels;
 /// <param name="source">Supplies the overview data.</param>
 /// <param name="localization">Supplies the text and culture.</param>
 /// <param name="timeProvider">Supplies the current time for relative times.</param>
-public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ILocalizationService localization, TimeProvider timeProvider) : LocalizedObservableObject(localization)
+/// <param name="logger">Reports an overview that cannot be read.</param>
+public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ILocalizationService localization, TimeProvider timeProvider, ILogger<SyncOverviewViewModel> logger) : LocalizedObservableObject(localization)
 {
     private SyncOverview overview = SyncOverviewFactory.Create([], [], [], [], []);
 
@@ -29,11 +32,28 @@ public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ILocalizat
     /// <summary>Recent transfer rates.</summary>
     public ThroughputViewModel Throughput { get; private set; } = new([], localization);
 
-    /// <summary>Reads the overview from the source and rebuilds every collection.</summary>
+    /// <summary>How far the overview load has got.</summary>
+    public SyncOverviewLoadState LoadState { get; private set; } = SyncOverviewLoadStateFactory.CreateNotLoaded();
+
+    /// <summary>The text explaining that the overview could not be read; empty unless the load failed.</summary>
+    public string LoadErrorText => LoadState is SyncOverviewLoadState.Failed ? Localization.GetLocal("Overview.LoadFailed") : string.Empty;
+
+    /// <summary>Reads the overview from the source and rebuilds every collection. A failing source is logged and reported through <see cref="LoadState"/> instead of throwing; cancellation still throws.</summary>
     /// <param name="cancellationToken">Cancels the read.</param>
     public async Task LoadAsync(CancellationToken cancellationToken)
     {
-        overview = await source.GetOverviewAsync(cancellationToken);
+        try
+        {
+            overview = await source.GetOverviewAsync(cancellationToken);
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            LogMessage.Error(logger, $"{nameof(SyncOverviewViewModel)} could not load the sync overview", exception);
+            SetLoadState(SyncOverviewLoadStateFactory.CreateFailed());
+
+            return;
+        }
+
         var accountsById = overview.Accounts.ToDictionary(account => account.Id);
         var pairNamesById = overview.SyncPairs.ToDictionary(pair => pair.Id, pair => pair.Name);
 
@@ -50,6 +70,14 @@ public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ILocalizat
         OnPropertyChanged(nameof(Conflicts));
         OnPropertyChanged(nameof(Stats));
         OnPropertyChanged(nameof(Throughput));
+        SetLoadState(SyncOverviewLoadStateFactory.CreateLoaded());
+    }
+
+    private void SetLoadState(SyncOverviewLoadState state)
+    {
+        LoadState = state;
+        OnPropertyChanged(nameof(LoadState));
+        OnPropertyChanged(nameof(LoadErrorText));
     }
 
     private StatTileViewModel[] CreateStats() =>

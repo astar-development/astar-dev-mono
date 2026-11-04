@@ -4,6 +4,7 @@ using AStarDev.CloudSync.Core.Placeholder;
 using AStarDev.CloudSync.ViewModels;
 using AStarDev.FunctionalParadigm;
 using AStarDev.Localization;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Time.Testing;
 
 namespace AStarDev.CloudSync.TestsUnit;
@@ -26,7 +27,7 @@ internal static class TestData
 
     public static async Task<SyncOverviewViewModel> CreateLoadedOverviewViewModelAsync()
     {
-        var viewModel = new SyncOverviewViewModel(new PlaceholderSyncOverviewSource(CreateTime()), CreateLocalization(), CreateTime());
+        var viewModel = new SyncOverviewViewModel(new PlaceholderSyncOverviewSource(CreateTime()), CreateLocalization(), CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         await viewModel.LoadAsync(TestContext.Current.CancellationToken);
 
         return viewModel;

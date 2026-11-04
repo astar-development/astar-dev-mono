@@ -47,6 +47,7 @@
   "Direction.DownloadOnly.Glyph": "←",
   "SyncPair.Summary.One": "{0} file · {1}",
   "SyncPair.Summary.Many": "{0} files · {1}",
+  "Overview.LoadFailed": "Could not load your accounts and sync pairs. The details have been logged.",
   "Stats.Accounts": "accounts",
   "Stats.Providers": "providers",
   "Stats.FoldersSynced": "folders synced",

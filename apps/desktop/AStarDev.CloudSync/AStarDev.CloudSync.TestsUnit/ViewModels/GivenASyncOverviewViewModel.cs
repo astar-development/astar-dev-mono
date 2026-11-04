@@ -1,4 +1,6 @@
 using AStarDev.CloudSync.ViewModels;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AStarDev.CloudSync.TestsUnit.ViewModels;
 
@@ -65,7 +67,7 @@ public class GivenASyncOverviewViewModel
     [Fact]
     public void when_not_yet_loaded_then_the_collections_are_empty()
     {
-        var viewModel = new SyncOverviewViewModel(new AStarDev.CloudSync.Core.Placeholder.PlaceholderSyncOverviewSource(TestData.CreateTime()), TestData.CreateLocalization(), TestData.CreateTime());
+        var viewModel = new SyncOverviewViewModel(new AStarDev.CloudSync.Core.Placeholder.PlaceholderSyncOverviewSource(TestData.CreateTime()), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
 
         viewModel.Accounts.ShouldBeEmpty();
         viewModel.SyncPairs.ShouldBeEmpty();
@@ -75,7 +77,7 @@ public class GivenASyncOverviewViewModel
     [Fact]
     public async Task when_loaded_then_property_changed_is_raised_for_the_collections()
     {
-        var viewModel = new SyncOverviewViewModel(new AStarDev.CloudSync.Core.Placeholder.PlaceholderSyncOverviewSource(TestData.CreateTime()), TestData.CreateLocalization(), TestData.CreateTime());
+        var viewModel = new SyncOverviewViewModel(new AStarDev.CloudSync.Core.Placeholder.PlaceholderSyncOverviewSource(TestData.CreateTime()), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         var changed = new List<string?>();
         viewModel.PropertyChanged += (_, args) => changed.Add(args.PropertyName);
 
@@ -83,5 +85,79 @@ public class GivenASyncOverviewViewModel
 
         changed.ShouldContain(nameof(SyncOverviewViewModel.Accounts));
         changed.ShouldContain(nameof(SyncOverviewViewModel.SyncPairs));
+    }
+
+    [Fact]
+    public void when_not_yet_loaded_then_the_load_state_is_not_loaded_and_there_is_no_error_text()
+    {
+        var viewModel = new SyncOverviewViewModel(new AStarDev.CloudSync.Core.Placeholder.PlaceholderSyncOverviewSource(TestData.CreateTime()), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+
+        viewModel.LoadState.ShouldBeOfType<SyncOverviewLoadState.NotLoaded>();
+        viewModel.LoadErrorText.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_loaded_then_the_load_state_is_loaded_and_there_is_no_error_text()
+    {
+        var viewModel = await TestData.CreateLoadedOverviewViewModelAsync();
+
+        viewModel.LoadState.ShouldBeOfType<SyncOverviewLoadState.Loaded>();
+        viewModel.LoadErrorText.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_the_source_throws_then_loading_completes_and_the_load_state_is_failed()
+    {
+        var viewModel = new SyncOverviewViewModel(new ThrowingSyncOverviewSource(new InvalidOperationException("provider unreachable")), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+
+        await Should.NotThrowAsync(() => viewModel.LoadAsync(TestContext.Current.CancellationToken));
+
+        viewModel.LoadState.ShouldBeOfType<SyncOverviewLoadState.Failed>();
+        viewModel.Accounts.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_the_source_throws_then_the_localised_error_text_is_exposed()
+    {
+        var viewModel = new SyncOverviewViewModel(new ThrowingSyncOverviewSource(new InvalidOperationException("provider unreachable")), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+
+        await viewModel.LoadAsync(TestContext.Current.CancellationToken);
+
+        viewModel.LoadErrorText.ShouldBe("Could not load your accounts and sync pairs. The details have been logged.");
+    }
+
+    [Fact]
+    public async Task when_the_source_throws_then_the_exception_is_logged_as_an_error()
+    {
+        var failure = new InvalidOperationException("provider unreachable");
+        var logger = new RecordingLogger<SyncOverviewViewModel>();
+        var viewModel = new SyncOverviewViewModel(new ThrowingSyncOverviewSource(failure), TestData.CreateLocalization(), TestData.CreateTime(), logger);
+
+        await viewModel.LoadAsync(TestContext.Current.CancellationToken);
+
+        var entry = logger.Entries.ShouldHaveSingleItem();
+        entry.Level.ShouldBe(LogLevel.Error);
+        entry.Exception.ShouldBeSameAs(failure);
+    }
+
+    [Fact]
+    public async Task when_the_source_throws_then_property_changed_is_raised_for_the_load_state_and_error_text()
+    {
+        var viewModel = new SyncOverviewViewModel(new ThrowingSyncOverviewSource(new InvalidOperationException("provider unreachable")), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var changed = new List<string?>();
+        viewModel.PropertyChanged += (_, args) => changed.Add(args.PropertyName);
+
+        await viewModel.LoadAsync(TestContext.Current.CancellationToken);
+
+        changed.ShouldContain(nameof(SyncOverviewViewModel.LoadState));
+        changed.ShouldContain(nameof(SyncOverviewViewModel.LoadErrorText));
+    }
+
+    [Fact]
+    public async Task when_loading_is_cancelled_then_the_cancellation_is_not_swallowed()
+    {
+        var viewModel = new SyncOverviewViewModel(new ThrowingSyncOverviewSource(new OperationCanceledException()), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+
+        await Should.ThrowAsync<OperationCanceledException>(() => viewModel.LoadAsync(TestContext.Current.CancellationToken));
     }
 }

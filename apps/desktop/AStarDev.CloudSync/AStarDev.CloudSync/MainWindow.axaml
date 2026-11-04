@@ -8,19 +8,34 @@
         Width="1280" Height="800"
         MinWidth="960" MinHeight="600"
         Title="{Binding Title}">
-    <ContentControl Content="{Binding CurrentLayout}"
-                    HorizontalContentAlignment="Stretch"
-                    VerticalContentAlignment="Stretch">
-        <ContentControl.DataTemplates>
-            <DataTemplate DataType="vm:LayoutAViewModel">
-                <layouts:LayoutAView />
-            </DataTemplate>
-            <DataTemplate DataType="vm:LayoutBViewModel">
-                <layouts:LayoutBView />
-            </DataTemplate>
-            <DataTemplate DataType="vm:LayoutCViewModel">
-                <layouts:LayoutCView />
-            </DataTemplate>
-        </ContentControl.DataTemplates>
-    </ContentControl>
+    <Grid RowDefinitions="Auto,*"
+          HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch">
+        <Border Grid.Row="0"
+                Background="{DynamicResource CloudSyncWarnSoftBrush}"
+                BorderBrush="{DynamicResource CloudSyncWarnBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="16,8"
+                IsVisible="{Binding LayoutA.Overview.LoadErrorText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+            <TextBlock Text="{Binding LayoutA.Overview.LoadErrorText}"
+                       Foreground="{DynamicResource CloudSyncTextPrimaryBrush}"
+                       TextWrapping="Wrap" />
+        </Border>
+        <ContentControl Grid.Row="1"
+                        Content="{Binding CurrentLayout}"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Stretch">
+            <ContentControl.DataTemplates>
+                <DataTemplate DataType="vm:LayoutAViewModel">
+                    <layouts:LayoutAView />
+                </DataTemplate>
+                <DataTemplate DataType="vm:LayoutBViewModel">
+                    <layouts:LayoutBView />
+                </DataTemplate>
+                <DataTemplate DataType="vm:LayoutCViewModel">
+                    <layouts:LayoutCView />
+                </DataTemplate>
+            </ContentControl.DataTemplates>
+        </ContentControl>
+    </Grid>
 </Window>
