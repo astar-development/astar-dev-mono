@@ -35,7 +35,7 @@ public class GivenALayoutAView
     public async Task when_there_are_more_accounts_than_fit_then_the_account_list_scrolls_in_a_bounded_viewport()
     {
         var source = Substitute.For<ISyncOverviewSource>();
-        source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([.. Enumerable.Range(0, 30).Select(_ => TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>()))], [], [], [], [], 0));
+        source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([.. Enumerable.Range(0, 30).Select(_ => TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>()))], [], [], [], [], 0, Option.None<DateTimeOffset>()));
         var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         await overview.LoadAsync(TestContext.Current.CancellationToken);
         var window = new Window { Width = 1280, Height = 800, Content = new LayoutAView { DataContext = new LayoutAViewModel(overview, TestData.CreateLocalization()) } };

@@ -65,7 +65,7 @@ public class GivenALayoutAViewModel
     public async Task when_the_only_account_is_syncing_then_the_status_summary_uses_the_singular()
     {
         var source = Substitute.For<ISyncOverviewSource>();
-        source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateSyncing(50), Option.None<DateTimeOffset>())], [], [], [], [], 0));
+        source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateSyncing(50), Option.None<DateTimeOffset>())], [], [], [], [], 0, Option.None<DateTimeOffset>()));
         var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         var layout = new LayoutAViewModel(overview, TestData.CreateLocalization());
 
@@ -78,13 +78,47 @@ public class GivenALayoutAViewModel
     public async Task when_no_account_is_syncing_then_the_status_summary_says_so()
     {
         var source = Substitute.For<ISyncOverviewSource>();
-        source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>())], [], [], [], [], 0));
+        source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>())], [], [], [], [], 0, Option.None<DateTimeOffset>()));
         var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         var layout = new LayoutAViewModel(overview, TestData.CreateLocalization());
 
         await overview.LoadAsync(TestContext.Current.CancellationToken);
 
         layout.StatusSummaryText.ShouldBe("No accounts syncing");
+    }
+
+    [Fact]
+    public async Task when_the_overview_loads_then_the_status_check_text_shows_the_overall_status_and_when_sync_was_last_checked()
+    {
+        var layout = await CreateLoadedLayoutAsync();
+
+        layout.StatusCheckedText.ShouldBe("Syncing · checked 10 min ago");
+    }
+
+    [Fact]
+    public async Task when_every_account_is_up_to_date_then_the_status_check_text_reads_up_to_date()
+    {
+        var source = Substitute.For<ISyncOverviewSource>();
+        source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>())], [], [], [], [], 0, Option.Some(TestData.Now.AddMinutes(-10))));
+        var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var layout = new LayoutAViewModel(overview, TestData.CreateLocalization());
+
+        await overview.LoadAsync(TestContext.Current.CancellationToken);
+
+        layout.StatusCheckedText.ShouldBe("Up to date · checked 10 min ago");
+    }
+
+    [Fact]
+    public async Task when_sync_has_never_been_checked_then_the_status_check_text_says_so()
+    {
+        var source = Substitute.For<ISyncOverviewSource>();
+        source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>())], [], [], [], [], 0, Option.None<DateTimeOffset>()));
+        var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var layout = new LayoutAViewModel(overview, TestData.CreateLocalization());
+
+        await overview.LoadAsync(TestContext.Current.CancellationToken);
+
+        layout.StatusCheckedText.ShouldBe("Up to date · never checked");
     }
 
     [Fact]
