@@ -58,8 +58,11 @@ public sealed class LayoutCViewModel : LocalizedObservableObject
     /// <summary>The all-pairs chip, e.g. "All pairs · 7".</summary>
     public string AllPairsFilterText => Localization.GetLocal("LayoutC.Filter.AllPairs", Overview.SyncPairs.Count.ToString("N0", Localization.CurrentCulture));
 
-    /// <summary>The status headline, e.g. "4 in sync, 1 syncing, 2 conflicts".</summary>
-    public string Headline => Localization.GetLocal("LayoutC.Headline", Count(pair => pair.Status.IsUpToDate), Count(pair => pair.Status.IsSyncing), ConflictsText);
+    /// <summary>The status headline, e.g. "4 in sync, 1 syncing, 2 conflicts, 1 paused".</summary>
+    public string Headline => Localization.GetLocal("LayoutC.Headline", Count(pair => pair.Status.IsUpToDate), Count(pair => pair.Status.IsSyncing), ConflictsText, Count(pair => pair.Status.IsPaused));
+
+    /// <summary>The data moved today, e.g. "3.1 GB moved today".</summary>
+    public string MovedTodayText => Localization.GetLocal("LayoutC.MovedToday", ByteSizeFormatter.Format(Overview.BytesMovedToday, Localization));
 
     /// <summary>The application name shown in the top bar.</summary>
     public string Title => Localization.GetLocal("App.Title");
@@ -94,7 +97,7 @@ public sealed class LayoutCViewModel : LocalizedObservableObject
     /// <summary>The add account button text.</summary>
     public string AddAccountText => Localization.GetLocal("LayoutC.AddAccount");
 
-    private string ConflictsText => Localization.GetLocal(Overview.Conflicts.Count == 1 ? "Status.Conflicts.One" : "Status.Conflicts.Many", Overview.Conflicts.Count.ToString("N0", Localization.CurrentCulture));
+    private string ConflictsText => Localization.GetLocal(CountKey.For("Status.Conflicts", Overview.Conflicts.Count), Overview.Conflicts.Count.ToString("N0", Localization.CurrentCulture));
 
     private string Count(Func<SyncPairViewModel, bool> predicate) => Overview.SyncPairs.Count(predicate).ToString("N0", Localization.CurrentCulture);
 
@@ -121,6 +124,7 @@ public sealed class LayoutCViewModel : LocalizedObservableObject
         OnPropertyChanged(nameof(ProviderFilters));
         OnPropertyChanged(nameof(AllPairsFilterText));
         OnPropertyChanged(nameof(Headline));
+        OnPropertyChanged(nameof(MovedTodayText));
     }
 
     private void RebuildProviderFilters()

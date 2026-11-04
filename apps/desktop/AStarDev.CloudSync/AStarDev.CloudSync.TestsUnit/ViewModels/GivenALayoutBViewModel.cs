@@ -87,7 +87,7 @@ public class GivenALayoutBViewModel
     public async Task when_the_overview_has_no_accounts_then_there_is_no_account_detail()
     {
         var source = Substitute.For<ISyncOverviewSource>();
-        source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([], [], [], [], []));
+        source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([], [], [], [], [], 0));
         var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         var layout = new LayoutBViewModel(overview, TestData.CreateLocalPathFormatter(), TestData.CreateLocalization());
 
