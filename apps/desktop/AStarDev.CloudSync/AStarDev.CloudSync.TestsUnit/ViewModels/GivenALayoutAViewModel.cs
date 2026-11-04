@@ -1,6 +1,7 @@
 using AStarDev.CloudSync.Core;
 using AStarDev.CloudSync.ViewModels;
 using AStarDev.FunctionalParadigm;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AStarDev.CloudSync.TestsUnit.ViewModels;
 
@@ -17,7 +18,7 @@ public class GivenALayoutAViewModel
     [Fact]
     public void when_the_overview_has_no_accounts_then_only_the_all_chip_is_shown()
     {
-        var layout = new LayoutAViewModel(new SyncOverviewViewModel(Substitute.For<ISyncOverviewSource>(), TestData.CreateLocalization(), TestData.CreateTime()), TestData.CreateLocalization());
+        var layout = new LayoutAViewModel(new SyncOverviewViewModel(Substitute.For<ISyncOverviewSource>(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance), TestData.CreateLocalization());
 
         layout.ProviderChips.Select(chip => chip.Label).ShouldBe(["All"]);
     }
@@ -65,7 +66,7 @@ public class GivenALayoutAViewModel
     {
         var source = Substitute.For<ISyncOverviewSource>();
         source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateSyncing(50), Option.None<DateTimeOffset>())], [], [], [], []));
-        var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime());
+        var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         var layout = new LayoutAViewModel(overview, TestData.CreateLocalization());
 
         await overview.LoadAsync(TestContext.Current.CancellationToken);
@@ -78,7 +79,7 @@ public class GivenALayoutAViewModel
     {
         var source = Substitute.For<ISyncOverviewSource>();
         source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>())], [], [], [], []));
-        var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime());
+        var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         var layout = new LayoutAViewModel(overview, TestData.CreateLocalization());
 
         await overview.LoadAsync(TestContext.Current.CancellationToken);
@@ -89,7 +90,7 @@ public class GivenALayoutAViewModel
     [Fact]
     public void when_created_then_the_pane_and_rail_text_is_localised()
     {
-        var layout = new LayoutAViewModel(new SyncOverviewViewModel(Substitute.For<ISyncOverviewSource>(), TestData.CreateLocalization(), TestData.CreateTime()), TestData.CreateLocalization());
+        var layout = new LayoutAViewModel(new SyncOverviewViewModel(Substitute.For<ISyncOverviewSource>(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance), TestData.CreateLocalization());
 
         layout.AccountsTitle.ShouldBe("Accounts");
         layout.AddAccountText.ShouldBe("+ Add account");

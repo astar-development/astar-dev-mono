@@ -1,5 +1,6 @@
 using AStarDev.CloudSync.Core;
 using AStarDev.CloudSync.ViewModels;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AStarDev.CloudSync.TestsUnit.ViewModels;
 
@@ -67,7 +68,7 @@ public class GivenALayoutBViewModel
     {
         var source = Substitute.For<ISyncOverviewSource>();
         source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([], [], [], [], []));
-        var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime());
+        var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         var layout = new LayoutBViewModel(overview, TestData.CreateLocalization());
 
         await overview.LoadAsync(TestContext.Current.CancellationToken);
@@ -121,7 +122,7 @@ public class GivenALayoutBViewModel
 
     private static async Task<LayoutBViewModel> CreateLoadedLayoutAsync()
     {
-        var overview = new SyncOverviewViewModel(new AStarDev.CloudSync.Core.Placeholder.PlaceholderSyncOverviewSource(TestData.CreateTime()), TestData.CreateLocalization(), TestData.CreateTime());
+        var overview = new SyncOverviewViewModel(new AStarDev.CloudSync.Core.Placeholder.PlaceholderSyncOverviewSource(TestData.CreateTime()), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         var layout = new LayoutBViewModel(overview, TestData.CreateLocalization());
         await overview.LoadAsync(TestContext.Current.CancellationToken);
 

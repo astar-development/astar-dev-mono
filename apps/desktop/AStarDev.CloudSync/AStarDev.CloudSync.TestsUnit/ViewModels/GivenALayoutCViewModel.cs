@@ -1,5 +1,6 @@
 using AStarDev.CloudSync.Core.Placeholder;
 using AStarDev.CloudSync.ViewModels;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AStarDev.CloudSync.TestsUnit.ViewModels;
 
@@ -81,5 +82,5 @@ public class GivenALayoutCViewModel
         viewModel.Overview.ShouldBeSameAs(overview);
     }
 
-    private static SyncOverviewViewModel CreateUnloadedOverview() => new(new PlaceholderSyncOverviewSource(TestData.CreateTime()), TestData.CreateLocalization(), TestData.CreateTime());
+    private static SyncOverviewViewModel CreateUnloadedOverview() => new(new PlaceholderSyncOverviewSource(TestData.CreateTime()), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
 }

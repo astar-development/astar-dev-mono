@@ -5,6 +5,7 @@ using AStarDev.CloudSync.ViewModels;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.VisualTree;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AStarDev.CloudSync.TestsUnit;
 
@@ -116,6 +117,29 @@ public class GivenAMainWindow
 
         flyout.Content.ShouldBeOfType<DisplaySettingsView>().DataContext.ShouldBeSameAs(viewModel.DisplaySettings);
         flyout.Hide();
+    }
+
+    [AvaloniaFact]
+    public async Task when_the_overview_fails_to_load_then_the_window_shows_the_load_error()
+    {
+        var overview = new SyncOverviewViewModel(new ThrowingSyncOverviewSource(new InvalidOperationException("provider unreachable")), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var window = new MainWindow { DataContext = TestData.CreateMainWindowViewModel(overview, TestData.CreateDisplaySettings()) };
+        window.Show();
+
+        await overview.LoadAsync(TestContext.Current.CancellationToken);
+        window.UpdateLayout();
+
+        window.GetVisualDescendants().OfType<TextBlock>().Where(text => text.IsEffectivelyVisible).Select(text => text.Text).ShouldContain("Could not load your accounts and sync pairs. The details have been logged.");
+    }
+
+    [AvaloniaFact]
+    public async Task when_the_overview_loads_then_no_load_error_is_shown()
+    {
+        var window = new MainWindow { DataContext = await CreateViewModelAsync() };
+
+        window.Show();
+
+        window.GetVisualDescendants().OfType<TextBlock>().Where(text => text.IsEffectivelyVisible).Select(text => text.Text).ShouldNotContain("Could not load your accounts and sync pairs. The details have been logged.");
     }
 
     private static T FindSingle<T>(Window window) where T : Control => window.GetVisualDescendants().OfType<T>().ShouldHaveSingleItem();
