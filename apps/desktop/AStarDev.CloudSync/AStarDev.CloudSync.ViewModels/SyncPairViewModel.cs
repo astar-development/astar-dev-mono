@@ -36,6 +36,9 @@ public sealed class SyncPairViewModel : LocalizedObservableObject
     /// <summary>The cloud folder's path.</summary>
     public string RemotePath => pair.RemotePath;
 
+    /// <summary>The id of the account holding the cloud folder.</summary>
+    public AccountId AccountId => account.Id;
+
     /// <summary>The display name of the account holding the cloud folder.</summary>
     public string AccountName => account.DisplayName;
 
@@ -56,6 +59,9 @@ public sealed class SyncPairViewModel : LocalizedObservableObject
 
     /// <summary>File count and last sync, e.g. "1,118 files · 4 min ago".</summary>
     public string SummaryText => Localization.GetLocal(pair.FileCount == 1 ? "SyncPair.Summary.One" : "SyncPair.Summary.Many", pair.FileCount.ToString("N0", Localization.CurrentCulture), RelativeTimeFormatter.Format(pair.LastSync, Localization, timeProvider));
+
+    /// <summary>When the pair last synced, relative to now, or "Never".</summary>
+    public string LastSyncText => RelativeTimeFormatter.Format(pair.LastSync, Localization, timeProvider);
 
     private string DirectionKey => pair.Direction switch
     {

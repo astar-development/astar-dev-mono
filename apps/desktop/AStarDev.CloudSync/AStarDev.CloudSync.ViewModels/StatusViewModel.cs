@@ -29,4 +29,7 @@ public sealed class StatusViewModel(SyncStatus status, ILocalizationService loca
 
     /// <summary>Whether paused; selects the pill colour.</summary>
     public bool IsPaused => status is SyncStatus.Paused;
+
+    /// <summary>Sync progress from 0 to 1; 1 unless syncing.</summary>
+    public double Progress => status is SyncStatus.Syncing syncing ? syncing.PercentComplete / 100d : 1;
 }

@@ -26,6 +26,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton(TimeProvider.System)
             .AddSingleton<ISyncOverviewSource, PlaceholderSyncOverviewSource>()
             .AddSingleton<SyncOverviewViewModel>()
+            .AddSingleton<LayoutBViewModel>()
             .AddSingleton<LayoutCViewModel>()
             .AddSingleton<MainWindowViewModel>();
 }
