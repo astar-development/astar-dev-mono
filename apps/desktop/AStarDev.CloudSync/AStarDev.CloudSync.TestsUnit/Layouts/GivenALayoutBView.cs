@@ -43,6 +43,22 @@ public class GivenALayoutBView
         scrollViewers.ShouldAllBe(scrollViewer => scrollViewer.Viewport.Height <= window.Height);
     }
 
+    [AvaloniaFact]
+    public async Task when_text_is_typed_in_the_search_box_then_the_tree_and_folders_are_filtered()
+    {
+        var window = await CreateShownWindowAsync();
+        var searchBox = window.GetVisualDescendants().OfType<TextBox>().ShouldHaveSingleItem();
+
+        searchBox.Text = "holiday";
+        Dispatcher.UIThread.RunJobs();
+
+        var texts = window.GetVisualDescendants().OfType<TextBlock>().Select(text => text.Text).ToList();
+        window.Content.ShouldBeOfType<LayoutBView>().DataContext.ShouldBeOfType<LayoutBViewModel>().SearchText.ShouldBe("holiday");
+        texts.ShouldContain("OneDrive / Photos");
+        texts.ShouldContain("/home/user/CloudSync/OneDrive/Photos/Holiday photos");
+        texts.ShouldNotContain("/home/user/CloudSync/OneDrive/Work/Documents");
+    }
+
     private static async Task<Window> CreateShownWindowAsync()
     {
         var overview = await TestData.CreateLoadedOverviewViewModelAsync();

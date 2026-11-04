@@ -61,6 +61,7 @@
   "LayoutB.AccountsSyncing.One": "{0} account syncing",
   "LayoutB.AccountsSyncing.Many": "{0} accounts syncing",
   "LayoutB.NoAccounts": "No accounts connected yet",
+  "LayoutB.NoMatches": "No accounts or folders match your search",
   "LayoutB.Breadcrumb": "{0} / {1}",
   "LayoutB.Subtitle": "{0} · {1}",
   "LayoutB.Pause": "Pause",

@@ -7,6 +7,7 @@ namespace AStarDev.CloudSync.ViewModels;
 public sealed class LayoutBViewModel : LocalizedObservableObject
 {
     private LayoutBDetailViewModel detail;
+    private string searchText = string.Empty;
 
     /// <summary>Creates the layout over the shared overview and rebuilds it whenever the overview's accounts or sync pairs change.</summary>
     /// <param name="overview">The shared overview every layout binds to.</param>
@@ -60,6 +61,17 @@ public sealed class LayoutBViewModel : LocalizedObservableObject
         }
     }
 
+    /// <summary>The sidebar search text. Accounts and folders whose name, email, provider or path contain it, ignoring case and surrounding spaces, are shown; blank shows everything.</summary>
+    public string SearchText
+    {
+        get => searchText;
+        set
+        {
+            if (SetProperty(ref searchText, value ?? string.Empty))
+                Rebuild();
+        }
+    }
+
     /// <summary>The search box placeholder.</summary>
     public string SearchWatermark => Localization.GetLocal("LayoutB.Search");
 
@@ -74,7 +86,8 @@ public sealed class LayoutBViewModel : LocalizedObservableObject
 
     private void Rebuild()
     {
-        ProviderGroups = [.. Overview.Accounts.GroupBy(account => account.Provider.Name, StringComparer.Ordinal).Select(group => new ProviderGroupViewModel(group.First().Provider, [.. group], Localization))];
+        List<AccountViewModel> visibleAccounts = [.. Overview.Accounts.Where(IsVisible)];
+        ProviderGroups = [.. visibleAccounts.GroupBy(account => account.Provider.Name, StringComparer.Ordinal).Select(group => new ProviderGroupViewModel(group.First().Provider, [.. group], Localization))];
         OnPropertyChanged(nameof(ProviderGroups));
         OnPropertyChanged(nameof(SyncingSummaryText));
 
@@ -85,9 +98,24 @@ public sealed class LayoutBViewModel : LocalizedObservableObject
             return;
         }
 
+        if (visibleAccounts.Count == 0)
+        {
+            Detail = new NoMatchingAccountsDetailViewModel(Localization);
+
+            return;
+        }
+
         var previous = detail is AccountDetailViewModel accountDetail ? accountDetail.Account.Id : default;
-        Select(Overview.Accounts.FirstOrDefault(account => account.Id == previous) ?? Overview.Accounts[0]);
+        Select(visibleAccounts.FirstOrDefault(account => account.Id == previous) ?? visibleAccounts[0]);
     }
 
-    private void Select(AccountViewModel account) => Detail = new AccountDetailViewModel(account, [.. Overview.SyncPairs.Where(pair => pair.AccountId == account.Id)], Localization);
+    private void Select(AccountViewModel account) => Detail = new AccountDetailViewModel(account, [.. Overview.SyncPairs.Where(pair => pair.AccountId == account.Id && (AccountMatches(account) || PairMatches(pair)))], Localization);
+
+    private bool IsVisible(AccountViewModel account) => AccountMatches(account) || Overview.SyncPairs.Any(pair => pair.AccountId == account.Id && PairMatches(pair));
+
+    private bool AccountMatches(AccountViewModel account) => Matches(account.Name) || Matches(account.Email) || Matches(account.Provider.Name);
+
+    private bool PairMatches(SyncPairViewModel pair) => Matches(pair.Name) || Matches(pair.LocalPath) || Matches(pair.RemotePath);
+
+    private bool Matches(string text) => text.Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase);
 }
