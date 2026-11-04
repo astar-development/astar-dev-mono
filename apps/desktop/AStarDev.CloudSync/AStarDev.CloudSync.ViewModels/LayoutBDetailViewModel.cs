@@ -21,9 +21,9 @@ public sealed class AccountDetailViewModel : LayoutBDetailViewModel
         SyncPairs = syncPairs;
         Stats =
         [
-            new(() => account.FoldersText, "LayoutB.Stats.Folders", StatTileToneFactory.CreateNormal(), localization),
-            new(() => account.FilesText, "LayoutB.Stats.Files", StatTileToneFactory.CreateNormal(), localization),
-            new(() => account.ConflictsText, "Stats.Conflicts", StatTileToneFactory.CreateNormal(), localization),
+            new(() => account.FoldersText, CountKey.For("LayoutB.Stats.Folders", account.FolderCount), StatTileToneFactory.CreateNormal(), localization),
+            new(() => account.FilesText, CountKey.For("LayoutB.Stats.Files", account.FileCount), StatTileToneFactory.CreateNormal(), localization),
+            new(() => account.ConflictsText, CountKey.For("Stats.Conflicts", account.ConflictCount), StatTileToneFactory.CreateNormal(), localization),
             new(() => account.LastSyncText, "LayoutB.Stats.LastSync", StatTileToneFactory.CreateNormal(), localization)
         ];
     }
