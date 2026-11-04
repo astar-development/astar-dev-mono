@@ -1,9 +1,15 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:AStarDev.CloudSync.ViewModels"
-             xmlns:controls="using:AStarDev.CloudSync.Controls"
+             xmlns:accounts="using:AStarDev.CloudSync.Accounts"
+             xmlns:activity="using:AStarDev.CloudSync.Activity"
+             xmlns:displaySettings="using:AStarDev.CloudSync.DisplaySettings"
+             xmlns:overview="using:AStarDev.CloudSync.Overview"
+             xmlns:common="using:AStarDev.CloudSync.Common"
+             xmlns:vmActivity="using:AStarDev.CloudSync.ViewModels.Activity"
+             xmlns:vmLayouts="using:AStarDev.CloudSync.ViewModels.Layouts"
+             xmlns:vmOverview="using:AStarDev.CloudSync.ViewModels.Overview"
              x:Class="AStarDev.CloudSync.Layouts.LayoutAView"
-             x:DataType="vm:LayoutAViewModel"
+             x:DataType="vmLayouts:LayoutAViewModel"
              VerticalContentAlignment="Stretch"
              HorizontalContentAlignment="Stretch"
              Background="{DynamicResource CloudSyncBackgroundBrush}"
@@ -154,7 +160,7 @@
                         <Path Data="M18,11 A7,7 0 1 1 4,11 A7,7 0 1 1 18,11 Z M20,20 L16,16" />
                     </Button>
                 </StackPanel>
-                <controls:DisplaySettingsButton Grid.Row="2" Margin="0,12" HorizontalAlignment="Center" />
+                <displaySettings:DisplaySettingsButton Grid.Row="2" Margin="0,12" HorizontalAlignment="Center" />
             </Grid>
         </Border>
 
@@ -177,7 +183,7 @@
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="vm:LayoutAProviderChipViewModel">
+                        <DataTemplate x:DataType="vmLayouts:LayoutAProviderChipViewModel">
                             <Button Classes="chip" Classes.selected="{Binding IsSelected}" Content="{Binding Label}" Command="{Binding SelectCommand}" />
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
@@ -196,13 +202,13 @@
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="vm:LayoutAAccountCardViewModel">
+                            <DataTemplate x:DataType="vmLayouts:LayoutAAccountCardViewModel">
                                 <Button Classes="account-row"
                                         Classes.selected="{Binding IsSelected}"
                                         Command="{Binding SelectCommand}"
                                         AutomationProperties.Name="{Binding Account.Name}">
                                     <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
-                                        <controls:ProviderBadge Grid.Column="0" VerticalAlignment="Center" DataContext="{Binding Account.Provider}" />
+                                        <accounts:ProviderBadge Grid.Column="0" VerticalAlignment="Center" DataContext="{Binding Account.Provider}" />
                                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                             <TextBlock Text="{Binding Account.Name}" FontWeight="Medium" />
                                             <TextBlock Classes="muted" Text="{Binding Account.Email}" TextTrimming="CharacterEllipsis" />
@@ -226,7 +232,7 @@
                         Padding="16"
                         BorderBrush="{DynamicResource CloudSyncBorderBrush}"
                         BorderThickness="0,1,0,0">
-                    <controls:ThroughputSparkline DataContext="{Binding Overview.Throughput}" />
+                    <overview:ThroughputSparkline DataContext="{Binding Overview.Throughput}" />
                 </Border>
 
                 <Button Grid.Row="4" Classes="add-account" Margin="16,0,16,16" Content="{Binding AddAccountText}" Command="{Binding AddAccountCommand}" />
@@ -249,11 +255,11 @@
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="vm:StatTileViewModel">
+                        <DataTemplate x:DataType="vmOverview:StatTileViewModel">
                             <Border Padding="20,14"
                                     BorderBrush="{DynamicResource CloudSyncBorderBrush}"
                                     BorderThickness="0,0,1,0">
-                                <controls:StatTile />
+                                <overview:StatTile />
                             </Border>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
@@ -273,7 +279,7 @@
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="vm:LayoutAAccountCardViewModel">
+                        <DataTemplate x:DataType="vmLayouts:LayoutAAccountCardViewModel">
                             <Border Classes="account-card">
                                 <Grid RowDefinitions="Auto,Auto">
                                     <Border Grid.Row="0"
@@ -281,12 +287,12 @@
                                             BorderBrush="{DynamicResource CloudSyncBorderBrush}"
                                             BorderThickness="0,0,0,1">
                                         <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
-                                            <controls:ProviderBadge Grid.Column="0" VerticalAlignment="Center" DataContext="{Binding Account.Provider}" />
+                                            <accounts:ProviderBadge Grid.Column="0" VerticalAlignment="Center" DataContext="{Binding Account.Provider}" />
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                                 <TextBlock Text="{Binding Account.Name}" FontSize="14" FontWeight="SemiBold" />
                                                 <TextBlock Classes="muted" Text="{Binding EmailAndProviderText}" TextTrimming="CharacterEllipsis" />
                                             </StackPanel>
-                                            <controls:StatusPill Grid.Column="2" VerticalAlignment="Center" DataContext="{Binding Account.Status}" />
+                                            <common:StatusPill Grid.Column="2" VerticalAlignment="Center" DataContext="{Binding Account.Status}" />
                                             <Button Grid.Column="3" Classes="card-action" Content="{Binding ActionText}" Command="{Binding ActionCommand}" />
                                         </Grid>
                                     </Border>
@@ -298,7 +304,7 @@
                                                 BorderThickness="0,0,1,0">
                                             <StackPanel Spacing="10">
                                                 <TextBlock Classes="muted" Text="{Binding StorageLabel}" />
-                                                <controls:StorageBar DataContext="{Binding Account.Storage}" />
+                                                <accounts:StorageBar DataContext="{Binding Account.Storage}" />
                                                 <StackPanel Orientation="Horizontal" Spacing="32">
                                                     <StackPanel>
                                                         <TextBlock Classes="figure" Text="{Binding Account.FoldersText}" />
@@ -329,8 +335,8 @@
                                                     </ItemsPanelTemplate>
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
-                                                    <DataTemplate x:DataType="vm:ActivityItemViewModel">
-                                                        <controls:ActivityRow />
+                                                    <DataTemplate x:DataType="vmActivity:ActivityItemViewModel">
+                                                        <activity:ActivityRow />
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
                                             </ItemsControl>

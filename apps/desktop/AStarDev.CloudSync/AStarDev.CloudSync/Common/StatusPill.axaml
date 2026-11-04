@@ -1,0 +1,16 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmCommon="using:AStarDev.CloudSync.ViewModels.Common"
+             x:Class="AStarDev.CloudSync.Common.StatusPill"
+             x:DataType="vmCommon:StatusViewModel"
+             HorizontalAlignment="Left"
+             VerticalAlignment="Top">
+    <Border Classes="status-pill"
+            Classes.syncing="{Binding IsSyncing}"
+            Classes.uptodate="{Binding IsUpToDate}"
+            Classes.conflicts="{Binding HasConflicts}"
+            Classes.paused="{Binding IsPaused}"
+            Height="24" Padding="10,0" CornerRadius="12">
+        <TextBlock Text="{Binding Text}" VerticalAlignment="Center" FontSize="12" FontWeight="Medium" />
+    </Border>
+</UserControl>

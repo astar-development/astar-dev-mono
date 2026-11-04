@@ -1,4 +1,8 @@
-using AStarDev.CloudSync.Core;
+using AStarDev.CloudSync.Core.Accounts;
+using AStarDev.CloudSync.Domain.Accounts;
+using AStarDev.CloudSync.Domain.Conflicts;
+using AStarDev.CloudSync.Domain.SyncPairs;
+using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.FunctionalParadigm;
 using Microsoft.Extensions.Logging;
 
@@ -11,8 +15,8 @@ public class GivenThePlaceholderSyncActions
     {
         var logger = new RecordingLogger<PlaceholderSyncActions>();
         var syncActions = new PlaceholderSyncActions(logger);
-        var accountId = AccountIdFactory.Create();
-        var conflict = SyncConflictFactory.Create(SyncPairIdFactory.Create(), "holiday-042.jpg", TestData.Now);
+        var accountId = AccountIdFactory.Create(Guid.NewGuid());
+        var conflict = SyncConflictFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), "holiday-042.jpg", TestData.Now);
         var cancellationToken = TestContext.Current.CancellationToken;
 
         await syncActions.SyncNowAsync(accountId, cancellationToken);

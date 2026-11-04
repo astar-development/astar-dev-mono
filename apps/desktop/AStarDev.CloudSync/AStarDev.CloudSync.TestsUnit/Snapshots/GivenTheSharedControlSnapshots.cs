@@ -1,5 +1,10 @@
-using AStarDev.CloudSync.Controls;
-using AStarDev.CloudSync.ViewModels;
+using AStarDev.CloudSync.Accounts;
+using AStarDev.CloudSync.Activity;
+using AStarDev.CloudSync.Common;
+using AStarDev.CloudSync.Conflicts;
+using AStarDev.CloudSync.Overview;
+using AStarDev.CloudSync.TestHelpers.Common;
+using AStarDev.CloudSync.ViewModels.Overview;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Media;

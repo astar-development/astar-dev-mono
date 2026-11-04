@@ -1,0 +1,18 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmAccounts="using:AStarDev.CloudSync.ViewModels.Accounts"
+             x:Class="AStarDev.CloudSync.Accounts.ProviderBadge"
+             x:DataType="vmAccounts:ProviderViewModel"
+             HorizontalAlignment="Left"
+             VerticalAlignment="Top">
+    <Border Classes="provider-badge"
+            Classes.onedrive="{Binding IsOneDrive}"
+            Width="28" Height="28" CornerRadius="6"
+            ToolTip.Tip="{Binding Name}"
+            AutomationProperties.Name="{Binding Name}">
+        <TextBlock Text="{Binding Code}"
+                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                   FontSize="11" FontWeight="Bold"
+                   Foreground="{DynamicResource CloudSyncOnProviderBrush}" />
+    </Border>
+</UserControl>

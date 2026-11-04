@@ -1,8 +1,22 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Implementations of the Core interfaces: file system, settings and, later,
+    cloud providers. Must not reference Avalonia.
+  -->
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <IsPublishable>false</IsPublishable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Testably.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../AStarDev.CloudSync.Domain/AStarDev.CloudSync.Domain.csproj" />
+    <ProjectReference Include="../../../../packages/core/logging/AStarDev.LoggingExtensions/AStarDev.LoggingExtensions.csproj" />
+  </ItemGroup>
 
 </Project>

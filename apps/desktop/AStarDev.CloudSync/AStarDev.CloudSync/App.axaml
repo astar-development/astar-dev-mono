@@ -5,12 +5,12 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceInclude Source="avares://AStarDev.CloudSync/Themes/Tokens.axaml" />
+                <ResourceInclude Source="avares://AStarDev.CloudSync/Theming/Tokens.axaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
     <Application.Styles>
         <FluentTheme />
-        <StyleInclude Source="avares://AStarDev.CloudSync/Themes/ControlStyles.axaml" />
+        <StyleInclude Source="avares://AStarDev.CloudSync/Theming/ControlStyles.axaml" />
     </Application.Styles>
 </Application>

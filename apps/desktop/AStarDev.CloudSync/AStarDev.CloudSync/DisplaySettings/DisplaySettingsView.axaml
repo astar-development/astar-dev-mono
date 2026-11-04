@@ -1,0 +1,38 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmDisplaySettings="using:AStarDev.CloudSync.ViewModels.DisplaySettings"
+             x:Class="AStarDev.CloudSync.DisplaySettings.DisplaySettingsView"
+             x:DataType="vmDisplaySettings:DisplaySettingsViewModel"
+             Foreground="{DynamicResource CloudSyncTextPrimaryBrush}"
+             FontSize="13"
+             Width="240">
+    <StackPanel Spacing="12">
+        <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold" />
+        <StackPanel Spacing="4">
+            <TextBlock Classes="muted" Text="{Binding LayoutText}" />
+            <ItemsControl ItemsSource="{Binding LayoutOptions}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vmDisplaySettings:DisplayOptionViewModel">
+                        <RadioButton GroupName="CloudSyncLayout"
+                                     Content="{Binding Label}"
+                                     IsChecked="{Binding IsSelected, Mode=OneWay}"
+                                     Command="{Binding SelectCommand}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+        <StackPanel Spacing="4">
+            <TextBlock Classes="muted" Text="{Binding ThemeText}" />
+            <ItemsControl ItemsSource="{Binding ThemeOptions}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vmDisplaySettings:DisplayOptionViewModel">
+                        <RadioButton GroupName="CloudSyncTheme"
+                                     Content="{Binding Label}"
+                                     IsChecked="{Binding IsSelected, Mode=OneWay}"
+                                     Command="{Binding SelectCommand}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

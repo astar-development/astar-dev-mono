@@ -1,6 +1,6 @@
 # AStarDev.CloudSync.TestsUnit
 
-Unit tests for AStarDev.CloudSync: view model tests, headless view tests and PNG snapshot tests.
+Unit tests for the AStarDev.CloudSync Avalonia host: headless view tests and PNG snapshot tests. View model tests live in `AStarDev.CloudSync.ViewModels.TestsUnit`; test doubles shared between test projects live in `AStarDev.CloudSync.TestHelpers`.
 
 ## Snapshot tests
 

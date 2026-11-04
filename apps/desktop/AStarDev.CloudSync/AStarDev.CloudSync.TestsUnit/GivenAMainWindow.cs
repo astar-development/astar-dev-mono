@@ -1,7 +1,10 @@
-using AStarDev.CloudSync.Controls;
-using AStarDev.CloudSync.Core;
+using AStarDev.CloudSync.DisplaySettings;
+using AStarDev.CloudSync.Domain.DisplaySettings;
 using AStarDev.CloudSync.Layouts;
+using AStarDev.CloudSync.TestHelpers.Common;
+using AStarDev.CloudSync.TestHelpers.Overview;
 using AStarDev.CloudSync.ViewModels;
+using AStarDev.CloudSync.ViewModels.Overview;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.VisualTree;

@@ -1,7 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <!--
-    Domain model (accounts, providers, sync pairs) and provider interfaces.
+    Immutable domain types and the interfaces other layers implement.
+    No factories, extensions or implementations: those live in Domain
+    and Infrastructure.
     Must not reference Avalonia.
   -->
 

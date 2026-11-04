@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Factories and extension methods for the Core types. Pure and
+    deterministic: anything non-deterministic belongs in Infrastructure.
+    Must not reference Avalonia.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <IsPublishable>false</IsPublishable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../AStarDev.CloudSync.Core/AStarDev.CloudSync.Core.csproj" />
+  </ItemGroup>
+
+</Project>

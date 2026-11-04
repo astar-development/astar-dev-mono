@@ -1,5 +1,8 @@
 using AStarDev.CloudSync.Layouts;
-using AStarDev.CloudSync.ViewModels;
+using AStarDev.CloudSync.TestHelpers.Common;
+using AStarDev.CloudSync.ViewModels.Conflicts;
+using AStarDev.CloudSync.ViewModels.Layouts;
+using AStarDev.CloudSync.ViewModels.SyncPairs;
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Headless;

@@ -1,7 +1,8 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:AStarDev.CloudSync.ViewModels"
         xmlns:layouts="using:AStarDev.CloudSync.Layouts"
+        xmlns:vm="using:AStarDev.CloudSync.ViewModels"
+        xmlns:vmLayouts="using:AStarDev.CloudSync.ViewModels.Layouts"
         x:Class="AStarDev.CloudSync.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="avares://AStarDev.CloudSync/Assets/astar.ico"
@@ -26,13 +27,13 @@
                         HorizontalContentAlignment="Stretch"
                         VerticalContentAlignment="Stretch">
             <ContentControl.DataTemplates>
-                <DataTemplate DataType="vm:LayoutAViewModel">
+                <DataTemplate DataType="vmLayouts:LayoutAViewModel">
                     <layouts:LayoutAView />
                 </DataTemplate>
-                <DataTemplate DataType="vm:LayoutBViewModel">
+                <DataTemplate DataType="vmLayouts:LayoutBViewModel">
                     <layouts:LayoutBView />
                 </DataTemplate>
-                <DataTemplate DataType="vm:LayoutCViewModel">
+                <DataTemplate DataType="vmLayouts:LayoutCViewModel">
                     <layouts:LayoutCView />
                 </DataTemplate>
             </ContentControl.DataTemplates>

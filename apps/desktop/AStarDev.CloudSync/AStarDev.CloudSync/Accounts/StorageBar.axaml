@@ -1,0 +1,11 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmAccounts="using:AStarDev.CloudSync.ViewModels.Accounts"
+             x:Class="AStarDev.CloudSync.Accounts.StorageBar"
+             x:DataType="vmAccounts:StorageViewModel"
+             VerticalAlignment="Top">
+    <StackPanel Spacing="6">
+        <ProgressBar Classes="storage-bar" Value="{Binding Fraction}" AutomationProperties.Name="{Binding Text}" />
+        <TextBlock Classes="muted" Text="{Binding Text}" />
+    </StackPanel>
+</UserControl>

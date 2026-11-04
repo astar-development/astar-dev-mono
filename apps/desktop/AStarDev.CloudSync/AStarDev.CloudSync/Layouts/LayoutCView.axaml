@@ -1,9 +1,18 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:AStarDev.CloudSync.ViewModels"
-             xmlns:controls="using:AStarDev.CloudSync.Controls"
+             xmlns:accounts="using:AStarDev.CloudSync.Accounts"
+             xmlns:activity="using:AStarDev.CloudSync.Activity"
+             xmlns:conflicts="using:AStarDev.CloudSync.Conflicts"
+             xmlns:displaySettings="using:AStarDev.CloudSync.DisplaySettings"
+             xmlns:overview="using:AStarDev.CloudSync.Overview"
+             xmlns:common="using:AStarDev.CloudSync.Common"
+             xmlns:vmAccounts="using:AStarDev.CloudSync.ViewModels.Accounts"
+             xmlns:vmActivity="using:AStarDev.CloudSync.ViewModels.Activity"
+             xmlns:vmConflicts="using:AStarDev.CloudSync.ViewModels.Conflicts"
+             xmlns:vmLayouts="using:AStarDev.CloudSync.ViewModels.Layouts"
+             xmlns:vmSyncPairs="using:AStarDev.CloudSync.ViewModels.SyncPairs"
              x:Class="AStarDev.CloudSync.Layouts.LayoutCView"
-             x:DataType="vm:LayoutCViewModel"
+             x:DataType="vmLayouts:LayoutCViewModel"
              Foreground="{DynamicResource CloudSyncTextPrimaryBrush}"
              Background="{DynamicResource CloudSyncBackgroundBrush}"
              FontSize="13"
@@ -172,7 +181,7 @@
                             VerticalAlignment="Center"
                             Content="{Binding NewSyncPairText}"
                             Command="{Binding NewSyncPairCommand}" />
-                    <controls:DisplaySettingsButton VerticalAlignment="Center" />
+                    <displaySettings:DisplaySettingsButton VerticalAlignment="Center" />
                 </StackPanel>
             </Grid>
         </Border>
@@ -192,7 +201,7 @@
                         <TextBlock Text="{Binding Headline}" FontSize="28" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
                         <TextBlock Classes="muted" Text="{Binding MovedTodayText}" TextTrimming="CharacterEllipsis" />
                     </StackPanel>
-                    <controls:ThroughputSparkline Grid.Column="1" Width="220" DataContext="{Binding Overview.Throughput}" />
+                    <overview:ThroughputSparkline Grid.Column="1" Width="220" DataContext="{Binding Overview.Throughput}" />
                 </Grid>
 
                 <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
@@ -213,7 +222,7 @@
                                 </ItemsPanelTemplate>
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="vm:ProviderFilterViewModel">
+                                <DataTemplate x:DataType="vmLayouts:ProviderFilterViewModel">
                                     <Button Classes="chip"
                                             Classes.selected="{Binding IsSelected}"
                                             Command="{Binding SelectCommand}"
@@ -238,7 +247,7 @@
                                          SelectedItem="{Binding SelectedSortOption}"
                                          SelectionMode="AlwaysSelected">
                                     <ListBox.ItemTemplate>
-                                        <DataTemplate x:DataType="vm:LayoutCSortOptionViewModel">
+                                        <DataTemplate x:DataType="vmLayouts:LayoutCSortOptionViewModel">
                                             <TextBlock Text="{Binding Label}" />
                                         </DataTemplate>
                                     </ListBox.ItemTemplate>
@@ -260,12 +269,12 @@
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="vm:SyncPairViewModel">
+                            <DataTemplate x:DataType="vmSyncPairs:SyncPairViewModel">
                                 <Border Classes="pair-tile" Classes.conflicts="{Binding Status.HasConflicts}">
                                     <Grid RowDefinitions="Auto,Auto,Auto,*,Auto,Auto" RowSpacing="8">
                                         <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="8">
                                             <TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-                                            <controls:StatusPill Grid.Column="1" DataContext="{Binding Status}" />
+                                            <common:StatusPill Grid.Column="1" DataContext="{Binding Status}" />
                                         </Grid>
                                         <TextBlock Grid.Row="1"
                                                    Text="{Binding LocalPath}"
@@ -279,7 +288,7 @@
                                                        AutomationProperties.Name="{Binding DirectionLabel}"
                                                        ToolTip.Tip="{Binding DirectionLabel}"
                                                        VerticalAlignment="Center" />
-                                            <controls:ProviderBadge Grid.Column="1" DataContext="{Binding Provider}" />
+                                            <accounts:ProviderBadge Grid.Column="1" DataContext="{Binding Provider}" />
                                             <TextBlock Grid.Column="2"
                                                        Classes="muted"
                                                        Text="{Binding RemotePath}"
@@ -326,8 +335,8 @@
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="vm:ConflictViewModel">
-                                        <controls:ConflictCard />
+                                    <DataTemplate x:DataType="vmConflicts:ConflictViewModel">
+                                        <conflicts:ConflictCard />
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
@@ -359,8 +368,8 @@
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="vm:ActivityItemViewModel">
-                                        <controls:ActivityRow />
+                                    <DataTemplate x:DataType="vmActivity:ActivityItemViewModel">
+                                        <activity:ActivityRow />
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
@@ -385,10 +394,10 @@
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="vm:AccountViewModel">
+                        <DataTemplate x:DataType="vmAccounts:AccountViewModel">
                             <Border Classes="account-card" ToolTip.Tip="{Binding Storage.Text}">
                                 <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                                    <controls:ProviderBadge DataContext="{Binding Provider}" VerticalAlignment="Center" />
+                                    <accounts:ProviderBadge DataContext="{Binding Provider}" VerticalAlignment="Center" />
                                     <StackPanel Spacing="4" VerticalAlignment="Center">
                                         <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="Medium" />
                                         <ProgressBar Classes="storage-bar" Value="{Binding Storage.Fraction}" AutomationProperties.Name="{Binding Storage.Text}" />
