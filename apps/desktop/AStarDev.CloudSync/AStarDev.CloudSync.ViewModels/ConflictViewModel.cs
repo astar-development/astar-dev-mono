@@ -1,13 +1,15 @@
 using AStarDev.CloudSync.Core;
 using AStarDev.Localization;
+using CommunityToolkit.Mvvm.Input;
 
 namespace AStarDev.CloudSync.ViewModels;
 
 /// <summary>A conflict as shown in a conflict card.</summary>
 /// <param name="conflict">The conflict.</param>
 /// <param name="syncPairName">The name of the sync pair holding the file.</param>
+/// <param name="syncActions">Resolves the conflict when the user picks an action.</param>
 /// <param name="localization">Supplies the detail and action text.</param>
-public sealed class ConflictViewModel(SyncConflict conflict, string syncPairName, ILocalizationService localization) : LocalizedObservableObject(localization)
+public sealed class ConflictViewModel(SyncConflict conflict, string syncPairName, ISyncActions syncActions, ILocalizationService localization) : LocalizedObservableObject(localization)
 {
     /// <summary>The conflicting file's name.</summary>
     public string FileName => conflict.FileName;
@@ -23,4 +25,13 @@ public sealed class ConflictViewModel(SyncConflict conflict, string syncPairName
 
     /// <summary>The keep-cloud action text.</summary>
     public string KeepCloudText => Localization.GetLocal("Conflict.KeepCloud");
+
+    /// <summary>Resolves the conflict by keeping both copies.</summary>
+    public IAsyncRelayCommand KeepBothCommand => field ??= new AsyncRelayCommand(cancellationToken => syncActions.KeepBothAsync(conflict, cancellationToken));
+
+    /// <summary>Resolves the conflict by keeping the local copy.</summary>
+    public IAsyncRelayCommand KeepLocalCommand => field ??= new AsyncRelayCommand(cancellationToken => syncActions.KeepLocalAsync(conflict, cancellationToken));
+
+    /// <summary>Resolves the conflict by keeping the cloud copy.</summary>
+    public IAsyncRelayCommand KeepCloudCommand => field ??= new AsyncRelayCommand(cancellationToken => syncActions.KeepCloudAsync(conflict, cancellationToken));
 }

@@ -8,10 +8,11 @@ namespace AStarDev.CloudSync.ViewModels;
 
 /// <summary>The data every main window layout binds to: accounts, sync pairs, activity, conflicts, summary figures and throughput.</summary>
 /// <param name="source">Supplies the overview data.</param>
+/// <param name="syncActions">Carries out the conflict resolutions the user picks.</param>
 /// <param name="localization">Supplies the text and culture.</param>
 /// <param name="timeProvider">Supplies the current time for relative times.</param>
 /// <param name="logger">Reports an overview that cannot be read.</param>
-public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ILocalizationService localization, TimeProvider timeProvider, ILogger<SyncOverviewViewModel> logger) : LocalizedObservableObject(localization)
+public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ISyncActions syncActions, ILocalizationService localization, TimeProvider timeProvider, ILogger<SyncOverviewViewModel> logger) : LocalizedObservableObject(localization)
 {
     private SyncOverview overview = SyncOverviewFactory.Create([], [], [], [], [], 0, Option.None<DateTimeOffset>());
 
@@ -70,7 +71,7 @@ public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ILocalizat
         Accounts = [.. overview.Accounts.Select(account => new AccountViewModel(account, overview.Activity, Localization, timeProvider))];
         SyncPairs = [.. overview.SyncPairs.Where(pair => accountsById.ContainsKey(pair.AccountId)).Select(pair => new SyncPairViewModel(pair, accountsById[pair.AccountId], Localization, timeProvider))];
         Activity = [.. overview.Activity.Where(entry => accountsById.ContainsKey(entry.AccountId)).OrderByDescending(entry => entry.OccurredAt).Select(entry => new ActivityItemViewModel(entry, new ProviderViewModel(accountsById[entry.AccountId].Provider, Localization), Localization, timeProvider))];
-        Conflicts = [.. overview.Conflicts.Select(conflict => new ConflictViewModel(conflict, pairNamesById.GetValueOrDefault(conflict.SyncPairId, string.Empty), Localization))];
+        Conflicts = [.. overview.Conflicts.Select(conflict => new ConflictViewModel(conflict, pairNamesById.GetValueOrDefault(conflict.SyncPairId, string.Empty), syncActions, Localization))];
         Stats = CreateStats();
         Throughput = new ThroughputViewModel(overview.Throughput, Localization);
 

@@ -60,12 +60,28 @@ public class GivenALayoutCView
         tiles.ShouldAllBe(tile => tile.GetVisualDescendants().OfType<TextBlock>().Any(text => text.Text == ((SyncPairViewModel)tile.DataContext!).DirectionGlyph && AutomationProperties.GetName(text) == ((SyncPairViewModel)tile.DataContext!).DirectionLabel));
     }
 
+    [AvaloniaFact]
+    public async Task when_shown_then_the_new_sync_pair_add_account_and_conflict_buttons_are_bound_to_their_commands()
+    {
+        var window = await CreateShownWindowAsync();
+        var layout = window.Content.ShouldBeOfType<LayoutCView>().DataContext.ShouldBeOfType<LayoutCViewModel>();
+        var buttons = window.GetVisualDescendants().OfType<Button>().ToList();
+
+        buttons.Single(button => Equals(button.Content, "+ New sync pair")).Command.ShouldBeSameAs(layout.NewSyncPairCommand);
+        buttons.Single(button => Equals(button.Content, "+ Add account")).Command.ShouldBeSameAs(layout.AddAccountCommand);
+        var keepBoth = buttons.Where(button => Equals(button.Content, "Keep both")).ToList();
+        keepBoth.Count.ShouldBe(2);
+        keepBoth.ShouldAllBe(button => button.Command == ((ConflictViewModel)button.DataContext!).KeepBothCommand);
+        buttons.Where(button => Equals(button.Content, "Keep local")).ShouldAllBe(button => button.Command == ((ConflictViewModel)button.DataContext!).KeepLocalCommand);
+        buttons.Where(button => Equals(button.Content, "Keep cloud")).ShouldAllBe(button => button.Command == ((ConflictViewModel)button.DataContext!).KeepCloudCommand);
+    }
+
     private static List<Button> FindChips(Window window) => [.. window.GetVisualDescendants().OfType<Button>().Where(button => button.Classes.Contains("chip"))];
 
     private static async Task<Window> CreateShownWindowAsync()
     {
         var overview = await TestData.CreateLoadedOverviewViewModelAsync();
-        var window = new Window { Width = 1280, Height = 800, Content = new LayoutCView { DataContext = new LayoutCViewModel(overview, TestData.CreateLocalization()) } };
+        var window = new Window { Width = 1280, Height = 800, Content = new LayoutCView { DataContext = new LayoutCViewModel(overview, new RecordingSyncActions(), TestData.CreateLocalization()) } };
         window.Show();
         Dispatcher.UIThread.RunJobs();
 

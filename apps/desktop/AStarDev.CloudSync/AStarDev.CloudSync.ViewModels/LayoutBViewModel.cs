@@ -1,5 +1,7 @@
 using System.ComponentModel;
+using AStarDev.CloudSync.Core;
 using AStarDev.Localization;
+using CommunityToolkit.Mvvm.Input;
 
 namespace AStarDev.CloudSync.ViewModels;
 
@@ -7,17 +9,21 @@ namespace AStarDev.CloudSync.ViewModels;
 public sealed class LayoutBViewModel : LocalizedObservableObject
 {
     private readonly LocalPathFormatter localPathFormatter;
+    private readonly ISyncActions syncActions;
     private LayoutBDetailViewModel detail;
     private string searchText = string.Empty;
 
     /// <summary>Creates the layout over the shared overview and rebuilds it whenever the overview's accounts or sync pairs change.</summary>
     /// <param name="overview">The shared overview every layout binds to.</param>
     /// <param name="localPathFormatter">Shortens the synced folders' local paths.</param>
+    /// <param name="syncActions">Carries out the account actions the user picks.</param>
     /// <param name="localization">Supplies the text and culture.</param>
-    public LayoutBViewModel(SyncOverviewViewModel overview, LocalPathFormatter localPathFormatter, ILocalizationService localization) : base(localization)
+    public LayoutBViewModel(SyncOverviewViewModel overview, LocalPathFormatter localPathFormatter, ISyncActions syncActions, ILocalizationService localization) : base(localization)
     {
         Overview = overview;
         this.localPathFormatter = localPathFormatter;
+        this.syncActions = syncActions;
+        ConnectProviderCommand = new AsyncRelayCommand(syncActions.AddAccountAsync);
         detail = new NoAccountDetailViewModel(localization);
         overview.PropertyChanged += OnOverviewChanged;
         Rebuild();
@@ -81,6 +87,9 @@ public sealed class LayoutBViewModel : LocalizedObservableObject
     /// <summary>The connect-a-provider action text.</summary>
     public string ConnectProviderText => Localization.GetLocal("LayoutB.ConnectProvider");
 
+    /// <summary>Starts connecting a new account, from any provider.</summary>
+    public IAsyncRelayCommand ConnectProviderCommand { get; }
+
     private void OnOverviewChanged(object? sender, PropertyChangedEventArgs args)
     {
         if (args.PropertyName is nameof(SyncOverviewViewModel.Accounts) or nameof(SyncOverviewViewModel.SyncPairs))
@@ -112,7 +121,7 @@ public sealed class LayoutBViewModel : LocalizedObservableObject
         Select(visibleAccounts.FirstOrDefault(account => account.Id == previous) ?? visibleAccounts[0]);
     }
 
-    private void Select(AccountViewModel account) => Detail = new AccountDetailViewModel(account, [.. Overview.SyncPairs.Where(pair => pair.AccountId == account.Id && (AccountMatches(account) || PairMatches(pair)))], Overview.Activity, localPathFormatter, Localization);
+    private void Select(AccountViewModel account) => Detail = new AccountDetailViewModel(account, [.. Overview.SyncPairs.Where(pair => pair.AccountId == account.Id && (AccountMatches(account) || PairMatches(pair)))], Overview.Activity, localPathFormatter, syncActions, Localization);
 
     private bool IsVisible(AccountViewModel account) => AccountMatches(account) || Overview.SyncPairs.Any(pair => pair.AccountId == account.Id && PairMatches(pair));
 

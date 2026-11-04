@@ -1,4 +1,6 @@
 using System.Windows.Input;
+using AStarDev.CloudSync.Core;
+using AStarDev.FunctionalParadigm;
 using AStarDev.Localization;
 using CommunityToolkit.Mvvm.Input;
 
@@ -12,13 +14,16 @@ public sealed class LayoutCViewModel : LocalizedObservableObject
 
     /// <summary>Creates the view model and follows the overview's changes.</summary>
     /// <param name="overview">The shared overview every layout binds to.</param>
+    /// <param name="syncActions">Carries out the account and sync pair actions the user picks.</param>
     /// <param name="localization">Supplies the text and culture.</param>
-    public LayoutCViewModel(SyncOverviewViewModel overview, ILocalizationService localization) : base(localization)
+    public LayoutCViewModel(SyncOverviewViewModel overview, ISyncActions syncActions, ILocalizationService localization) : base(localization)
     {
         Overview = overview;
         SortOptions = [new LayoutCSortOptionViewModel(LayoutCSortOrderFactory.CreateNeedsAttentionFirst(), "LayoutC.Sort.NeedsAttentionFirst", localization), new LayoutCSortOptionViewModel(LayoutCSortOrderFactory.CreateByName(), "LayoutC.Sort.ByName", localization)];
         selectedSortOption = SortOptions[0];
         SelectAllPairsCommand = new RelayCommand(SelectAllPairs);
+        NewSyncPairCommand = new AsyncRelayCommand(cancellationToken => syncActions.AddSyncPairAsync(Option.None<AccountId>(), cancellationToken));
+        AddAccountCommand = new AsyncRelayCommand(syncActions.AddAccountAsync);
         overview.PropertyChanged += OnOverviewChanged;
         RebuildProviderFilters();
     }
@@ -37,6 +42,12 @@ public sealed class LayoutCViewModel : LocalizedObservableObject
 
     /// <summary>Makes the all-pairs chip the active filter.</summary>
     public ICommand SelectAllPairsCommand { get; }
+
+    /// <summary>Starts adding a sync pair, letting the user choose the account.</summary>
+    public IAsyncRelayCommand NewSyncPairCommand { get; }
+
+    /// <summary>Starts connecting a new account.</summary>
+    public IAsyncRelayCommand AddAccountCommand { get; }
 
     /// <summary>The sort orders the user can choose from.</summary>
     public IReadOnlyList<LayoutCSortOptionViewModel> SortOptions { get; }

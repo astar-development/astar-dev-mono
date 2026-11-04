@@ -12,9 +12,9 @@
                 <TextBlock Classes="muted" Text="{Binding Detail}" />
             </StackPanel>
             <WrapPanel ItemSpacing="6" LineSpacing="6">
-                <Button Content="{Binding KeepBothText}" />
-                <Button Content="{Binding KeepLocalText}" />
-                <Button Content="{Binding KeepCloudText}" />
+                <Button Content="{Binding KeepBothText}" Command="{Binding KeepBothCommand}" />
+                <Button Content="{Binding KeepLocalText}" Command="{Binding KeepLocalCommand}" />
+                <Button Content="{Binding KeepCloudText}" Command="{Binding KeepCloudCommand}" />
             </WrapPanel>
         </StackPanel>
     </Border>

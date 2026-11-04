@@ -170,7 +170,8 @@
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" VerticalAlignment="Center">
                     <Button Classes="primary"
                             VerticalAlignment="Center"
-                            Content="{Binding NewSyncPairText}" />
+                            Content="{Binding NewSyncPairText}"
+                            Command="{Binding NewSyncPairCommand}" />
                     <controls:DisplaySettingsButton VerticalAlignment="Center" />
                 </StackPanel>
             </Grid>
@@ -397,7 +398,7 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <Button Classes="secondary" Content="{Binding AddAccountText}" />
+                <Button Classes="secondary" Content="{Binding AddAccountText}" Command="{Binding AddAccountCommand}" />
             </StackPanel>
         </Border>
     </Grid>

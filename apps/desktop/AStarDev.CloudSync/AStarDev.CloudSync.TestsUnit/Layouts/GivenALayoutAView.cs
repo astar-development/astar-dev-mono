@@ -36,9 +36,9 @@ public class GivenALayoutAView
     {
         var source = Substitute.For<ISyncOverviewSource>();
         source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([.. Enumerable.Range(0, 30).Select(_ => TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>()))], [], [], [], [], 0, Option.None<DateTimeOffset>()));
-        var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var overview = new SyncOverviewViewModel(source, new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         await overview.LoadAsync(TestContext.Current.CancellationToken);
-        var window = new Window { Width = 1280, Height = 800, Content = new LayoutAView { DataContext = new LayoutAViewModel(overview, TestData.CreateLocalization()) } };
+        var window = new Window { Width = 1280, Height = 800, Content = new LayoutAView { DataContext = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateLocalization()) } };
 
         window.Show();
         Dispatcher.UIThread.RunJobs();
@@ -72,10 +72,36 @@ public class GivenALayoutAView
         window.GetVisualDescendants().OfType<Button>().Where(button => button.Classes.Contains("account-row") && button.Classes.Contains("selected")).ShouldHaveSingleItem().ShouldBeSameAs(photosRow);
     }
 
+    [AvaloniaFact]
+    public async Task when_shown_then_each_card_action_and_the_add_account_button_are_bound_to_their_commands()
+    {
+        var window = await CreateShownWindowAsync();
+        var layout = window.Content.ShouldBeOfType<LayoutAView>().DataContext.ShouldBeOfType<LayoutAViewModel>();
+        var buttons = window.GetVisualDescendants().OfType<Button>().ToList();
+
+        var cardActions = buttons.Where(button => button.Classes.Contains("card-action")).ToList();
+
+        cardActions.ShouldNotBeEmpty();
+        cardActions.ShouldAllBe(button => button.Command == ((LayoutAAccountCardViewModel)button.DataContext!).ActionCommand);
+        buttons.Single(button => button.Classes.Contains("add-account")).Command.ShouldBeSameAs(layout.AddAccountCommand);
+    }
+
+    [AvaloniaFact]
+    public async Task when_shown_then_every_rail_button_is_bound_to_the_disabled_navigation_command()
+    {
+        var window = await CreateShownWindowAsync();
+        var layout = window.Content.ShouldBeOfType<LayoutAView>().DataContext.ShouldBeOfType<LayoutAViewModel>();
+
+        var railButtons = window.GetVisualDescendants().OfType<Button>().Where(button => button.Classes.Contains("rail")).ToList();
+
+        railButtons.Count.ShouldBe(5);
+        railButtons.ShouldAllBe(button => button.Command == layout.NavigateCommand && !button.IsEffectivelyEnabled);
+    }
+
     private static async Task<Window> CreateShownWindowAsync()
     {
         var overview = await TestData.CreateLoadedOverviewViewModelAsync();
-        var window = new Window { Width = 1280, Height = 800, Content = new LayoutAView { DataContext = new LayoutAViewModel(overview, TestData.CreateLocalization()) } };
+        var window = new Window { Width = 1280, Height = 800, Content = new LayoutAView { DataContext = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateLocalization()) } };
         window.Show();
         Dispatcher.UIThread.RunJobs();
 

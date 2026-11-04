@@ -1,4 +1,7 @@
+using AStarDev.CloudSync.Core;
+using AStarDev.FunctionalParadigm;
 using AStarDev.Localization;
+using CommunityToolkit.Mvvm.Input;
 
 namespace AStarDev.CloudSync.ViewModels;
 
@@ -17,10 +20,14 @@ public sealed class AccountDetailViewModel : LayoutBDetailViewModel
     /// <param name="syncPairs">The account's sync pairs.</param>
     /// <param name="activity">Activity across every account, newest first; only this account's entries are kept.</param>
     /// <param name="localPathFormatter">Shortens the synced folders' local paths.</param>
+    /// <param name="syncActions">Carries out the account actions the user picks.</param>
     /// <param name="localization">Supplies the text and culture.</param>
-    public AccountDetailViewModel(AccountViewModel account, IReadOnlyList<SyncPairViewModel> syncPairs, IEnumerable<ActivityItemViewModel> activity, LocalPathFormatter localPathFormatter, ILocalizationService localization) : base(localization)
+    public AccountDetailViewModel(AccountViewModel account, IReadOnlyList<SyncPairViewModel> syncPairs, IEnumerable<ActivityItemViewModel> activity, LocalPathFormatter localPathFormatter, ISyncActions syncActions, ILocalizationService localization) : base(localization)
     {
         Account = account;
+        PauseCommand = new AsyncRelayCommand(cancellationToken => syncActions.PauseAsync(account.Id, cancellationToken));
+        SyncNowCommand = new AsyncRelayCommand(cancellationToken => syncActions.SyncNowAsync(account.Id, cancellationToken));
+        AddFolderCommand = new AsyncRelayCommand(cancellationToken => syncActions.AddSyncPairAsync(Option.Some(account.Id), cancellationToken));
         SyncPairs = syncPairs;
         SyncedFolders = [.. syncPairs.Select(pair => new SyncedFolderViewModel(pair, localPathFormatter))];
         RecentActivity = [.. activity.Where(item => item.AccountId == account.Id).Take(RecentActivityLimit)];
@@ -62,6 +69,15 @@ public sealed class AccountDetailViewModel : LayoutBDetailViewModel
 
     /// <summary>The used storage as a percentage, e.g. "71%".</summary>
     public string StoragePercentText => Account.Storage.Fraction.ToString("P0", Localization.CurrentCulture);
+
+    /// <summary>Pauses syncing for the account.</summary>
+    public IAsyncRelayCommand PauseCommand { get; }
+
+    /// <summary>Syncs the account now.</summary>
+    public IAsyncRelayCommand SyncNowCommand { get; }
+
+    /// <summary>Starts adding a sync pair for the account.</summary>
+    public IAsyncRelayCommand AddFolderCommand { get; }
 
     /// <summary>The pause action text.</summary>
     public string PauseText => Localization.GetLocal("LayoutB.Pause");

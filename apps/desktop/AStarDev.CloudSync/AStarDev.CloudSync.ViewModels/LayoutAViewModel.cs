@@ -1,21 +1,27 @@
 using System.ComponentModel;
+using System.Windows.Input;
 using AStarDev.CloudSync.Core;
 using AStarDev.FunctionalParadigm;
 using AStarDev.Localization;
+using CommunityToolkit.Mvvm.Input;
 
 namespace AStarDev.CloudSync.ViewModels;
 
 /// <summary>Layout A, "unified account list": the shared overview plus the provider filter, account cards and pane text.</summary>
 public sealed class LayoutAViewModel : LocalizedObservableObject
 {
+    private readonly ISyncActions syncActions;
     private IReadOnlyList<LayoutAAccountCardViewModel> allCards = [];
 
     /// <summary>Creates the view model and rebuilds it whenever the overview's accounts change.</summary>
     /// <param name="overview">The shared overview.</param>
+    /// <param name="syncActions">Carries out the account actions the user picks.</param>
     /// <param name="localization">Supplies the text and culture.</param>
-    public LayoutAViewModel(SyncOverviewViewModel overview, ILocalizationService localization) : base(localization)
+    public LayoutAViewModel(SyncOverviewViewModel overview, ISyncActions syncActions, ILocalizationService localization) : base(localization)
     {
         Overview = overview;
+        this.syncActions = syncActions;
+        AddAccountCommand = new AsyncRelayCommand(syncActions.AddAccountAsync);
         overview.PropertyChanged += OnOverviewChanged;
         Rebuild();
     }
@@ -57,6 +63,12 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
     /// <summary>The add account button text.</summary>
     public string AddAccountText => Localization.GetLocal("LayoutA.AddAccount");
 
+    /// <summary>Starts connecting a new account.</summary>
+    public IAsyncRelayCommand AddAccountCommand { get; }
+
+    /// <summary>The rail navigation. Always disabled: the rail's destination pages do not exist yet.</summary>
+    public ICommand NavigateCommand { get; } = new RelayCommand(() => { }, () => false);
+
     /// <summary>The dashboard rail button name.</summary>
     public string DashboardText => Localization.GetLocal("LayoutA.Nav.Dashboard");
 
@@ -81,7 +93,7 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
     private void Rebuild()
     {
         AccountId? previous = allCards.FirstOrDefault(card => card.IsSelected)?.Account.Id;
-        allCards = [.. Overview.Accounts.Select(account => new LayoutAAccountCardViewModel(account, SelectAccount, Localization) { IsSelected = account.Id == previous })];
+        allCards = [.. Overview.Accounts.Select(account => new LayoutAAccountCardViewModel(account, SelectAccount, syncActions, Localization) { IsSelected = account.Id == previous })];
         var allChip = new LayoutAProviderChipViewModel(() => Localization.GetLocal("LayoutA.Filter.All"), _ => true, Select, Localization);
         var providerChips = Overview.Accounts.Select(account => account.Provider).DistinctBy(provider => provider.Name, StringComparer.Ordinal).Select(provider => new LayoutAProviderChipViewModel(() => provider.Name, account => string.Equals(account.Provider.Name, provider.Name, StringComparison.Ordinal), Select, Localization));
         ProviderChips = [allChip, .. providerChips];
