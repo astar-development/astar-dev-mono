@@ -102,3 +102,11 @@ public sealed class NoAccountDetailViewModel(ILocalizationService localization) 
     /// <summary>The message shown instead of account details.</summary>
     public string Text => Localization.GetLocal("LayoutB.NoAccounts");
 }
+
+/// <summary>The layout B detail pane when accounts exist but none match the sidebar search.</summary>
+/// <param name="localization">Supplies the message text.</param>
+public sealed class NoMatchingAccountsDetailViewModel(ILocalizationService localization) : LayoutBDetailViewModel(localization)
+{
+    /// <summary>The message shown instead of account details.</summary>
+    public string Text => Localization.GetLocal("LayoutB.NoMatches");
+}
