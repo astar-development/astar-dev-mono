@@ -88,6 +88,14 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
+    public void when_application_services_are_added_then_the_layout_c_view_model_resolves_over_the_shared_overview()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<LayoutCViewModel>().Overview.ShouldBeSameAs(provider.GetRequiredService<SyncOverviewViewModel>());
+    }
+
+    [Fact]
     public void when_application_services_are_added_then_the_system_time_provider_is_registered()
     {
         using var provider = CreateServices().BuildServiceProvider();
