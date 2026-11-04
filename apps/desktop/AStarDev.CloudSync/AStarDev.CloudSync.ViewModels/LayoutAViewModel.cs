@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using AStarDev.CloudSync.Core;
+using AStarDev.FunctionalParadigm;
 using AStarDev.Localization;
 
 namespace AStarDev.CloudSync.ViewModels;
@@ -47,6 +48,9 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
         }
     }
 
+    /// <summary>The status bar check summary, e.g. "Up to date · checked 10 min ago".</summary>
+    public string StatusCheckedText => Overview.LastChecked.Match(_ => Localization.GetLocal("LayoutA.StatusBar.Checked", Overview.OverallStatusText(), Overview.LastCheckedText), () => Localization.GetLocal("LayoutA.StatusBar.NeverChecked", Overview.OverallStatusText()));
+
     /// <summary>The accounts pane title.</summary>
     public string AccountsTitle => Localization.GetLocal("LayoutA.Accounts");
 
@@ -88,6 +92,7 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
         OnPropertyChanged(nameof(ProviderChips));
         OnPropertyChanged(nameof(AccountCountText));
         OnPropertyChanged(nameof(StatusSummaryText));
+        OnPropertyChanged(nameof(StatusCheckedText));
         Select(allChip);
     }
 

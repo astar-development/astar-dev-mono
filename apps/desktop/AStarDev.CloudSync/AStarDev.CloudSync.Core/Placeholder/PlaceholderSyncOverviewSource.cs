@@ -50,7 +50,7 @@ public sealed class PlaceholderSyncOverviewSource(TimeProvider timeProvider) : I
 
         var throughput = throughputBytesPerSecond.Select((rate, index) => ThroughputSampleFactory.Create(now.AddMinutes(-5 * (throughputBytesPerSecond.Length - 1 - index)), rate)).ToArray();
 
-        return Task.FromResult(SyncOverviewFactory.Create([work, personal, photos, archive], [documents, projects, desktop, recipes, music, holidayPhotos, backups], activity, conflicts, throughput, BytesMovedToday));
+        return Task.FromResult(SyncOverviewFactory.Create([work, personal, photos, archive], [documents, projects, desktop, recipes, music, holidayPhotos, backups], activity, conflicts, throughput, BytesMovedToday, Option.Some(now.AddMinutes(-10))));
     }
 
     private static SyncPair CreatePair(CloudAccount account, string name, string remotePath, SyncDirection direction, SyncStatus status, int fileCount, Option<DateTimeOffset> lastSync) => SyncPairFactory.Create(SyncPairIdFactory.Create(), account.Id, name, new DirectoryInfo(Path.Join(OneDriveLocalRoot, account.DisplayName, name)), remotePath, direction, status, fileCount, lastSync);

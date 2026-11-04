@@ -1,4 +1,5 @@
 using AStarDev.CloudSync.Core;
+using AStarDev.FunctionalParadigm;
 using AStarDev.Localization;
 using AStarDev.LoggingExtensions;
 using Microsoft.Extensions.Logging;
@@ -12,7 +13,7 @@ namespace AStarDev.CloudSync.ViewModels;
 /// <param name="logger">Reports an overview that cannot be read.</param>
 public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ILocalizationService localization, TimeProvider timeProvider, ILogger<SyncOverviewViewModel> logger) : LocalizedObservableObject(localization)
 {
-    private SyncOverview overview = SyncOverviewFactory.Create([], [], [], [], [], 0);
+    private SyncOverview overview = SyncOverviewFactory.Create([], [], [], [], [], 0, Option.None<DateTimeOffset>());
 
     /// <summary>The connected accounts.</summary>
     public IReadOnlyList<AccountViewModel> Accounts { get; private set; } = [];
@@ -34,6 +35,12 @@ public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ILocalizat
 
     /// <summary>Bytes uploaded and downloaded today across every account.</summary>
     public long BytesMovedToday => overview.BytesMovedToday;
+
+    /// <summary>When sync last checked for changes, if it ever has.</summary>
+    public Option<DateTimeOffset> LastChecked => overview.LastChecked;
+
+    /// <summary>When sync last checked for changes, relative to now, e.g. "10 min ago"; "Never" when it has not.</summary>
+    public string LastCheckedText => RelativeTimeFormatter.Format(overview.LastChecked, Localization, timeProvider);
 
     /// <summary>How far the overview load has got.</summary>
     public SyncOverviewLoadState LoadState { get; private set; } = SyncOverviewLoadStateFactory.CreateNotLoaded();
@@ -74,6 +81,8 @@ public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ILocalizat
         OnPropertyChanged(nameof(Stats));
         OnPropertyChanged(nameof(Throughput));
         OnPropertyChanged(nameof(BytesMovedToday));
+        OnPropertyChanged(nameof(LastChecked));
+        OnPropertyChanged(nameof(LastCheckedText));
         SetLoadState(SyncOverviewLoadStateFactory.CreateLoaded());
     }
 
@@ -99,7 +108,9 @@ public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ILocalizat
         ];
     }
 
-    private string OverallStatusText()
+    /// <summary>The overall status across every account, e.g. "Syncing" or "Up to date".</summary>
+    /// <returns>The localised overall status.</returns>
+    public string OverallStatusText()
     {
         if (overview.Accounts.Any(account => account.Status is SyncStatus.Syncing))
             return Localization.GetLocal("Status.Overall.Syncing");
