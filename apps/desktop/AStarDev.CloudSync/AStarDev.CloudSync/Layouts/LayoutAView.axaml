@@ -33,6 +33,12 @@
         <Style Selector="Button.rail.active Path">
             <Setter Property="Stroke" Value="{DynamicResource CloudSyncAccentBrush}" />
         </Style>
+        <Style Selector="Button.rail:disabled /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="Button.rail.active:disabled /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource CloudSyncAccentSoftBrush}" />
+        </Style>
 
         <Style Selector="Button.chip">
             <Setter Property="Height" Value="26" />
