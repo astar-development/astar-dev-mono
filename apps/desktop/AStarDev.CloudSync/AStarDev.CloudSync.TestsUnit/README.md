@@ -46,4 +46,5 @@ This records how often baselines change during phase 1 (#1261), to judge the mai
 | #1257 | 2 added, 2 changed | Layout A (dark, light) added; main window (dark, light) now shows layout A as its default content |
 | #1259 | 2 added | Layout C (sync pairs first) in dark and light; existing 21 unchanged |
 | #1260 | 2 added, 4 changed | Display settings panel (dark, light) added; layouts B and C (dark, light) gain the settings button; layout A and main window unchanged |
+| #1272 | 2 changed | Layout C (dark, light): paused Backups tile shows an empty progress track instead of a full grey bar; change is under the 0.1% pixel tolerance, so the old baselines still passed |
 | #1294 | 0 changed | Two-way direction glyph `⇄` replaced by `↔`, which Inter contains (#1271); no view renders the glyph yet |

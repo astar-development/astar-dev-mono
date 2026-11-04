@@ -63,8 +63,16 @@ public class GivenAStatusViewModel
     [Fact]
     public void when_not_syncing_then_the_progress_is_complete()
     {
-        var status = new StatusViewModel(SyncStatusFactory.CreatePaused(), TestData.CreateLocalization());
+        var status = new StatusViewModel(SyncStatusFactory.CreateUpToDate(), TestData.CreateLocalization());
 
         status.Progress.ShouldBe(1);
+    }
+
+    [Fact]
+    public void when_paused_then_the_progress_is_empty()
+    {
+        var status = new StatusViewModel(SyncStatusFactory.CreatePaused(), TestData.CreateLocalization());
+
+        status.Progress.ShouldBe(0);
     }
 }

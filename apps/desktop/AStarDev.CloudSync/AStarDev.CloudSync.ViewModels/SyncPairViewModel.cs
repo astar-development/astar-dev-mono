@@ -54,8 +54,8 @@ public sealed class SyncPairViewModel : LocalizedObservableObject
     /// <summary>A symbol for the direction, e.g. "→".</summary>
     public string DirectionGlyph => Localization.GetLocal($"{DirectionKey}.Glyph");
 
-    /// <summary>Sync progress from 0 to 1; 1 unless syncing.</summary>
-    public double Progress => pair.Status is SyncStatus.Syncing syncing ? syncing.PercentComplete / 100d : 1;
+    /// <summary>Sync progress from 0 to 1, as given by <see cref="StatusViewModel.Progress" />.</summary>
+    public double Progress => Status.Progress;
 
     /// <summary>File count and last sync, e.g. "1,118 files · 4 min ago".</summary>
     public string SummaryText => Localization.GetLocal(pair.FileCount == 1 ? "SyncPair.Summary.One" : "SyncPair.Summary.Many", pair.FileCount.ToString("N0", Localization.CurrentCulture), RelativeTimeFormatter.Format(pair.LastSync, Localization, timeProvider));
