@@ -1,4 +1,3 @@
-using AStarDev.Clock.Updates;
 using AStar.Dev.Velopack.Publishing;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using Microsoft.Extensions.Configuration;
@@ -17,5 +16,5 @@ public static class ServiceCollectionExtensions
         services
             .AddVelopackUpdates(configuration)
             .AddVelopackUpdateNotifications()
-            .AddSingleton<IUpdateDialogTextProvider, PlainUpdateDialogTextProvider>();
+            .AddSingleton<IUpdateDialogTextProvider, LocalizedUpdateDialogTextProvider>();
 }
