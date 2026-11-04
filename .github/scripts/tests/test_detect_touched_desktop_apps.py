@@ -87,8 +87,15 @@ class GivenTheDesktopAppsConfig(unittest.TestCase):
         config_path = pathlib.Path(__file__).resolve().parents[2] / "desktop-apps.json"
         self.apps = json.loads(config_path.read_text(encoding="utf-8"))
 
-    def test_when_config_is_loaded_then_all_four_desktop_apps_are_present(self):
-        self.assertEqual({"clock", "file-app", "onedrive-sync", "wallpaper-scraper"}, {app["channel_prefix"] for app in self.apps})
+    def test_when_config_is_loaded_then_all_five_desktop_apps_are_present(self):
+        self.assertEqual({"clock", "cloudsync", "file-app", "onedrive-sync", "wallpaper-scraper"}, {app["channel_prefix"] for app in self.apps})
+
+    def test_when_config_is_loaded_then_cloudsync_releases_on_the_channel_its_updater_reads(self):
+        repo_root = pathlib.Path(__file__).resolve().parents[3]
+        cloudsync = next(app for app in self.apps if app["pack_id"] == "AStarDev.CloudSync")
+        settings = json.loads((repo_root / "apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync/appsettings.json").read_text(encoding="utf-8"))
+
+        self.assertEqual(settings["Updates"]["ChannelPrefix"], cloudsync["channel_prefix"])
 
     def test_when_config_is_loaded_then_every_app_has_every_release_input(self):
         required = {"display_name", "pack_id", "pack_title", "main_exe", "project_path", "test_project_path", "tag_prefix", "channel_prefix", "directories"}
