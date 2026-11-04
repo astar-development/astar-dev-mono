@@ -1,4 +1,5 @@
 using System.Windows.Input;
+using AStarDev.CloudSync.Core;
 using AStarDev.Localization;
 using CommunityToolkit.Mvvm.Input;
 
@@ -7,8 +8,9 @@ namespace AStarDev.CloudSync.ViewModels;
 /// <summary>An account as shown in layout A's account list and account cards.</summary>
 /// <param name="account">The account.</param>
 /// <param name="select">Called with this card when the user selects it.</param>
+/// <param name="syncActions">Syncs or cancels the account when the user picks the card action.</param>
 /// <param name="localization">Supplies the card text.</param>
-public sealed class LayoutAAccountCardViewModel(AccountViewModel account, Action<LayoutAAccountCardViewModel> select, ILocalizationService localization) : LocalizedObservableObject(localization)
+public sealed class LayoutAAccountCardViewModel(AccountViewModel account, Action<LayoutAAccountCardViewModel> select, ISyncActions syncActions, ILocalizationService localization) : LocalizedObservableObject(localization)
 {
     private bool isSelected;
 
@@ -30,6 +32,9 @@ public sealed class LayoutAAccountCardViewModel(AccountViewModel account, Action
 
     /// <summary>The card action: "Cancel" while syncing, otherwise "Sync now".</summary>
     public string ActionText => Localization.GetLocal(account.Status.IsSyncing ? "LayoutA.Card.Cancel" : "LayoutA.Card.SyncNow");
+
+    /// <summary>The card action: cancels the account's sync while syncing, otherwise syncs it now.</summary>
+    public IAsyncRelayCommand ActionCommand => field ??= new AsyncRelayCommand(cancellationToken => account.Status.IsSyncing ? syncActions.CancelSyncAsync(account.Id, cancellationToken) : syncActions.SyncNowAsync(account.Id, cancellationToken));
 
     /// <summary>The storage label.</summary>
     public string StorageLabel => Localization.GetLocal("LayoutA.Card.Storage");
