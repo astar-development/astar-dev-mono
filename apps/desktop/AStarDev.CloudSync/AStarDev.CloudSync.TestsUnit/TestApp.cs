@@ -1,7 +1,6 @@
 using Avalonia;
 using Avalonia.Headless;
 using Avalonia.Markup.Xaml.Styling;
-using Avalonia.Media;
 using Avalonia.Themes.Fluent;
 
 [assembly: AvaloniaTestApplication(typeof(AStarDev.CloudSync.TestsUnit.TestApp))]
@@ -16,8 +15,7 @@ public sealed class TestApp : Application
     public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<TestApp>()
         .UseSkia()
         .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false })
-        .WithInterFont()
-        .With(new FontManagerOptions { DefaultFamilyName = "fonts:Inter#Inter" });
+        .WithCloudSyncFonts();
 
     public override void Initialize()
     {
