@@ -37,9 +37,12 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
         {
             int syncing = Overview.Accounts.Count(account => account.Status.IsSyncing);
 
-            return syncing == 0
-                ? Localization.GetLocal("LayoutA.StatusBar.Idle")
-                : Localization.GetLocal(Overview.Accounts.Count == 1 ? "LayoutA.StatusBar.Syncing.One" : "LayoutA.StatusBar.Syncing.Many",syncing.ToString("N0", Localization.CurrentCulture), Overview.Accounts.Count.ToString("N0", Localization.CurrentCulture));
+            if (syncing == 0)
+                return Localization.GetLocal("LayoutA.StatusBar.Idle");
+
+            string key = Overview.Accounts.Count == 1 ? "LayoutA.StatusBar.Syncing.One" : "LayoutA.StatusBar.Syncing.Many";
+
+            return Localization.GetLocal(key, syncing.ToString("N0", Localization.CurrentCulture), Overview.Accounts.Count.ToString("N0", Localization.CurrentCulture));
         }
     }
 
