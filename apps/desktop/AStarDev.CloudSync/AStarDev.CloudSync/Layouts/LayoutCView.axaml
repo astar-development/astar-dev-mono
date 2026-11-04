@@ -21,14 +21,24 @@
             <Setter Property="FontSize" Value="14" />
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
-        <Style Selector="Border.chip">
+        <Style Selector="Button.chip">
             <Setter Property="Height" Value="32" />
+            <Setter Property="MinHeight" Value="32" />
             <Setter Property="Padding" Value="12,0" />
             <Setter Property="CornerRadius" Value="16" />
             <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="BorderBrush" Value="{DynamicResource CloudSyncBorderBrush}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource CloudSyncTextPrimaryBrush}" />
         </Style>
-        <Style Selector="Border.chip.selected">
+        <Style Selector="Button.sort">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="Button.chip.selected">
             <Setter Property="Background" Value="{DynamicResource CloudSyncAccentSoftBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource CloudSyncAccentBrush}" />
         </Style>
@@ -137,6 +147,7 @@
                               StrokeThickness="2"
                               Data="M11,4 A7,7 0 1 1 10.99,4 Z M16,16 L20,20" />
                         <TextBox Grid.Column="1"
+                                 x:Name="CommandSearchBox"
                                  PlaceholderText="{Binding CommandSearchPlaceholder}"
                                  AutomationProperties.Name="{Binding CommandSearchPlaceholder}"
                                  Background="Transparent"
@@ -184,12 +195,15 @@
 
                 <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
-                        <Border Classes="chip selected">
+                        <Button Classes="chip"
+                                Classes.selected="{Binding IsAllPairsSelected}"
+                                Command="{Binding SelectAllPairsCommand}"
+                                AutomationProperties.Name="{Binding AllPairsFilterText}">
                             <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                 <Ellipse Classes="dot" />
                                 <TextBlock Text="{Binding AllPairsFilterText}" FontSize="12" VerticalAlignment="Center" />
                             </StackPanel>
-                        </Border>
+                        </Button>
                         <ItemsControl ItemsSource="{Binding ProviderFilters}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -198,17 +212,38 @@
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="vm:ProviderFilterViewModel">
-                                    <Border Classes="chip">
+                                    <Button Classes="chip"
+                                            Classes.selected="{Binding IsSelected}"
+                                            Command="{Binding SelectCommand}"
+                                            AutomationProperties.Name="{Binding Label}">
                                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                                             <Ellipse Classes="dot" Classes.onedrive="{Binding Provider.IsOneDrive}" />
                                             <TextBlock Text="{Binding Label}" FontSize="12" VerticalAlignment="Center" />
                                         </StackPanel>
-                                    </Border>
+                                    </Button>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                     </StackPanel>
-                    <TextBlock Grid.Column="2" Classes="muted" Text="{Binding SortText}" VerticalAlignment="Center" />
+                    <Button Grid.Column="2"
+                            Classes="sort"
+                            VerticalAlignment="Center"
+                            AutomationProperties.Name="{Binding SortText}">
+                        <TextBlock Classes="muted" Text="{Binding SortText}" />
+                        <Button.Flyout>
+                            <Flyout Placement="BottomEdgeAlignedRight">
+                                <ListBox ItemsSource="{Binding SortOptions}"
+                                         SelectedItem="{Binding SelectedSortOption}"
+                                         SelectionMode="AlwaysSelected">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:LayoutCSortOptionViewModel">
+                                            <TextBlock Text="{Binding Label}" />
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Flyout>
+                        </Button.Flyout>
+                    </Button>
                 </Grid>
 
                 <ScrollViewer Grid.Row="2"
