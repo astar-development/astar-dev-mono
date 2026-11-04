@@ -38,6 +38,26 @@ public class GivenALayoutBViewModel
     }
 
     [Fact]
+    public async Task when_an_account_is_selected_then_its_synced_folders_show_local_paths_relative_to_the_home_folder()
+    {
+        var layout = await CreateLoadedLayoutAsync();
+
+        var detail = layout.Detail.ShouldBeOfType<AccountDetailViewModel>();
+
+        detail.SyncedFolders.Select(folder => folder.LocalPathText).ShouldBe(["~/CloudSync/OneDrive/Work/Documents", "~/CloudSync/OneDrive/Work/Projects", "~/CloudSync/OneDrive/Work/Desktop"]);
+    }
+
+    [Fact]
+    public async Task when_an_account_is_selected_then_its_activity_comes_only_from_that_account_newest_first()
+    {
+        var layout = await CreateLoadedLayoutAsync();
+
+        var detail = layout.Detail.ShouldBeOfType<AccountDetailViewModel>();
+
+        detail.RecentActivity.Select(item => item.Text).ShouldBe(["Detecting local changes…", "Uploaded 12 files (84.0 MB)", "Authenticated"]);
+    }
+
+    [Fact]
     public async Task when_another_account_is_selected_then_the_detail_follows_and_change_is_raised()
     {
         var layout = await CreateLoadedLayoutAsync();
@@ -69,7 +89,7 @@ public class GivenALayoutBViewModel
         var source = Substitute.For<ISyncOverviewSource>();
         source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([], [], [], [], []));
         var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
-        var layout = new LayoutBViewModel(overview, TestData.CreateLocalization());
+        var layout = new LayoutBViewModel(overview, TestData.CreateLocalPathFormatter(), TestData.CreateLocalization());
 
         await overview.LoadAsync(TestContext.Current.CancellationToken);
 
@@ -240,7 +260,7 @@ public class GivenALayoutBViewModel
     private static async Task<LayoutBViewModel> CreateLoadedLayoutAsync()
     {
         var overview = new SyncOverviewViewModel(new AStarDev.CloudSync.Core.Placeholder.PlaceholderSyncOverviewSource(TestData.CreateTime()), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
-        var layout = new LayoutBViewModel(overview, TestData.CreateLocalization());
+        var layout = new LayoutBViewModel(overview, TestData.CreateLocalPathFormatter(), TestData.CreateLocalization());
         await overview.LoadAsync(TestContext.Current.CancellationToken);
 
         return layout;
