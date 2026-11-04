@@ -61,6 +61,19 @@ public class GivenALayoutAViewModel
     }
 
     [Fact]
+    public async Task when_the_only_account_is_syncing_then_the_status_summary_uses_the_singular()
+    {
+        var source = Substitute.For<ISyncOverviewSource>();
+        source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateSyncing(50), Option.None<DateTimeOffset>())], [], [], [], []));
+        var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime());
+        var layout = new LayoutAViewModel(overview, TestData.CreateLocalization());
+
+        await overview.LoadAsync(TestContext.Current.CancellationToken);
+
+        layout.StatusSummaryText.ShouldBe("Syncing 1 of 1 account");
+    }
+
+    [Fact]
     public async Task when_no_account_is_syncing_then_the_status_summary_says_so()
     {
         var source = Substitute.For<ISyncOverviewSource>();
