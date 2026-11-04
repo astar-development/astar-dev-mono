@@ -42,5 +42,38 @@ class GivenATitleWithXmlSpecialCharacters(unittest.TestCase):
         self.assertEqual("unchanged", second.stdout.strip())
 
 
+class GivenAnEntryForTheSameVersionWithAnOlderTitle(unittest.TestCase):
+    def run_title_edit(self):
+        with tempfile.TemporaryDirectory() as directory:
+            csproj = pathlib.Path(directory) / "Sample.csproj"
+            csproj.write_text(PROJECT, encoding="utf-8")
+            subprocess.run([sys.executable, "-I", str(SCRIPT), str(csproj), "1.2.2", "fix: earlier release"], check=True, capture_output=True)
+            subprocess.run([sys.executable, "-I", str(SCRIPT), str(csproj), "1.2.3", "feat: first title"], check=True, capture_output=True)
+            subprocess.run([sys.executable, "-I", str(SCRIPT), str(csproj), "1.2.3", "feat: edited title"], check=True, capture_output=True)
+
+            return csproj.read_text(encoding="utf-8")
+
+    def test_when_the_title_is_edited_then_the_version_appears_once(self):
+        text = self.run_title_edit()
+
+        self.assertEqual(1, text.count("v1.2.3 "))
+
+    def test_when_the_title_is_edited_then_the_edited_title_is_the_top_entry(self):
+        text = self.run_title_edit()
+
+        self.assertIn("<PackageReleaseNotes>\n        v1.2.3 feat: edited title\n        v1.2.2 fix: earlier release\n", text)
+
+    def test_when_the_title_is_edited_then_a_similar_longer_version_is_kept(self):
+        with tempfile.TemporaryDirectory() as directory:
+            csproj = pathlib.Path(directory) / "Sample.csproj"
+            csproj.write_text(PROJECT, encoding="utf-8")
+            subprocess.run([sys.executable, "-I", str(SCRIPT), str(csproj), "1.2.30", "fix: other version"], check=True, capture_output=True)
+            subprocess.run([sys.executable, "-I", str(SCRIPT), str(csproj), "1.2.3", "feat: new"], check=True, capture_output=True)
+
+            text = csproj.read_text(encoding="utf-8")
+
+        self.assertIn("v1.2.30 fix: other version", text)
+
+
 if __name__ == "__main__":
     unittest.main()

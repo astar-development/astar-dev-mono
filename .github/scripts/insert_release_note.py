@@ -5,10 +5,12 @@ Used by release-notes-bump.yml (pre-merge) — every packable project's
 PackageReleaseNotes is normalized to the same multi-line block shape, so
 this inserts right after the opening tag, normalizes an inline block to the multi-line shape, and adds a block to projects that have none.
 
-Idempotent: if the desired entry is already the first one in the block,
-nothing is written. release-notes-bump.yml runs on every PR push, including
-the one it creates itself pushing this file's own edit — without this check
-that would re-insert a duplicate entry on every subsequent run.
+Idempotent: any existing entry for the same version is replaced, so each
+version appears once even when the PR title is edited between runs, and if
+the result matches the file nothing is written. release-notes-bump.yml runs
+on every PR push, including the one it creates itself pushing this file's
+own edit — without this check that would re-insert a duplicate entry on
+every subsequent run.
 
 Prints "changed" or "unchanged" to stdout so the caller knows whether to
 stage the file.
@@ -38,19 +40,22 @@ def main() -> None:
         new_block = f"        <PackageReleaseNotes>\n        {desired_entry}\n        </PackageReleaseNotes>\n"
         text = text[:insert_at] + new_block + text[insert_at:]
     else:
-        body = block.group(1)
-        first_entry = next((line.strip() for line in body.splitlines() if line.strip()), "")
-
-        if first_entry == desired_entry:
-            print("unchanged")
-            return
+        same_version = re.escape(f"v{version}") + r"(?![^\s])"
+        body = re.sub(r"\r?\n[ \t]*" + same_version + r"[^\r\n]*(?=\r?\n)", "", block.group(1))
 
         if body.startswith("\n") or body.startswith("\r\n"):
             replacement = f"\n        {desired_entry}{body}"
+        elif body.strip() == "" or re.match(same_version, body.strip()):
+            replacement = f"\n        {desired_entry}\n        "
         else:
             replacement = f"\n        {desired_entry}\n        {body.strip()}\n        "
 
-        text = text[: block.start(1)] + replacement + text[block.end(1):]
+        new_text = text[: block.start(1)] + replacement + text[block.end(1):]
+        if new_text == text:
+            print("unchanged")
+            return
+
+        text = new_text
 
     with open(path, "w", encoding="utf-8") as handle:
         handle.write(text)
