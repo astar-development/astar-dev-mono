@@ -12,7 +12,7 @@ namespace AStarDev.CloudSync.ViewModels;
 /// <param name="logger">Reports an overview that cannot be read.</param>
 public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ILocalizationService localization, TimeProvider timeProvider, ILogger<SyncOverviewViewModel> logger) : LocalizedObservableObject(localization)
 {
-    private SyncOverview overview = SyncOverviewFactory.Create([], [], [], [], []);
+    private SyncOverview overview = SyncOverviewFactory.Create([], [], [], [], [], 0);
 
     /// <summary>The connected accounts.</summary>
     public IReadOnlyList<AccountViewModel> Accounts { get; private set; } = [];
@@ -31,6 +31,9 @@ public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ILocalizat
 
     /// <summary>Recent transfer rates.</summary>
     public ThroughputViewModel Throughput { get; private set; } = new([], localization);
+
+    /// <summary>Bytes uploaded and downloaded today across every account.</summary>
+    public long BytesMovedToday => overview.BytesMovedToday;
 
     /// <summary>How far the overview load has got.</summary>
     public SyncOverviewLoadState LoadState { get; private set; } = SyncOverviewLoadStateFactory.CreateNotLoaded();
@@ -70,6 +73,7 @@ public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ILocalizat
         OnPropertyChanged(nameof(Conflicts));
         OnPropertyChanged(nameof(Stats));
         OnPropertyChanged(nameof(Throughput));
+        OnPropertyChanged(nameof(BytesMovedToday));
         SetLoadState(SyncOverviewLoadStateFactory.CreateLoaded());
     }
 

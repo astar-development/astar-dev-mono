@@ -9,6 +9,7 @@ public sealed class PlaceholderSyncOverviewSource(TimeProvider timeProvider) : I
     private const string OneDriveLocalRoot = "/home/user/CloudSync/OneDrive";
     private const long Gigabyte = 1_073_741_824;
     private const long Terabyte = 1_099_511_627_776;
+    private const long BytesMovedToday = 3_328_599_655;
 
     private static readonly long[] throughputBytesPerSecond = [180_000, 240_000, 210_000, 900_000, 760_000, 2_400_000, 1_900_000, 3_800_000, 3_100_000, 5_600_000, 4_700_000, 7_200_000, 6_100_000, 8_900_000, 7_800_000, 10_400_000, 9_600_000, 11_800_000, 10_900_000, 12_700_000, 12_100_000, 13_900_000, 13_400_000, 14_889_779];
 
@@ -49,7 +50,7 @@ public sealed class PlaceholderSyncOverviewSource(TimeProvider timeProvider) : I
 
         var throughput = throughputBytesPerSecond.Select((rate, index) => ThroughputSampleFactory.Create(now.AddMinutes(-5 * (throughputBytesPerSecond.Length - 1 - index)), rate)).ToArray();
 
-        return Task.FromResult(SyncOverviewFactory.Create([work, personal, photos, archive], [documents, projects, desktop, recipes, music, holidayPhotos, backups], activity, conflicts, throughput));
+        return Task.FromResult(SyncOverviewFactory.Create([work, personal, photos, archive], [documents, projects, desktop, recipes, music, holidayPhotos, backups], activity, conflicts, throughput, BytesMovedToday));
     }
 
     private static SyncPair CreatePair(CloudAccount account, string name, string remotePath, SyncDirection direction, SyncStatus status, int fileCount, Option<DateTimeOffset> lastSync) => SyncPairFactory.Create(SyncPairIdFactory.Create(), account.Id, name, new DirectoryInfo(Path.Join(OneDriveLocalRoot, account.DisplayName, name)), remotePath, direction, status, fileCount, lastSync);

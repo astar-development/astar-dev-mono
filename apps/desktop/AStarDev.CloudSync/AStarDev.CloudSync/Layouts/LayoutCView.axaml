@@ -189,6 +189,7 @@
                     <StackPanel Grid.Column="0" Spacing="6" VerticalAlignment="Bottom">
                         <TextBlock Classes="caps" Text="{Binding StatusLabel}" />
                         <TextBlock Text="{Binding Headline}" FontSize="28" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Classes="muted" Text="{Binding MovedTodayText}" TextTrimming="CharacterEllipsis" />
                     </StackPanel>
                     <controls:ThroughputSparkline Grid.Column="1" Width="220" DataContext="{Binding Overview.Throughput}" />
                 </Grid>
