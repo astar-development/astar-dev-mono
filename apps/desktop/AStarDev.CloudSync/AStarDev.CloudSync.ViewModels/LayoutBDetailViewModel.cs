@@ -21,10 +21,10 @@ public sealed class AccountDetailViewModel : LayoutBDetailViewModel
         SyncPairs = syncPairs;
         Stats =
         [
-            new(() => account.FoldersText, "LayoutB.Stats.Folders", localization),
-            new(() => account.FilesText, "LayoutB.Stats.Files", localization),
-            new(() => account.ConflictsText, "Stats.Conflicts", localization),
-            new(() => account.LastSyncText, "LayoutB.Stats.LastSync", localization)
+            new(() => account.FoldersText, "LayoutB.Stats.Folders", StatTileToneFactory.CreateNormal(), localization),
+            new(() => account.FilesText, "LayoutB.Stats.Files", StatTileToneFactory.CreateNormal(), localization),
+            new(() => account.ConflictsText, "Stats.Conflicts", StatTileToneFactory.CreateNormal(), localization),
+            new(() => account.LastSyncText, "LayoutB.Stats.LastSync", StatTileToneFactory.CreateNormal(), localization)
         ];
     }
 

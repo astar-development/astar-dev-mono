@@ -7,7 +7,10 @@
              HorizontalAlignment="Left"
              VerticalAlignment="Top">
     <StackPanel Spacing="2">
-        <TextBlock Text="{Binding Value}" FontSize="20" FontWeight="SemiBold" />
+        <TextBlock Classes="stat-value"
+                   Classes.warn="{Binding IsWarn}"
+                   Classes.accent="{Binding IsAccent}"
+                   Text="{Binding Value}" FontSize="20" FontWeight="SemiBold" />
         <TextBlock Classes="muted" Text="{Binding Label}" />
     </StackPanel>
 </UserControl>
