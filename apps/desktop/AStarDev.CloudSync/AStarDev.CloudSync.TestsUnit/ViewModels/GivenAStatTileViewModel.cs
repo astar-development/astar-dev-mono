@@ -7,7 +7,7 @@ public class GivenAStatTileViewModel
     [Fact]
     public void when_the_tone_is_normal_then_neither_warn_nor_accent_is_selected()
     {
-        var tile = new StatTileViewModel(() => "4", "Stats.Accounts", StatTileToneFactory.CreateNormal(), TestData.CreateLocalization());
+        var tile = new StatTileViewModel(() => "4", "Stats.Accounts.Many", StatTileToneFactory.CreateNormal(), TestData.CreateLocalization());
 
         tile.Tone.ShouldBeOfType<StatTileTone.Normal>();
         tile.IsWarn.ShouldBeFalse();
@@ -17,7 +17,7 @@ public class GivenAStatTileViewModel
     [Fact]
     public void when_the_tone_is_warn_then_only_warn_is_selected()
     {
-        var tile = new StatTileViewModel(() => "2", "Stats.Conflicts", StatTileToneFactory.CreateWarn(), TestData.CreateLocalization());
+        var tile = new StatTileViewModel(() => "2", "Stats.Conflicts.Many", StatTileToneFactory.CreateWarn(), TestData.CreateLocalization());
 
         tile.Tone.ShouldBeOfType<StatTileTone.Warn>();
         tile.IsWarn.ShouldBeTrue();

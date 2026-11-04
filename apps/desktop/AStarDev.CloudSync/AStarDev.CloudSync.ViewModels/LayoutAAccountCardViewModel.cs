@@ -20,13 +20,13 @@ public sealed class LayoutAAccountCardViewModel(AccountViewModel account, ILocal
     public string StorageLabel => Localization.GetLocal("LayoutA.Card.Storage");
 
     /// <summary>The folder count label.</summary>
-    public string FoldersLabel => Localization.GetLocal("LayoutA.Card.Folders");
+    public string FoldersLabel => Localization.GetLocal(CountKey.For("LayoutA.Card.Folders", account.FolderCount));
 
     /// <summary>The file count label.</summary>
-    public string FilesLabel => Localization.GetLocal("LayoutA.Card.Files");
+    public string FilesLabel => Localization.GetLocal(CountKey.For("LayoutA.Card.Files", account.FileCount));
 
     /// <summary>The conflict count label.</summary>
-    public string ConflictsLabel => Localization.GetLocal("Stats.Conflicts");
+    public string ConflictsLabel => Localization.GetLocal(CountKey.For("Stats.Conflicts", account.ConflictCount));
 
     /// <summary>The last sync label.</summary>
     public string LastSyncLabel => Localization.GetLocal("LayoutA.Card.LastSync");
