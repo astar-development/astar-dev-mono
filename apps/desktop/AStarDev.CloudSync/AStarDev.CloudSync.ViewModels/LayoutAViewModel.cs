@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using AStarDev.CloudSync.Core;
 using AStarDev.Localization;
 
 namespace AStarDev.CloudSync.ViewModels;
@@ -24,7 +25,7 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
     /// <summary>"All" followed by one chip per provider present in the accounts.</summary>
     public IReadOnlyList<LayoutAProviderChipViewModel> ProviderChips { get; private set; } = [];
 
-    /// <summary>The accounts passing the selected chip's filter.</summary>
+    /// <summary>The accounts passing the selected chip's filter. One is selected while any are visible: the first by default, and the user's choice while it stays visible.</summary>
     public IReadOnlyList<LayoutAAccountCardViewModel> VisibleAccounts { get; private set; } = [];
 
     /// <summary>The number of accounts, formatted for the culture.</summary>
@@ -78,7 +79,8 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
 
     private void Rebuild()
     {
-        allCards = [.. Overview.Accounts.Select(account => new LayoutAAccountCardViewModel(account, Localization))];
+        AccountId? previous = allCards.FirstOrDefault(card => card.IsSelected)?.Account.Id;
+        allCards = [.. Overview.Accounts.Select(account => new LayoutAAccountCardViewModel(account, SelectAccount, Localization) { IsSelected = account.Id == previous })];
         var allChip = new LayoutAProviderChipViewModel(() => Localization.GetLocal("LayoutA.Filter.All"), _ => true, Select, Localization);
         var providerChips = Overview.Accounts.Select(account => account.Provider).DistinctBy(provider => provider.Name, StringComparer.Ordinal).Select(provider => new LayoutAProviderChipViewModel(() => provider.Name, account => string.Equals(account.Provider.Name, provider.Name, StringComparison.Ordinal), Select, Localization));
         ProviderChips = [allChip, .. providerChips];
@@ -96,5 +98,12 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
 
         VisibleAccounts = [.. allCards.Where(card => chip.Matches(card.Account))];
         OnPropertyChanged(nameof(VisibleAccounts));
+        SelectAccount(VisibleAccounts.OrderByDescending(card => card.IsSelected).FirstOrDefault());
+    }
+
+    private void SelectAccount(LayoutAAccountCardViewModel? selected)
+    {
+        foreach (var card in allCards)
+            card.IsSelected = ReferenceEquals(card, selected);
     }
 }
