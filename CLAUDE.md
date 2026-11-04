@@ -27,7 +27,7 @@ Check before writing new code — use when practicable:
 
 - `AStar.Dev.Functional.Extensions` — `Result<T>`, `Option<T>`, `Map`/`Bind`/`MatchAsync`
 - `AStar.Dev.Logging.Extensions` — compile-time `LogMessage` templates; avoid `logger.Log...`
-- `AStarDev.Utilities` — string extensions, nullability, `CombinePaths` etc.
+- `AStarDev.Utilities` — string extensions, nullability, `CombinePath` etc.
 
 New reusable code → add to relevant package + raise GitHub issue.
 
