@@ -13,6 +13,7 @@
 
   <PropertyGroup>
     <PackageReleaseNotes>
+        v0.1.1 chore: remove unused CloudSync and Clock code, fix duplicate release notes (#1284, #1289, #1290)
         v0.1.0 feat(localization): extract localisation service into AStarDev.Localization package
     </PackageReleaseNotes>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
