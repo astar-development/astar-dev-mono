@@ -54,5 +54,18 @@
   "Stats.OverallStatus": "overall status",
   "Throughput.Title": "Throughput, last 2 hours",
   "Throughput.Current": "{0}/s now",
-  "Throughput.NoData": "No data synced yet"
+  "Throughput.NoData": "No data synced yet",
+  "LayoutC.CommandSearch.Placeholder": "Search files, folders, accounts or run a command",
+  "LayoutC.CommandSearch.Shortcut": "Ctrl K",
+  "LayoutC.NewSyncPair": "+ New sync pair",
+  "LayoutC.StatusLabel": "STATUS",
+  "LayoutC.Headline": "{0} in sync, {1} syncing, {2}",
+  "LayoutC.Filter.AllPairs": "All pairs · {0}",
+  "LayoutC.Filter.Provider": "{0} · {1}",
+  "LayoutC.Sort": "Sort: needs attention first",
+  "LayoutC.NeedsAttention": "Needs attention",
+  "LayoutC.LiveActivity": "Live activity",
+  "LayoutC.Live": "Live",
+  "LayoutC.Accounts": "ACCOUNTS",
+  "LayoutC.AddAccount": "+ Add account"
 }
