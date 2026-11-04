@@ -1,3 +1,4 @@
+using AStarDev.CloudSync.Core;
 using AStarDev.CloudSync.ViewModels;
 using AStarDev.Localization;
 
@@ -11,7 +12,9 @@ public class GivenAMainWindowViewModel
         var localization = Substitute.For<ILocalizationService>();
         localization.GetLocal("App.Title").Returns("Localised title");
 
-        var viewModel = new MainWindowViewModel(localization);
+        var overview = new SyncOverviewViewModel(Substitute.For<ISyncOverviewSource>(), localization, TestData.CreateTime());
+
+        var viewModel = new MainWindowViewModel(localization, new LayoutAViewModel(overview, localization));
 
         viewModel.Title.ShouldBe("Localised title");
     }

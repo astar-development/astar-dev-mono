@@ -25,6 +25,7 @@ public partial class App : Application, IDisposable
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.MainWindow = new MainWindow { DataContext = services.GetRequiredService<MainWindowViewModel>() };
+            _ = services.GetRequiredService<SyncOverviewViewModel>().LoadAsync(CancellationToken.None);
 
             _ = services.GetRequiredService<IUpdateNotificationService>().CheckAndNotifyAsync();
         }
