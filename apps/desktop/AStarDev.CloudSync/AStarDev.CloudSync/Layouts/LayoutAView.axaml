@@ -132,9 +132,7 @@
                         <Path Data="M18,11 A7,7 0 1 1 4,11 A7,7 0 1 1 18,11 Z M20,20 L16,16" />
                     </Button>
                 </StackPanel>
-                <Button Grid.Row="2" Classes="rail" Margin="0,12" ToolTip.Tip="{Binding SettingsText}" AutomationProperties.Name="{Binding SettingsText}">
-                    <Path Data="M15,12 A3,3 0 1 1 9,12 A3,3 0 1 1 15,12 Z M12,2 V5 M12,19 V22 M2,12 H5 M19,12 H22 M4.9,4.9 L7,7 M17,17 L19.1,19.1 M4.9,19.1 L7,17 M17,7 L19.1,4.9" />
-                </Button>
+                <controls:DisplaySettingsButton Grid.Row="2" Margin="0,12" HorizontalAlignment="Center" />
             </Grid>
         </Border>
 

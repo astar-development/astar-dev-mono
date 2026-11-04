@@ -8,5 +8,19 @@
         Width="1280" Height="800"
         MinWidth="960" MinHeight="600"
         Title="{Binding Title}">
-    <layouts:LayoutAView DataContext="{Binding LayoutA}" />
+    <ContentControl Content="{Binding CurrentLayout}"
+                    HorizontalContentAlignment="Stretch"
+                    VerticalContentAlignment="Stretch">
+        <ContentControl.DataTemplates>
+            <DataTemplate DataType="vm:LayoutAViewModel">
+                <layouts:LayoutAView />
+            </DataTemplate>
+            <DataTemplate DataType="vm:LayoutBViewModel">
+                <layouts:LayoutBView />
+            </DataTemplate>
+            <DataTemplate DataType="vm:LayoutCViewModel">
+                <layouts:LayoutCView />
+            </DataTemplate>
+        </ContentControl.DataTemplates>
+    </ContentControl>
 </Window>

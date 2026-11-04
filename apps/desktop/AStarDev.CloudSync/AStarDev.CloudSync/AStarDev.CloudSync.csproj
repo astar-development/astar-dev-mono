@@ -18,6 +18,7 @@
     <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="Avalonia.Fonts.Inter" />
+    <PackageReference Include="Testably.Abstractions" />
     <PackageReference Include="Velopack" />
   </ItemGroup>
 
@@ -29,7 +30,9 @@
 
   <ItemGroup>
     <ProjectReference Include="../AStarDev.CloudSync.ViewModels/AStarDev.CloudSync.ViewModels.csproj" />
+    <ProjectReference Include="../../../../packages/core/logging/AStarDev.LoggingExtensions/AStarDev.LoggingExtensions.csproj" />
     <ProjectReference Include="../../../../packages/core/utilities/AStarDev.Localization/AStarDev.Localization.csproj" />
+    <ProjectReference Include="../../../../packages/core/utilities/AStarDev.Utilities/AStarDev.Utilities.csproj" />
     <ProjectReference Include="../../../../packages/core/utilities/AStarDev.VelopackPublishing/AStarDev.VelopackPublishing.csproj" />
     <ProjectReference Include="../../../../packages/core/utilities/AStarDev.VelopackPublishingAvalonia/AStarDev.VelopackPublishingAvalonia.csproj" />
   </ItemGroup>
