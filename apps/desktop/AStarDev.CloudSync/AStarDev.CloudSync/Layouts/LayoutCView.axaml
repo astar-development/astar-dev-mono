@@ -91,7 +91,7 @@
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="FontWeight" Value="Medium" />
             <Setter Property="Background" Value="{DynamicResource CloudSyncAccentBrush}" />
-            <Setter Property="Foreground" Value="{DynamicResource CloudSyncBackgroundBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource CloudSyncOnAccentBrush}" />
         </Style>
         <Style Selector="Button.secondary">
             <Setter Property="Height" Value="40" />
