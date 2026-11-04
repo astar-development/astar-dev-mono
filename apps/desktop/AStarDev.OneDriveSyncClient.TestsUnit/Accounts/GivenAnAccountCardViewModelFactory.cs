@@ -1,5 +1,5 @@
 using AStarDev.OneDriveSyncClient.Accounts;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 
 namespace AStarDev.OneDriveSyncClient.TestsUnit.Accounts;
 

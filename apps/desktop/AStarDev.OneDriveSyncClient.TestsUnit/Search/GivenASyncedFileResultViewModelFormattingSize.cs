@@ -3,7 +3,7 @@ using AStarDev.OneDriveSyncClient.Classifications;
 using AStarDev.OneDriveSyncClient.Data.Repositories;
 using AStarDev.OneDriveSyncClient.Infrastructure.Shell;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Pipeline;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using AStarDev.OneDriveSyncClient.Search;
 using AStarDev.OneDriveSyncClient.TestsUnit.Infrastructure.Sync.Pipeline;
 

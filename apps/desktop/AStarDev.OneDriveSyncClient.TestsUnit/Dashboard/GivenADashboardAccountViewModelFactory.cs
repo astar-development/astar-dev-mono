@@ -3,7 +3,7 @@ using AStarDev.OneDriveSyncClient.Activity;
 using AStarDev.OneDriveSyncClient.Dashboard;
 using AStarDev.OneDriveSyncClient.Data.Repositories;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace AStarDev.OneDriveSyncClient.TestsUnit.Dashboard;

@@ -2,11 +2,11 @@ using System.Globalization;
 using System.Reflection;
 using System.Text.Json;
 
-namespace AStarDev.OneDriveSyncClient.Localization;
+namespace AStarDev.Localization;
 
 /// <summary>
 /// Loads localised strings from embedded JSON resources named
-/// <c>Assets/Localization/{culture}.json</c> (e.g. <c>en-GB.json</c>).
+/// <c>Assets/Localization/{culture}.json</c> (e.g. <c>en-GB.json</c>) in the supplied resource assembly.
 ///
 /// Resource file format:
 /// <code>
@@ -31,31 +31,38 @@ public sealed class LocalizationService : ILocalizationService
 
     private Dictionary<string, string> strings = [];
 
+    /// <inheritdoc />
     public CultureInfo CurrentCulture { get; private set; } = fallbackCulture;
+
+    /// <inheritdoc />
     public IReadOnlyList<CultureInfo> AvailableCultures { get; private set; }
 
+    /// <inheritdoc />
     public event EventHandler<CultureInfo>? CultureChanged;
 
-    public LocalizationService()
+    /// <summary>Creates a service that reads the localisation JSON files embedded in <paramref name="resourceAssembly"/>.</summary>
+    /// <param name="resourceAssembly">The assembly holding the <c>Assets/Localization/{culture}.json</c> embedded resources.</param>
+    public LocalizationService(Assembly resourceAssembly)
     {
-        assembly = Assembly.GetExecutingAssembly();
+        ArgumentNullException.ThrowIfNull(resourceAssembly);
+
+        assembly = resourceAssembly;
         resourcePrefix = assembly.GetName().Name + ".Assets.Localization.";
 
         AvailableCultures = DiscoverCultures();
     }
 
-    /// <summary>
-    /// Must be called once at startup (e.g. from App.OnFrameworkInitializationCompleted).
-    /// Loads strings for the requested culture (or en-GB as fallback).
-    /// </summary>
+    /// <inheritdoc />
     public void Initialise(CultureInfo? requested = null)
     {
         var target = requested ?? fallbackCulture;
         Load(target);
     }
 
+    /// <inheritdoc />
     public string GetLocal(string key) => strings.TryGetValue(key, out string? value) ? value : key;
 
+    /// <inheritdoc />
     public string GetLocal(string key, params object[] args)
     {
         string template = GetLocal(key);
@@ -69,8 +76,11 @@ public sealed class LocalizationService : ILocalizationService
         }
     }
 
+    /// <inheritdoc />
     public async Task SetCultureAsync(CultureInfo culture, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(culture);
+
         if (culture.Name == CurrentCulture.Name)
             return;
 

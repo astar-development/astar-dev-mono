@@ -1,6 +1,6 @@
 using AStarDev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Domain;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using AStarDev.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
 

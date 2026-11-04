@@ -1,4 +1,4 @@
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 
 namespace AStarDev.OneDriveSyncClient.Infrastructure.Tray;
 

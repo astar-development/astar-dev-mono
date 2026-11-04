@@ -1,5 +1,5 @@
 using System.Text.Json;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 
 namespace AStarDev.OneDriveSyncClient.TestsUnit.Localization;
 

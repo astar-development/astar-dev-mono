@@ -5,7 +5,7 @@ using AStarDev.OneDriveSyncClient.Infrastructure.ApplicationConfiguration;
 using AStarDev.OneDriveSyncClient.Infrastructure.Authentication;
 using AStarDev.OneDriveSyncClient.Infrastructure.Graph;
 using AStarDev.OneDriveSyncClient.Infrastructure.Shell;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using AStarDev.OneDriveSyncClient.Startup;
 using AStarDev.LoggingOTel.LogViewer;
 using Microsoft.EntityFrameworkCore;

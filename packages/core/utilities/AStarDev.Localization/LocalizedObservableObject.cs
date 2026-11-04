@@ -1,7 +1,7 @@
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace AStarDev.OneDriveSyncClient.Localization;
+namespace AStarDev.Localization;
 
 /// <summary>
 /// Base for view models that display localised text. Subscribes weakly to <see cref="ILocalizationService.CultureChanged"/>
@@ -16,6 +16,8 @@ public abstract class LocalizedObservableObject : ObservableObject
     /// <summary>Subscribes to culture changes on <paramref name="localization"/>.</summary>
     protected LocalizedObservableObject(ILocalizationService localization)
     {
+        ArgumentNullException.ThrowIfNull(localization);
+
         Localization = localization;
         var weakSelf = new WeakReference<LocalizedObservableObject>(this);
         EventHandler<CultureInfo>? handler = null;

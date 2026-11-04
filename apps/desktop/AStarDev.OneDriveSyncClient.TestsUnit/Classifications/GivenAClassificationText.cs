@@ -1,6 +1,6 @@
 using System.Globalization;
 using AStarDev.OneDriveSyncClient.Classifications;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using AStarDev.OneDriveSyncClient.TestsUnit.TestHelpers;
 
 namespace AStarDev.OneDriveSyncClient.TestsUnit.Classifications;

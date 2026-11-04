@@ -1,0 +1,118 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>AStarDev.Localization</name>
+    </assembly>
+    <members>
+        <member name="T:AStarDev.Localization.ILocalizationService">
+            <summary>
+            Provides localised string lookup with optional format-argument support.
+            Implementations load strings from JSON resource files keyed by culture.
+            </summary>
+        </member>
+        <member name="P:AStarDev.Localization.ILocalizationService.CurrentCulture">
+            <summary>Current active culture (e.g. en-GB, fr-FR).</summary>
+        </member>
+        <member name="P:AStarDev.Localization.ILocalizationService.AvailableCultures">
+            <summary>All cultures for which a resource file exists.</summary>
+        </member>
+        <member name="M:AStarDev.Localization.ILocalizationService.GetLocal(System.String)">
+            <summary>
+            Returns the localised string for <paramref name="key"/>.
+            Falls back to the key itself if not found so the UI never shows blank.
+            </summary>
+        </member>
+        <member name="M:AStarDev.Localization.ILocalizationService.GetLocal(System.String,System.Object[])">
+            <summary>
+            Returns the localised string for <paramref name="key"/> with
+            <see cref="M:System.String.Format(System.String,System.Object[])"/> applied to <paramref name="args"/>.
+            </summary>
+        </member>
+        <member name="M:AStarDev.Localization.ILocalizationService.SetCultureAsync(System.Globalization.CultureInfo,System.Threading.CancellationToken)">
+            <summary>
+            Switches the active culture and reloads strings.
+            Raises <see cref="E:AStarDev.Localization.ILocalizationService.CultureChanged"/>.
+            </summary>
+        </member>
+        <member name="E:AStarDev.Localization.ILocalizationService.CultureChanged">
+            <summary>Raised after a successful culture switch.</summary>
+        </member>
+        <member name="M:AStarDev.Localization.ILocalizationService.Initialise(System.Globalization.CultureInfo)">
+            <summary>
+            Must be called once at startup (e.g. from App.OnFrameworkInitializationCompleted).
+            Loads strings for the requested culture (or en-GB as fallback).
+            </summary>
+        </member>
+        <member name="T:AStarDev.Localization.LocalizationService">
+             <summary>
+             Loads localised strings from embedded JSON resources named
+             <c>Assets/Localization/{culture}.json</c> (e.g. <c>en-GB.json</c>) in the supplied resource assembly.
+            
+             Resource file format:
+             <code>
+             {
+               "locale": "en-GB",
+               "App.Title": "OneDrive Sync",
+               ...
+             }
+             </code>
+            
+             Adding a new language:
+               1. Copy <c>en-GB.json</c> to <c>fr-FR.json</c> and translate values.
+               2. Mark the new file as EmbeddedResource in the .csproj.
+               3. The service discovers it automatically at startup.
+             </summary>
+        </member>
+        <member name="P:AStarDev.Localization.LocalizationService.CurrentCulture">
+            <inheritdoc />
+        </member>
+        <member name="P:AStarDev.Localization.LocalizationService.AvailableCultures">
+            <inheritdoc />
+        </member>
+        <member name="E:AStarDev.Localization.LocalizationService.CultureChanged">
+            <inheritdoc />
+        </member>
+        <member name="M:AStarDev.Localization.LocalizationService.#ctor(System.Reflection.Assembly)">
+            <summary>Creates a service that reads the localisation JSON files embedded in <paramref name="resourceAssembly"/>.</summary>
+            <param name="resourceAssembly">The assembly holding the <c>Assets/Localization/{culture}.json</c> embedded resources.</param>
+        </member>
+        <member name="M:AStarDev.Localization.LocalizationService.Initialise(System.Globalization.CultureInfo)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStarDev.Localization.LocalizationService.GetLocal(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:AStarDev.Localization.LocalizationService.GetLocal(System.String,System.Object[])">
+            <inheritdoc />
+        </member>
+        <member name="M:AStarDev.Localization.LocalizationService.SetCultureAsync(System.Globalization.CultureInfo,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:AStarDev.Localization.LocalizedObservableObject">
+            <summary>
+            Base for view models that display localised text. Subscribes weakly to <see cref="E:AStarDev.Localization.ILocalizationService.CultureChanged"/>
+            so short-lived instances are never kept alive, and raises <see cref="E:System.ComponentModel.INotifyPropertyChanged.PropertyChanged"/>
+            for every property when the culture changes.
+            </summary>
+        </member>
+        <member name="P:AStarDev.Localization.LocalizedObservableObject.Localization">
+            <summary>The localisation service this view model was created with.</summary>
+        </member>
+        <member name="M:AStarDev.Localization.LocalizedObservableObject.#ctor(AStarDev.Localization.ILocalizationService)">
+            <summary>Subscribes to culture changes on <paramref name="localization"/>.</summary>
+        </member>
+        <member name="M:AStarDev.Localization.LocalizedObservableObject.OnCultureChanged">
+            <summary>Called after the culture changes. Override to recompute stored text, then call the base implementation.</summary>
+        </member>
+        <member name="T:AStarDev.Localization.ServiceCollectionExtensions">
+            <summary>Registers the localisation service with the dependency injection container.</summary>
+        </member>
+        <member name="M:AStarDev.Localization.ServiceCollectionExtensions.AddLocalizationService(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Reflection.Assembly,System.Globalization.CultureInfo)">
+            <summary>Registers a singleton <see cref="T:AStarDev.Localization.ILocalizationService"/> that reads the localisation files embedded in <paramref name="resourceAssembly"/>, initialised to <paramref name="culture"/>.</summary>
+            <param name="services">The service collection to register the localisation service with.</param>
+            <param name="resourceAssembly">The assembly holding the <c>Assets/Localization/{culture}.json</c> embedded resources, usually the application assembly.</param>
+            <param name="culture">The culture to load at startup.</param>
+            <returns>The <paramref name="services" /> collection to allow further chaining.</returns>
+        </member>
+    </members>
+</doc>

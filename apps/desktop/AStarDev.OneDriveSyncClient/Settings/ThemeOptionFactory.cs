@@ -1,5 +1,5 @@
 using AStarDev.OneDriveSyncClient.Infrastructure.Theme;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 
 namespace AStarDev.OneDriveSyncClient.Settings;
 

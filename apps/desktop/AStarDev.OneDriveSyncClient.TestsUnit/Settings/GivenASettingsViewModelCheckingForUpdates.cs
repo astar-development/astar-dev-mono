@@ -6,7 +6,7 @@ using AStarDev.OneDriveSyncClient.Infrastructure.Autostart;
 using AStarDev.OneDriveSyncClient.Infrastructure.Shell;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync;
 using AStarDev.OneDriveSyncClient.Infrastructure.Theme;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using AStarDev.OneDriveSyncClient.Settings;
 using Velopack;
 

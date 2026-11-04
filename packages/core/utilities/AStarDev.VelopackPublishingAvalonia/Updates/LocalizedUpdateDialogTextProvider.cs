@@ -1,8 +1,7 @@
 using System.Globalization;
-using AStarDev.OneDriveSyncClient.Localization;
-using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
+using AStarDev.Localization;
 
-namespace AStarDev.OneDriveSyncClient.Updates;
+namespace AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 
 /// <summary>Adapts <see cref="ILocalizationService"/> to the shared update dialog's <see cref="IUpdateDialogTextProvider"/> contract.</summary>
 public sealed class LocalizedUpdateDialogTextProvider : IUpdateDialogTextProvider, IDisposable
@@ -10,6 +9,8 @@ public sealed class LocalizedUpdateDialogTextProvider : IUpdateDialogTextProvide
     private readonly ILocalizationService localization;
     private bool disposed;
 
+    /// <summary>Creates a provider that reads the <c>Update.*</c> keys from <paramref name="localization"/> and raises <see cref="TextChanged"/> when its culture changes.</summary>
+    /// <param name="localization">The localisation service supplying the dialog text.</param>
     public LocalizedUpdateDialogTextProvider(ILocalizationService localization)
     {
         ArgumentNullException.ThrowIfNull(localization);

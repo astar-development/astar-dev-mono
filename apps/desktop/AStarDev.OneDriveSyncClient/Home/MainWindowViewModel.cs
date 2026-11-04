@@ -11,7 +11,7 @@ using AStarDev.OneDriveSyncClient.Dashboard.Throughput;
 using AStarDev.OneDriveSyncClient.Infrastructure.Logging;
 using AStarDev.OneDriveSyncClient.Infrastructure.Shell;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using AStarDev.OneDriveSyncClient.Search;
 using AStarDev.OneDriveSyncClient.Settings;
 using CommunityToolkit.Mvvm.ComponentModel;

@@ -8,7 +8,7 @@ using AStarDev.OneDriveSyncClient.Infrastructure.Sync;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Detection;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Jobs;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Pipeline;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using AStarDev.OneDriveSyncClient.TestsUnit.TestHelpers;
 using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 

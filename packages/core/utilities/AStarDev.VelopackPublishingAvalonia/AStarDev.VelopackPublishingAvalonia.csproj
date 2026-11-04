@@ -18,6 +18,7 @@
 
   <PropertyGroup>
         <PackageReleaseNotes>
+        v0.3.0 feat(velopack-publishing): localized update dialog text provider backed by AStarDev.Localization
         v0.2.0 feat(velopack-publishing): expose update check outcome
         v0.1.0 feat(velopack): show download percentage and MB progress in the update dialog
         </PackageReleaseNotes>
@@ -59,6 +60,7 @@
   <ItemGroup>
     <ProjectReference Include="../AStarDev.VelopackPublishing/AStarDev.VelopackPublishing.csproj" />
     <ProjectReference Include="../../logging/AStarDev.LoggingExtensions/AStarDev.LoggingExtensions.csproj" />
+    <ProjectReference Include="../AStarDev.Localization/AStarDev.Localization.csproj" />
   </ItemGroup>
 
 </Project>

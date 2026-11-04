@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using AStarDev.OneDriveSyncClient.Classifications;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;

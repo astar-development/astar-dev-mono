@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace AStarDev.OneDriveSyncClient.Localization;
+namespace AStarDev.Localization;
 
 /// <summary>
 /// Provides localised string lookup with optional format-argument support.

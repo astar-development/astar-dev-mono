@@ -4,7 +4,7 @@ using AStarDev.OneDriveSyncClient.Infrastructure.Authentication;
 using AStarDev.OneDriveSyncClient.Infrastructure.Graph;
 using AStarDev.OneDriveSyncClient.Infrastructure.Rules;
 using AStarDev.OneDriveSyncClient.Infrastructure.Shell;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace AStarDev.OneDriveSyncClient.TestsUnit.Accounts;

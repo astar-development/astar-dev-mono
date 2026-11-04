@@ -2,7 +2,7 @@ using AStarDev.FunctionalParadigm;
 using AStarDev.OneDriveSyncClient.Accounts;
 using AStarDev.OneDriveSyncClient.Infrastructure.Authentication;
 using AStarDev.OneDriveSyncClient.Infrastructure.Graph;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using AStarDev.OneDriveSyncClient.Onboarding;
 
 namespace AStarDev.OneDriveSyncClient.TestsUnit.Onboarding;

@@ -1,5 +1,5 @@
 using AStar.Dev.Infrastructure.AppDb.Entities;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 
 namespace AStarDev.OneDriveSyncClient.Conflicts;
 

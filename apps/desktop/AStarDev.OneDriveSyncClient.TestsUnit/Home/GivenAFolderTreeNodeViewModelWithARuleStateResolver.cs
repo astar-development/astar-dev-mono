@@ -1,7 +1,7 @@
 using AStarDev.FunctionalParadigm;
 using AStarDev.OneDriveSyncClient.Home;
 using AStarDev.OneDriveSyncClient.Infrastructure.Graph;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using Microsoft.Extensions.Logging;
 
 namespace AStarDev.OneDriveSyncClient.TestsUnit.Home;

@@ -1,5 +1,5 @@
 using AStarDev.OneDriveSyncClient.Conflicts;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 
 namespace AStarDev.OneDriveSyncClient.TestsUnit.Conflicts;
 
