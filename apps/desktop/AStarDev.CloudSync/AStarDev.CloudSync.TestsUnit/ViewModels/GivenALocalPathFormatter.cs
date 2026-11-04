@@ -10,7 +10,7 @@ public class GivenALocalPathFormatter
     {
         var formatter = CreateFormatter("/home/user");
 
-        formatter.Format("/home/user/CloudSync/OneDrive/Work/Documents").ShouldBe("~/CloudSync/OneDrive/Work/Documents");
+        formatter.Format(TestPaths.Full("/home/user/CloudSync/OneDrive/Work/Documents")).ShouldBe(TestPaths.Native("~/CloudSync/OneDrive/Work/Documents"));
     }
 
     [Fact]
@@ -18,7 +18,7 @@ public class GivenALocalPathFormatter
     {
         var formatter = CreateFormatter("/home/user");
 
-        formatter.Format("/home/user").ShouldBe("~");
+        formatter.Format(TestPaths.Full("/home/user")).ShouldBe("~");
     }
 
     [Fact]
@@ -26,7 +26,7 @@ public class GivenALocalPathFormatter
     {
         var formatter = CreateFormatter("/home/user/");
 
-        formatter.Format("/home/user/Documents").ShouldBe("~/Documents");
+        formatter.Format(TestPaths.Full("/home/user/Documents")).ShouldBe(TestPaths.Native("~/Documents"));
     }
 
     [Theory]
@@ -55,16 +55,16 @@ public class GivenALocalPathFormatter
     {
         var formatter = new LocalPathFormatter(new FixedHomeFolder(Option.None<DirectoryInfo>()));
 
-        formatter.Format("/home/user/Documents").ShouldBe("/home/user/Documents");
+        formatter.Format(TestPaths.Full("/home/user/Documents")).ShouldBe(TestPaths.Full("/home/user/Documents"));
     }
 
     [Fact]
     public void when_the_path_differs_from_the_home_folder_only_by_case_then_it_is_shortened_only_where_paths_ignore_case()
     {
         var formatter = CreateFormatter("/home/user");
-        string expected = OperatingSystem.IsLinux() ? "/HOME/USER/Documents" : "~/Documents";
+        string expected = OperatingSystem.IsLinux() ? TestPaths.Full("/HOME/USER/Documents") : TestPaths.Native("~/Documents");
 
-        formatter.Format("/HOME/USER/Documents").ShouldBe(expected);
+        formatter.Format(TestPaths.Full("/HOME/USER/Documents")).ShouldBe(expected);
     }
 
     private static LocalPathFormatter CreateFormatter(string homeFolder) => new(new FixedHomeFolder(Option.Some(new DirectoryInfo(homeFolder))));

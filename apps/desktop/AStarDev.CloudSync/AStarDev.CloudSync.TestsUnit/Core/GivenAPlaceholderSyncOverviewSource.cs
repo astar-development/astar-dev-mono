@@ -5,7 +5,7 @@ namespace AStarDev.CloudSync.TestsUnit.Core;
 
 public class GivenAPlaceholderSyncOverviewSource
 {
-    private const string OneDriveLocalRoot = "/home/user/CloudSync/OneDrive";
+    private static readonly string OneDriveLocalRoot = TestPaths.Full("/home/user/CloudSync/OneDrive");
 
     [Fact]
     public async Task when_read_then_every_account_is_a_onedrive_account()
@@ -22,7 +22,7 @@ public class GivenAPlaceholderSyncOverviewSource
         var overview = await TestData.CreateOverviewAsync();
 
         overview.SyncPairs.ShouldNotBeEmpty();
-        overview.SyncPairs.ShouldAllBe(pair => pair.LocalFolder.FullName.StartsWith(OneDriveLocalRoot + "/", StringComparison.Ordinal));
+        overview.SyncPairs.ShouldAllBe(pair => pair.LocalFolder.FullName.StartsWith(OneDriveLocalRoot + Path.DirectorySeparatorChar, StringComparison.Ordinal));
     }
 
     [Fact]
