@@ -13,6 +13,7 @@
 
   <PropertyGroup>
     <PackageReleaseNotes>
+        v0.1.0 feat(localization): extract localisation service into AStarDev.Localization package
         v0.1.0 feat(localization): extract localisation service from AStarDev.OneDriveSyncClient
     </PackageReleaseNotes>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
