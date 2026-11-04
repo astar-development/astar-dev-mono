@@ -88,6 +88,24 @@ public class GivenAMainWindow
         viewModel.LayoutB.SelectedItem.ShouldBeSameAs(photos);
     }
 
+    [AvaloniaFact]
+    public async Task when_layout_a_is_left_and_shown_again_then_its_selected_account_survives_the_view_being_rebuilt()
+    {
+        var viewModel = await CreateViewModelAsync();
+        var window = new MainWindow { DataContext = viewModel };
+        window.Show();
+        var photos = viewModel.LayoutA.VisibleAccounts.Single(card => card.Account.Name == "Photos");
+        photos.SelectCommand.Execute(null);
+
+        viewModel.DisplaySettings.SelectLayout(MainLayoutFactory.CreateGroupedByProvider());
+        window.UpdateLayout();
+        viewModel.DisplaySettings.SelectLayout(MainLayoutFactory.CreateUnifiedAccounts());
+        window.UpdateLayout();
+
+        viewModel.LayoutA.VisibleAccounts.Where(card => card.IsSelected).ShouldHaveSingleItem().ShouldBeSameAs(photos);
+        window.GetVisualDescendants().OfType<Button>().Where(button => button.Classes.Contains("account-row") && button.Classes.Contains("selected")).ShouldHaveSingleItem().DataContext.ShouldBeSameAs(photos);
+    }
+
     [AvaloniaTheory]
     [InlineData("A")]
     [InlineData("B")]

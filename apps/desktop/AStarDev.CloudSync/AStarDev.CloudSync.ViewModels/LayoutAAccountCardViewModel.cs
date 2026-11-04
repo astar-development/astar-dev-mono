@@ -1,14 +1,29 @@
+using System.Windows.Input;
 using AStarDev.Localization;
+using CommunityToolkit.Mvvm.Input;
 
 namespace AStarDev.CloudSync.ViewModels;
 
 /// <summary>An account as shown in layout A's account list and account cards.</summary>
 /// <param name="account">The account.</param>
+/// <param name="select">Called with this card when the user selects it.</param>
 /// <param name="localization">Supplies the card text.</param>
-public sealed class LayoutAAccountCardViewModel(AccountViewModel account, ILocalizationService localization) : LocalizedObservableObject(localization)
+public sealed class LayoutAAccountCardViewModel(AccountViewModel account, Action<LayoutAAccountCardViewModel> select, ILocalizationService localization) : LocalizedObservableObject(localization)
 {
+    private bool isSelected;
+
     /// <summary>The account.</summary>
     public AccountViewModel Account => account;
+
+    /// <summary>Whether this is the selected account in the account list.</summary>
+    public bool IsSelected
+    {
+        get => isSelected;
+        internal set => SetProperty(ref isSelected, value);
+    }
+
+    /// <summary>Makes this the selected account.</summary>
+    public ICommand SelectCommand => field ??= new RelayCommand(() => select(this));
 
     /// <summary>The email and provider, e.g. "work@example.com · OneDrive".</summary>
     public string EmailAndProviderText => Localization.GetLocal("LayoutA.Card.EmailAndProvider", account.Email, account.Provider.Name);

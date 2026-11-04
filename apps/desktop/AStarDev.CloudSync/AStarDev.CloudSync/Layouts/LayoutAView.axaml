@@ -67,6 +67,22 @@
             <Setter Property="Fill" Value="{DynamicResource CloudSyncWarnBrush}" />
         </Style>
 
+        <Style Selector="Button.account-row">
+            <Setter Property="Padding" Value="8" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource CloudSyncTextPrimaryBrush}" />
+        </Style>
+        <Style Selector="Button.account-row.selected">
+            <Setter Property="Background" Value="{DynamicResource CloudSyncAccentSoftBrush}" />
+        </Style>
+        <Style Selector="Button.account-row.selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource CloudSyncAccentSoftBrush}" />
+        </Style>
+
         <Style Selector="Button.add-account">
             <Setter Property="Height" Value="40" />
             <Setter Property="CornerRadius" Value="8" />
@@ -140,7 +156,9 @@
                 Background="{DynamicResource CloudSyncPanelBrush}"
                 BorderBrush="{DynamicResource CloudSyncBorderBrush}"
                 BorderThickness="0,0,1,0">
-            <Grid RowDefinitions="Auto,Auto,*,Auto,Auto">
+            <Grid RowDefinitions="Auto,Auto,*,Auto,Auto"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch">
                 <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="16,16,16,8">
                     <TextBlock Grid.Column="0" Classes="muted" Text="{Binding AccountsTitle}" FontSize="11" FontWeight="SemiBold" LetterSpacing="0.6" />
                     <TextBlock Grid.Column="1" Classes="muted" Text="{Binding AccountCountText}" FontSize="11" />
@@ -159,32 +177,44 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
 
-                <ItemsControl Grid.Row="2" Margin="8,0" ItemsSource="{Binding VisibleAccounts}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Spacing="2" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="vm:LayoutAAccountCardViewModel">
-                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" Margin="8">
-                                <controls:ProviderBadge Grid.Column="0" VerticalAlignment="Center" DataContext="{Binding Account.Provider}" />
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Account.Name}" FontWeight="Medium" />
-                                    <TextBlock Classes="muted" Text="{Binding Account.Email}" TextTrimming="CharacterEllipsis" />
-                                </StackPanel>
-                                <Ellipse Grid.Column="2"
-                                         Classes="status-dot"
-                                         Classes.syncing="{Binding Account.Status.IsSyncing}"
-                                         Classes.uptodate="{Binding Account.Status.IsUpToDate}"
-                                         Classes.conflicts="{Binding Account.Status.HasConflicts}"
-                                         VerticalAlignment="Center"
-                                         ToolTip.Tip="{Binding Account.Status.Text}"
-                                         AutomationProperties.Name="{Binding Account.Status.Text}" />
-                            </Grid>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                <ScrollViewer Grid.Row="2"
+                              x:Name="AccountList"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled"
+                              MinHeight="0"
+                              Padding="8,0">
+                    <ItemsControl ItemsSource="{Binding VisibleAccounts}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Spacing="2" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:LayoutAAccountCardViewModel">
+                                <Button Classes="account-row"
+                                        Classes.selected="{Binding IsSelected}"
+                                        Command="{Binding SelectCommand}"
+                                        AutomationProperties.Name="{Binding Account.Name}">
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                                        <controls:ProviderBadge Grid.Column="0" VerticalAlignment="Center" DataContext="{Binding Account.Provider}" />
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Account.Name}" FontWeight="Medium" />
+                                            <TextBlock Classes="muted" Text="{Binding Account.Email}" TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                        <Ellipse Grid.Column="2"
+                                                 Classes="status-dot"
+                                                 Classes.syncing="{Binding Account.Status.IsSyncing}"
+                                                 Classes.uptodate="{Binding Account.Status.IsUpToDate}"
+                                                 Classes.conflicts="{Binding Account.Status.HasConflicts}"
+                                                 VerticalAlignment="Center"
+                                                 ToolTip.Tip="{Binding Account.Status.Text}"
+                                                 AutomationProperties.Name="{Binding Account.Status.Text}" />
+                                    </Grid>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
 
                 <Border Grid.Row="3"
                         Padding="16"
