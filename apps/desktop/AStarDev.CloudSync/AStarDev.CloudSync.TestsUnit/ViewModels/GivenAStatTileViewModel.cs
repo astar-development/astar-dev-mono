@@ -5,11 +5,11 @@ namespace AStarDev.CloudSync.TestsUnit.ViewModels;
 public class GivenAStatTileViewModel
 {
     [Fact]
-    public void when_the_tone_is_default_then_neither_warn_nor_accent_is_selected()
+    public void when_the_tone_is_normal_then_neither_warn_nor_accent_is_selected()
     {
-        var tile = new StatTileViewModel(() => "4", "Stats.Accounts", StatTileToneFactory.CreateDefault(), TestData.CreateLocalization());
+        var tile = new StatTileViewModel(() => "4", "Stats.Accounts", StatTileToneFactory.CreateNormal(), TestData.CreateLocalization());
 
-        tile.Tone.ShouldBeOfType<StatTileTone.Default>();
+        tile.Tone.ShouldBeOfType<StatTileTone.Normal>();
         tile.IsWarn.ShouldBeFalse();
         tile.IsAccent.ShouldBeFalse();
     }

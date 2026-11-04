@@ -54,18 +54,18 @@ public class GivenASyncOverviewViewModel
     {
         var viewModel = await TestData.CreateLoadedOverviewViewModelAsync();
 
-        viewModel.Stats.Select(tile => tile.Tone).ShouldBe([StatTileToneFactory.CreateDefault(), StatTileToneFactory.CreateDefault(), StatTileToneFactory.CreateDefault(), StatTileToneFactory.CreateWarn(), StatTileToneFactory.CreateAccent()]);
+        viewModel.Stats.Select(tile => tile.Tone).ShouldBe([StatTileToneFactory.CreateNormal(), StatTileToneFactory.CreateNormal(), StatTileToneFactory.CreateNormal(), StatTileToneFactory.CreateWarn(), StatTileToneFactory.CreateAccent()]);
     }
 
     [Fact]
-    public async Task when_loaded_without_conflicts_then_the_conflicts_tile_is_default()
+    public async Task when_loaded_without_conflicts_then_the_conflicts_tile_is_normal()
     {
         var overview = SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>())], [], [], [], []);
         var viewModel = new SyncOverviewViewModel(new FixedSyncOverviewSource(overview), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
 
         await viewModel.LoadAsync(TestContext.Current.CancellationToken);
 
-        viewModel.Stats[3].Tone.ShouldBeOfType<StatTileTone.Default>();
+        viewModel.Stats[3].Tone.ShouldBeOfType<StatTileTone.Normal>();
         viewModel.Stats[4].Tone.ShouldBeOfType<StatTileTone.Accent>();
     }
 
