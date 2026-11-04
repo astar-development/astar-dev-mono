@@ -33,4 +33,13 @@ internal static class TestData
     }
 
     public static CloudAccount CreateAccount(SyncStatus status, Option<DateTimeOffset> lastSync) => CloudAccountFactory.Create(AccountIdFactory.Create(), "Work", "work@example.com", CloudProviderFactory.CreateOneDrive(), StorageUsageFactory.Create(782_643_000_000, 1_099_511_627_776), 30, 240_686, status, lastSync);
+
+    public static DisplaySettingsViewModel CreateDisplaySettings() => new(new InMemoryDisplayPreferencesStore(), new RecordingThemeApplier(), CreateLocalization());
+
+    public static MainWindowViewModel CreateMainWindowViewModel(SyncOverviewViewModel overview, DisplaySettingsViewModel displaySettings)
+    {
+        var localization = CreateLocalization();
+
+        return new MainWindowViewModel(localization, displaySettings, new LayoutAViewModel(overview, localization), new LayoutBViewModel(overview, localization), new LayoutCViewModel(overview, localization));
+    }
 }
