@@ -1,5 +1,6 @@
 using AStarDev.CloudSync.Layouts;
 using AStarDev.CloudSync.ViewModels;
+using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
@@ -46,6 +47,17 @@ public class GivenALayoutCView
 
         chips[0].Classes.ShouldNotContain("selected");
         chips[1].Classes.ShouldContain("selected");
+    }
+
+    [AvaloniaFact]
+    public async Task when_shown_then_each_pair_tile_shows_the_direction_glyph_with_the_direction_label_as_its_accessible_name()
+    {
+        var window = await CreateShownWindowAsync();
+
+        var tiles = window.GetVisualDescendants().OfType<Border>().Where(border => border.Classes.Contains("pair-tile")).ToList();
+
+        tiles.ShouldNotBeEmpty();
+        tiles.ShouldAllBe(tile => tile.GetVisualDescendants().OfType<TextBlock>().Any(text => text.Text == ((SyncPairViewModel)tile.DataContext!).DirectionGlyph && AutomationProperties.GetName(text) == ((SyncPairViewModel)tile.DataContext!).DirectionLabel));
     }
 
     private static List<Button> FindChips(Window window) => [.. window.GetVisualDescendants().OfType<Button>().Where(button => button.Classes.Contains("chip"))];
