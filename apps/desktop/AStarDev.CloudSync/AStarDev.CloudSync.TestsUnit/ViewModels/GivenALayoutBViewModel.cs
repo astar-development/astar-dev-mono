@@ -46,7 +46,7 @@ public class GivenALayoutBViewModel
 
         var detail = layout.Detail.ShouldBeOfType<AccountDetailViewModel>();
 
-        detail.SyncPairs.Select(pair => pair.LocalPath).ShouldBe(["/home/user/CloudSync/OneDrive/Work/Documents", "/home/user/CloudSync/OneDrive/Work/Projects", "/home/user/CloudSync/OneDrive/Work/Desktop"]);
+        detail.SyncPairs.Select(pair => pair.LocalPath).ShouldBe([TestPaths.Full("/home/user/CloudSync/OneDrive/Work/Documents"), TestPaths.Full("/home/user/CloudSync/OneDrive/Work/Projects"), TestPaths.Full("/home/user/CloudSync/OneDrive/Work/Desktop")]);
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public class GivenALayoutBViewModel
 
         var detail = layout.Detail.ShouldBeOfType<AccountDetailViewModel>();
 
-        detail.SyncedFolders.Select(folder => folder.LocalPathText).ShouldBe(["~/CloudSync/OneDrive/Work/Documents", "~/CloudSync/OneDrive/Work/Projects", "~/CloudSync/OneDrive/Work/Desktop"]);
+        detail.SyncedFolders.Select(folder => folder.LocalPathText).ShouldBe([TestPaths.Native("~/CloudSync/OneDrive/Work/Documents"), TestPaths.Native("~/CloudSync/OneDrive/Work/Projects"), TestPaths.Native("~/CloudSync/OneDrive/Work/Desktop")]);
     }
 
     [Fact]

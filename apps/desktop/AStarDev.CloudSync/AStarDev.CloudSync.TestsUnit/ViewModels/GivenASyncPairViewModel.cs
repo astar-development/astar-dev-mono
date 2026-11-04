@@ -12,7 +12,7 @@ public class GivenASyncPairViewModel
         var pair = CreatePair(SyncDirectionFactory.CreateUploadOnly(), SyncStatusFactory.CreateUpToDate());
 
         pair.Name.ShouldBe("Documents");
-        pair.LocalPath.ShouldBe("/home/user/CloudSync/OneDrive/Work/Documents");
+        pair.LocalPath.ShouldBe(TestPaths.Full("/home/user/CloudSync/OneDrive/Work/Documents"));
         pair.RemotePath.ShouldBe("/Documents");
         pair.AccountName.ShouldBe("Work");
         pair.DirectionLabel.ShouldBe("Upload only");

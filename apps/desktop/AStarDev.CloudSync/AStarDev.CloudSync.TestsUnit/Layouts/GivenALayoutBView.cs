@@ -17,8 +17,8 @@ public class GivenALayoutBView
         var texts = window.GetVisualDescendants().OfType<TextBlock>().Select(text => text.Text).ToList();
 
         texts.ShouldContain("OneDrive / Work");
-        texts.ShouldContain("~/CloudSync/OneDrive/Work/Documents");
-        texts.ShouldNotContain("~/CloudSync/OneDrive/Photos/Holiday photos");
+        texts.ShouldContain(TestPaths.Native("~/CloudSync/OneDrive/Work/Documents"));
+        texts.ShouldNotContain(TestPaths.Native("~/CloudSync/OneDrive/Photos/Holiday photos"));
     }
 
     [AvaloniaFact]
@@ -26,9 +26,9 @@ public class GivenALayoutBView
     {
         var window = await CreateShownWindowAsync();
 
-        var localPath = window.GetVisualDescendants().OfType<TextBlock>().First(text => text.Text == "~/CloudSync/OneDrive/Work/Documents");
+        var localPath = window.GetVisualDescendants().OfType<TextBlock>().First(text => text.Text == TestPaths.Native("~/CloudSync/OneDrive/Work/Documents"));
 
-        ToolTip.GetTip(localPath).ShouldBe("/home/user/CloudSync/OneDrive/Work/Documents");
+        ToolTip.GetTip(localPath).ShouldBe(TestPaths.Full("/home/user/CloudSync/OneDrive/Work/Documents"));
     }
 
     [AvaloniaFact]
@@ -65,8 +65,8 @@ public class GivenALayoutBView
         var texts = window.GetVisualDescendants().OfType<TextBlock>().Select(text => text.Text).ToList();
         window.Content.ShouldBeOfType<LayoutBView>().DataContext.ShouldBeOfType<LayoutBViewModel>().SearchText.ShouldBe("holiday");
         texts.ShouldContain("OneDrive / Photos");
-        texts.ShouldContain("~/CloudSync/OneDrive/Photos/Holiday photos");
-        texts.ShouldNotContain("~/CloudSync/OneDrive/Work/Documents");
+        texts.ShouldContain(TestPaths.Native("~/CloudSync/OneDrive/Photos/Holiday photos"));
+        texts.ShouldNotContain(TestPaths.Native("~/CloudSync/OneDrive/Work/Documents"));
     }
 
     [AvaloniaFact]

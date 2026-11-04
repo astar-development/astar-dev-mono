@@ -98,8 +98,8 @@ public class GivenAnAccountDetailViewModel
         var detail = new AccountDetailViewModel(account, [pair], [], TestData.CreateLocalPathFormatter(), new RecordingSyncActions(), localization);
 
         var folder = detail.SyncedFolders.ShouldHaveSingleItem();
-        folder.LocalPathText.ShouldBe("~/CloudSync/OneDrive/Work/Documents");
-        folder.Pair.LocalPath.ShouldBe("/home/user/CloudSync/OneDrive/Work/Documents");
+        folder.LocalPathText.ShouldBe(TestPaths.Native("~/CloudSync/OneDrive/Work/Documents"));
+        folder.Pair.LocalPath.ShouldBe(TestPaths.Full("/home/user/CloudSync/OneDrive/Work/Documents"));
     }
 
     private static AccountDetailViewModel CreateDetail(int folderCount, int fileCount, SyncStatus status)
