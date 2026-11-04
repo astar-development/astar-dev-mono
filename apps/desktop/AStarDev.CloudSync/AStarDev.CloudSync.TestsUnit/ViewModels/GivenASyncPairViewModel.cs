@@ -44,6 +44,18 @@ public class GivenASyncPairViewModel
         pair.SummaryText.ShouldBe("1,118 files · 4 min ago");
     }
 
+    [Fact]
+    public void when_created_then_the_last_sync_and_account_id_are_exposed()
+    {
+        var account = TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
+        var model = SyncPairFactory.Create(SyncPairIdFactory.Create(), account.Id, "Documents", new DirectoryInfo("/home/user/CloudSync/OneDrive/Work/Documents"), "/Documents", SyncDirectionFactory.CreateTwoWay(), SyncStatusFactory.CreateUpToDate(), 1_118, Option.Some(TestData.Now.AddMinutes(-4)));
+
+        var pair = new SyncPairViewModel(model, account, TestData.CreateLocalization(), TestData.CreateTime());
+
+        pair.LastSyncText.ShouldBe("4 min ago");
+        pair.AccountId.ShouldBe(account.Id);
+    }
+
     private static SyncPairViewModel CreatePair(SyncDirection direction, SyncStatus status)
     {
         var account = TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());

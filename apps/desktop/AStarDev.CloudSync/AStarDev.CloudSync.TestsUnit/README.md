@@ -42,4 +42,5 @@ This records how often baselines change during phase 1 (#1261), to judge the mai
 |---|---|---|
 | #1255 | 3 added | Harness introduced: empty main window (dark, light) and probe |
 | #1256 | 14 added | Shared controls (7) in dark and light; existing 3 unchanged |
+| #1258 | 2 added | Layout B (grouped by provider) in dark and light; existing 17 unchanged |
 | #1257 | 2 added, 2 changed | Layout A (dark, light) added; main window (dark, light) now shows layout A as its default content |
