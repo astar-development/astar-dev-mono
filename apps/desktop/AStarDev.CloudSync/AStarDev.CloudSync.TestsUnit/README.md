@@ -12,9 +12,9 @@ Assert.SkipUnless(OperatingSystem.IsLinux(), Snapshot.LinuxOnlyReason);
 Snapshot.ShouldMatchBaseline(window, ThemeVariant.Dark, "main-window-dark");
 ```
 
-- A pixel differs when any channel differs by more than 8. A snapshot fails when more than 0.1% of its pixels differ.
+- A pixel differs when any channel differs by more than 8. A snapshot fails when more than 16 pixels differ, whatever the window size. A one-letter text change on a full 1280×800 window differs in about 38 pixels, so it fails (#1297).
 - On failure, `artifacts/snapshots/<name>.actual.png` and `<name>.diff.png` are written. The diff shows changed pixels in red over a dimmed copy of the actual image. The failure message gives the full paths.
-- Rendering is pinned for repeatable results: Inter font (`TestApp`), `en-GB` culture, and a fresh window per snapshot.
+- Rendering is pinned for repeatable results: Inter as the default font (`WithCloudSyncFonts`, shared with the app's `Program`), `en-GB` culture, and a fresh window per snapshot.
 
 ### Linux only
 

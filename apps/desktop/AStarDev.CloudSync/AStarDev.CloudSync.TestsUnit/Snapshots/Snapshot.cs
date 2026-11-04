@@ -15,7 +15,7 @@ internal static class Snapshot
     public const string LinuxOnlyReason = "Snapshot baselines are rendered on Linux; font rasterisation differs on other operating systems.";
 
     private const int ChannelTolerance = 8;
-    private const double MaxDifferingPixelRatio = 0.001;
+    private const int MaxDifferingPixels = 16;
     private const int BytesPerPixel = 4;
     private static readonly string[] baselineFolderSegments = ["apps", "desktop", "AStarDev.CloudSync", "AStarDev.CloudSync.TestsUnit", "Snapshots", "Baselines"];
     private static readonly Vector dpi = new(96, 96);
@@ -56,8 +56,7 @@ internal static class Snapshot
         var actualPixels = ReadPixels(actual);
         var baselinePixels = ReadPixels(baseline);
         int differingPixels = CountDifferingPixels(actualPixels, baselinePixels, actual.PixelSize, baseline.PixelSize);
-        int allowedPixels = (int)(actual.PixelSize.Width * actual.PixelSize.Height * MaxDifferingPixelRatio);
-        if (differingPixels <= allowedPixels)
+        if (differingPixels <= MaxDifferingPixels)
             return SnapshotResultFactory.CreateMatch();
 
         var diffFile = new FileInfo(Path.Join(outputFolder.FullName, $"{name}.diff.png"));
