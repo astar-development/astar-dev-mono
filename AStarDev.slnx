@@ -60,6 +60,7 @@
     <Folder Name="/packages/core/utilities/">
         <Project Path="packages/core/utilities/AStarDev.GuardClauses.TestsUnit/AStarDev.GuardClauses.TestsUnit.csproj" />
         <Project Path="packages/core/utilities/AStarDev.GuardClauses/AStarDev.GuardClauses.csproj" />
+        <Project Path="packages/core/utilities/AStarDev.Localization.TestsUnit/AStarDev.Localization.TestsUnit.csproj" />
         <Project Path="packages/core/utilities/AStarDev.TechnicalDebtReporting.TestsUnit/AStarDev.TechnicalDebtReporting.TestsUnit.csproj" />
         <Project Path="packages/core/utilities/AStarDev.TechnicalDebtReporting/AStarDev.TechnicalDebtReporting.csproj" />
         <Project Path="packages/core/utilities/AStarDev.Utilities.TestsUnit/AStarDev.Utilities.TestsUnit.csproj" />
