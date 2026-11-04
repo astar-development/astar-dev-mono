@@ -2,7 +2,7 @@ using System.Globalization;
 using AStarDev.FunctionalParadigm;
 using AStarDev.OneDriveSyncClient.Home;
 using AStarDev.OneDriveSyncClient.Infrastructure.Graph;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using Microsoft.Extensions.Logging;
 using AStarDev.OneDriveSyncClient.TestsUnit.TestHelpers;
 

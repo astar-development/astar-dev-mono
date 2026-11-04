@@ -9,7 +9,7 @@ using AStarDev.OneDriveSyncClient.Home;
 using AStarDev.OneDriveSyncClient.Infrastructure.Shell;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Pipeline;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using AStarDev.OneDriveSyncClient.Search;
 using AStarDev.OneDriveSyncClient.TestsUnit.TestHelpers;
 using Microsoft.Extensions.Logging;

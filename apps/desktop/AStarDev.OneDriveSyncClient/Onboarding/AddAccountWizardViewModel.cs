@@ -6,7 +6,7 @@ using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStarDev.OneDriveSyncClient.Accounts;
 using AStarDev.OneDriveSyncClient.Infrastructure.Authentication;
 using AStarDev.OneDriveSyncClient.Infrastructure.Graph;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 namespace AStarDev.OneDriveSyncClient.Onboarding;

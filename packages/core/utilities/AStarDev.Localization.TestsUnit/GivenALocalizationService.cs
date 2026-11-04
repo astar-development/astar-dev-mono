@@ -1,14 +1,14 @@
 using System.Globalization;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 
-namespace AStarDev.OneDriveSyncClient.TestsUnit.Localization;
+namespace AStarDev.Localization.TestsUnit;
 
 public sealed class GivenALocalizationService
 {
     [Fact]
     public void when_constructed_then_culture_defaults_to_en_GB()
     {
-        var service = new LocalizationService();
+        var service = new LocalizationService(typeof(GivenALocalizationService).Assembly);
 
         service.CurrentCulture.Name.ShouldBe("en-GB");
     }
@@ -16,7 +16,7 @@ public sealed class GivenALocalizationService
     [Fact]
     public void when_constructed_then_available_cultures_includes_en_GB()
     {
-        var service = new LocalizationService();
+        var service = new LocalizationService(typeof(GivenALocalizationService).Assembly);
 
         service.AvailableCultures.ShouldNotBeEmpty();
         service.AvailableCultures.ShouldContain(c => c.Name == "en-GB");
@@ -25,7 +25,7 @@ public sealed class GivenALocalizationService
     [Fact]
     public async Task when_initialise_called_without_argument_then_culture_defaults_to_en_GB()
     {
-        var service = new LocalizationService();
+        var service = new LocalizationService(typeof(GivenALocalizationService).Assembly);
 
         //await service.InitialiseAsync();
 
@@ -35,7 +35,7 @@ public sealed class GivenALocalizationService
     [Fact]
     public async Task when_initialise_called_with_fallback_culture_then_it_succeeds()
     {
-        var service = new LocalizationService();
+        var service = new LocalizationService(typeof(GivenALocalizationService).Assembly);
         var culture = new CultureInfo("en-GB");
 
         //await service.InitialiseAsync(culture);
@@ -46,7 +46,7 @@ public sealed class GivenALocalizationService
     [Fact]
     public void when_get_local_called_with_valid_key_then_value_is_returned()
     {
-        var service = new LocalizationService();
+        var service = new LocalizationService(typeof(GivenALocalizationService).Assembly);
         string key = "App.Title";
 
         string result = service.GetLocal(key);
@@ -58,7 +58,7 @@ public sealed class GivenALocalizationService
     [Fact]
     public void when_get_local_called_with_invalid_key_then_key_is_returned_as_fallback()
     {
-        var service = new LocalizationService();
+        var service = new LocalizationService(typeof(GivenALocalizationService).Assembly);
         string key = "NonExistent.Key";
 
         string result = service.GetLocal(key);
@@ -69,7 +69,7 @@ public sealed class GivenALocalizationService
     [Fact]
     public void when_get_local_called_multiple_times_with_same_key_then_same_value_is_returned()
     {
-        var service = new LocalizationService();
+        var service = new LocalizationService(typeof(GivenALocalizationService).Assembly);
         string key = "App.Title";
 
         string result1 = service.GetLocal(key);
@@ -81,7 +81,7 @@ public sealed class GivenALocalizationService
     [Fact]
     public void when_get_local_called_with_format_arguments_then_string_is_not_null()
     {
-        var service = new LocalizationService();
+        var service = new LocalizationService(typeof(GivenALocalizationService).Assembly);
         string key = "Format.Test";
         string placeholder = "TestValue";
 
@@ -93,7 +93,7 @@ public sealed class GivenALocalizationService
     [Fact]
     public void when_get_local_called_with_empty_key_then_empty_string_is_returned()
     {
-        var service = new LocalizationService();
+        var service = new LocalizationService(typeof(GivenALocalizationService).Assembly);
 
         string result = service.GetLocal(string.Empty);
 
@@ -103,7 +103,7 @@ public sealed class GivenALocalizationService
     [Fact]
     public void when_get_local_called_with_null_key_then_argument_null_exception_is_thrown()
     {
-        var service = new LocalizationService();
+        var service = new LocalizationService(typeof(GivenALocalizationService).Assembly);
 
         try
         {
@@ -119,7 +119,7 @@ public sealed class GivenALocalizationService
     [Fact]
     public async Task when_set_culture_async_called_with_en_GB_then_current_culture_is_en_GB()
     {
-        var service = new LocalizationService();
+        var service = new LocalizationService(typeof(GivenALocalizationService).Assembly);
         var targetCulture = new CultureInfo("en-GB");
 
         await service.SetCultureAsync(targetCulture, TestContext.Current.CancellationToken);
@@ -130,7 +130,7 @@ public sealed class GivenALocalizationService
     [Fact]
     public async Task when_set_culture_async_called_with_same_culture_then_culture_changed_event_is_not_raised()
     {
-        var service = new LocalizationService();
+        var service = new LocalizationService(typeof(GivenALocalizationService).Assembly);
         bool eventRaised = false;
         service.CultureChanged += (s, c) => eventRaised = true;
 
@@ -144,7 +144,7 @@ public sealed class GivenALocalizationService
     [Fact]
     public void when_current_culture_is_read_then_it_is_not_null()
     {
-        var service = new LocalizationService();
+        var service = new LocalizationService(typeof(GivenALocalizationService).Assembly);
         var originalCulture = service.CurrentCulture;
         _ = originalCulture.ShouldNotBeNull();
     }
@@ -152,7 +152,7 @@ public sealed class GivenALocalizationService
     [Fact]
     public void when_available_cultures_is_read_then_it_is_not_null()
     {
-        var service = new LocalizationService();
+        var service = new LocalizationService(typeof(GivenALocalizationService).Assembly);
 
         var cultures = service.AvailableCultures;
 
@@ -163,7 +163,7 @@ public sealed class GivenALocalizationService
     [Fact]
     public void when_get_local_called_with_multiple_format_arguments_then_non_null_result_is_returned()
     {
-        var service = new LocalizationService();
+        var service = new LocalizationService(typeof(GivenALocalizationService).Assembly);
         string key = "Format.MultiArg";
 
         string result = service.GetLocal(key, "arg1", "arg2", "arg3");
@@ -174,7 +174,7 @@ public sealed class GivenALocalizationService
     [Fact]
     public void when_current_culture_is_read_then_name_is_not_empty()
     {
-        var service = new LocalizationService();
+        var service = new LocalizationService(typeof(GivenALocalizationService).Assembly);
         var originalCulture = service.CurrentCulture;
 
         _ = originalCulture.ShouldNotBeNull();

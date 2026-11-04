@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using System.Globalization;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 
 namespace AStarDev.OneDriveSyncClient.TestsUnit.TestHelpers;
 

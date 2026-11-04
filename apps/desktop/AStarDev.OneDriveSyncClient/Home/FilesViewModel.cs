@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 using AStarDev.OneDriveSyncClient.Accounts;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 

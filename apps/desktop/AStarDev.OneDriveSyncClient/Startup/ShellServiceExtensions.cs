@@ -18,7 +18,6 @@ using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Pipeline;
 using AStarDev.OneDriveSyncClient.Infrastructure.Theme;
 using AStarDev.OneDriveSyncClient.Infrastructure.Tray;
 using AStarDev.OneDriveSyncClient.Infrastructure.Versioning;
-using AStarDev.OneDriveSyncClient.Updates;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using AStarDev.LoggingOTel.LogViewer;
 using Microsoft.Extensions.DependencyInjection;

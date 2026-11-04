@@ -6,7 +6,7 @@ using AStarDev.OneDriveSyncClient.Activity;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Jobs;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Pipeline;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace AStarDev.OneDriveSyncClient.Dashboard;

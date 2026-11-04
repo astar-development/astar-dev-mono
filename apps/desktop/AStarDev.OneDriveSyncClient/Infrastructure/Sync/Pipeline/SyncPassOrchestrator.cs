@@ -10,7 +10,7 @@ using AStarDev.OneDriveSyncClient.Infrastructure.Shell;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Delta;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Detection;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Jobs;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 

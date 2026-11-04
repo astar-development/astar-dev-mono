@@ -1,7 +1,7 @@
 using System.Globalization;
 using AStarDev.OneDriveSyncClient.Conflicts;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId;
 using AStarDev.OneDriveSyncClient.TestsUnit.TestHelpers;

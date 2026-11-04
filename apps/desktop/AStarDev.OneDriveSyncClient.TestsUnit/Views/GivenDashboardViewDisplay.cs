@@ -1,7 +1,7 @@
 using AStarDev.OneDriveSyncClient.Activity;
 using AStarDev.OneDriveSyncClient.Dashboard;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Pipeline;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.LogicalTree;

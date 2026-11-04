@@ -3,7 +3,7 @@ using System.Globalization;
 using AStar.Dev.Infrastructure.AppDb.Domain;
 using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using AStarDev.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;

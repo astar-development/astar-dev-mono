@@ -1,5 +1,5 @@
 using AStar.Dev.Infrastructure.AppDb.Domain;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 
 namespace AStarDev.OneDriveSyncClient.Activity;
 

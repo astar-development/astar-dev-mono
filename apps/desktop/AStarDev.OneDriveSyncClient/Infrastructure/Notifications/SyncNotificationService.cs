@@ -1,6 +1,6 @@
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Pipeline;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using AStar.Dev.Infrastructure.AppDb.Domain;
 
 namespace AStarDev.OneDriveSyncClient.Infrastructure.Notifications;

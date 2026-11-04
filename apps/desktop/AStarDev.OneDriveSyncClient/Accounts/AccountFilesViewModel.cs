@@ -6,7 +6,7 @@ using AStarDev.OneDriveSyncClient.Home;
 using AStarDev.OneDriveSyncClient.Infrastructure.Authentication;
 using AStarDev.OneDriveSyncClient.Infrastructure.Logging;
 using AStarDev.OneDriveSyncClient.Infrastructure.Shell;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using AStarDev.Utilities;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;

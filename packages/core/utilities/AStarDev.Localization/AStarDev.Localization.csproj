@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    AStarDev.Localization
+    ═════════════════════
+    JSON-file localisation service shared by the AStar desktop apps. Each app
+    embeds its own Assets/Localization/{culture}.json files and passes its
+    assembly to AddLocalizationService.
+
+    TFM, nullable, analysers, IsPackable and SourceLink are inherited from
+    packages/Directory.Build.props and the repo root Directory.Build.props.
+  -->
+
+  <PropertyGroup>
+    <PackageReleaseNotes>
+        v0.1.0 feat(localization): extract localisation service into AStarDev.Localization package
+        v0.1.0 feat(localization): extract localisation service from AStarDev.OneDriveSyncClient
+    </PackageReleaseNotes>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <PackageTags>localization;localisation;mvvm;astar;astardevelopment</PackageTags>
+    <Title>AStar Dev Localization</Title>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <Description>JSON-file localisation service, culture switching and a localised MVVM base class for AStar Development desktop apps.</Description>
+    <PackageProjectUrl>https://github.com/astar-development/astar-dev-mono/tree/main/packages/core/utilities</PackageProjectUrl>
+    <DocumentationFile>$(AssemblyName).xml</DocumentationFile>
+    <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <!--
+      CA1003: ILocalizationService.CultureChanged is EventHandler<CultureInfo>, kept as-is when the
+      service was extracted from AStarDev.OneDriveSyncClient so its existing handlers keep compiling.
+    -->
+    <NoWarn>$(NoWarn);CA1003</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+  </ItemGroup>
+
+</Project>

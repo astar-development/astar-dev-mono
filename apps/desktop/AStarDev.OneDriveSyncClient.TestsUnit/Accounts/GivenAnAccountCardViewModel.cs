@@ -1,6 +1,6 @@
 using AStarDev.OneDriveSyncClient.Accounts;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using Avalonia.Media;
 using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 

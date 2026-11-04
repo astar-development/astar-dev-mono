@@ -2,7 +2,7 @@ using AStarDev.FunctionalParadigm;
 using AStarDev.OneDriveSyncClient.Classifications;
 using AStarDev.OneDriveSyncClient.Data.Repositories;
 using AStarDev.OneDriveSyncClient.Infrastructure.Shell;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using Avalonia.Platform.Storage;
 
 namespace AStarDev.OneDriveSyncClient.TestsUnit.Classifications;

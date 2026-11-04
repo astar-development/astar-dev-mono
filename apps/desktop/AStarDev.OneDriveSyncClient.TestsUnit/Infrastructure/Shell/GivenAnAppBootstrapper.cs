@@ -21,7 +21,7 @@ using AStarDev.OneDriveSyncClient.Infrastructure.Shell;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Pipeline;
 using AStarDev.OneDriveSyncClient.Infrastructure.Theme;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using AStarDev.OneDriveSyncClient.Onboarding;
 using AStarDev.OneDriveSyncClient.Search;
 using AStarDev.OneDriveSyncClient.Settings;

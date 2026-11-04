@@ -1,8 +1,8 @@
 using System.Globalization;
-using AStarDev.OneDriveSyncClient.Localization;
-using AStarDev.OneDriveSyncClient.Updates;
+using AStarDev.Localization;
+using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 
-namespace AStarDev.OneDriveSyncClient.TestsUnit.Updates;
+namespace AStar.Dev.Velopack.Publishing.Avalonia.TestsUnit.Updates;
 
 public sealed class GivenALocalizedUpdateDialogTextProvider
 {

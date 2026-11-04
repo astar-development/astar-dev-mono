@@ -2,7 +2,7 @@ using AStarDev.OneDriveSyncClient.Activity;
 using AStarDev.OneDriveSyncClient.Conflicts;
 using AStarDev.OneDriveSyncClient.Data.Repositories;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Pipeline;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using AStarDev.OneDriveSyncClient.TestsUnit.Infrastructure.Sync.Pipeline;
 
 namespace AStarDev.OneDriveSyncClient.TestsUnit.Activity;

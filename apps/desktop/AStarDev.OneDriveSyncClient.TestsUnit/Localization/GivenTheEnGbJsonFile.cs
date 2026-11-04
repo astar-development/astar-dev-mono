@@ -1,5 +1,5 @@
 using System.Text.Json;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.OneDriveSyncClient.Startup;
 
 namespace AStarDev.OneDriveSyncClient.TestsUnit.Localization;
 
@@ -8,7 +8,7 @@ public sealed class GivenTheEnGbJsonFile
     [Fact]
     public void when_read_then_dashboard_all_synced_key_is_present()
     {
-        var assembly = typeof(LocalizationService).Assembly;
+        var assembly = typeof(LocalizationExtensions).Assembly;
         using var stream = assembly.GetManifestResourceStream("AStarDev.OneDriveSyncClient.Assets.Localization.en-GB.json");
         stream.ShouldNotBeNull();
         using var document = JsonDocument.Parse(stream);

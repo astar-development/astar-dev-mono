@@ -1,5 +1,5 @@
 using AStarDev.OneDriveSyncClient.Infrastructure.Tray;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 
 namespace AStarDev.OneDriveSyncClient.TestsUnit.Infrastructure.Tray;
 

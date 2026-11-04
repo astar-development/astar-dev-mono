@@ -1,6 +1,6 @@
 using AStarDev.FunctionalParadigm;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using AStarDev.Utilities;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;

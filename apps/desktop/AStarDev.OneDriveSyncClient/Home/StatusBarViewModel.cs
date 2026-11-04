@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using AStarDev.OneDriveSyncClient.Accounts;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace AStarDev.OneDriveSyncClient.Home;

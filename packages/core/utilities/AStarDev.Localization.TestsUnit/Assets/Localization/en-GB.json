@@ -1,0 +1,6 @@
+{
+  "locale": "en-GB",
+  "App.Title": "Localisation test app",
+  "Format.Test": "Value: {0}",
+  "Format.MultiArg": "{0}, {1}, {2}"
+}

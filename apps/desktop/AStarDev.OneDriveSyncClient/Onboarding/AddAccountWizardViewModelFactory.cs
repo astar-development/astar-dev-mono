@@ -1,6 +1,6 @@
 using AStarDev.OneDriveSyncClient.Infrastructure.Authentication;
 using AStarDev.OneDriveSyncClient.Infrastructure.Graph;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 
 namespace AStarDev.OneDriveSyncClient.Onboarding;
 

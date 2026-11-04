@@ -1,5 +1,5 @@
 using AStarDev.OneDriveSyncClient.Activity;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId;
 

@@ -2,7 +2,7 @@ using System.Globalization;
 using AStarDev.FunctionalParadigm;
 using AStarDev.OneDriveSyncClient.Accounts;
 using AStarDev.OneDriveSyncClient.Data.Repositories;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 using AStarDev.OneDriveSyncClient.TestsUnit.TestHelpers;
 

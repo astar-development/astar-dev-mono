@@ -1,5 +1,5 @@
 using System.Reflection;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace AStarDev.OneDriveSyncClient.TestsUnit.Localization;

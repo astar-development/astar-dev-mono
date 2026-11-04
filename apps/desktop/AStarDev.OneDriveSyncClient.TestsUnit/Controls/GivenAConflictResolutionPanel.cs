@@ -2,7 +2,7 @@ using AStar.Dev.Infrastructure.AppDb.Entities;
 using AStarDev.OneDriveSyncClient.Conflicts;
 using AStarDev.OneDriveSyncClient.Controls;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync;
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;

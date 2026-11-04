@@ -56,6 +56,37 @@
             <summary>Checks for updates, shows the dialog if one is available, and returns the outcome so the caller can report it.</summary>
             <param name="cancellationToken">A token to cancel the check.</param>
         </member>
+        <member name="T:AStar.Dev.Velopack.Publishing.Avalonia.Updates.LocalizedUpdateDialogTextProvider">
+            <summary>Adapts <see cref="T:AStarDev.Localization.ILocalizationService"/> to the shared update dialog's <see cref="T:AStar.Dev.Velopack.Publishing.Avalonia.Updates.IUpdateDialogTextProvider"/> contract.</summary>
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.Avalonia.Updates.LocalizedUpdateDialogTextProvider.#ctor(AStarDev.Localization.ILocalizationService)">
+            <summary>Creates a provider that reads the <c>Update.*</c> keys from <paramref name="localization"/> and raises <see cref="E:AStar.Dev.Velopack.Publishing.Avalonia.Updates.LocalizedUpdateDialogTextProvider.TextChanged"/> when its culture changes.</summary>
+            <param name="localization">The localisation service supplying the dialog text.</param>
+        </member>
+        <member name="P:AStar.Dev.Velopack.Publishing.Avalonia.Updates.LocalizedUpdateDialogTextProvider.Title">
+            <inheritdoc />
+        </member>
+        <member name="P:AStar.Dev.Velopack.Publishing.Avalonia.Updates.LocalizedUpdateDialogTextProvider.ReleaseNotesLabel">
+            <inheritdoc />
+        </member>
+        <member name="P:AStar.Dev.Velopack.Publishing.Avalonia.Updates.LocalizedUpdateDialogTextProvider.RestartNowLabel">
+            <inheritdoc />
+        </member>
+        <member name="P:AStar.Dev.Velopack.Publishing.Avalonia.Updates.LocalizedUpdateDialogTextProvider.LaterLabel">
+            <inheritdoc />
+        </member>
+        <member name="P:AStar.Dev.Velopack.Publishing.Avalonia.Updates.LocalizedUpdateDialogTextProvider.DownloadingLabel">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.Avalonia.Updates.LocalizedUpdateDialogTextProvider.GetMessage(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="E:AStar.Dev.Velopack.Publishing.Avalonia.Updates.LocalizedUpdateDialogTextProvider.TextChanged">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.Avalonia.Updates.LocalizedUpdateDialogTextProvider.Dispose">
+            <summary>Unsubscribes from <see cref="E:AStarDev.Localization.ILocalizationService.CultureChanged"/>.</summary>
+        </member>
         <member name="T:AStar.Dev.Velopack.Publishing.Avalonia.Updates.UpdateAvailableView">
             <summary>The shared update-available dialog window, showing title/version/release notes and a Restart-now/Later choice.</summary>
         </member>

@@ -1,4 +1,4 @@
-using AStarDev.OneDriveSyncClient.Localization;
+using AStarDev.Localization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
