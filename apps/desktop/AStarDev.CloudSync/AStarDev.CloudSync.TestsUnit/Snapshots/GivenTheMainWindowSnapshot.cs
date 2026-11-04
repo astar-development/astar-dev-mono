@@ -1,3 +1,4 @@
+using AStarDev.CloudSync.TestHelpers.Common;
 using Avalonia.Headless.XUnit;
 using Avalonia.Styling;
 

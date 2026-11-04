@@ -19,8 +19,8 @@ public sealed class TestApp : Application
 
     public override void Initialize()
     {
-        Resources.MergedDictionaries.Add(new ResourceInclude(appBaseUri) { Source = new Uri("avares://AStarDev.CloudSync/Themes/Tokens.axaml") });
+        Resources.MergedDictionaries.Add(new ResourceInclude(appBaseUri) { Source = new Uri("avares://AStarDev.CloudSync/Theming/Tokens.axaml") });
         Styles.Add(new FluentTheme());
-        Styles.Add(new StyleInclude(appBaseUri) { Source = new Uri("avares://AStarDev.CloudSync/Themes/ControlStyles.axaml") });
+        Styles.Add(new StyleInclude(appBaseUri) { Source = new Uri("avares://AStarDev.CloudSync/Theming/ControlStyles.axaml") });
     }
 }

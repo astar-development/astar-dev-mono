@@ -1,4 +1,4 @@
-using AStarDev.CloudSync.Core;
+using AStarDev.CloudSync.Core.DisplaySettings;
 using Avalonia;
 using Avalonia.Styling;
 

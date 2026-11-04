@@ -1,5 +1,7 @@
 using System.ComponentModel;
-using AStarDev.CloudSync.Core;
+using AStarDev.CloudSync.Core.DisplaySettings;
+using AStarDev.CloudSync.ViewModels.DisplaySettings;
+using AStarDev.CloudSync.ViewModels.Layouts;
 using AStarDev.Localization;
 
 namespace AStarDev.CloudSync.ViewModels;

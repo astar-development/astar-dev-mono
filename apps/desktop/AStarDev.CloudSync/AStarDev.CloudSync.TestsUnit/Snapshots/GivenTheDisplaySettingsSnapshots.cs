@@ -1,4 +1,5 @@
-using AStarDev.CloudSync.Controls;
+using AStarDev.CloudSync.DisplaySettings;
+using AStarDev.CloudSync.TestHelpers.Common;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Styling;

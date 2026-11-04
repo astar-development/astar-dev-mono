@@ -1,4 +1,4 @@
-using AStarDev.CloudSync.Core;
+using AStarDev.CloudSync.Domain.DisplaySettings;
 using AStarDev.CloudSync.Theming;
 using Avalonia;
 using Avalonia.Headless.XUnit;
