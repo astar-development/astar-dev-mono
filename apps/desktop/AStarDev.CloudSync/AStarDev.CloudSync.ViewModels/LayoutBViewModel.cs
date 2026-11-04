@@ -6,15 +6,18 @@ namespace AStarDev.CloudSync.ViewModels;
 /// <summary>Layout B, grouped by provider: a sidebar tree of providers and their accounts, and the selected account's detail.</summary>
 public sealed class LayoutBViewModel : LocalizedObservableObject
 {
+    private readonly LocalPathFormatter localPathFormatter;
     private LayoutBDetailViewModel detail;
     private string searchText = string.Empty;
 
     /// <summary>Creates the layout over the shared overview and rebuilds it whenever the overview's accounts or sync pairs change.</summary>
     /// <param name="overview">The shared overview every layout binds to.</param>
+    /// <param name="localPathFormatter">Shortens the synced folders' local paths.</param>
     /// <param name="localization">Supplies the text and culture.</param>
-    public LayoutBViewModel(SyncOverviewViewModel overview, ILocalizationService localization) : base(localization)
+    public LayoutBViewModel(SyncOverviewViewModel overview, LocalPathFormatter localPathFormatter, ILocalizationService localization) : base(localization)
     {
         Overview = overview;
+        this.localPathFormatter = localPathFormatter;
         detail = new NoAccountDetailViewModel(localization);
         overview.PropertyChanged += OnOverviewChanged;
         Rebuild();
@@ -109,7 +112,7 @@ public sealed class LayoutBViewModel : LocalizedObservableObject
         Select(visibleAccounts.FirstOrDefault(account => account.Id == previous) ?? visibleAccounts[0]);
     }
 
-    private void Select(AccountViewModel account) => Detail = new AccountDetailViewModel(account, [.. Overview.SyncPairs.Where(pair => pair.AccountId == account.Id && (AccountMatches(account) || PairMatches(pair)))], Localization);
+    private void Select(AccountViewModel account) => Detail = new AccountDetailViewModel(account, [.. Overview.SyncPairs.Where(pair => pair.AccountId == account.Id && (AccountMatches(account) || PairMatches(pair)))], Overview.Activity, localPathFormatter, Localization);
 
     private bool IsVisible(AccountViewModel account) => AccountMatches(account) || Overview.SyncPairs.Any(pair => pair.AccountId == account.Id && PairMatches(pair));
 

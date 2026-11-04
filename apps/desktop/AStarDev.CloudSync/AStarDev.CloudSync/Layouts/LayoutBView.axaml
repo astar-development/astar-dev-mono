@@ -213,15 +213,15 @@
                                                               VerticalScrollBarVisibility="Auto"
                                                               HorizontalScrollBarVisibility="Disabled"
                                                               MinHeight="0">
-                                                    <ItemsControl ItemsSource="{Binding SyncPairs}">
+                                                    <ItemsControl ItemsSource="{Binding SyncedFolders}">
                                                         <ItemsControl.ItemTemplate>
-                                                            <DataTemplate DataType="vm:SyncPairViewModel">
+                                                            <DataTemplate DataType="vm:SyncedFolderViewModel">
                                                                 <Border Padding="16,10" BorderBrush="{DynamicResource CloudSyncBorderBrush}" BorderThickness="0,0,0,1">
                                                                     <Grid ColumnDefinitions="2*,2*,*,*" ColumnSpacing="12">
-                                                                        <TextBlock Grid.Column="0" Text="{Binding LocalPath}" FontSize="12" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding LocalPath}" VerticalAlignment="Center" />
-                                                                        <TextBlock Grid.Column="1" Classes="muted" Text="{Binding RemotePath}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-                                                                        <controls:StatusPill Grid.Column="2" DataContext="{Binding Status}" VerticalAlignment="Center" />
-                                                                        <TextBlock Grid.Column="3" Classes="muted" Text="{Binding LastSyncText}" VerticalAlignment="Center" />
+                                                                        <TextBlock Grid.Column="0" Text="{Binding LocalPathText}" FontSize="12" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Pair.LocalPath}" VerticalAlignment="Center" />
+                                                                        <TextBlock Grid.Column="1" Classes="muted" Text="{Binding Pair.RemotePath}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                                                        <controls:StatusPill Grid.Column="2" DataContext="{Binding Pair.Status}" VerticalAlignment="Center" />
+                                                                        <TextBlock Grid.Column="3" Classes="muted" Text="{Binding Pair.LastSyncText}" VerticalAlignment="Center" />
                                                                     </Grid>
                                                                 </Border>
                                                             </DataTemplate>
@@ -254,7 +254,7 @@
                                                               VerticalScrollBarVisibility="Auto"
                                                               HorizontalScrollBarVisibility="Disabled"
                                                               MinHeight="0">
-                                                    <ItemsControl ItemsSource="{Binding Account.RecentActivity}">
+                                                    <ItemsControl ItemsSource="{Binding RecentActivity}">
                                                         <ItemsControl.ItemsPanel>
                                                             <ItemsPanelTemplate>
                                                                 <StackPanel Spacing="12" />

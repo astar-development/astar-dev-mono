@@ -23,6 +23,8 @@ internal static class TestData
 
     public static FakeTimeProvider CreateTime() => new(Now);
 
+    public static LocalPathFormatter CreateLocalPathFormatter() => new(new FixedHomeFolder(Option.Some(new DirectoryInfo("/home/user"))));
+
     public static Task<SyncOverview> CreateOverviewAsync() => new PlaceholderSyncOverviewSource(CreateTime()).GetOverviewAsync(TestContext.Current.CancellationToken);
 
     public static async Task<SyncOverviewViewModel> CreateLoadedOverviewViewModelAsync()
@@ -41,6 +43,6 @@ internal static class TestData
     {
         var localization = CreateLocalization();
 
-        return new MainWindowViewModel(localization, displaySettings, new LayoutAViewModel(overview, localization), new LayoutBViewModel(overview, localization), new LayoutCViewModel(overview, localization));
+        return new MainWindowViewModel(localization, displaySettings, new LayoutAViewModel(overview, localization), new LayoutBViewModel(overview, CreateLocalPathFormatter(), localization), new LayoutCViewModel(overview, localization));
     }
 }

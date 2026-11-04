@@ -36,6 +36,8 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IFileSystem, RealFileSystem>()
             .AddSingleton<IDisplayPreferencesStore>(provider => new JsonDisplayPreferencesStore(provider.GetRequiredService<IFileSystem>().FileInfo.New(SettingsFilePath), provider.GetRequiredService<ILogger<JsonDisplayPreferencesStore>>()))
             .AddSingleton<IThemeApplier, AvaloniaThemeApplier>()
+            .AddSingleton<IHomeFolder, UserProfileHomeFolder>()
+            .AddSingleton<LocalPathFormatter>()
             .AddSingleton<DisplaySettingsViewModel>()
             .AddSingleton<SyncOverviewViewModel>()
             .AddSingleton<LayoutBViewModel>()

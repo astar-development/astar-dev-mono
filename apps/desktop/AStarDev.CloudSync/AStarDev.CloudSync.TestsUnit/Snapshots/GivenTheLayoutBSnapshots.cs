@@ -28,6 +28,6 @@ public class GivenTheLayoutBSnapshots
     {
         var overview = await TestData.CreateLoadedOverviewViewModelAsync();
 
-        return new Window { Content = new LayoutBView { DataContext = new LayoutBViewModel(overview, TestData.CreateLocalization()) } };
+        return new Window { Content = new LayoutBView { DataContext = new LayoutBViewModel(overview, TestData.CreateLocalPathFormatter(), TestData.CreateLocalization()) } };
     }
 }

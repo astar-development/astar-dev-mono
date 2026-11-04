@@ -80,6 +80,15 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
+    public void when_application_services_are_added_then_the_user_profile_home_folder_is_registered()
+    {
+        var services = CreateServices();
+
+        var descriptor = services.Single(service => service.ServiceType == typeof(IHomeFolder));
+        descriptor.ImplementationType.ShouldBe(typeof(UserProfileHomeFolder));
+    }
+
+    [Fact]
     public void when_application_services_are_added_then_the_sync_overview_view_model_resolves()
     {
         using var provider = CreateServices().BuildServiceProvider();

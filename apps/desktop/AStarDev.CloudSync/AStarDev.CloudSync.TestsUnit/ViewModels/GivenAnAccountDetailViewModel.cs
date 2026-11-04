@@ -1,6 +1,7 @@
 using AStarDev.CloudSync.Core;
 using AStarDev.CloudSync.ViewModels;
 using AStarDev.FunctionalParadigm;
+using AStarDev.Localization;
 
 namespace AStarDev.CloudSync.TestsUnit.ViewModels;
 
@@ -22,12 +23,59 @@ public class GivenAnAccountDetailViewModel
         detail.Stats.Select(tile => tile.Label).ShouldBe(["folders", "files", "conflicts", "last sync"]);
     }
 
+    [Fact]
+    public void when_the_account_has_more_than_five_activity_entries_then_only_its_five_newest_are_kept()
+    {
+        var localization = TestData.CreateLocalization();
+        var cloudAccount = TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
+        var otherAccountId = AccountIdFactory.Create();
+        ActivityItemViewModel[] activity =
+        [
+            CreateActivity(cloudAccount.Id, ActivityKindFactory.CreateDownloaded(1), localization),
+            CreateActivity(otherAccountId, ActivityKindFactory.CreateAuthenticated(), localization),
+            CreateActivity(cloudAccount.Id, ActivityKindFactory.CreateDownloaded(2), localization),
+            CreateActivity(cloudAccount.Id, ActivityKindFactory.CreateDownloaded(3), localization),
+            CreateActivity(cloudAccount.Id, ActivityKindFactory.CreateDownloaded(4), localization),
+            CreateActivity(otherAccountId, ActivityKindFactory.CreateDetectingChanges(), localization),
+            CreateActivity(cloudAccount.Id, ActivityKindFactory.CreateDownloaded(5), localization),
+            CreateActivity(cloudAccount.Id, ActivityKindFactory.CreateDownloaded(6), localization)
+        ];
+        var account = new AccountViewModel(cloudAccount, [], localization, TestData.CreateTime());
+
+        var detail = new AccountDetailViewModel(account, [], activity, TestData.CreateLocalPathFormatter(), localization);
+
+        detail.RecentActivity.Select(item => item.Text).ShouldBe(["Downloaded 1 file", "Downloaded 2 files", "Downloaded 3 files", "Downloaded 4 files", "Downloaded 5 files"]);
+    }
+
+    [Fact]
+    public void when_the_account_has_a_sync_pair_then_its_synced_folder_shows_the_short_and_full_local_path()
+    {
+        var localization = TestData.CreateLocalization();
+        var cloudAccount = TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
+        var model = SyncPairFactory.Create(SyncPairIdFactory.Create(), cloudAccount.Id, "Documents", new DirectoryInfo("/home/user/CloudSync/OneDrive/Work/Documents"), "/Documents", SyncDirectionFactory.CreateTwoWay(), SyncStatusFactory.CreateUpToDate(), 1, Option.None<DateTimeOffset>());
+        var pair = new SyncPairViewModel(model, cloudAccount, localization, TestData.CreateTime());
+        var account = new AccountViewModel(cloudAccount, [], localization, TestData.CreateTime());
+
+        var detail = new AccountDetailViewModel(account, [pair], [], TestData.CreateLocalPathFormatter(), localization);
+
+        var folder = detail.SyncedFolders.ShouldHaveSingleItem();
+        folder.LocalPathText.ShouldBe("~/CloudSync/OneDrive/Work/Documents");
+        folder.Pair.LocalPath.ShouldBe("/home/user/CloudSync/OneDrive/Work/Documents");
+    }
+
     private static AccountDetailViewModel CreateDetail(int folderCount, int fileCount, SyncStatus status)
     {
         var localization = TestData.CreateLocalization();
         var cloudAccount = CloudAccountFactory.Create(AccountIdFactory.Create(), "Work", "work@example.com", CloudProviderFactory.CreateOneDrive(), StorageUsageFactory.Create(1, 2), folderCount, fileCount, status, Option.None<DateTimeOffset>());
         var account = new AccountViewModel(cloudAccount, [], localization, TestData.CreateTime());
 
-        return new AccountDetailViewModel(account, [], localization);
+        return new AccountDetailViewModel(account, [], [], TestData.CreateLocalPathFormatter(), localization);
+    }
+
+    private static ActivityItemViewModel CreateActivity(AccountId accountId, ActivityKind kind, ILocalizationService localization)
+    {
+        var entry = ActivityEntryFactory.Create(accountId, Option.None<SyncPairId>(), kind, TestData.Now);
+
+        return new ActivityItemViewModel(entry, new ProviderViewModel(CloudProviderFactory.CreateOneDrive(), localization), localization, TestData.CreateTime());
     }
 }

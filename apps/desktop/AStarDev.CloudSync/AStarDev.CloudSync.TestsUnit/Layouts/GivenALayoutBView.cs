@@ -17,8 +17,18 @@ public class GivenALayoutBView
         var texts = window.GetVisualDescendants().OfType<TextBlock>().Select(text => text.Text).ToList();
 
         texts.ShouldContain("OneDrive / Work");
-        texts.ShouldContain("/home/user/CloudSync/OneDrive/Work/Documents");
-        texts.ShouldNotContain("/home/user/CloudSync/OneDrive/Photos/Holiday photos");
+        texts.ShouldContain("~/CloudSync/OneDrive/Work/Documents");
+        texts.ShouldNotContain("~/CloudSync/OneDrive/Photos/Holiday photos");
+    }
+
+    [AvaloniaFact]
+    public async Task when_shown_then_each_short_local_path_keeps_the_full_path_in_its_tooltip()
+    {
+        var window = await CreateShownWindowAsync();
+
+        var localPath = window.GetVisualDescendants().OfType<TextBlock>().First(text => text.Text == "~/CloudSync/OneDrive/Work/Documents");
+
+        ToolTip.GetTip(localPath).ShouldBe("/home/user/CloudSync/OneDrive/Work/Documents");
     }
 
     [AvaloniaFact]
@@ -55,14 +65,14 @@ public class GivenALayoutBView
         var texts = window.GetVisualDescendants().OfType<TextBlock>().Select(text => text.Text).ToList();
         window.Content.ShouldBeOfType<LayoutBView>().DataContext.ShouldBeOfType<LayoutBViewModel>().SearchText.ShouldBe("holiday");
         texts.ShouldContain("OneDrive / Photos");
-        texts.ShouldContain("/home/user/CloudSync/OneDrive/Photos/Holiday photos");
-        texts.ShouldNotContain("/home/user/CloudSync/OneDrive/Work/Documents");
+        texts.ShouldContain("~/CloudSync/OneDrive/Photos/Holiday photos");
+        texts.ShouldNotContain("~/CloudSync/OneDrive/Work/Documents");
     }
 
     private static async Task<Window> CreateShownWindowAsync()
     {
         var overview = await TestData.CreateLoadedOverviewViewModelAsync();
-        var window = new Window { Width = 1280, Height = 800, Content = new LayoutBView { DataContext = new LayoutBViewModel(overview, TestData.CreateLocalization()) } };
+        var window = new Window { Width = 1280, Height = 800, Content = new LayoutBView { DataContext = new LayoutBViewModel(overview, TestData.CreateLocalPathFormatter(), TestData.CreateLocalization()) } };
         window.Show();
         Dispatcher.UIThread.RunJobs();
 
