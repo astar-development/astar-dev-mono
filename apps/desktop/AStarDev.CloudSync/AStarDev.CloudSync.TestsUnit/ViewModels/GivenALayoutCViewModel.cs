@@ -45,7 +45,7 @@ public class GivenALayoutCViewModel
     {
         var account = TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
         var conflictedPair = SyncPairFactory.Create(SyncPairIdFactory.Create(), account.Id, "Photos", new DirectoryInfo("/home/user/CloudSync/Photos"), "/Photos", SyncDirectionFactory.CreateTwoWay(), SyncStatusFactory.CreateHasConflicts(1), 1, Option.None<DateTimeOffset>());
-        var overviewData = SyncOverviewFactory.Create([account], [conflictedPair], [], [SyncConflictFactory.Create(conflictedPair.Id, "photo.jpg", TestData.CreateTime().GetUtcNow())], [], 0);
+        var overviewData = SyncOverviewFactory.Create([account], [conflictedPair], [], [SyncConflictFactory.Create(conflictedPair.Id, "photo.jpg", TestData.CreateTime().GetUtcNow())], [], 0, Option.None<DateTimeOffset>());
         var overview = new SyncOverviewViewModel(new FixedSyncOverviewSource(overviewData), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         await overview.LoadAsync(TestContext.Current.CancellationToken);
 

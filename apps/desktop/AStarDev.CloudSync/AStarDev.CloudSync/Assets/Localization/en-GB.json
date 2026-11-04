@@ -108,6 +108,8 @@
   "LayoutA.StatusBar.Syncing.One": "Syncing {0} of {1} account",
   "LayoutA.StatusBar.Syncing.Many": "Syncing {0} of {1} accounts",
   "LayoutA.StatusBar.Idle": "No accounts syncing",
+  "LayoutA.StatusBar.Checked": "{0} · checked {1}",
+  "LayoutA.StatusBar.NeverChecked": "{0} · never checked",
   "LayoutC.CommandSearch.Placeholder": "Search files, folders, accounts or run a command",
   "LayoutC.CommandSearch.Shortcut": "Ctrl K",
   "LayoutC.NewSyncPair": "+ New sync pair",
