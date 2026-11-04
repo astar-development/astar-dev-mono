@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AStarDev.CloudSync.ViewModels"
+             x:Class="AStarDev.CloudSync.Controls.ConflictCard"
+             x:DataType="vm:ConflictViewModel"
+             Foreground="{DynamicResource CloudSyncTextPrimaryBrush}"
+             VerticalAlignment="Top">
+    <Border Classes="conflict-card">
+        <StackPanel Spacing="8">
+            <StackPanel Spacing="2">
+                <TextBlock Text="{Binding FileName}" FontWeight="Medium" />
+                <TextBlock Classes="muted" Text="{Binding Detail}" />
+            </StackPanel>
+            <WrapPanel ItemSpacing="6" LineSpacing="6">
+                <Button Content="{Binding KeepBothText}" />
+                <Button Content="{Binding KeepLocalText}" />
+                <Button Content="{Binding KeepCloudText}" />
+            </WrapPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

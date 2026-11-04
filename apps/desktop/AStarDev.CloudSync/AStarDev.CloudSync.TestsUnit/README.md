@@ -41,3 +41,4 @@ This records how often baselines change during phase 1 (#1261), to judge the mai
 | PR | Baselines changed | Reason |
 |---|---|---|
 | #1255 | 3 added | Harness introduced: empty main window (dark, light) and probe |
+| #1256 | 14 added | Shared controls (7) in dark and light; existing 3 unchanged |

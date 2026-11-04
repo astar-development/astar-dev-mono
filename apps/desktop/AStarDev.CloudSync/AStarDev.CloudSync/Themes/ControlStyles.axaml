@@ -1,0 +1,57 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Style Selector="Border.provider-badge.onedrive">
+        <Setter Property="Background" Value="{DynamicResource CloudSyncProviderOneDriveBrush}" />
+    </Style>
+
+    <Style Selector="Border.status-pill">
+        <Setter Property="Background" Value="{DynamicResource CloudSyncSurface2Brush}" />
+    </Style>
+    <Style Selector="Border.status-pill > TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource CloudSyncTextPrimaryBrush}" />
+    </Style>
+    <Style Selector="Border.status-pill.syncing > TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource CloudSyncAccentBrush}" />
+    </Style>
+    <Style Selector="Border.status-pill.uptodate > TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource CloudSyncOkBrush}" />
+    </Style>
+    <Style Selector="Border.status-pill.conflicts > TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource CloudSyncWarnBrush}" />
+    </Style>
+    <Style Selector="Border.status-pill.paused > TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource CloudSyncIdleBrush}" />
+    </Style>
+
+    <Style Selector="TextBlock.muted">
+        <Setter Property="Foreground" Value="{DynamicResource CloudSyncTextMutedBrush}" />
+        <Setter Property="FontSize" Value="12" />
+    </Style>
+
+    <Style Selector="ProgressBar.storage-bar">
+        <Setter Property="Minimum" Value="0" />
+        <Setter Property="Maximum" Value="1" />
+        <Setter Property="Height" Value="6" />
+        <Setter Property="MinHeight" Value="6" />
+        <Setter Property="CornerRadius" Value="3" />
+        <Setter Property="Background" Value="{DynamicResource CloudSyncSurface2Brush}" />
+        <Setter Property="Foreground" Value="{DynamicResource CloudSyncProviderOneDriveBrush}" />
+    </Style>
+
+    <Style Selector="Border.conflict-card">
+        <Setter Property="Background" Value="{DynamicResource CloudSyncWarnSoftBrush}" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="12" />
+    </Style>
+    <Style Selector="Border.conflict-card Button">
+        <Setter Property="MinHeight" Value="30" />
+        <Setter Property="Padding" Value="10,0" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Background" Value="{DynamicResource CloudSyncSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource CloudSyncBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Foreground" Value="{DynamicResource CloudSyncTextPrimaryBrush}" />
+    </Style>
+</Styles>

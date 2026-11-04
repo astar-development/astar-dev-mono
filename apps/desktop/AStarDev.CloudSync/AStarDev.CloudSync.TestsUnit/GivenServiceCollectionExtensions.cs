@@ -1,3 +1,5 @@
+using AStarDev.CloudSync.Core;
+using AStarDev.CloudSync.Core.Placeholder;
 using AStarDev.CloudSync.ViewModels;
 using AStarDev.Localization;
 using AStar.Dev.Velopack.Publishing;
@@ -66,6 +68,31 @@ public class GivenServiceCollectionExtensions
         var localization = provider.GetRequiredService<ILocalizationService>();
 
         localization.GetLocal(key).ShouldNotBe(key);
+    }
+
+    [Fact]
+    public void when_application_services_are_added_then_the_placeholder_sync_overview_source_is_registered()
+    {
+        var services = CreateServices();
+
+        var descriptor = services.Single(service => service.ServiceType == typeof(ISyncOverviewSource));
+        descriptor.ImplementationType.ShouldBe(typeof(PlaceholderSyncOverviewSource));
+    }
+
+    [Fact]
+    public void when_application_services_are_added_then_the_sync_overview_view_model_resolves()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<SyncOverviewViewModel>().ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void when_application_services_are_added_then_the_system_time_provider_is_registered()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<TimeProvider>().ShouldBeSameAs(TimeProvider.System);
     }
 
     private static IServiceCollection CreateServices()
