@@ -10,15 +10,20 @@ public abstract class LayoutBDetailViewModel(ILocalizationService localization) 
 public sealed class AccountDetailViewModel : LayoutBDetailViewModel
 {
     private const double FullCircleDegrees = 360;
+    private const int RecentActivityLimit = 5;
 
-    /// <summary>Creates the detail for <paramref name="account"/>.</summary>
+    /// <summary>Creates the detail for <paramref name="account"/>, keeping the account's five newest activity entries.</summary>
     /// <param name="account">The selected account.</param>
     /// <param name="syncPairs">The account's sync pairs.</param>
+    /// <param name="activity">Activity across every account, newest first; only this account's entries are kept.</param>
+    /// <param name="localPathFormatter">Shortens the synced folders' local paths.</param>
     /// <param name="localization">Supplies the text and culture.</param>
-    public AccountDetailViewModel(AccountViewModel account, IReadOnlyList<SyncPairViewModel> syncPairs, ILocalizationService localization) : base(localization)
+    public AccountDetailViewModel(AccountViewModel account, IReadOnlyList<SyncPairViewModel> syncPairs, IEnumerable<ActivityItemViewModel> activity, LocalPathFormatter localPathFormatter, ILocalizationService localization) : base(localization)
     {
         Account = account;
         SyncPairs = syncPairs;
+        SyncedFolders = [.. syncPairs.Select(pair => new SyncedFolderViewModel(pair, localPathFormatter))];
+        RecentActivity = [.. activity.Where(item => item.AccountId == account.Id).Take(RecentActivityLimit)];
         Stats =
         [
             new(() => account.FoldersText, CountKey.For("LayoutB.Stats.Folders", account.FolderCount), StatTileToneFactory.CreateNormal(), localization),
@@ -33,6 +38,12 @@ public sealed class AccountDetailViewModel : LayoutBDetailViewModel
 
     /// <summary>The account's sync pairs.</summary>
     public IReadOnlyList<SyncPairViewModel> SyncPairs { get; }
+
+    /// <summary>The synced folders table rows, one per sync pair, with local paths shortened for display.</summary>
+    public IReadOnlyList<SyncedFolderViewModel> SyncedFolders { get; }
+
+    /// <summary>The account's five newest activity entries, newest first.</summary>
+    public IReadOnlyList<ActivityItemViewModel> RecentActivity { get; }
 
     /// <summary>The account's figures: folders, files, conflicts and last sync.</summary>
     public IReadOnlyList<StatTileViewModel> Stats { get; }

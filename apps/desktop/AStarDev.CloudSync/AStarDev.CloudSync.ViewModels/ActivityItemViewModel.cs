@@ -10,6 +10,9 @@ namespace AStarDev.CloudSync.ViewModels;
 /// <param name="timeProvider">Supplies the current time for the relative time.</param>
 public sealed class ActivityItemViewModel(ActivityEntry entry, ProviderViewModel provider, ILocalizationService localization, TimeProvider timeProvider) : LocalizedObservableObject(localization)
 {
+    /// <summary>The id of the entry's account.</summary>
+    public AccountId AccountId => entry.AccountId;
+
     /// <summary>The provider of the entry's account.</summary>
     public ProviderViewModel Provider => provider;
 
