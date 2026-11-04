@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Thin Avalonia host: XAML views, minimal code-behind and the DI
+    composition root. Behaviour belongs in AStarDev.CloudSync.ViewModels.
+  -->
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <Product>AStar Dev CloudSync</Product>
+    <ApplicationIcon>Assets\astar.ico</ApplicationIcon>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AStarDev.LoggingOTel" />
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="Avalonia.Fonts.Inter" />
+    <PackageReference Include="Velopack" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets/**" Exclude="Assets/Localization/**" />
+    <EmbeddedResource Include="Assets/Localization/*.json" />
+    <None Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../AStarDev.CloudSync.ViewModels/AStarDev.CloudSync.ViewModels.csproj" />
+    <ProjectReference Include="../../../../packages/core/utilities/AStarDev.Localization/AStarDev.Localization.csproj" />
+    <ProjectReference Include="../../../../packages/core/utilities/AStarDev.VelopackPublishing/AStarDev.VelopackPublishing.csproj" />
+    <ProjectReference Include="../../../../packages/core/utilities/AStarDev.VelopackPublishingAvalonia/AStarDev.VelopackPublishingAvalonia.csproj" />
+  </ItemGroup>
+
+</Project>

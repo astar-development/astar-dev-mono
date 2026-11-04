@@ -1,0 +1,10 @@
+{
+  "locale": "en-GB",
+  "App.Title": "AStar Dev CloudSync",
+  "Update.Title": "Update available",
+  "Update.Message": "Version {0} is ready to install.",
+  "Update.ReleaseNotesLabel": "What's new",
+  "Update.RestartNow": "Restart now",
+  "Update.Later": "Later",
+  "Update.Downloading": "Downloading..."
+}
