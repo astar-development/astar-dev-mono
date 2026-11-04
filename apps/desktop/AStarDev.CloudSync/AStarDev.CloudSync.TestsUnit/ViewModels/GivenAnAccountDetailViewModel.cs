@@ -8,6 +8,45 @@ namespace AStarDev.CloudSync.TestsUnit.ViewModels;
 public class GivenAnAccountDetailViewModel
 {
     [Fact]
+    public async Task when_the_pause_command_runs_then_the_account_is_paused()
+    {
+        var (detail, syncActions) = CreateDetailWithRecordedActions();
+
+        await detail.PauseCommand.ExecuteAsync(null);
+
+        syncActions.Calls.ShouldBe([$"PauseAsync:{detail.Account.Id}"]);
+    }
+
+    [Fact]
+    public async Task when_the_sync_now_command_runs_then_the_account_syncs_now()
+    {
+        var (detail, syncActions) = CreateDetailWithRecordedActions();
+
+        await detail.SyncNowCommand.ExecuteAsync(null);
+
+        syncActions.Calls.ShouldBe([$"SyncNowAsync:{detail.Account.Id}"]);
+    }
+
+    [Fact]
+    public async Task when_the_add_folder_command_runs_then_a_sync_pair_is_added_for_the_account()
+    {
+        var (detail, syncActions) = CreateDetailWithRecordedActions();
+
+        await detail.AddFolderCommand.ExecuteAsync(null);
+
+        syncActions.Calls.ShouldBe([$"AddSyncPairAsync:{detail.Account.Id}"]);
+    }
+
+    private static (AccountDetailViewModel Detail, RecordingSyncActions SyncActions) CreateDetailWithRecordedActions()
+    {
+        var localization = TestData.CreateLocalization();
+        var syncActions = new RecordingSyncActions();
+        var account = new AccountViewModel(TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>()), [], localization, TestData.CreateTime());
+
+        return (new AccountDetailViewModel(account, [], [], TestData.CreateLocalPathFormatter(), syncActions, localization), syncActions);
+    }
+
+    [Fact]
     public void when_the_account_has_one_folder_file_and_conflict_then_the_stat_labels_are_singular()
     {
         var detail = CreateDetail(1, 1, SyncStatusFactory.CreateHasConflicts(1));
@@ -42,7 +81,7 @@ public class GivenAnAccountDetailViewModel
         ];
         var account = new AccountViewModel(cloudAccount, [], localization, TestData.CreateTime());
 
-        var detail = new AccountDetailViewModel(account, [], activity, TestData.CreateLocalPathFormatter(), localization);
+        var detail = new AccountDetailViewModel(account, [], activity, TestData.CreateLocalPathFormatter(), new RecordingSyncActions(), localization);
 
         detail.RecentActivity.Select(item => item.Text).ShouldBe(["Downloaded 1 file", "Downloaded 2 files", "Downloaded 3 files", "Downloaded 4 files", "Downloaded 5 files"]);
     }
@@ -56,7 +95,7 @@ public class GivenAnAccountDetailViewModel
         var pair = new SyncPairViewModel(model, cloudAccount, localization, TestData.CreateTime());
         var account = new AccountViewModel(cloudAccount, [], localization, TestData.CreateTime());
 
-        var detail = new AccountDetailViewModel(account, [pair], [], TestData.CreateLocalPathFormatter(), localization);
+        var detail = new AccountDetailViewModel(account, [pair], [], TestData.CreateLocalPathFormatter(), new RecordingSyncActions(), localization);
 
         var folder = detail.SyncedFolders.ShouldHaveSingleItem();
         folder.LocalPathText.ShouldBe("~/CloudSync/OneDrive/Work/Documents");
@@ -69,7 +108,7 @@ public class GivenAnAccountDetailViewModel
         var cloudAccount = CloudAccountFactory.Create(AccountIdFactory.Create(), "Work", "work@example.com", CloudProviderFactory.CreateOneDrive(), StorageUsageFactory.Create(1, 2), folderCount, fileCount, status, Option.None<DateTimeOffset>());
         var account = new AccountViewModel(cloudAccount, [], localization, TestData.CreateTime());
 
-        return new AccountDetailViewModel(account, [], [], TestData.CreateLocalPathFormatter(), localization);
+        return new AccountDetailViewModel(account, [], [], TestData.CreateLocalPathFormatter(), new RecordingSyncActions(), localization);
     }
 
     private static ActivityItemViewModel CreateActivity(AccountId accountId, ActivityKind kind, ILocalizationService localization)

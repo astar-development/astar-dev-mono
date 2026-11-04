@@ -29,7 +29,7 @@ internal static class TestData
 
     public static async Task<SyncOverviewViewModel> CreateLoadedOverviewViewModelAsync()
     {
-        var viewModel = new SyncOverviewViewModel(new PlaceholderSyncOverviewSource(CreateTime()), CreateLocalization(), CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var viewModel = new SyncOverviewViewModel(new PlaceholderSyncOverviewSource(CreateTime()), new RecordingSyncActions(), CreateLocalization(), CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         await viewModel.LoadAsync(TestContext.Current.CancellationToken);
 
         return viewModel;
@@ -42,7 +42,8 @@ internal static class TestData
     public static MainWindowViewModel CreateMainWindowViewModel(SyncOverviewViewModel overview, DisplaySettingsViewModel displaySettings)
     {
         var localization = CreateLocalization();
+        var syncActions = new RecordingSyncActions();
 
-        return new MainWindowViewModel(localization, displaySettings, new LayoutAViewModel(overview, localization), new LayoutBViewModel(overview, CreateLocalPathFormatter(), localization), new LayoutCViewModel(overview, localization));
+        return new MainWindowViewModel(localization, displaySettings, new LayoutAViewModel(overview, syncActions, localization), new LayoutBViewModel(overview, CreateLocalPathFormatter(), syncActions, localization), new LayoutCViewModel(overview, syncActions, localization));
     }
 }

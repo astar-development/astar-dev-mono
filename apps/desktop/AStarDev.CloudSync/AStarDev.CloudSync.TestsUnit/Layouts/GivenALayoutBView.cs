@@ -69,10 +69,24 @@ public class GivenALayoutBView
         texts.ShouldNotContain("~/CloudSync/OneDrive/Work/Documents");
     }
 
+    [AvaloniaFact]
+    public async Task when_shown_then_the_connect_pause_sync_now_and_add_folder_buttons_are_bound_to_their_commands()
+    {
+        var window = await CreateShownWindowAsync();
+        var layout = window.Content.ShouldBeOfType<LayoutBView>().DataContext.ShouldBeOfType<LayoutBViewModel>();
+        var detail = layout.Detail.ShouldBeOfType<AccountDetailViewModel>();
+        var buttons = window.GetVisualDescendants().OfType<Button>().ToList();
+
+        buttons.Single(button => Equals(button.Content, "+ Connect a provider")).Command.ShouldBeSameAs(layout.ConnectProviderCommand);
+        buttons.Single(button => Equals(button.Content, "Pause")).Command.ShouldBeSameAs(detail.PauseCommand);
+        buttons.Single(button => Equals(button.Content, "Sync now")).Command.ShouldBeSameAs(detail.SyncNowCommand);
+        buttons.Single(button => Equals(button.Content, "+ Add folder")).Command.ShouldBeSameAs(detail.AddFolderCommand);
+    }
+
     private static async Task<Window> CreateShownWindowAsync()
     {
         var overview = await TestData.CreateLoadedOverviewViewModelAsync();
-        var window = new Window { Width = 1280, Height = 800, Content = new LayoutBView { DataContext = new LayoutBViewModel(overview, TestData.CreateLocalPathFormatter(), TestData.CreateLocalization()) } };
+        var window = new Window { Width = 1280, Height = 800, Content = new LayoutBView { DataContext = new LayoutBViewModel(overview, TestData.CreateLocalPathFormatter(), new RecordingSyncActions(), TestData.CreateLocalization()) } };
         window.Show();
         Dispatcher.UIThread.RunJobs();
 

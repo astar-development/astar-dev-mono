@@ -7,6 +7,30 @@ namespace AStarDev.CloudSync.TestsUnit.ViewModels;
 public class GivenALayoutAAccountCardViewModel
 {
     [Fact]
+    public async Task when_the_action_command_runs_while_the_account_is_syncing_then_sync_is_cancelled_for_the_account()
+    {
+        var syncActions = new RecordingSyncActions();
+        var account = new AccountViewModel(TestData.CreateAccount(SyncStatusFactory.CreateSyncing(25), Option.None<DateTimeOffset>()), [], TestData.CreateLocalization(), TestData.CreateTime());
+        var card = new LayoutAAccountCardViewModel(account, _ => { }, syncActions, TestData.CreateLocalization());
+
+        await card.ActionCommand.ExecuteAsync(null);
+
+        syncActions.Calls.ShouldBe([$"CancelSyncAsync:{account.Id}"]);
+    }
+
+    [Fact]
+    public async Task when_the_action_command_runs_while_the_account_is_not_syncing_then_the_account_syncs_now()
+    {
+        var syncActions = new RecordingSyncActions();
+        var account = new AccountViewModel(TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>()), [], TestData.CreateLocalization(), TestData.CreateTime());
+        var card = new LayoutAAccountCardViewModel(account, _ => { }, syncActions, TestData.CreateLocalization());
+
+        await card.ActionCommand.ExecuteAsync(null);
+
+        syncActions.Calls.ShouldBe([$"SyncNowAsync:{account.Id}"]);
+    }
+
+    [Fact]
     public void when_the_account_is_syncing_then_the_action_is_cancel()
     {
         var card = CreateCard(SyncStatusFactory.CreateSyncing(25));
@@ -78,7 +102,7 @@ public class GivenALayoutAAccountCardViewModel
         var localization = TestData.CreateLocalization();
         var account = new AccountViewModel(TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>()), [], localization, TestData.CreateTime());
         List<LayoutAAccountCardViewModel> selected = [];
-        var card = new LayoutAAccountCardViewModel(account, selected.Add, localization);
+        var card = new LayoutAAccountCardViewModel(account, selected.Add, new RecordingSyncActions(), localization);
 
         card.SelectCommand.Execute(null);
 
@@ -99,7 +123,7 @@ public class GivenALayoutAAccountCardViewModel
         var localization = TestData.CreateLocalization();
         var account = new AccountViewModel(TestData.CreateAccount(status, Option.None<DateTimeOffset>()), [], localization, TestData.CreateTime());
 
-        return new LayoutAAccountCardViewModel(account, _ => { }, localization);
+        return new LayoutAAccountCardViewModel(account, _ => { }, new RecordingSyncActions(), localization);
     }
 
     private static LayoutAAccountCardViewModel CreateCard(int folderCount, int fileCount, SyncStatus status)
@@ -108,6 +132,6 @@ public class GivenALayoutAAccountCardViewModel
         var cloudAccount = CloudAccountFactory.Create(AccountIdFactory.Create(), "Work", "work@example.com", CloudProviderFactory.CreateOneDrive(), StorageUsageFactory.Create(1, 2), folderCount, fileCount, status, Option.None<DateTimeOffset>());
         var account = new AccountViewModel(cloudAccount, [], localization, TestData.CreateTime());
 
-        return new LayoutAAccountCardViewModel(account, _ => { }, localization);
+        return new LayoutAAccountCardViewModel(account, _ => { }, new RecordingSyncActions(), localization);
     }
 }

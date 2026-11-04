@@ -26,7 +26,7 @@ public class GivenTheLayoutCSnapshot
 
     private static async Task<Window> CreateWindowAsync()
     {
-        var viewModel = new LayoutCViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), TestData.CreateLocalization());
+        var viewModel = new LayoutCViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateLocalization());
 
         return new Window { Content = new LayoutCView { DataContext = viewModel } };
     }

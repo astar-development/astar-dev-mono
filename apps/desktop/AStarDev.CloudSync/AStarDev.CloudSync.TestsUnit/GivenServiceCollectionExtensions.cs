@@ -80,6 +80,15 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
+    public void when_application_services_are_added_then_the_placeholder_sync_actions_are_registered()
+    {
+        var services = CreateServices();
+
+        var descriptor = services.Single(service => service.ServiceType == typeof(ISyncActions));
+        descriptor.ImplementationType.ShouldBe(typeof(PlaceholderSyncActions));
+    }
+
+    [Fact]
     public void when_application_services_are_added_then_the_user_profile_home_folder_is_registered()
     {
         var services = CreateServices();

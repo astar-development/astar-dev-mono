@@ -8,6 +8,25 @@ namespace AStarDev.CloudSync.TestsUnit.ViewModels;
 public class GivenALayoutAViewModel
 {
     [Fact]
+    public async Task when_the_add_account_command_runs_then_an_account_is_added()
+    {
+        var syncActions = new RecordingSyncActions();
+        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), syncActions, TestData.CreateLocalization());
+
+        await layout.AddAccountCommand.ExecuteAsync(null);
+
+        syncActions.Calls.ShouldBe(["AddAccountAsync"]);
+    }
+
+    [Fact]
+    public async Task when_created_then_the_rail_navigation_command_is_disabled_until_its_pages_exist()
+    {
+        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateLocalization());
+
+        layout.NavigateCommand.CanExecute(null).ShouldBeFalse();
+    }
+
+    [Fact]
     public async Task when_the_overview_loads_then_the_provider_chips_are_all_plus_each_provider_present()
     {
         var layout = await CreateLoadedLayoutAsync();
@@ -18,7 +37,7 @@ public class GivenALayoutAViewModel
     [Fact]
     public void when_the_overview_has_no_accounts_then_only_the_all_chip_is_shown()
     {
-        var layout = new LayoutAViewModel(new SyncOverviewViewModel(Substitute.For<ISyncOverviewSource>(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance), TestData.CreateLocalization());
+        var layout = new LayoutAViewModel(new SyncOverviewViewModel(Substitute.For<ISyncOverviewSource>(), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance), new RecordingSyncActions(), TestData.CreateLocalization());
 
         layout.ProviderChips.Select(chip => chip.Label).ShouldBe(["All"]);
     }
@@ -66,8 +85,8 @@ public class GivenALayoutAViewModel
     {
         var source = Substitute.For<ISyncOverviewSource>();
         source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateSyncing(50), Option.None<DateTimeOffset>())], [], [], [], [], 0, Option.None<DateTimeOffset>()));
-        var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
-        var layout = new LayoutAViewModel(overview, TestData.CreateLocalization());
+        var overview = new SyncOverviewViewModel(source, new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var layout = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateLocalization());
 
         await overview.LoadAsync(TestContext.Current.CancellationToken);
 
@@ -79,8 +98,8 @@ public class GivenALayoutAViewModel
     {
         var source = Substitute.For<ISyncOverviewSource>();
         source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>())], [], [], [], [], 0, Option.None<DateTimeOffset>()));
-        var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
-        var layout = new LayoutAViewModel(overview, TestData.CreateLocalization());
+        var overview = new SyncOverviewViewModel(source, new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var layout = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateLocalization());
 
         await overview.LoadAsync(TestContext.Current.CancellationToken);
 
@@ -100,8 +119,8 @@ public class GivenALayoutAViewModel
     {
         var source = Substitute.For<ISyncOverviewSource>();
         source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>())], [], [], [], [], 0, Option.Some(TestData.Now.AddMinutes(-10))));
-        var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
-        var layout = new LayoutAViewModel(overview, TestData.CreateLocalization());
+        var overview = new SyncOverviewViewModel(source, new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var layout = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateLocalization());
 
         await overview.LoadAsync(TestContext.Current.CancellationToken);
 
@@ -113,8 +132,8 @@ public class GivenALayoutAViewModel
     {
         var source = Substitute.For<ISyncOverviewSource>();
         source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>())], [], [], [], [], 0, Option.None<DateTimeOffset>()));
-        var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
-        var layout = new LayoutAViewModel(overview, TestData.CreateLocalization());
+        var overview = new SyncOverviewViewModel(source, new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var layout = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateLocalization());
 
         await overview.LoadAsync(TestContext.Current.CancellationToken);
 
@@ -124,7 +143,7 @@ public class GivenALayoutAViewModel
     [Fact]
     public void when_created_then_the_pane_and_rail_text_is_localised()
     {
-        var layout = new LayoutAViewModel(new SyncOverviewViewModel(Substitute.For<ISyncOverviewSource>(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance), TestData.CreateLocalization());
+        var layout = new LayoutAViewModel(new SyncOverviewViewModel(Substitute.For<ISyncOverviewSource>(), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance), new RecordingSyncActions(), TestData.CreateLocalization());
 
         layout.AccountsTitle.ShouldBe("Accounts");
         layout.AddAccountText.ShouldBe("+ Add account");
@@ -171,6 +190,6 @@ public class GivenALayoutAViewModel
     {
         var overview = await TestData.CreateLoadedOverviewViewModelAsync();
 
-        return new LayoutAViewModel(overview, TestData.CreateLocalization());
+        return new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateLocalization());
     }
 }
