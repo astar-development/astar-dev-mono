@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    All UI behaviour. Must not reference Avalonia, so it can be unit-tested
+    without a UI thread.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <IsPublishable>false</IsPublishable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../AStarDev.CloudSync.Core/AStarDev.CloudSync.Core.csproj" />
+    <ProjectReference Include="../../../../packages/core/utilities/AStarDev.Localization/AStarDev.Localization.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -10,6 +10,12 @@
         <Project Path="apps/desktop/AStarDev.OneDriveSyncClient/AStarDev.OneDriveSyncClient.csproj" />
     </Folder>
     <Folder Name="/apps/desktop/AStarDev.Clock/" />
+    <Folder Name="/apps/desktop/AStarDev.CloudSync/">
+        <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.Core/AStarDev.CloudSync.Core.csproj" />
+        <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.TestsUnit/AStarDev.CloudSync.TestsUnit.csproj" />
+        <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.ViewModels/AStarDev.CloudSync.ViewModels.csproj" />
+        <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync/AStarDev.CloudSync.csproj" />
+    </Folder>
     <Folder Name="/apps/desktop/AStarDev.FileApp/">
         <Project Path="apps/desktop/AStarDev.FileApp/AStarDev.FileApp.TestsUnit/AStarDev.FileApp.TestsUnit.csproj" />
         <Project Path="apps/desktop/AStarDev.FileApp/AStarDev.FileApp/AStarDev.FileApp.csproj" />
