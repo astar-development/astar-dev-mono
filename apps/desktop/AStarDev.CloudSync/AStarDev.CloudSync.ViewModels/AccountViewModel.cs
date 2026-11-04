@@ -44,6 +44,15 @@ public sealed class AccountViewModel : LocalizedObservableObject
     /// <summary>The account's storage usage.</summary>
     public StorageViewModel Storage { get; }
 
+    /// <summary>The number of synced folders.</summary>
+    public int FolderCount => account.FolderCount;
+
+    /// <summary>The number of synced files.</summary>
+    public int FileCount => account.FileCount;
+
+    /// <summary>The number of open conflicts.</summary>
+    public int ConflictCount => account.Status is SyncStatus.HasConflicts conflicts ? conflicts.Count : 0;
+
     /// <summary>The number of synced folders, formatted for the culture.</summary>
     public string FoldersText => account.FolderCount.ToString("N0", Localization.CurrentCulture);
 
@@ -51,7 +60,7 @@ public sealed class AccountViewModel : LocalizedObservableObject
     public string FilesText => account.FileCount.ToString("N0", Localization.CurrentCulture);
 
     /// <summary>The number of open conflicts, formatted for the culture.</summary>
-    public string ConflictsText => (account.Status is SyncStatus.HasConflicts conflicts ? conflicts.Count : 0).ToString("N0", Localization.CurrentCulture);
+    public string ConflictsText => ConflictCount.ToString("N0", Localization.CurrentCulture);
 
     /// <summary>When the account last synced, relative to now, or "Never".</summary>
     public string LastSyncText => RelativeTimeFormatter.Format(account.LastSync, Localization, timeProvider);

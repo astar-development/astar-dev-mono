@@ -80,14 +80,20 @@ public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ILocalizat
         OnPropertyChanged(nameof(LoadErrorText));
     }
 
-    private StatTileViewModel[] CreateStats() =>
-    [
-        new(() => overview.Accounts.Count.ToString("N0", Localization.CurrentCulture), "Stats.Accounts", StatTileToneFactory.CreateNormal(), Localization),
-        new(() => overview.Accounts.Select(account => account.Provider).Distinct().Count().ToString("N0", Localization.CurrentCulture), "Stats.Providers", StatTileToneFactory.CreateNormal(), Localization),
-        new(() => overview.Accounts.Sum(account => account.FolderCount).ToString("N0", Localization.CurrentCulture), "Stats.FoldersSynced", StatTileToneFactory.CreateNormal(), Localization),
-        new(() => overview.Conflicts.Count.ToString("N0", Localization.CurrentCulture), "Stats.Conflicts", overview.Conflicts.Count > 0 ? StatTileToneFactory.CreateWarn() : StatTileToneFactory.CreateNormal(), Localization),
-        new(OverallStatusText, "Stats.OverallStatus", StatTileToneFactory.CreateAccent(), Localization)
-    ];
+    private StatTileViewModel[] CreateStats()
+    {
+        int providerCount = overview.Accounts.Select(account => account.Provider).Distinct().Count();
+        int folderCount = overview.Accounts.Sum(account => account.FolderCount);
+
+        return
+        [
+            new(() => overview.Accounts.Count.ToString("N0", Localization.CurrentCulture), CountKey.For("Stats.Accounts", overview.Accounts.Count), StatTileToneFactory.CreateNormal(), Localization),
+            new(() => providerCount.ToString("N0", Localization.CurrentCulture), CountKey.For("Stats.Providers", providerCount), StatTileToneFactory.CreateNormal(), Localization),
+            new(() => folderCount.ToString("N0", Localization.CurrentCulture), CountKey.For("Stats.FoldersSynced", folderCount), StatTileToneFactory.CreateNormal(), Localization),
+            new(() => overview.Conflicts.Count.ToString("N0", Localization.CurrentCulture), CountKey.For("Stats.Conflicts", overview.Conflicts.Count), overview.Conflicts.Count > 0 ? StatTileToneFactory.CreateWarn() : StatTileToneFactory.CreateNormal(), Localization),
+            new(OverallStatusText, "Stats.OverallStatus", StatTileToneFactory.CreateAccent(), Localization)
+        ];
+    }
 
     private string OverallStatusText()
     {

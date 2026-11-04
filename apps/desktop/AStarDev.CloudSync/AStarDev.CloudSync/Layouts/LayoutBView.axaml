@@ -92,6 +92,7 @@
                 <TextBox Grid.Row="0"
                          Margin="14"
                          Height="36"
+                         Text="{Binding SearchText}"
                          PlaceholderText="{Binding SearchWatermark}"
                          AutomationProperties.Name="{Binding SearchWatermark}" />
 
@@ -148,6 +149,9 @@
                         VerticalContentAlignment="Stretch">
             <ContentControl.DataTemplates>
                 <DataTemplate DataType="vm:NoAccountDetailViewModel">
+                    <TextBlock Classes="muted" Text="{Binding Text}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </DataTemplate>
+                <DataTemplate DataType="vm:NoMatchingAccountsDetailViewModel">
                     <TextBlock Classes="muted" Text="{Binding Text}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </DataTemplate>
                 <DataTemplate DataType="vm:AccountDetailViewModel">
