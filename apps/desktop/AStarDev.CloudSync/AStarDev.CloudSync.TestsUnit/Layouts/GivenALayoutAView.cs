@@ -3,6 +3,8 @@ using AStarDev.CloudSync.Layouts;
 using AStarDev.CloudSync.ViewModels;
 using AStarDev.FunctionalParadigm;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
+using Avalonia.Media;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -96,6 +98,19 @@ public class GivenALayoutAView
 
         railButtons.Count.ShouldBe(5);
         railButtons.ShouldAllBe(button => button.Command == layout.NavigateCommand && !button.IsEffectivelyEnabled);
+    }
+
+    [AvaloniaFact]
+    public async Task when_the_rail_buttons_are_disabled_then_the_active_one_keeps_its_highlight_and_the_rest_stay_clear()
+    {
+        var window = await CreateShownWindowAsync();
+        window.TryFindResource("CloudSyncAccentSoftBrush", window.ActualThemeVariant, out var accentSoft).ShouldBeTrue();
+
+        var railButtons = window.GetVisualDescendants().OfType<Button>().Where(button => button.Classes.Contains("rail")).ToList();
+        var backgrounds = railButtons.Select(button => button.GetVisualDescendants().OfType<ContentPresenter>().First(presenter => presenter.Name == "PART_ContentPresenter").Background).ToList();
+
+        backgrounds[0].ShouldBeSameAs(accentSoft);
+        backgrounds.Skip(1).ShouldAllBe(background => background is ISolidColorBrush && ((ISolidColorBrush)background).Color.A == 0);
     }
 
     private static async Task<Window> CreateShownWindowAsync()
