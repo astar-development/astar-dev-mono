@@ -237,9 +237,7 @@
                                         <Grid Grid.Row="2" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
                                             <TextBlock Grid.Column="0"
                                                        Classes="muted"
-                                                       Text="{Binding DirectionGlyph}"
-                                                       ToolTip.Tip="{Binding DirectionLabel}"
-                                                       AutomationProperties.Name="{Binding DirectionLabel}"
+                                                       Text="{Binding DirectionLabel}"
                                                        VerticalAlignment="Center" />
                                             <controls:ProviderBadge Grid.Column="1" DataContext="{Binding Provider}" />
                                             <TextBlock Grid.Column="2"
