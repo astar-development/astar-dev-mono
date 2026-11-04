@@ -64,6 +64,27 @@ public class GivenALayoutAAccountCardViewModel
         card.ConflictsLabel.ShouldBe("conflicts");
     }
 
+    [Fact]
+    public void when_created_then_it_is_not_selected()
+    {
+        var card = CreateCard(SyncStatusFactory.CreateUpToDate());
+
+        card.IsSelected.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void when_the_select_command_runs_then_the_card_is_passed_to_the_select_callback()
+    {
+        var localization = TestData.CreateLocalization();
+        var account = new AccountViewModel(TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>()), [], localization, TestData.CreateTime());
+        List<LayoutAAccountCardViewModel> selected = [];
+        var card = new LayoutAAccountCardViewModel(account, selected.Add, localization);
+
+        card.SelectCommand.Execute(null);
+
+        selected.ShouldHaveSingleItem().ShouldBeSameAs(card);
+    }
+
     public static TheoryData<string> NotSyncingStatuses() => ["up-to-date", "conflicts", "paused"];
 
     private static SyncStatus NotSyncingStatus(string statusName) => statusName switch
@@ -78,7 +99,7 @@ public class GivenALayoutAAccountCardViewModel
         var localization = TestData.CreateLocalization();
         var account = new AccountViewModel(TestData.CreateAccount(status, Option.None<DateTimeOffset>()), [], localization, TestData.CreateTime());
 
-        return new LayoutAAccountCardViewModel(account, localization);
+        return new LayoutAAccountCardViewModel(account, _ => { }, localization);
     }
 
     private static LayoutAAccountCardViewModel CreateCard(int folderCount, int fileCount, SyncStatus status)
@@ -87,6 +108,6 @@ public class GivenALayoutAAccountCardViewModel
         var cloudAccount = CloudAccountFactory.Create(AccountIdFactory.Create(), "Work", "work@example.com", CloudProviderFactory.CreateOneDrive(), StorageUsageFactory.Create(1, 2), folderCount, fileCount, status, Option.None<DateTimeOffset>());
         var account = new AccountViewModel(cloudAccount, [], localization, TestData.CreateTime());
 
-        return new LayoutAAccountCardViewModel(account, localization);
+        return new LayoutAAccountCardViewModel(account, _ => { }, localization);
     }
 }

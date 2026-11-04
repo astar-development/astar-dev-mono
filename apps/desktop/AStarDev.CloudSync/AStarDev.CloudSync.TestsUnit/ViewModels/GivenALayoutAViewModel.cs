@@ -102,6 +102,37 @@ public class GivenALayoutAViewModel
         layout.SettingsText.ShouldBe("Settings");
     }
 
+    [Fact]
+    public async Task when_the_overview_loads_then_the_first_account_is_selected()
+    {
+        var layout = await CreateLoadedLayoutAsync();
+
+        layout.VisibleAccounts.Where(card => card.IsSelected).Select(card => card.Account.Name).ShouldBe(["Work"]);
+    }
+
+    [Fact]
+    public async Task when_an_account_is_selected_then_only_it_is_selected()
+    {
+        var layout = await CreateLoadedLayoutAsync();
+        var photos = layout.VisibleAccounts.Single(card => card.Account.Name == "Photos");
+
+        photos.SelectCommand.Execute(null);
+
+        layout.VisibleAccounts.Where(card => card.IsSelected).ShouldHaveSingleItem().ShouldBeSameAs(photos);
+    }
+
+    [Fact]
+    public async Task when_a_provider_chip_is_selected_then_the_selected_account_is_kept_when_still_visible()
+    {
+        var layout = await CreateLoadedLayoutAsync();
+        var photos = layout.VisibleAccounts.Single(card => card.Account.Name == "Photos");
+        photos.SelectCommand.Execute(null);
+
+        layout.ProviderChips[1].SelectCommand.Execute(null);
+
+        layout.VisibleAccounts.Where(card => card.IsSelected).ShouldHaveSingleItem().ShouldBeSameAs(photos);
+    }
+
     private static async Task<LayoutAViewModel> CreateLoadedLayoutAsync()
     {
         var overview = await TestData.CreateLoadedOverviewViewModelAsync();
