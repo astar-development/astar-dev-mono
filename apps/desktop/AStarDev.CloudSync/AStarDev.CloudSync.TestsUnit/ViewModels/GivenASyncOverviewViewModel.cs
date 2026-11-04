@@ -1,4 +1,6 @@
+using AStarDev.CloudSync.Core;
 using AStarDev.CloudSync.ViewModels;
+using AStarDev.FunctionalParadigm;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -45,6 +47,26 @@ public class GivenASyncOverviewViewModel
         var viewModel = await TestData.CreateLoadedOverviewViewModelAsync();
 
         viewModel.Stats[4].Value.ShouldBe("Syncing");
+    }
+
+    [Fact]
+    public async Task when_loaded_with_conflicts_then_the_conflicts_tile_is_warn_and_the_overall_status_tile_is_accent()
+    {
+        var viewModel = await TestData.CreateLoadedOverviewViewModelAsync();
+
+        viewModel.Stats.Select(tile => tile.Tone).ShouldBe([StatTileToneFactory.CreateDefault(), StatTileToneFactory.CreateDefault(), StatTileToneFactory.CreateDefault(), StatTileToneFactory.CreateWarn(), StatTileToneFactory.CreateAccent()]);
+    }
+
+    [Fact]
+    public async Task when_loaded_without_conflicts_then_the_conflicts_tile_is_default()
+    {
+        var overview = SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>())], [], [], [], []);
+        var viewModel = new SyncOverviewViewModel(new FixedSyncOverviewSource(overview), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+
+        await viewModel.LoadAsync(TestContext.Current.CancellationToken);
+
+        viewModel.Stats[3].Tone.ShouldBeOfType<StatTileTone.Default>();
+        viewModel.Stats[4].Tone.ShouldBeOfType<StatTileTone.Accent>();
     }
 
     [Fact]
