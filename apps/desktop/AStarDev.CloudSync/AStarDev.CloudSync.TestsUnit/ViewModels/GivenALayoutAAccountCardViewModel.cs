@@ -44,6 +44,26 @@ public class GivenALayoutAAccountCardViewModel
         card.RecentActivityLabel.ShouldBe("Recent activity");
     }
 
+    [Fact]
+    public void when_the_account_has_one_folder_file_and_conflict_then_the_count_labels_are_singular()
+    {
+        var card = CreateCard(1, 1, SyncStatusFactory.CreateHasConflicts(1));
+
+        card.FoldersLabel.ShouldBe("folder");
+        card.FilesLabel.ShouldBe("file");
+        card.ConflictsLabel.ShouldBe("conflict");
+    }
+
+    [Fact]
+    public void when_the_account_has_more_than_one_folder_file_and_conflict_then_the_count_labels_are_plural()
+    {
+        var card = CreateCard(2, 3, SyncStatusFactory.CreateHasConflicts(2));
+
+        card.FoldersLabel.ShouldBe("folders");
+        card.FilesLabel.ShouldBe("files");
+        card.ConflictsLabel.ShouldBe("conflicts");
+    }
+
     public static TheoryData<string> NotSyncingStatuses() => ["up-to-date", "conflicts", "paused"];
 
     private static SyncStatus NotSyncingStatus(string statusName) => statusName switch
@@ -57,6 +77,15 @@ public class GivenALayoutAAccountCardViewModel
     {
         var localization = TestData.CreateLocalization();
         var account = new AccountViewModel(TestData.CreateAccount(status, Option.None<DateTimeOffset>()), [], localization, TestData.CreateTime());
+
+        return new LayoutAAccountCardViewModel(account, localization);
+    }
+
+    private static LayoutAAccountCardViewModel CreateCard(int folderCount, int fileCount, SyncStatus status)
+    {
+        var localization = TestData.CreateLocalization();
+        var cloudAccount = CloudAccountFactory.Create(AccountIdFactory.Create(), "Work", "work@example.com", CloudProviderFactory.CreateOneDrive(), StorageUsageFactory.Create(1, 2), folderCount, fileCount, status, Option.None<DateTimeOffset>());
+        var account = new AccountViewModel(cloudAccount, [], localization, TestData.CreateTime());
 
         return new LayoutAAccountCardViewModel(account, localization);
     }
