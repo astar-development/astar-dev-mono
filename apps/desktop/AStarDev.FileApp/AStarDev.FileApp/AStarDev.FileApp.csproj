@@ -10,7 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AvaloniaResource Include="Assets\**" />
+    <AvaloniaResource Include="Assets\**" Exclude="Assets\Localization\**" />
+    <EmbeddedResource Include="Assets\Localization\*.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -61,6 +62,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../../../packages/core/utilities/AStarDev.Localization/AStarDev.Localization.csproj" />
     <ProjectReference Include="../../../../packages/core/utilities/AStarDev.VelopackPublishingAvalonia/AStarDev.VelopackPublishingAvalonia.csproj" />
     <ProjectReference Include="../../../../packages/core/utilities/AStarDev.VelopackPublishing/AStarDev.VelopackPublishing.csproj" />
   </ItemGroup>

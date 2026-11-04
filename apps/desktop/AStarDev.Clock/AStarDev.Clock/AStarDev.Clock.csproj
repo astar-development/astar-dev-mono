@@ -20,7 +20,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AvaloniaResource Include="Assets/**" />
+    <AvaloniaResource Include="Assets/**" Exclude="Assets/Localization/**" />
+    <EmbeddedResource Include="Assets/Localization/*.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,6 +29,7 @@
     <AvaloniaResource Remove="src/**/*.axaml" />
     <None Remove="src/**" />
     <EmbeddedResource Remove="src/**" />
+    <ProjectReference Include="../../../../packages/core/utilities/AStarDev.Localization/AStarDev.Localization.csproj" />
     <ProjectReference Include="../../../../packages/core/utilities/AStarDev.VelopackPublishingAvalonia/AStarDev.VelopackPublishingAvalonia.csproj" />
     <ProjectReference Include="../../../../packages/core/utilities/AStarDev.VelopackPublishing/AStarDev.VelopackPublishing.csproj" />
     <ProjectReference Include="../../AStarDev.ClockControls/AStarDev.ClockControls/AStarDev.ClockControls.csproj" />
