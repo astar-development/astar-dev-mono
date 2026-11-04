@@ -127,6 +127,15 @@ jobs:
             cd "$GITHUB_WORKSPACE"
           done
 
+      - name: Upload snapshot diffs
+        uses: actions/upload-artifact@v7.0.2
+        if: failure()
+        with:
+          name: snapshot-diffs
+          path: artifacts/snapshots/
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Publish test results
         uses: EnricoMi/publish-unit-test-result-action@v2.24.0
         if: always()
