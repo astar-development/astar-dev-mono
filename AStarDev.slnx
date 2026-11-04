@@ -10,9 +10,15 @@
         <Project Path="apps/desktop/AStarDev.OneDriveSyncClient/AStarDev.OneDriveSyncClient.csproj" />
     </Folder>
     <Folder Name="/apps/desktop/AStarDev.Clock/" />
+    <Folder Name="/apps/desktop/AStarDev.ClockControls/" />
     <Folder Name="/apps/desktop/AStarDev.CloudSync/">
+        <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.Core.TestsUnit/AStarDev.CloudSync.Core.TestsUnit.csproj" />
         <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.Core/AStarDev.CloudSync.Core.csproj" />
+        <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.Infrastructure.TestsIntegration/AStarDev.CloudSync.Infrastructure.TestsIntegration.csproj" />
+        <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.Infrastructure.TestsUnit/AStarDev.CloudSync.Infrastructure.TestsUnit.csproj" />
+        <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.Infrastructure/AStarDev.CloudSync.Infrastructure.csproj" />
         <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.TestsUnit/AStarDev.CloudSync.TestsUnit.csproj" />
+        <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.ViewModels.TestsUnit/AStarDev.CloudSync.ViewModels.TestsUnit.csproj" />
         <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.ViewModels/AStarDev.CloudSync.ViewModels.csproj" />
         <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync/AStarDev.CloudSync.csproj" />
     </Folder>
@@ -81,6 +87,7 @@
         <Project Path="packages/core/utilities/DemoClassLibrary/DemoClassLibrary.csproj" />
     </Folder>
     <Folder Name="/packages/core/utilities/AStarDev.FluentAssignments/" />
+    <Folder Name="/packages/EFCore/" />
     <Folder Name="/packages/source-generators/">
         <Project Path="packages/source-generators/AStarDev.SourceGeneratorAttributes.TestsUnit/AStarDev.SourceGeneratorAttributes.TestsUnit.csproj" />
         <Project Path="packages/source-generators/AStarDev.SourceGeneratorAttributes/AStarDev.SourceGeneratorAttributes.csproj" />
