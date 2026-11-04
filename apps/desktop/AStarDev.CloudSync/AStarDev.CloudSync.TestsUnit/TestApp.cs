@@ -10,7 +10,8 @@ namespace AStarDev.CloudSync.TestsUnit;
 
 public sealed class TestApp : Application
 {
-    private static readonly Uri appBaseUri = new("avares://AStarDev.CloudSync/");
+    // typeof(App) loads the app assembly so avares:// can resolve its precompiled XAML when one test class runs alone.
+    private static readonly Uri appBaseUri = new($"avares://{typeof(App).Assembly.GetName().Name}/");
 
     public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<TestApp>()
         .UseSkia()
