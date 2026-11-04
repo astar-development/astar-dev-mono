@@ -40,7 +40,7 @@
   "Conflict.KeepLocal": "Keep local",
   "Conflict.KeepCloud": "Keep cloud",
   "Direction.TwoWay": "Two-way",
-  "Direction.TwoWay.Glyph": "⇄",
+  "Direction.TwoWay.Glyph": "↔",
   "Direction.UploadOnly": "Upload only",
   "Direction.UploadOnly.Glyph": "→",
   "Direction.DownloadOnly": "Download only",
