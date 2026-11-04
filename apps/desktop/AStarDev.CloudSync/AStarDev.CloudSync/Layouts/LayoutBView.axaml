@@ -128,13 +128,16 @@
                         Content="{Binding ConnectProviderText}" />
 
                 <Border Grid.Row="3"
-                        Padding="14,12"
+                        Padding="14,4"
                         BorderBrush="{DynamicResource CloudSyncBorderBrush}"
                         BorderThickness="0,1,0,0">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Ellipse Width="8" Height="8" Fill="{DynamicResource CloudSyncAccentBrush}" VerticalAlignment="Center" />
-                        <TextBlock Classes="muted" Text="{Binding SyncingSummaryText}" VerticalAlignment="Center" />
-                    </StackPanel>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <Ellipse Width="8" Height="8" Fill="{DynamicResource CloudSyncAccentBrush}" VerticalAlignment="Center" />
+                            <TextBlock Classes="muted" Text="{Binding SyncingSummaryText}" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <controls:DisplaySettingsButton Grid.Column="1" VerticalAlignment="Center" />
+                    </Grid>
                 </Border>
             </Grid>
         </Border>

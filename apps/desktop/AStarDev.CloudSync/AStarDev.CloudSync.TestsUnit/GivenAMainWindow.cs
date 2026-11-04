@@ -1,17 +1,19 @@
+using AStarDev.CloudSync.Controls;
 using AStarDev.CloudSync.Core;
 using AStarDev.CloudSync.Layouts;
 using AStarDev.CloudSync.ViewModels;
-using AStarDev.Localization;
+using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Avalonia.VisualTree;
 
 namespace AStarDev.CloudSync.TestsUnit;
 
 public class GivenAMainWindow
 {
     [AvaloniaFact]
-    public void when_shown_then_the_window_is_visible()
+    public async Task when_shown_then_the_window_is_visible()
     {
-        var window = new MainWindow { DataContext = CreateViewModel() };
+        var window = new MainWindow { DataContext = await CreateViewModelAsync() };
 
         window.Show();
 
@@ -19,33 +21,104 @@ public class GivenAMainWindow
     }
 
     [AvaloniaFact]
-    public void when_shown_then_the_title_is_bound_from_the_view_model()
+    public async Task when_shown_then_the_title_is_bound_from_the_view_model()
     {
-        var window = new MainWindow { DataContext = CreateViewModel() };
+        var window = new MainWindow { DataContext = await CreateViewModelAsync() };
 
         window.Show();
 
-        window.Title.ShouldBe("Localised title");
+        window.Title.ShouldBe("AStar Dev CloudSync");
     }
 
     [AvaloniaFact]
-    public void when_shown_then_the_content_is_layout_a_bound_to_the_layout_a_view_model()
+    public async Task when_shown_then_the_content_is_layout_a_bound_to_the_layout_a_view_model()
     {
-        var viewModel = CreateViewModel();
+        var viewModel = await CreateViewModelAsync();
         var window = new MainWindow { DataContext = viewModel };
 
         window.Show();
 
-        var layout = window.Content.ShouldBeOfType<LayoutAView>();
-        layout.DataContext.ShouldBeSameAs(viewModel.LayoutA);
+        FindSingle<LayoutAView>(window).DataContext.ShouldBeSameAs(viewModel.LayoutA);
     }
 
-    private static MainWindowViewModel CreateViewModel()
+    [AvaloniaFact]
+    public async Task when_layout_b_is_chosen_then_the_root_view_is_swapped_for_layout_b_without_a_restart()
     {
-        var localization = Substitute.For<ILocalizationService>();
-        localization.GetLocal("App.Title").Returns("Localised title");
-        var overview = new SyncOverviewViewModel(Substitute.For<ISyncOverviewSource>(), localization, TestData.CreateTime());
+        var viewModel = await CreateViewModelAsync();
+        var window = new MainWindow { DataContext = viewModel };
+        window.Show();
 
-        return new MainWindowViewModel(localization, new LayoutAViewModel(overview, localization));
+        viewModel.DisplaySettings.SelectLayout(MainLayoutFactory.CreateGroupedByProvider());
+        window.UpdateLayout();
+
+        FindSingle<LayoutBView>(window).DataContext.ShouldBeSameAs(viewModel.LayoutB);
+        window.GetVisualDescendants().OfType<LayoutAView>().ShouldBeEmpty();
     }
+
+    [AvaloniaFact]
+    public async Task when_layout_c_is_chosen_then_the_root_view_is_swapped_for_layout_c_without_a_restart()
+    {
+        var viewModel = await CreateViewModelAsync();
+        var window = new MainWindow { DataContext = viewModel };
+        window.Show();
+
+        viewModel.DisplaySettings.SelectLayout(MainLayoutFactory.CreateSyncPairsFirst());
+        window.UpdateLayout();
+
+        FindSingle<LayoutCView>(window).DataContext.ShouldBeSameAs(viewModel.LayoutC);
+    }
+
+    [AvaloniaFact]
+    public async Task when_layout_b_is_left_and_shown_again_then_its_selected_account_survives_the_view_being_rebuilt()
+    {
+        var viewModel = await CreateViewModelAsync();
+        var window = new MainWindow { DataContext = viewModel };
+        window.Show();
+        viewModel.DisplaySettings.SelectLayout(MainLayoutFactory.CreateGroupedByProvider());
+        window.UpdateLayout();
+        var photos = viewModel.LayoutB.Overview.Accounts.Single(account => account.Name == "Photos");
+        viewModel.LayoutB.SelectedItem = photos;
+
+        viewModel.DisplaySettings.SelectLayout(MainLayoutFactory.CreateUnifiedAccounts());
+        window.UpdateLayout();
+        viewModel.DisplaySettings.SelectLayout(MainLayoutFactory.CreateGroupedByProvider());
+        window.UpdateLayout();
+
+        viewModel.LayoutB.SelectedItem.ShouldBeSameAs(photos);
+    }
+
+    [AvaloniaTheory]
+    [InlineData("A")]
+    [InlineData("B")]
+    [InlineData("C")]
+    public async Task when_any_layout_is_shown_then_its_settings_button_is_bound_to_the_display_settings(string key)
+    {
+        var viewModel = await CreateViewModelAsync();
+        var window = new MainWindow { DataContext = viewModel };
+        window.Show();
+
+        viewModel.DisplaySettings.SelectLayout(MainLayoutFactory.FromKey(key));
+        window.UpdateLayout();
+
+        FindSingle<DisplaySettingsButton>(window).DataContext.ShouldBeSameAs(viewModel.DisplaySettings);
+    }
+
+    [AvaloniaFact]
+    public async Task when_the_settings_flyout_opens_then_it_shows_the_display_settings()
+    {
+        var viewModel = await CreateViewModelAsync();
+        var window = new MainWindow { DataContext = viewModel };
+        window.Show();
+        var button = FindSingle<DisplaySettingsButton>(window).GetVisualDescendants().OfType<Button>().Single();
+        var flyout = button.Flyout.ShouldBeOfType<Flyout>();
+
+        flyout.ShowAt(button);
+
+        flyout.Content.ShouldBeOfType<DisplaySettingsView>().DataContext.ShouldBeSameAs(viewModel.DisplaySettings);
+        flyout.Hide();
+    }
+
+    private static T FindSingle<T>(Window window) where T : Control => window.GetVisualDescendants().OfType<T>().ShouldHaveSingleItem();
+
+    private static async Task<MainWindowViewModel> CreateViewModelAsync() => TestData.CreateMainWindowViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), TestData.CreateDisplaySettings());
 }

@@ -1,4 +1,3 @@
-using AStarDev.CloudSync.ViewModels;
 using Avalonia.Headless.XUnit;
 using Avalonia.Styling;
 
@@ -24,9 +23,8 @@ public class GivenTheMainWindowSnapshot
 
     private static async Task<MainWindow> CreateWindowAsync()
     {
-        var localization = TestData.CreateLocalization();
         var overview = await TestData.CreateLoadedOverviewViewModelAsync();
 
-        return new MainWindow { DataContext = new MainWindowViewModel(localization, new LayoutAViewModel(overview, localization)) };
+        return new MainWindow { DataContext = TestData.CreateMainWindowViewModel(overview, TestData.CreateDisplaySettings()) };
     }
 }

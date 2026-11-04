@@ -128,6 +128,31 @@ public class GivenServiceCollectionExtensions
             .AddInMemoryCollection(new Dictionary<string, string?> { ["Updates:GithubRepositoryUrl"] = "https://github.com/astar-development/astar-dev-mono", ["Updates:ChannelPrefix"] = "cloudsync" })
             .Build();
 
-        return new ServiceCollection().AddApplicationServices(configuration);
+        return new ServiceCollection()
+            .AddLogging()
+            .AddApplicationServices(configuration)
+            .AddSingleton<IDisplayPreferencesStore>(new InMemoryDisplayPreferencesStore())
+            .AddSingleton<IThemeApplier>(new RecordingThemeApplier());
+    }
+
+    [Fact]
+    public void when_application_services_are_added_then_the_display_preferences_store_and_theme_applier_are_registered()
+    {
+        var services = new ServiceCollection().AddApplicationServices(new ConfigurationBuilder().Build());
+
+        services.ShouldContain(service => service.ServiceType == typeof(IDisplayPreferencesStore));
+        services.ShouldContain(service => service.ServiceType == typeof(IThemeApplier) && service.ImplementationType == typeof(AStarDev.CloudSync.Theming.AvaloniaThemeApplier));
+    }
+
+    [Fact]
+    public void when_application_services_are_added_then_the_main_window_view_model_shares_the_display_settings_and_layouts()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        var mainWindow = provider.GetRequiredService<MainWindowViewModel>();
+
+        mainWindow.DisplaySettings.ShouldBeSameAs(provider.GetRequiredService<DisplaySettingsViewModel>());
+        mainWindow.LayoutB.ShouldBeSameAs(provider.GetRequiredService<LayoutBViewModel>());
+        mainWindow.LayoutC.ShouldBeSameAs(provider.GetRequiredService<LayoutCViewModel>());
     }
 }

@@ -29,6 +29,7 @@
     <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <PackageReference Include="NSubstitute" />
     <PackageReference Include="Shouldly" />
+    <PackageReference Include="Testably.Abstractions.Testing" />
     <PackageReference Include="xunit.v3.mtp-v2" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
   </ItemGroup>

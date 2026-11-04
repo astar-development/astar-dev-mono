@@ -109,5 +109,13 @@
   "LayoutC.LiveActivity": "Live activity",
   "LayoutC.Live": "Live",
   "LayoutC.Accounts": "ACCOUNTS",
-  "LayoutC.AddAccount": "+ Add account"
+  "LayoutC.AddAccount": "+ Add account",
+  "Settings.Title": "Display settings",
+  "Settings.Layout": "Layout",
+  "Settings.Layout.UnifiedAccounts": "Unified account list",
+  "Settings.Layout.GroupedByProvider": "Grouped by provider",
+  "Settings.Layout.SyncPairsFirst": "Sync pairs first",
+  "Settings.Theme": "Theme",
+  "Settings.Theme.Dark": "Dark",
+  "Settings.Theme.Light": "Light"
 }
