@@ -1,0 +1,38 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Dark">
+            <SolidColorBrush x:Key="CloudSyncBackgroundBrush" Color="#14161A" />
+            <SolidColorBrush x:Key="CloudSyncPanelBrush" Color="#181B20" />
+            <SolidColorBrush x:Key="CloudSyncSurfaceBrush" Color="#1E2228" />
+            <SolidColorBrush x:Key="CloudSyncSurface2Brush" Color="#272C33" />
+            <SolidColorBrush x:Key="CloudSyncBorderBrush" Color="#2D323A" />
+            <SolidColorBrush x:Key="CloudSyncTextPrimaryBrush" Color="#E8EAED" />
+            <SolidColorBrush x:Key="CloudSyncTextMutedBrush" Color="#9AA2AD" />
+            <SolidColorBrush x:Key="CloudSyncAccentBrush" Color="#5B9CF5" />
+            <SolidColorBrush x:Key="CloudSyncAccentSoftBrush" Color="#1F3350" />
+            <SolidColorBrush x:Key="CloudSyncWarnBrush" Color="#F0A04B" />
+            <SolidColorBrush x:Key="CloudSyncWarnSoftBrush" Color="#3A2A17" />
+            <SolidColorBrush x:Key="CloudSyncOkBrush" Color="#4CC38A" />
+            <SolidColorBrush x:Key="CloudSyncIdleBrush" Color="#8A929D" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Light">
+            <SolidColorBrush x:Key="CloudSyncBackgroundBrush" Color="#F2F4F7" />
+            <SolidColorBrush x:Key="CloudSyncPanelBrush" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="CloudSyncSurfaceBrush" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="CloudSyncSurface2Brush" Color="#F1F3F6" />
+            <SolidColorBrush x:Key="CloudSyncBorderBrush" Color="#DDE1E6" />
+            <SolidColorBrush x:Key="CloudSyncTextPrimaryBrush" Color="#1B1E23" />
+            <SolidColorBrush x:Key="CloudSyncTextMutedBrush" Color="#59606B" />
+            <SolidColorBrush x:Key="CloudSyncAccentBrush" Color="#2563C9" />
+            <SolidColorBrush x:Key="CloudSyncAccentSoftBrush" Color="#E3ECFB" />
+            <SolidColorBrush x:Key="CloudSyncWarnBrush" Color="#B45F06" />
+            <SolidColorBrush x:Key="CloudSyncWarnSoftBrush" Color="#FDF0E1" />
+            <SolidColorBrush x:Key="CloudSyncOkBrush" Color="#1D7A4F" />
+            <SolidColorBrush x:Key="CloudSyncIdleBrush" Color="#6B727C" />
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+
+    <SolidColorBrush x:Key="CloudSyncProviderOneDriveBrush" Color="#2F6FD0" />
+    <SolidColorBrush x:Key="CloudSyncOnProviderBrush" Color="#FFFFFF" />
+</ResourceDictionary>
