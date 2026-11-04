@@ -11,6 +11,12 @@
       "projectPath": "${workspaceFolder}/apps/desktop/AStarDev.OneDriveSyncClient/AStarDev.OneDriveSyncClient.csproj"
     },
     {
+      "name": "CloudSync Debug",
+      "type": "dotnet",
+      "request": "launch",
+      "projectPath": "${workspaceFolder}/apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync/AStarDev.CloudSync.csproj"
+    },
+    {
       "name": "Scraper Debug",
       "type": "dotnet",
       "request": "launch",

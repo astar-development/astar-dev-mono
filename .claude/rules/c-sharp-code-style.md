@@ -76,4 +76,4 @@ Error-branch logic belongs INSIDE the error lambda. Never use `is Result<T,E>.Ok
 
 ## Utilities
 
-Use `AStarDev.Utilities` helpers. e.g. `"dir1".CombinePaths("dir2")` not `Path.Combine(...)` — `Path.Combine` silently drops parameters.
+Use `AStarDev.Utilities` helpers. e.g. `"dir1".CombinePath("dir2")` not `Path.Combine(...)` — `Path.Combine` silently drops parameters.
