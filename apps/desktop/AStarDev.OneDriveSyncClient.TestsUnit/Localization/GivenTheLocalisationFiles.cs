@@ -1,5 +1,5 @@
 using System.Text.Json;
-using AStarDev.Localization;
+using AStarDev.OneDriveSyncClient.Startup;
 
 namespace AStarDev.OneDriveSyncClient.TestsUnit.Localization;
 
@@ -7,7 +7,7 @@ public sealed class GivenTheLocalisationFiles
 {
     private static HashSet<string> ReadKeys(string culture)
     {
-        using var stream = typeof(LocalizationService).Assembly.GetManifestResourceStream($"AStarDev.OneDriveSyncClient.Assets.Localization.{culture}.json");
+        using var stream = typeof(LocalizationExtensions).Assembly.GetManifestResourceStream($"AStarDev.OneDriveSyncClient.Assets.Localization.{culture}.json");
         using var document = JsonDocument.Parse(stream!);
 
         return document.RootElement.EnumerateObject().Select(property => property.Name).ToHashSet(StringComparer.Ordinal);
@@ -15,7 +15,7 @@ public sealed class GivenTheLocalisationFiles
 
     private static string ReadValue(string culture, string key)
     {
-        using var stream = typeof(LocalizationService).Assembly.GetManifestResourceStream($"AStarDev.OneDriveSyncClient.Assets.Localization.{culture}.json");
+        using var stream = typeof(LocalizationExtensions).Assembly.GetManifestResourceStream($"AStarDev.OneDriveSyncClient.Assets.Localization.{culture}.json");
         using var document = JsonDocument.Parse(stream!);
 
         return document.RootElement.GetProperty(key).GetString()!;
