@@ -24,6 +24,13 @@
         <Setter Property="Foreground" Value="{DynamicResource CloudSyncIdleBrush}" />
     </Style>
 
+    <Style Selector="TextBlock.stat-value.warn">
+        <Setter Property="Foreground" Value="{DynamicResource CloudSyncWarnBrush}" />
+    </Style>
+    <Style Selector="TextBlock.stat-value.accent">
+        <Setter Property="Foreground" Value="{DynamicResource CloudSyncAccentBrush}" />
+    </Style>
+
     <Style Selector="TextBlock.muted">
         <Setter Property="Foreground" Value="{DynamicResource CloudSyncTextMutedBrush}" />
         <Setter Property="FontSize" Value="12" />

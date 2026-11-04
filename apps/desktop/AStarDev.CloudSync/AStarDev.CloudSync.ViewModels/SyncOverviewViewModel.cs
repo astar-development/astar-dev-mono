@@ -82,11 +82,11 @@ public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ILocalizat
 
     private StatTileViewModel[] CreateStats() =>
     [
-        new(() => overview.Accounts.Count.ToString("N0", Localization.CurrentCulture), "Stats.Accounts", Localization),
-        new(() => overview.Accounts.Select(account => account.Provider).Distinct().Count().ToString("N0", Localization.CurrentCulture), "Stats.Providers", Localization),
-        new(() => overview.Accounts.Sum(account => account.FolderCount).ToString("N0", Localization.CurrentCulture), "Stats.FoldersSynced", Localization),
-        new(() => overview.Conflicts.Count.ToString("N0", Localization.CurrentCulture), "Stats.Conflicts", Localization),
-        new(OverallStatusText, "Stats.OverallStatus", Localization)
+        new(() => overview.Accounts.Count.ToString("N0", Localization.CurrentCulture), "Stats.Accounts", StatTileToneFactory.CreateNormal(), Localization),
+        new(() => overview.Accounts.Select(account => account.Provider).Distinct().Count().ToString("N0", Localization.CurrentCulture), "Stats.Providers", StatTileToneFactory.CreateNormal(), Localization),
+        new(() => overview.Accounts.Sum(account => account.FolderCount).ToString("N0", Localization.CurrentCulture), "Stats.FoldersSynced", StatTileToneFactory.CreateNormal(), Localization),
+        new(() => overview.Conflicts.Count.ToString("N0", Localization.CurrentCulture), "Stats.Conflicts", overview.Conflicts.Count > 0 ? StatTileToneFactory.CreateWarn() : StatTileToneFactory.CreateNormal(), Localization),
+        new(OverallStatusText, "Stats.OverallStatus", StatTileToneFactory.CreateAccent(), Localization)
     ];
 
     private string OverallStatusText()
