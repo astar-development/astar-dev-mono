@@ -51,4 +51,20 @@ public class GivenAStatusViewModel
         status.Text.ShouldBe("Paused");
         status.IsPaused.ShouldBeTrue();
     }
+
+    [Fact]
+    public void when_syncing_then_the_progress_is_the_percentage_as_a_fraction()
+    {
+        var status = new StatusViewModel(SyncStatusFactory.CreateSyncing(25), TestData.CreateLocalization());
+
+        status.Progress.ShouldBe(0.25);
+    }
+
+    [Fact]
+    public void when_not_syncing_then_the_progress_is_complete()
+    {
+        var status = new StatusViewModel(SyncStatusFactory.CreatePaused(), TestData.CreateLocalization());
+
+        status.Progress.ShouldBe(1);
+    }
 }

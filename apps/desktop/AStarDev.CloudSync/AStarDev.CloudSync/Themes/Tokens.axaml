@@ -11,6 +11,7 @@
             <SolidColorBrush x:Key="CloudSyncTextMutedBrush" Color="#9AA2AD" />
             <SolidColorBrush x:Key="CloudSyncAccentBrush" Color="#5B9CF5" />
             <SolidColorBrush x:Key="CloudSyncAccentSoftBrush" Color="#1F3350" />
+            <SolidColorBrush x:Key="CloudSyncOnAccentBrush" Color="#0B1220" />
             <SolidColorBrush x:Key="CloudSyncWarnBrush" Color="#F0A04B" />
             <SolidColorBrush x:Key="CloudSyncWarnSoftBrush" Color="#3A2A17" />
             <SolidColorBrush x:Key="CloudSyncOkBrush" Color="#4CC38A" />
@@ -26,6 +27,7 @@
             <SolidColorBrush x:Key="CloudSyncTextMutedBrush" Color="#59606B" />
             <SolidColorBrush x:Key="CloudSyncAccentBrush" Color="#2563C9" />
             <SolidColorBrush x:Key="CloudSyncAccentSoftBrush" Color="#E3ECFB" />
+            <SolidColorBrush x:Key="CloudSyncOnAccentBrush" Color="#FFFFFF" />
             <SolidColorBrush x:Key="CloudSyncWarnBrush" Color="#B45F06" />
             <SolidColorBrush x:Key="CloudSyncWarnSoftBrush" Color="#FDF0E1" />
             <SolidColorBrush x:Key="CloudSyncOkBrush" Color="#1D7A4F" />

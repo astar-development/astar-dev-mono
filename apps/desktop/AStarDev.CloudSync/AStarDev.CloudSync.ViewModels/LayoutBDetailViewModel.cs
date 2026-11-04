@@ -1,0 +1,104 @@
+using AStarDev.Localization;
+
+namespace AStarDev.CloudSync.ViewModels;
+
+/// <summary>What the layout B detail pane shows: the selected account, or a message when there are no accounts.</summary>
+/// <param name="localization">Supplies the text and culture.</param>
+public abstract class LayoutBDetailViewModel(ILocalizationService localization) : LocalizedObservableObject(localization);
+
+/// <summary>The layout B detail pane for the selected account.</summary>
+public sealed class AccountDetailViewModel : LayoutBDetailViewModel
+{
+    private const double FullCircleDegrees = 360;
+
+    /// <summary>Creates the detail for <paramref name="account"/>.</summary>
+    /// <param name="account">The selected account.</param>
+    /// <param name="syncPairs">The account's sync pairs.</param>
+    /// <param name="localization">Supplies the text and culture.</param>
+    public AccountDetailViewModel(AccountViewModel account, IReadOnlyList<SyncPairViewModel> syncPairs, ILocalizationService localization) : base(localization)
+    {
+        Account = account;
+        SyncPairs = syncPairs;
+        Stats =
+        [
+            new(() => account.FoldersText, "LayoutB.Stats.Folders", localization),
+            new(() => account.FilesText, "LayoutB.Stats.Files", localization),
+            new(() => account.ConflictsText, "Stats.Conflicts", localization),
+            new(() => account.LastSyncText, "LayoutB.Stats.LastSync", localization)
+        ];
+    }
+
+    /// <summary>The selected account.</summary>
+    public AccountViewModel Account { get; }
+
+    /// <summary>The account's sync pairs.</summary>
+    public IReadOnlyList<SyncPairViewModel> SyncPairs { get; }
+
+    /// <summary>The account's figures: folders, files, conflicts and last sync.</summary>
+    public IReadOnlyList<StatTileViewModel> Stats { get; }
+
+    /// <summary>Provider and account, e.g. "OneDrive / Work".</summary>
+    public string BreadcrumbText => Localization.GetLocal("LayoutB.Breadcrumb", Account.Provider.Name, Account.Name);
+
+    /// <summary>Email and status, e.g. "work@example.com · Syncing 25%".</summary>
+    public string SubtitleText => Localization.GetLocal("LayoutB.Subtitle", Account.Email, Account.Status.Text);
+
+    /// <summary>The account's sync progress from 0 to 1.</summary>
+    public double Progress => Account.Status.Progress;
+
+    /// <summary>The storage ring's filled arc, in degrees.</summary>
+    public double StorageSweepAngle => Account.Storage.Fraction * FullCircleDegrees;
+
+    /// <summary>The used storage as a percentage, e.g. "71%".</summary>
+    public string StoragePercentText => Account.Storage.Fraction.ToString("P0", Localization.CurrentCulture);
+
+    /// <summary>The pause action text.</summary>
+    public string PauseText => Localization.GetLocal("LayoutB.Pause");
+
+    /// <summary>The sync-now action text.</summary>
+    public string SyncNowText => Localization.GetLocal("LayoutB.SyncNow");
+
+    /// <summary>The Overview tab header.</summary>
+    public string OverviewTabText => Localization.GetLocal("LayoutB.Tab.Overview");
+
+    /// <summary>The Folders tab header.</summary>
+    public string FoldersTabText => Localization.GetLocal("LayoutB.Tab.Folders");
+
+    /// <summary>The Activity tab header.</summary>
+    public string ActivityTabText => Localization.GetLocal("LayoutB.Tab.Activity");
+
+    /// <summary>The Conflicts tab header.</summary>
+    public string ConflictsTabText => Localization.GetLocal("LayoutB.Tab.Conflicts");
+
+    /// <summary>The synced folders table title.</summary>
+    public string SyncedFoldersText => Localization.GetLocal("LayoutB.SyncedFolders");
+
+    /// <summary>The add-folder action text.</summary>
+    public string AddFolderText => Localization.GetLocal("LayoutB.AddFolder");
+
+    /// <summary>The local folder column header.</summary>
+    public string LocalColumnText => Localization.GetLocal("LayoutB.Column.Local");
+
+    /// <summary>The cloud folder column header.</summary>
+    public string CloudColumnText => Localization.GetLocal("LayoutB.Column.Cloud");
+
+    /// <summary>The status column header.</summary>
+    public string StatusColumnText => Localization.GetLocal("LayoutB.Column.Status");
+
+    /// <summary>The last sync column header.</summary>
+    public string LastSyncColumnText => Localization.GetLocal("LayoutB.Column.LastSync");
+
+    /// <summary>The storage card title.</summary>
+    public string StorageText => Localization.GetLocal("LayoutB.Storage");
+
+    /// <summary>The activity card title.</summary>
+    public string ActivityText => Localization.GetLocal("LayoutB.Tab.Activity");
+}
+
+/// <summary>The layout B detail pane when no account is connected.</summary>
+/// <param name="localization">Supplies the message text.</param>
+public sealed class NoAccountDetailViewModel(ILocalizationService localization) : LayoutBDetailViewModel(localization)
+{
+    /// <summary>The message shown instead of account details.</summary>
+    public string Text => Localization.GetLocal("LayoutB.NoAccounts");
+}
