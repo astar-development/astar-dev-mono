@@ -22,26 +22,15 @@ on:
       - '*.slnx'
       - '.github/workflows/dotnet-ci.yml'
 
+  # No paths filter: "Build & test" is a required check, and a required check
+  # that a filter skips never reports, which blocks the PR forever.
   pull_request:
     branches:
       - main
       - 'release/**'
-    paths:
-      - 'apps/**/*.cs'
-      - 'apps/**/*.csproj'
-      - 'apps/**/*.axaml'
-      - 'apps/**/*.razor'
-      - 'packages/**/*.cs'
-      - 'packages/**/*.csproj'
-      - 'tests/**/*.cs'
-      - 'tests/**/*.csproj'
-      - 'Directory.Build.props'
-      - 'Directory.Build.targets'
-      - 'Directory.Packages.props'
-      - 'global.json'
-      - 'NuGet.Config'
-      - '*.slnx'
-      - '.github/workflows/dotnet-ci.yml'
+
+  merge_group:
+    types: [checks_requested]
 
 permissions:
   contents: read
