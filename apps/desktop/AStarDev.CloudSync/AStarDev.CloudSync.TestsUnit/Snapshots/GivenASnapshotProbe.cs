@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Avalonia.Media;
 using Avalonia.Styling;
 
 namespace AStarDev.CloudSync.TestsUnit.Snapshots;
@@ -7,6 +8,7 @@ namespace AStarDev.CloudSync.TestsUnit.Snapshots;
 public class GivenASnapshotProbe
 {
     private const string ProbeName = "snapshot-probe";
+    private const string FullWindowProbeName = "snapshot-probe-full-window";
 
     [AvaloniaFact]
     public void when_the_rendering_is_unchanged_then_it_matches_the_baseline()
@@ -61,6 +63,55 @@ public class GivenASnapshotProbe
         failure.Message.ShouldContain("snapshot-probe.actual.png");
         failure.Message.ShouldContain("snapshot-probe.diff.png");
     }
+
+    [AvaloniaFact]
+    public void when_the_full_window_rendering_is_unchanged_then_it_matches_the_baseline()
+    {
+        Assert.SkipUnless(OperatingSystem.IsLinux(), Snapshot.LinuxOnlyReason);
+
+        Snapshot.ShouldMatchBaseline(CreateFullWindowProbe("Backups", 200), ThemeVariant.Dark, FullWindowProbeName);
+    }
+
+    [AvaloniaFact]
+    public void when_one_letter_changes_on_a_full_window_then_the_comparison_reports_a_mismatch()
+    {
+        Assert.SkipUnless(OperatingSystem.IsLinux(), Snapshot.LinuxOnlyReason);
+
+        var result = Snapshot.Compare(CreateFullWindowProbe("Backup", 200), ThemeVariant.Dark, FullWindowProbeName);
+
+        result.ShouldBeOfType<SnapshotResult.Mismatch>();
+    }
+
+    [AvaloniaFact]
+    public void when_a_thin_bar_fill_changes_on_a_full_window_then_the_comparison_reports_a_mismatch()
+    {
+        Assert.SkipUnless(OperatingSystem.IsLinux(), Snapshot.LinuxOnlyReason);
+
+        var result = Snapshot.Compare(CreateFullWindowProbe("Backups", 0), ThemeVariant.Dark, FullWindowProbeName);
+
+        result.ShouldBeOfType<SnapshotResult.Mismatch>();
+    }
+
+    private static Window CreateFullWindowProbe(string label, double barFillWidth) => new()
+    {
+        Content = new StackPanel
+        {
+            Margin = new Avalonia.Thickness(16),
+            Spacing = 8,
+            Children =
+            {
+                new TextBlock { Text = label, FontSize = 13 },
+                new Border
+                {
+                    Width = 200,
+                    Height = 4,
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
+                    Background = Brushes.DimGray,
+                    Child = new Border { Width = barFillWidth, HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left, Background = Brushes.LightGray }
+                }
+            }
+        }
+    };
 
     private static Window CreateProbe(string text) => new() { Content = new TextBlock { Text = text, Margin = new Avalonia.Thickness(16), FontSize = 20 } };
 }
