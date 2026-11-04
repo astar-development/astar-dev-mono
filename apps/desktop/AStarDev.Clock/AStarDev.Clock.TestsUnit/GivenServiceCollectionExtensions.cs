@@ -25,12 +25,12 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
-    public void when_application_services_are_added_then_the_plain_update_dialog_text_provider_is_registered()
+    public void when_application_services_are_added_then_the_localized_update_dialog_text_provider_is_registered()
     {
         var services = CreateServices();
 
         var descriptor = services.Single(service => service.ServiceType == typeof(IUpdateDialogTextProvider));
-        descriptor.ImplementationType.ShouldBe(typeof(PlainUpdateDialogTextProvider));
+        descriptor.ImplementationType.ShouldBe(typeof(LocalizedUpdateDialogTextProvider));
     }
 
     private static IServiceCollection CreateServices()

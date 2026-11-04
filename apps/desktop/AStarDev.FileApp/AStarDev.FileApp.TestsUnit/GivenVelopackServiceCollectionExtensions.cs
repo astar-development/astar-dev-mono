@@ -25,12 +25,36 @@ public class GivenVelopackServiceCollectionExtensions
     }
 
     [Fact]
-    public void when_velopack_update_services_are_added_then_the_plain_update_dialog_text_provider_is_registered()
+    public void when_velopack_update_services_are_added_then_the_localized_update_dialog_text_provider_is_registered()
     {
         var services = CreateServices();
 
         var descriptor = services.Single(service => service.ServiceType == typeof(IUpdateDialogTextProvider));
-        descriptor.ImplementationType.ShouldBe(typeof(PlainUpdateDialogTextProvider));
+        descriptor.ImplementationType.ShouldBe(typeof(LocalizedUpdateDialogTextProvider));
+    }
+
+    [Fact]
+    public void when_the_update_dialog_text_provider_is_resolved_then_the_labels_come_from_the_en_gb_localisation_file()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        var textProvider = provider.GetRequiredService<IUpdateDialogTextProvider>();
+
+        textProvider.Title.ShouldBe("Update available");
+        textProvider.ReleaseNotesLabel.ShouldBe("What's new");
+        textProvider.RestartNowLabel.ShouldBe("Restart now");
+        textProvider.LaterLabel.ShouldBe("Later");
+        textProvider.DownloadingLabel.ShouldBe("Downloading...");
+    }
+
+    [Fact]
+    public void when_the_update_dialog_text_provider_is_resolved_then_the_message_comes_from_the_en_gb_localisation_file()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        var textProvider = provider.GetRequiredService<IUpdateDialogTextProvider>();
+
+        textProvider.GetMessage("1.2.3").ShouldBe("Version 1.2.3 is ready to install.");
     }
 
     private static IServiceCollection CreateServices()
