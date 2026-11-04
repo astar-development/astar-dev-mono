@@ -88,6 +88,17 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
+    public void when_application_services_are_added_then_the_main_window_view_model_holds_the_layout_a_view_model_for_the_shared_overview()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        var mainWindow = provider.GetRequiredService<MainWindowViewModel>();
+
+        mainWindow.LayoutA.ShouldBeSameAs(provider.GetRequiredService<LayoutAViewModel>());
+        mainWindow.LayoutA.Overview.ShouldBeSameAs(provider.GetRequiredService<SyncOverviewViewModel>());
+    }
+
+    [Fact]
     public void when_application_services_are_added_then_the_system_time_provider_is_registered()
     {
         using var provider = CreateServices().BuildServiceProvider();
