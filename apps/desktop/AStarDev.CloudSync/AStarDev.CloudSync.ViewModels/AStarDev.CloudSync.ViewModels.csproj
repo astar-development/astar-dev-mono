@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../AStarDev.CloudSync.Core/AStarDev.CloudSync.Core.csproj" />
+    <ProjectReference Include="../../../../packages/core/logging/AStarDev.LoggingExtensions/AStarDev.LoggingExtensions.csproj" />
     <ProjectReference Include="../../../../packages/core/utilities/AStarDev.Localization/AStarDev.Localization.csproj" />
   </ItemGroup>
 
