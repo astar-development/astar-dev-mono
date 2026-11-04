@@ -72,9 +72,6 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
     /// <summary>The search rail button name.</summary>
     public string SearchText => Localization.GetLocal("LayoutA.Nav.Search");
 
-    /// <summary>The settings rail button name.</summary>
-    public string SettingsText => Localization.GetLocal("LayoutA.Nav.Settings");
-
     private void OnOverviewChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(SyncOverviewViewModel.Accounts))

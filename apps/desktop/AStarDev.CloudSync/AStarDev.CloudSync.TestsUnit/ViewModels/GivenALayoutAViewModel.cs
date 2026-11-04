@@ -133,7 +133,6 @@ public class GivenALayoutAViewModel
         layout.ActivityText.ShouldBe("Activity");
         layout.ConflictsText.ShouldBe("Conflicts");
         layout.SearchText.ShouldBe("Search");
-        layout.SettingsText.ShouldBe("Settings");
     }
 
     [Fact]
