@@ -12,6 +12,7 @@ public sealed class LayoutBViewModel : LocalizedObservableObject
     private readonly ISyncActions syncActions;
     private LayoutBDetailViewModel detail;
     private string searchText = string.Empty;
+    private AccountId shownAccountId;
 
     /// <summary>Creates the layout over the shared overview and rebuilds it whenever the overview's accounts or sync pairs change.</summary>
     /// <param name="overview">The shared overview every layout binds to.</param>
@@ -117,11 +118,14 @@ public sealed class LayoutBViewModel : LocalizedObservableObject
             return;
         }
 
-        var previous = detail is AccountDetailViewModel accountDetail ? accountDetail.Account.Id : default;
-        Select(visibleAccounts.FirstOrDefault(account => account.Id == previous) ?? visibleAccounts[0]);
+        Select(visibleAccounts.FirstOrDefault(account => account.Id == shownAccountId) ?? visibleAccounts[0]);
     }
 
-    private void Select(AccountViewModel account) => Detail = new AccountDetailViewModel(account, [.. Overview.SyncPairs.Where(pair => pair.AccountId == account.Id && (AccountMatches(account) || PairMatches(pair)))], Overview.Activity, localPathFormatter, syncActions, Localization);
+    private void Select(AccountViewModel account)
+    {
+        shownAccountId = account.Id;
+        Detail = new AccountDetailViewModel(account, [.. Overview.SyncPairs.Where(pair => pair.AccountId == account.Id && (AccountMatches(account) || PairMatches(pair)))], Overview.Activity, localPathFormatter, syncActions, Localization);
+    }
 
     private bool IsVisible(AccountViewModel account) => AccountMatches(account) || Overview.SyncPairs.Any(pair => pair.AccountId == account.Id && PairMatches(pair));
 

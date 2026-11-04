@@ -257,6 +257,19 @@ public class GivenALayoutBViewModel
     }
 
     [Fact]
+    public async Task when_a_search_that_matched_nothing_is_cleared_then_the_earlier_selection_comes_back()
+    {
+        var layout = await CreateLoadedLayoutAsync();
+        var photos = layout.ProviderGroups[0].Accounts[2];
+        layout.SelectedItem = photos;
+        layout.SearchText = "no such thing";
+
+        layout.SearchText = string.Empty;
+
+        layout.Detail.ShouldBeOfType<AccountDetailViewModel>().Account.ShouldBeSameAs(photos);
+    }
+
+    [Fact]
     public async Task when_the_search_changes_then_the_search_and_the_tree_raise_change()
     {
         var layout = await CreateLoadedLayoutAsync();
