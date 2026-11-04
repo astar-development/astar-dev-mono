@@ -15,6 +15,21 @@
     ]
   },
   {
+    "display_name": "CloudSync",
+    "pack_id": "AStarDev.CloudSync",
+    "pack_title": "AStar Dev CloudSync",
+    "main_exe": "AStarDev.CloudSync",
+    "project_path": "apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync/AStarDev.CloudSync.csproj",
+    "test_project_path": "apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.TestsUnit/AStarDev.CloudSync.TestsUnit.csproj",
+    "tag_prefix": "cloudsync-v",
+    "channel_prefix": "cloudsync",
+    "icon_path": "",
+    "enable_delta_updates": false,
+    "directories": [
+      "apps/desktop/AStarDev.CloudSync/"
+    ]
+  },
+  {
     "display_name": "File App",
     "pack_id": "AStarDev.FileApp",
     "pack_title": "AStar Dev File App",
