@@ -1,5 +1,7 @@
+using AStarDev.CloudSync.Core;
 using AStarDev.CloudSync.Core.Placeholder;
 using AStarDev.CloudSync.ViewModels;
+using AStarDev.FunctionalParadigm;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AStarDev.CloudSync.TestsUnit.ViewModels;
@@ -7,11 +9,11 @@ namespace AStarDev.CloudSync.TestsUnit.ViewModels;
 public class GivenALayoutCViewModel
 {
     [Fact]
-    public async Task when_the_overview_is_loaded_then_the_headline_counts_pairs_in_sync_syncing_and_conflicts()
+    public async Task when_the_overview_is_loaded_then_the_headline_counts_pairs_in_sync_syncing_conflicts_and_paused()
     {
         var viewModel = new LayoutCViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), TestData.CreateLocalization());
 
-        viewModel.Headline.ShouldBe("4 in sync, 1 syncing, 2 conflicts");
+        viewModel.Headline.ShouldBe("4 in sync, 1 syncing, 2 conflicts, 1 paused");
     }
 
     [Fact]
@@ -19,7 +21,37 @@ public class GivenALayoutCViewModel
     {
         var viewModel = new LayoutCViewModel(CreateUnloadedOverview(), TestData.CreateLocalization());
 
-        viewModel.Headline.ShouldBe("0 in sync, 0 syncing, 0 conflicts");
+        viewModel.Headline.ShouldBe("0 in sync, 0 syncing, 0 conflicts, 0 paused");
+    }
+
+    [Fact]
+    public async Task when_the_overview_is_loaded_then_the_moved_today_line_shows_the_bytes_moved_today()
+    {
+        var viewModel = new LayoutCViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), TestData.CreateLocalization());
+
+        viewModel.MovedTodayText.ShouldBe("3.1 GB moved today");
+    }
+
+    [Fact]
+    public void when_the_overview_is_not_loaded_then_the_moved_today_line_shows_nothing_moved()
+    {
+        var viewModel = new LayoutCViewModel(CreateUnloadedOverview(), TestData.CreateLocalization());
+
+        viewModel.MovedTodayText.ShouldBe("0 B moved today");
+    }
+
+    [Fact]
+    public async Task when_one_pair_of_each_status_is_loaded_then_the_headline_uses_the_singular_conflict()
+    {
+        var account = TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
+        var conflictedPair = SyncPairFactory.Create(SyncPairIdFactory.Create(), account.Id, "Photos", new DirectoryInfo("/home/user/CloudSync/Photos"), "/Photos", SyncDirectionFactory.CreateTwoWay(), SyncStatusFactory.CreateHasConflicts(1), 1, Option.None<DateTimeOffset>());
+        var overviewData = SyncOverviewFactory.Create([account], [conflictedPair], [], [SyncConflictFactory.Create(conflictedPair.Id, "photo.jpg", TestData.CreateTime().GetUtcNow())], [], 0);
+        var overview = new SyncOverviewViewModel(new FixedSyncOverviewSource(overviewData), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        await overview.LoadAsync(TestContext.Current.CancellationToken);
+
+        var viewModel = new LayoutCViewModel(overview, TestData.CreateLocalization());
+
+        viewModel.Headline.ShouldBe("0 in sync, 0 syncing, 1 conflict, 0 paused");
     }
 
     [Fact]
@@ -57,9 +89,10 @@ public class GivenALayoutCViewModel
         await overview.LoadAsync(TestContext.Current.CancellationToken);
 
         changed.ShouldContain(nameof(LayoutCViewModel.Headline));
+        changed.ShouldContain(nameof(LayoutCViewModel.MovedTodayText));
         changed.ShouldContain(nameof(LayoutCViewModel.ProviderFilters));
         changed.ShouldContain(nameof(LayoutCViewModel.SyncPairs));
-        viewModel.Headline.ShouldBe("4 in sync, 1 syncing, 2 conflicts");
+        viewModel.Headline.ShouldBe("4 in sync, 1 syncing, 2 conflicts, 1 paused");
     }
 
     [Fact]

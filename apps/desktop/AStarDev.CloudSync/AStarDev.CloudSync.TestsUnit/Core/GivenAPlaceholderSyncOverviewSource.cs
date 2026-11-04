@@ -59,4 +59,12 @@ public class GivenAPlaceholderSyncOverviewSource
         overview.Activity.ShouldNotBeEmpty();
         overview.Throughput.ShouldNotBeEmpty();
     }
+
+    [Fact]
+    public async Task when_read_then_some_bytes_were_moved_today()
+    {
+        var overview = await TestData.CreateOverviewAsync();
+
+        overview.BytesMovedToday.ShouldBeGreaterThan(0);
+    }
 }

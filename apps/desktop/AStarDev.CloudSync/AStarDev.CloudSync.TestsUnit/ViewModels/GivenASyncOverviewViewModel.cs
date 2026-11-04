@@ -46,7 +46,7 @@ public class GivenASyncOverviewViewModel
     {
         var account = CloudAccountFactory.Create(AccountIdFactory.Create(), "Work", "work@example.com", CloudProviderFactory.CreateOneDrive(), StorageUsageFactory.Create(1, 2), 1, 1, SyncStatusFactory.CreateHasConflicts(1), Option.None<DateTimeOffset>());
         var conflict = SyncConflictFactory.Create(SyncPairIdFactory.Create(), "report.docx", TestData.Now);
-        var viewModel = await CreateLoadedViewModelAsync(SyncOverviewFactory.Create([account], [], [], [conflict], []));
+        var viewModel = await CreateLoadedViewModelAsync(SyncOverviewFactory.Create([account], [], [], [conflict], [], 0));
 
         viewModel.Stats.Select(tile => tile.Label).ShouldBe(["account", "provider", "folder synced", "conflict", "overall status"]);
     }
@@ -58,7 +58,7 @@ public class GivenASyncOverviewViewModel
         var personal = CloudAccountFactory.Create(AccountIdFactory.Create(), "Personal", "personal@example.com", CloudProviderFactory.CreateOneDrive(), StorageUsageFactory.Create(1, 2), 3, 5, SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
         var firstConflict = SyncConflictFactory.Create(SyncPairIdFactory.Create(), "report.docx", TestData.Now);
         var secondConflict = SyncConflictFactory.Create(SyncPairIdFactory.Create(), "budget.xlsx", TestData.Now);
-        var viewModel = await CreateLoadedViewModelAsync(SyncOverviewFactory.Create([work, personal], [], [], [firstConflict, secondConflict], []));
+        var viewModel = await CreateLoadedViewModelAsync(SyncOverviewFactory.Create([work, personal], [], [], [firstConflict, secondConflict], [], 0));
 
         viewModel.Stats.Select(tile => tile.Label).Take(4).ShouldBe(["accounts", "provider", "folders synced", "conflicts"]);
     }
@@ -66,7 +66,7 @@ public class GivenASyncOverviewViewModel
     [Fact]
     public async Task when_loaded_with_no_accounts_then_the_summary_tile_labels_are_plural()
     {
-        var viewModel = await CreateLoadedViewModelAsync(SyncOverviewFactory.Create([], [], [], [], []));
+        var viewModel = await CreateLoadedViewModelAsync(SyncOverviewFactory.Create([], [], [], [], [], 0));
 
         viewModel.Stats.Select(tile => tile.Label).Take(4).ShouldBe(["accounts", "providers", "folders synced", "conflicts"]);
     }
@@ -90,7 +90,7 @@ public class GivenASyncOverviewViewModel
     [Fact]
     public async Task when_loaded_without_conflicts_then_the_conflicts_tile_is_normal()
     {
-        var overview = SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>())], [], [], [], []);
+        var overview = SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>())], [], [], [], [], 0);
         var viewModel = new SyncOverviewViewModel(new FixedSyncOverviewSource(overview), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
 
         await viewModel.LoadAsync(TestContext.Current.CancellationToken);
