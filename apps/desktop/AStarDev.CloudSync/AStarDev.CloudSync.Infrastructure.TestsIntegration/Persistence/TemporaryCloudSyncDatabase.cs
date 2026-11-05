@@ -38,10 +38,18 @@ public sealed class TemporaryCloudSyncDatabase : IAsyncDisposable
     public static async Task<TemporaryCloudSyncDatabase> CreateMigratedAsync(CancellationToken cancellationToken)
     {
         var database = CreateUnmigrated();
-        var migrated = await database.Database.MigrateAsync(cancellationToken);
 
-        if (migrated.Match(_ => true, _ => false))
-            return database;
+        try
+        {
+            if ((await database.Database.MigrateAsync(cancellationToken)).Match(_ => true, _ => false))
+                return database;
+        }
+        catch
+        {
+            await database.DisposeAsync();
+
+            throw;
+        }
 
         await database.DisposeAsync();
 
