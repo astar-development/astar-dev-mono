@@ -6,15 +6,18 @@ namespace AStarDev.CloudSync.Infrastructure.OneDrive;
 
 internal static class CancelledOutcomeExtensions
 {
-    public static async Task<Result<T, AccountAddOutcome>> OrCancelledAsync<T>(this Task<Result<T, AccountAddOutcome>> step, CancellationToken cancellationToken)
+    public static async Task<Result<T, AccountAddOutcome>> OrCancelledAsync<T>(this Task<Result<T, AccountAddOutcome>> step, Action onTimedOut, CancellationToken cancellationToken)
     {
         await ((Task)step).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
 
-        return step.IsCanceled
-            ? Result.Failure<T, AccountAddOutcome>(CancelledOutcome(cancellationToken))
-            : await step.ConfigureAwait(false);
-    }
+        if (!step.IsCanceled)
+            return await step.ConfigureAwait(false);
 
-    private static AccountAddOutcome CancelledOutcome(CancellationToken cancellationToken) =>
-        cancellationToken.IsCancellationRequested ? AccountAddOutcomeFactory.CreateCancelled() : AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreateNetwork());
+        if (cancellationToken.IsCancellationRequested)
+            return Result.Failure<T, AccountAddOutcome>(AccountAddOutcomeFactory.CreateCancelled());
+
+        onTimedOut();
+
+        return Result.Failure<T, AccountAddOutcome>(AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreateNetwork()));
+    }
 }

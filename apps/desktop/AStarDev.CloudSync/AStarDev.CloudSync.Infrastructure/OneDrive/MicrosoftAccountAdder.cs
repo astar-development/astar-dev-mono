@@ -27,10 +27,8 @@ public sealed class MicrosoftAccountAdder(TokenCacheInitialiser tokenCache, IMsa
         using var scope = logger.BeginScope(new Dictionary<string, object?> { ["AccountAddAttemptId"] = AccountAddAttemptIdFactory.Create(Guid.NewGuid()).Value, ["Provider"] = ProviderName });
         AccountAddLog.AttemptStarted(logger);
 
-        var outcome = await PrepareTokenCacheAsync(cancellationToken)
-            .BindAsync(_ => SignInAsync(cancellationToken))
-            .BindAsync(attempt => RegisterAsync(attempt, cancellationToken))
-            .MatchAsync(added => added, stopped => stopped)
+        var outcome = await Try.RunAsync(() => RunStepsAsync(cancellationToken), CancellationToken.None)
+            .MatchAsync(finished => finished, Faulted)
             .ConfigureAwait(false);
 
         var outcomeName = Describe(outcome);
@@ -44,8 +42,9 @@ public sealed class MicrosoftAccountAdder(TokenCacheInitialiser tokenCache, IMsa
     {
         AccountAddOutcome.Added => "Added",
         AccountAddOutcome.ReAuthenticated => "ReAuthenticated",
+        AccountAddOutcome.Cancelled => "Cancelled",
         AccountAddOutcome.Failed failed => $"Failed:{failed.Failure.GetType().Name}",
-        _ => "Cancelled",
+        _ => outcome.GetType().Name,
     };
 
     private static string HashOf(ProviderAccountKey key) => Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(key.Value.ToLowerInvariant())))[..16];
@@ -59,17 +58,30 @@ public sealed class MicrosoftAccountAdder(TokenCacheInitialiser tokenCache, IMsa
         _ => AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreateAuthRejected()),
     };
 
+    private Task<AccountAddOutcome> RunStepsAsync(CancellationToken cancellationToken) =>
+        PrepareTokenCacheAsync(cancellationToken)
+            .BindAsync(_ => SignInAsync(cancellationToken))
+            .BindAsync(attempt => RegisterAsync(attempt, cancellationToken))
+            .MatchAsync(added => added, stopped => stopped);
+
+    private AccountAddOutcome Faulted(Exception exception)
+    {
+        AccountAddLog.AttemptFaulted(logger, exception.GetType().Name);
+
+        return AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreateAuthRejected());
+    }
+
     private double ElapsedMilliseconds(long started) => timeProvider.GetElapsedTime(started).TotalMilliseconds;
 
     private Task<Result<Unit, AccountAddOutcome>> PrepareTokenCacheAsync(CancellationToken cancellationToken) =>
         tokenCache.EnsureAsync(cancellationToken)
             .MatchAsync(Result.Success<Unit, AccountAddOutcome>, failure => Result.Failure<Unit, AccountAddOutcome>(AccountAddOutcomeFactory.CreateFailed(failure)))
-            .OrCancelledAsync(cancellationToken);
+            .OrCancelledAsync(() => AccountAddLog.StepTimedOut(logger, "token cache"), cancellationToken);
 
     private Task<Result<SignInAttempt, AccountAddOutcome>> SignInAsync(CancellationToken cancellationToken) =>
         Try.RunAsync(() => ReadCacheAndSignInAsync(cancellationToken), cancellationToken)
             .MatchAsync(ToAttempt, SignInFailed)
-            .OrCancelledAsync(cancellationToken);
+            .OrCancelledAsync(() => AccountAddLog.StepTimedOut(logger, "sign-in"), cancellationToken);
 
     private async Task<(IReadOnlyList<string> CachedAccountKeys, MicrosoftSignIn SignIn, double DurationMs)> ReadCacheAndSignInAsync(CancellationToken cancellationToken)
     {
@@ -109,15 +121,21 @@ public sealed class MicrosoftAccountAdder(TokenCacheInitialiser tokenCache, IMsa
         if (outcome is AccountAddOutcome.Cancelled)
             AccountAddLog.AuthCancelled(logger);
         else
-            AccountAddLog.AuthFailed(logger, exception.GetType().Name, (exception as MsalException)?.ErrorCode ?? "none", (exception as MsalException)?.CorrelationId ?? "none");
+            LogAuthFailed(exception);
 
         return Result.Failure<SignInAttempt, AccountAddOutcome>(outcome);
+    }
+
+    private void LogAuthFailed(Exception exception)
+    {
+        var msalException = exception as MsalException;
+        AccountAddLog.AuthFailed(logger, exception.GetType().Name, msalException?.ErrorCode ?? "none", msalException?.CorrelationId ?? "none");
     }
 
     private Task<Result<AccountAddOutcome, AccountAddOutcome>> RegisterAsync(SignInAttempt attempt, CancellationToken cancellationToken) =>
         ReadDriveAsync(attempt, cancellationToken)
             .BindAsync(drive => SaveAsync(attempt, drive, cancellationToken))
-            .OrCancelledAsync(cancellationToken)
+            .OrCancelledAsync(() => AccountAddLog.StepTimedOut(logger, "drive lookup and save"), cancellationToken)
             .OrElseAsync(outcome => RollBackNewAccountAsync(attempt, outcome));
 
     private async Task<Result<MicrosoftDrive, AccountAddOutcome>> ReadDriveAsync(SignInAttempt attempt, CancellationToken cancellationToken)

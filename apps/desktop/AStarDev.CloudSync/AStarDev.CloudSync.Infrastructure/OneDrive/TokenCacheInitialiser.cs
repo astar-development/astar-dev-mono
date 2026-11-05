@@ -22,11 +22,19 @@ public sealed class TokenCacheInitialiser(IMsalTokenCacheStorage storage, IToken
     {
         lock (gate)
         {
-            var current = attachment.Filter(IsAttachedOrAttaching).Match(inProgress => inProgress, () => AttachAsync(cancellationToken));
+            var current = attachment.Filter(IsAttachedOrAttaching).Match(Reuse, () => AttachAsync(cancellationToken));
             attachment = Option.Some(current);
 
             return current;
         }
+    }
+
+    private Task<Result<Unit, AccountAddFailure>> Reuse(Task<Result<Unit, AccountAddFailure>> attached)
+    {
+        if (attached.IsCompletedSuccessfully)
+            AccountAddLog.TokenCacheInitialised(logger, "AlreadyAttached");
+
+        return attached;
     }
 
     private static bool IsAttachedOrAttaching(Task<Result<Unit, AccountAddFailure>> attempt) => !attempt.IsCompleted || (attempt.IsCompletedSuccessfully && attempt.Result.Match(_ => true, _ => false));

@@ -43,6 +43,12 @@ internal static partial class AccountAddLog
     [LoggerMessage(EventId = 5112, Level = LogLevel.Information, Message = "Add-account attempt completed: {Outcome} in {DurationMs} ms.")]
     public static partial void AttemptCompleted(ILogger logger, string outcome, double durationMs);
 
+    [LoggerMessage(EventId = 5113, Level = LogLevel.Warning, Message = "The {Step} step timed out.")]
+    public static partial void StepTimedOut(ILogger logger, string step);
+
+    [LoggerMessage(EventId = 5114, Level = LogLevel.Error, Message = "The add-account attempt failed unexpectedly ({ExceptionType}).")]
+    public static partial void AttemptFaulted(ILogger logger, string exceptionType);
+
     [LoggerMessage(EventId = 5120, Level = LogLevel.Information, Message = "Token cache attached: {Mode}.")]
     public static partial void TokenCacheInitialised(ILogger logger, string mode);
 
