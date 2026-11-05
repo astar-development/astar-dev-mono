@@ -113,7 +113,7 @@ public class GivenAMicrosoftAccountAdder
     [Fact]
     public async Task when_sign_in_returns_no_account_key_then_the_add_fails_as_auth_rejected()
     {
-        msal = new FakeMsalClient { SignIn = _ => Task.FromResult(MicrosoftSignInFactory.Create(" ", TestSignIns.Email, TestSignIns.DisplayName, TestSignIns.AccessToken)) };
+        msal = new FakeMsalClient { SignIn = _ => Task.FromResult(MicrosoftSignInFactory.Create(" ", TestSignIns.Email, TestSignIns.DisplayName, TestSignIns.AccessToken, TestSignIns.GrantedScopes)) };
 
         var outcome = await CreateAdder().AddAsync(TestContext.Current.CancellationToken);
 
@@ -244,5 +244,5 @@ public class GivenAMicrosoftAccountAdder
         logger.Messages.ShouldAllBe(message => !message.Contains(TestSignIns.AccountKey, StringComparison.OrdinalIgnoreCase));
     }
 
-    private MicrosoftAccountAdder CreateAdder() => new(new TokenCacheInitialiser(storage, consent, consentStore, new RecordingLogger<TokenCacheInitialiser>()), msal, driveLookup, accountStore, logger);
+    private MicrosoftAccountAdder CreateAdder() => new(new TokenCacheInitialiser(storage, consent, consentStore, new RecordingLogger<TokenCacheInitialiser>()), msal, driveLookup, accountStore, TestData.CreateTime(), logger);
 }

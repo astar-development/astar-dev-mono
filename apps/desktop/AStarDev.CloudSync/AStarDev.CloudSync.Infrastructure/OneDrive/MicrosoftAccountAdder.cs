@@ -13,15 +13,20 @@ namespace AStarDev.CloudSync.Infrastructure.OneDrive;
 /// <param name="msal">Signs in and manages MSAL accounts.</param>
 /// <param name="driveLookup">Reads the drive after sign-in.</param>
 /// <param name="accountStore">Saves the account.</param>
-/// <param name="logger">Reports failures, without tokens, error messages or account details.</param>
-public sealed class MicrosoftAccountAdder(TokenCacheInitialiser tokenCache, IMsalClient msal, IDriveLookup driveLookup, IAccountStore accountStore, ILogger<MicrosoftAccountAdder> logger) : IAccountAdder
+/// <param name="timeProvider">Times each step for the attempt log.</param>
+/// <param name="logger">Logs every step of the attempt under one attempt id, without tokens, error messages or account details.</param>
+public sealed class MicrosoftAccountAdder(TokenCacheInitialiser tokenCache, IMsalClient msal, IDriveLookup driveLookup, IAccountStore accountStore, TimeProvider timeProvider, ILogger<MicrosoftAccountAdder> logger) : IAccountAdder
 {
     /// <inheritdoc />
-    public Task<AccountAddOutcome> AddAsync(CancellationToken cancellationToken) =>
-        PrepareTokenCacheAsync(cancellationToken)
+    public Task<AccountAddOutcome> AddAsync(CancellationToken cancellationToken)
+    {
+        _ = timeProvider;
+
+        return PrepareTokenCacheAsync(cancellationToken)
             .BindAsync(_ => SignInAsync(cancellationToken))
             .BindAsync(attempt => RegisterAsync(attempt, cancellationToken))
             .MatchAsync(outcome => outcome, outcome => outcome);
+    }
 
     private Task<Result<Unit, AccountAddOutcome>> PrepareTokenCacheAsync(CancellationToken cancellationToken) =>
         tokenCache.EnsureAsync(cancellationToken)
