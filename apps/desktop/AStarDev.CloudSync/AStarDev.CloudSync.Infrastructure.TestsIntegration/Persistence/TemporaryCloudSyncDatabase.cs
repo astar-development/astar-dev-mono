@@ -1,9 +1,11 @@
+using System.IO.Abstractions;
 using AStarDev.CloudSync.Core.Accounts;
+using AStarDev.CloudSync.Core.Persistence;
 using AStarDev.CloudSync.Infrastructure.Persistence;
 using AStarDev.CloudSync.TestHelpers.Common;
+using AStarDev.FunctionalParadigm;
 using AStarDev.Utilities;
 using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Testably.Abstractions;
@@ -13,43 +15,60 @@ namespace AStarDev.CloudSync.Infrastructure.TestsIntegration.Persistence;
 public sealed class TemporaryCloudSyncDatabase : IAsyncDisposable
 {
     private readonly ServiceProvider serviceProvider;
-    private readonly string databaseFolder;
+    private readonly IDirectoryInfo testFolder;
 
-    private TemporaryCloudSyncDatabase(ServiceProvider serviceProvider, string databaseFolder)
+    private TemporaryCloudSyncDatabase(ServiceProvider serviceProvider, IDirectoryInfo testFolder)
     {
         this.serviceProvider = serviceProvider;
-        this.databaseFolder = databaseFolder;
+        this.testFolder = testFolder;
     }
 
     public IAccountStore AccountStore => serviceProvider.GetRequiredService<IAccountStore>();
 
-    public RecordingLogger<SqliteAccountStore> Logger => serviceProvider.GetRequiredService<RecordingLogger<SqliteAccountStore>>();
+    public ICloudSyncDatabase Database => serviceProvider.GetRequiredService<ICloudSyncDatabase>();
 
-    public static async Task<TemporaryCloudSyncDatabase> CreateAsync(bool migrated, CancellationToken cancellationToken)
+    public RecordingLogger<SqliteAccountStore> StoreLogger => serviceProvider.GetRequiredService<RecordingLogger<SqliteAccountStore>>();
+
+    public RecordingLogger<SqliteCloudSyncDatabase> DatabaseLogger => serviceProvider.GetRequiredService<RecordingLogger<SqliteCloudSyncDatabase>>();
+
+    public static TemporaryCloudSyncDatabase CreateUnmigrated() => Create(testFolder => testFolder.FileSystem.FileInfo.New(testFolder.FullName.CombinePath("data").CombinePath("cloudsync.db")));
+
+    public static TemporaryCloudSyncDatabase CreateAtAFolder() => Create(testFolder => testFolder.FileSystem.FileInfo.New(testFolder.CreateSubdirectory("cloudsync.db").FullName));
+
+    public static async Task<TemporaryCloudSyncDatabase> CreateMigratedAsync(CancellationToken cancellationToken)
     {
-        var fileSystem = new RealFileSystem();
-        var databaseFolder = Path.GetTempPath().CombinePath($"cloudsync-tests-{Guid.NewGuid():N}");
-        fileSystem.Directory.CreateDirectory(databaseFolder);
-        var logger = new RecordingLogger<SqliteAccountStore>();
-        var serviceProvider = new ServiceCollection()
-            .AddSingleton(logger)
-            .AddSingleton<ILogger<SqliteAccountStore>>(logger)
-            .AddCloudSyncPersistence(fileSystem.FileInfo.New(databaseFolder.CombinePath("cloudsync.db")))
-            .BuildServiceProvider();
+        var database = CreateUnmigrated();
+        var migrated = await database.Database.MigrateAsync(cancellationToken);
 
-        if (migrated)
-        {
-            await using var dbContext = await serviceProvider.GetRequiredService<IDbContextFactory<CloudSyncDbContext>>().CreateDbContextAsync(cancellationToken);
-            await dbContext.Database.MigrateAsync(cancellationToken);
-        }
+        if (migrated.Match(_ => true, _ => false))
+            return database;
 
-        return new TemporaryCloudSyncDatabase(serviceProvider, databaseFolder);
+        await database.DisposeAsync();
+
+        throw new InvalidOperationException("The test database could not be migrated.");
     }
 
     public async ValueTask DisposeAsync()
     {
         await serviceProvider.DisposeAsync();
         SqliteConnection.ClearAllPools();
-        Directory.Delete(databaseFolder, recursive: true);
+        testFolder.Delete(recursive: true);
+    }
+
+    private static TemporaryCloudSyncDatabase Create(Func<IDirectoryInfo, IFileInfo> databaseFileIn)
+    {
+        var testFolder = new RealFileSystem().Directory.CreateDirectory(Path.GetTempPath().CombinePath($"cloudsync-tests-{Guid.NewGuid():N}"));
+        var databaseFile = databaseFileIn(testFolder);
+        var storeLogger = new RecordingLogger<SqliteAccountStore>();
+        var databaseLogger = new RecordingLogger<SqliteCloudSyncDatabase>();
+        var serviceProvider = new ServiceCollection()
+            .AddSingleton(storeLogger)
+            .AddSingleton<ILogger<SqliteAccountStore>>(storeLogger)
+            .AddSingleton(databaseLogger)
+            .AddSingleton<ILogger<SqliteCloudSyncDatabase>>(databaseLogger)
+            .AddCloudSyncPersistence(_ => databaseFile)
+            .BuildServiceProvider();
+
+        return new TemporaryCloudSyncDatabase(serviceProvider, testFolder);
     }
 }

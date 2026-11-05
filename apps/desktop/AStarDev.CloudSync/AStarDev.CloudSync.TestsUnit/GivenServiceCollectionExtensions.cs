@@ -1,9 +1,12 @@
 using AStar.Dev.Velopack.Publishing;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
+using AStarDev.CloudSync.Core.Accounts;
 using AStarDev.CloudSync.Core.Common;
 using AStarDev.CloudSync.Core.DisplaySettings;
 using AStarDev.CloudSync.Core.Overview;
+using AStarDev.CloudSync.Core.Persistence;
 using AStarDev.CloudSync.Infrastructure.Common;
+using AStarDev.CloudSync.Infrastructure.Persistence;
 using AStarDev.CloudSync.Infrastructure.Placeholder;
 using AStarDev.CloudSync.TestHelpers.DisplaySettings;
 using AStarDev.CloudSync.Theming;
@@ -138,6 +141,16 @@ public class GivenServiceCollectionExtensions
 
         mainWindow.LayoutA.ShouldBeSameAs(provider.GetRequiredService<LayoutAViewModel>());
         mainWindow.LayoutA.Overview.ShouldBeSameAs(provider.GetRequiredService<SyncOverviewViewModel>());
+    }
+
+    [Fact]
+    public void when_application_services_are_added_then_the_account_store_and_database_are_registered()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        (provider.GetRequiredService<IAccountStore>(), provider.GetRequiredService<ICloudSyncDatabase>()).ShouldSatisfyAllConditions(
+            services => services.Item1.ShouldBeOfType<SqliteAccountStore>(),
+            services => services.Item2.ShouldBeOfType<SqliteCloudSyncDatabase>());
     }
 
     [Fact]

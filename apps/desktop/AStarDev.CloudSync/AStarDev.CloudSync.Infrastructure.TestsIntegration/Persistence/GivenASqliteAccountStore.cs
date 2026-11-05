@@ -15,7 +15,7 @@ public class GivenASqliteAccountStore
     [Fact]
     public async Task when_a_new_account_is_added_then_the_outcome_is_added()
     {
-        await using var database = await TemporaryCloudSyncDatabase.CreateAsync(migrated: true, CancellationToken);
+        await using var database = await TemporaryCloudSyncDatabase.CreateMigratedAsync(CancellationToken);
 
         var outcome = await database.AccountStore.AddAsync(Registration(HomeAccountIdentifier, "Personal"), CancellationToken);
 
@@ -25,7 +25,7 @@ public class GivenASqliteAccountStore
     [Fact]
     public async Task when_a_new_account_is_added_then_it_can_be_read_back_by_its_key()
     {
-        await using var database = await TemporaryCloudSyncDatabase.CreateAsync(migrated: true, CancellationToken);
+        await using var database = await TemporaryCloudSyncDatabase.CreateMigratedAsync(CancellationToken);
         var registration = Registration(HomeAccountIdentifier, "Personal");
         var added = (AccountAddOutcome.Added)await database.AccountStore.AddAsync(registration, CancellationToken);
 
@@ -37,7 +37,7 @@ public class GivenASqliteAccountStore
     [Fact]
     public async Task when_no_account_has_the_key_then_none_is_found()
     {
-        await using var database = await TemporaryCloudSyncDatabase.CreateAsync(migrated: true, CancellationToken);
+        await using var database = await TemporaryCloudSyncDatabase.CreateMigratedAsync(CancellationToken);
 
         var found = await database.AccountStore.GetByKeyAsync(CloudProviderFactory.CreateOneDrive(), Key(HomeAccountIdentifier), CancellationToken);
 
@@ -47,7 +47,7 @@ public class GivenASqliteAccountStore
     [Fact]
     public async Task when_the_same_account_is_added_again_then_it_is_reauthenticated_with_its_original_id()
     {
-        await using var database = await TemporaryCloudSyncDatabase.CreateAsync(migrated: true, CancellationToken);
+        await using var database = await TemporaryCloudSyncDatabase.CreateMigratedAsync(CancellationToken);
         var added = (AccountAddOutcome.Added)await database.AccountStore.AddAsync(Registration(HomeAccountIdentifier, "Personal"), CancellationToken);
 
         var outcome = await database.AccountStore.AddAsync(Registration(HomeAccountIdentifier, "Personal"), CancellationToken);
@@ -58,7 +58,7 @@ public class GivenASqliteAccountStore
     [Fact]
     public async Task when_the_same_account_is_added_again_with_different_casing_then_it_is_the_same_account()
     {
-        await using var database = await TemporaryCloudSyncDatabase.CreateAsync(migrated: true, CancellationToken);
+        await using var database = await TemporaryCloudSyncDatabase.CreateMigratedAsync(CancellationToken);
         var added = (AccountAddOutcome.Added)await database.AccountStore.AddAsync(Registration(HomeAccountIdentifier, "Personal"), CancellationToken);
 
         var outcome = await database.AccountStore.AddAsync(Registration(HomeAccountIdentifier.ToUpperInvariant(), "Personal"), CancellationToken);
@@ -67,22 +67,22 @@ public class GivenASqliteAccountStore
     }
 
     [Fact]
-    public async Task when_the_same_account_is_added_again_then_its_profile_is_refreshed_and_its_key_keeps_the_first_casing()
+    public async Task when_the_same_account_is_added_again_then_its_profile_and_key_casing_come_from_the_latest_sign_in()
     {
-        await using var database = await TemporaryCloudSyncDatabase.CreateAsync(migrated: true, CancellationToken);
+        await using var database = await TemporaryCloudSyncDatabase.CreateMigratedAsync(CancellationToken);
         var added = (AccountAddOutcome.Added)await database.AccountStore.AddAsync(Registration(HomeAccountIdentifier, "Personal"), CancellationToken);
         var refreshed = AccountRegistrationFactory.Create(Key(HomeAccountIdentifier.ToUpperInvariant()), CloudProviderFactory.CreateOneDrive(), "Renamed", "renamed@example.com", new DriveId("NEWDRIVE01"), StorageUsageFactory.Create(2_048, 1_099_511_627_776));
         await database.AccountStore.AddAsync(refreshed, CancellationToken);
 
         var all = await database.AccountStore.GetAllAsync(CancellationToken);
 
-        all.Match(accounts => accounts, _ => []).ShouldBe([StoredAccountFactory.Create(added.AccountId, refreshed with { Key = Key(HomeAccountIdentifier) })]);
+        all.Match(accounts => accounts, _ => []).ShouldBe([StoredAccountFactory.Create(added.AccountId, refreshed)]);
     }
 
     [Fact]
     public async Task when_two_different_accounts_are_added_then_both_are_listed()
     {
-        await using var database = await TemporaryCloudSyncDatabase.CreateAsync(migrated: true, CancellationToken);
+        await using var database = await TemporaryCloudSyncDatabase.CreateMigratedAsync(CancellationToken);
         await database.AccountStore.AddAsync(Registration(HomeAccountIdentifier, "Personal"), CancellationToken);
         await database.AccountStore.AddAsync(Registration(OtherHomeAccountIdentifier, "Photos"), CancellationToken);
 
@@ -94,7 +94,7 @@ public class GivenASqliteAccountStore
     [Fact]
     public async Task when_the_same_account_is_added_many_times_at_once_then_it_is_added_once_and_stored_once()
     {
-        await using var database = await TemporaryCloudSyncDatabase.CreateAsync(migrated: true, CancellationToken);
+        await using var database = await TemporaryCloudSyncDatabase.CreateMigratedAsync(CancellationToken);
         var identifierCasings = Enumerable.Range(0, 20).Select(attempt => attempt % 2 == 0 ? HomeAccountIdentifier : HomeAccountIdentifier.ToUpperInvariant());
 
         var outcomes = await Task.WhenAll(identifierCasings.Select(identifier => Task.Run(() => database.AccountStore.AddAsync(Registration(identifier, "Personal"), CancellationToken), CancellationToken)));
@@ -107,7 +107,7 @@ public class GivenASqliteAccountStore
     [Fact]
     public async Task when_the_account_cannot_be_saved_then_the_outcome_is_persist_failed()
     {
-        await using var database = await TemporaryCloudSyncDatabase.CreateAsync(migrated: false, CancellationToken);
+        await using var database = TemporaryCloudSyncDatabase.CreateUnmigrated();
 
         var outcome = await database.AccountStore.AddAsync(Registration(HomeAccountIdentifier, "Personal"), CancellationToken);
 
@@ -115,19 +115,30 @@ public class GivenASqliteAccountStore
     }
 
     [Fact]
+    public async Task when_a_blank_key_bypasses_the_factory_then_the_database_rejects_it()
+    {
+        await using var database = await TemporaryCloudSyncDatabase.CreateMigratedAsync(CancellationToken);
+        var blankKeyRegistration = Registration(HomeAccountIdentifier, "Personal") with { Key = new ProviderAccountKey("   ") };
+
+        var outcome = await database.AccountStore.AddAsync(blankKeyRegistration, CancellationToken);
+
+        outcome.ShouldBe(AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreatePersistFailed()));
+    }
+
+    [Fact]
     public async Task when_the_account_cannot_be_saved_then_an_error_is_logged()
     {
-        await using var database = await TemporaryCloudSyncDatabase.CreateAsync(migrated: false, CancellationToken);
+        await using var database = TemporaryCloudSyncDatabase.CreateUnmigrated();
 
         await database.AccountStore.AddAsync(Registration(HomeAccountIdentifier, "Personal"), CancellationToken);
 
-        database.Logger.Entries.ShouldContain(entry => entry.Level == LogLevel.Error && entry.Exception != null);
+        database.StoreLogger.Entries.ShouldContain(entry => entry.Level == LogLevel.Error && entry.Exception != null);
     }
 
     [Fact]
     public async Task when_the_accounts_cannot_be_read_then_the_list_fails()
     {
-        await using var database = await TemporaryCloudSyncDatabase.CreateAsync(migrated: false, CancellationToken);
+        await using var database = TemporaryCloudSyncDatabase.CreateUnmigrated();
 
         var all = await database.AccountStore.GetAllAsync(CancellationToken);
 
@@ -137,7 +148,7 @@ public class GivenASqliteAccountStore
     [Fact]
     public async Task when_an_account_cannot_be_looked_up_then_the_lookup_fails()
     {
-        await using var database = await TemporaryCloudSyncDatabase.CreateAsync(migrated: false, CancellationToken);
+        await using var database = TemporaryCloudSyncDatabase.CreateUnmigrated();
 
         var found = await database.AccountStore.GetByKeyAsync(CloudProviderFactory.CreateOneDrive(), Key(HomeAccountIdentifier), CancellationToken);
 
