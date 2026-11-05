@@ -36,4 +36,12 @@ public class GivenAnMsalIdentityLogger
 
         logger.Entries.ShouldBeEmpty();
     }
+
+    [Fact]
+    public void when_msal_logs_text_with_an_email_or_guid_then_both_are_redacted_and_the_rest_is_kept()
+    {
+        new MsalIdentityLogger(logger).Log(new LogEntry { EventLogLevel = EventLogLevel.Error, Message = "AADSTS50034: The user account Captain.Flint@Example.com does not exist. Trace ID: 0b1c2d3e-4f50-4617-8293-a4b5c6d7e8f9" });
+
+        logger.ValuesOf("MsalMessage")["MsalMessage"].ShouldBe("AADSTS50034: The user account [redacted] does not exist. Trace ID: [redacted]");
+    }
 }

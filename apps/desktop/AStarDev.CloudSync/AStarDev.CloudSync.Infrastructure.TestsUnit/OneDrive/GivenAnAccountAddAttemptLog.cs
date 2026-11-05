@@ -193,5 +193,63 @@ public class GivenAnAccountAddAttemptLog
         logger.Entries.ShouldAllBe(entry => entry.Exception == null);
     }
 
+    [Fact]
+    public async Task when_sign_in_times_out_then_the_timed_out_step_is_logged()
+    {
+        msal = new FakeMsalClient { SignIn = async _ => { await Task.Yield(); throw new TaskCanceledException("The request timed out."); } };
+
+        _ = await CreateAdder().AddAsync(TestContext.Current.CancellationToken);
+
+        logger.ValuesOf("StepTimedOut")["Step"].ShouldBe("sign-in");
+        logger.ValuesOf("AttemptCompleted")["Outcome"].ShouldBe("Failed:Network");
+    }
+
+    [Fact]
+    public async Task when_the_drive_lookup_times_out_then_the_timed_out_step_is_logged()
+    {
+        driveLookup = new FakeDriveLookup { Lookup = async _ => { await Task.Yield(); throw new TaskCanceledException("The request timed out."); } };
+
+        _ = await CreateAdder().AddAsync(TestContext.Current.CancellationToken);
+
+        logger.ValuesOf("StepTimedOut")["Step"].ShouldBe("drive lookup and save");
+    }
+
+    [Fact]
+    public async Task when_the_user_cancels_through_the_token_then_the_attempt_completes_as_cancelled_without_a_failure_event()
+    {
+        using var cancellation = new CancellationTokenSource();
+        msal = new FakeMsalClient { SignIn = async token => { await cancellation.CancelAsync(); token.ThrowIfCancellationRequested(); return TestSignIns.NewAccount; } };
+
+        _ = await CreateAdder().AddAsync(cancellation.Token);
+
+        logger.ValuesOf("AttemptCompleted")["Outcome"].ShouldBe("Cancelled");
+        logger.EventNames.ShouldNotContain("AuthFailed");
+        logger.EventNames.ShouldNotContain("StepTimedOut");
+    }
+
+    [Fact]
+    public async Task when_a_step_throws_unexpectedly_then_the_attempt_still_completes_with_a_failure_and_the_exception_type_is_logged()
+    {
+        accountStore = new FakeAccountStore { Save = (_, _) => throw new InvalidOperationException($"{TestSignIns.Email} could not be saved") };
+
+        var outcome = await CreateAdder().AddAsync(TestContext.Current.CancellationToken);
+
+        outcome.ShouldBe(AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreateAuthRejected()));
+        logger.ValuesOf("AttemptFaulted")["ExceptionType"].ShouldBe(nameof(InvalidOperationException));
+        logger.ValuesOf("AttemptCompleted")["Outcome"].ShouldBe("Failed:AuthRejected");
+        logger.Messages.ShouldAllBe(message => !message.Contains(TestSignIns.Email));
+    }
+
+    [Fact]
+    public async Task when_a_later_attempt_finds_the_token_cache_attached_then_it_logs_already_attached()
+    {
+        var adder = CreateAdder();
+
+        _ = await adder.AddAsync(TestContext.Current.CancellationToken);
+        _ = await adder.AddAsync(TestContext.Current.CancellationToken);
+
+        cacheLogger.Events.Where(recorded => recorded.Name == "TokenCacheInitialised").Select(recorded => recorded.Values["Mode"]).ShouldBe(["SecureStore", "AlreadyAttached"]);
+    }
+
     private MicrosoftAccountAdder CreateAdder() => new(new TokenCacheInitialiser(storage, consent, consentStore, cacheLogger), msal, driveLookup, accountStore, time, logger);
 }
