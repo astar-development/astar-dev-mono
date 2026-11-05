@@ -1,0 +1,8 @@
+{
+  "stryker-config": {
+    "project": "AStarDev.CloudSync.Core.csproj",
+    "test-runner": "mtp",
+    "coverage-analysis": "off",
+    "reporters": ["html", "progress"]
+  }
+}
