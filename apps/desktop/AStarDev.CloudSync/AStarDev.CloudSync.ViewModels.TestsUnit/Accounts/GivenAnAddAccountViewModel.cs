@@ -81,7 +81,7 @@ public class GivenAnAddAccountViewModel
     };
 
     [Theory]
-    [MemberData(nameof(FailuresAndMessageKeys))]
+    [MemberData(nameof(FailuresAndMessageKeys), DisableDiscoveryEnumeration = true)]
     public async Task when_the_attempt_fails_then_the_localised_failure_message_shows_with_try_again(AccountAddFailure failure, string messageKey)
     {
         var localization = TestData.CreateLocalization();
