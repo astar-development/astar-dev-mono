@@ -179,6 +179,7 @@ public class GivenAMainWindow
         window.UpdateLayout();
 
         FindSingle<AddAccountView>(window).IsEffectivelyVisible.ShouldBeTrue();
+        window.FindControl<ContentControl>("LayoutHost").ShouldNotBeNull().IsEffectivelyEnabled.ShouldBeFalse();
         signIn.SetResult(AccountAddOutcomeFactory.CreateCancelled());
         await shown;
     }
@@ -191,6 +192,18 @@ public class GivenAMainWindow
         window.Show();
 
         window.GetVisualDescendants().OfType<AddAccountView>().ShouldAllBe(view => !view.IsEffectivelyVisible);
+    }
+
+    [AvaloniaFact]
+    public async Task when_the_plaintext_token_question_shows_then_dont_add_the_account_cancels_the_attempt()
+    {
+        var addAccount = TestData.CreateAddAccount(new FakeAccountAdder());
+        var window = new MainWindow { DataContext = TestData.CreateMainWindowViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), TestData.CreateDisplaySettings(), addAccount) };
+        window.Show();
+
+        var declineButton = FindSingle<AddAccountView>(window).GetVisualDescendants().OfType<Button>().Single(button => Equals(button.Content, addAccount.Consent.DeclineText));
+
+        declineButton.Command.ShouldBeSameAs(addAccount.CancelCommand);
     }
 
     private static T FindSingle<T>(Window window) where T : Control => window.GetVisualDescendants().OfType<T>().ShouldHaveSingleItem();

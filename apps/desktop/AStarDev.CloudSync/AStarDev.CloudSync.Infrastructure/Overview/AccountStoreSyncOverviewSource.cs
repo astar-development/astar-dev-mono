@@ -1,5 +1,6 @@
 using AStarDev.CloudSync.Core.Accounts;
 using AStarDev.CloudSync.Core.Overview;
+using AStarDev.CloudSync.Core.Persistence;
 using AStarDev.CloudSync.Domain.Accounts;
 using AStarDev.CloudSync.Domain.Common;
 using AStarDev.CloudSync.Domain.Overview;
@@ -8,13 +9,16 @@ using AStarDev.FunctionalParadigm;
 namespace AStarDev.CloudSync.Infrastructure.Overview;
 
 /// <summary>Builds the overview from the saved accounts. There is no sync engine yet, so sync pairs, activity, conflicts and throughput are empty, and every account shows no folders or files, up to date and never synced.</summary>
+/// <param name="database">Is migrated before the accounts are read, so a failed migration shows as a failed overview.</param>
 /// <param name="accountStore">Reads the saved accounts.</param>
-public sealed class AccountStoreSyncOverviewSource(IAccountStore accountStore) : ISyncOverviewSource
+public sealed class AccountStoreSyncOverviewSource(ICloudSyncDatabase database, IAccountStore accountStore) : ISyncOverviewSource
 {
     /// <inheritdoc />
     public Task<Result<SyncOverview, ErrorResponse>> GetOverviewAsync(CancellationToken cancellationToken) =>
-        accountStore.GetAllAsync(cancellationToken)
+        ReadAccountsAsync(cancellationToken)
             .MatchAsync(accounts => Result.Success<SyncOverview, ErrorResponse>(SyncOverviewFactory.Create([.. accounts.Select(ToCloudAccount)], [], [], [], [], 0, Option.None<DateTimeOffset>())), Result.Failure<SyncOverview, ErrorResponse>);
+
+    private Task<Result<IReadOnlyList<StoredAccount>, ErrorResponse>> ReadAccountsAsync(CancellationToken cancellationToken) => accountStore.GetAllAsync(cancellationToken).TapAsync(_ => GC.KeepAlive(database));
 
     private static CloudAccount ToCloudAccount(StoredAccount account) =>
         CloudAccountFactory.Create(account.Id, account.Registration.DisplayName, account.Registration.Email, account.Registration.Provider, account.Registration.Storage, 0, 0, SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());

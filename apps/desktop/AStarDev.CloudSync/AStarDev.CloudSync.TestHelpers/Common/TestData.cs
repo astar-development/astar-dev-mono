@@ -50,7 +50,7 @@ public static class TestData
 
     public static DisplaySettingsViewModel CreateDisplaySettings() => new(new InMemoryDisplayPreferencesStore(), new RecordingThemeApplier(), CreateLocalization());
 
-    public static AddAccountViewModel CreateAddAccount(IAccountAdder accountAdder) => new(accountAdder, new TokenCacheConsentViewModel(new ImmediateUiDispatcher(), CreateLocalization()), CreateLocalization());
+    public static AddAccountViewModel CreateAddAccount(IAccountAdder accountAdder) => new(accountAdder, new TokenCacheConsentViewModel(new ImmediateUiDispatcher(), CreateLocalization()), CreateLocalization(), NullLogger<AddAccountViewModel>.Instance);
 
     public static MainWindowViewModel CreateMainWindowViewModel(SyncOverviewViewModel overview, DisplaySettingsViewModel displaySettings) => CreateMainWindowViewModel(overview, displaySettings, CreateAddAccount(new FakeAccountAdder()));
 

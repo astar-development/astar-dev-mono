@@ -8,6 +8,8 @@ using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Styling;
 
+using Microsoft.Extensions.Logging.Abstractions;
+
 namespace AStarDev.CloudSync.TestsUnit.Snapshots;
 
 public class GivenTheAddAccountSnapshots
@@ -51,7 +53,7 @@ public class GivenTheAddAccountSnapshots
                 _ => _ => new TaskCompletionSource<AccountAddOutcome>().Task,
             }
         };
-        var dialog = new AddAccountViewModel(adder, consent, TestData.CreateLocalization());
+        var dialog = new AddAccountViewModel(adder, consent, TestData.CreateLocalization(), NullLogger<AddAccountViewModel>.Instance);
         _ = dialog.ShowAsync(TestContext.Current.CancellationToken);
 
         return dialog;

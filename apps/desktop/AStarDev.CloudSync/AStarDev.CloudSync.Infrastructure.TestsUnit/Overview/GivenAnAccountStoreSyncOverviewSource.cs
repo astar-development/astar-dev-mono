@@ -54,12 +54,34 @@ public class GivenAnAccountStoreSyncOverviewSource
     {
         var store = new FakeAccountStore { All = () => Result.Failure<IReadOnlyList<StoredAccount>, ErrorResponse>(new ErrorResponse("The accounts could not be read.")) };
 
-        var error = await new AccountStoreSyncOverviewSource(store).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(_ => "loaded", failure => failure.Message);
+        var error = await new AccountStoreSyncOverviewSource(new FakeCloudSyncDatabase(), store).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(_ => "loaded", failure => failure.Message);
 
         error.ShouldBe("The accounts could not be read.");
     }
 
-    private static Task<SyncOverview> LoadAsync(FakeAccountStore store) => new AccountStoreSyncOverviewSource(store).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(overview => overview, failure => throw new InvalidOperationException(failure.Message));
+    [Fact]
+    public async Task when_the_database_cannot_be_migrated_then_the_overview_fails_and_the_accounts_are_not_read()
+    {
+        var reads = 0;
+        var store = new FakeAccountStore { All = () => { reads++; return Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]); } };
+        var database = new FakeCloudSyncDatabase { Outcome = Result.Failure<Unit, ErrorResponse>(new ErrorResponse("The CloudSync database could not be created or migrated.")) };
+
+        var error = await new AccountStoreSyncOverviewSource(database, store).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(_ => "loaded", failure => failure.Message);
+
+        (error, reads).ShouldBe(("The CloudSync database could not be created or migrated.", 0));
+    }
+
+    [Fact]
+    public async Task when_the_overview_is_read_then_the_database_is_migrated_first()
+    {
+        var database = new FakeCloudSyncDatabase();
+
+        _ = await new AccountStoreSyncOverviewSource(database, new FakeAccountStore()).GetOverviewAsync(TestContext.Current.CancellationToken);
+
+        database.Migrations.ShouldBe(1);
+    }
+
+    private static Task<SyncOverview> LoadAsync(FakeAccountStore store) => new AccountStoreSyncOverviewSource(new FakeCloudSyncDatabase(), store).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(overview => overview, failure => throw new InvalidOperationException(failure.Message));
 
     private static StoredAccount StoredFlint() =>
         StoredAccountFactory.Create(FlintId, AccountRegistrationFactory.Create(ProviderAccountKeyFactory.Create(TestSignIns.AccountKey).Match(key => key, error => throw new InvalidOperationException(error.Message)), CloudProviderFactory.CreateOneDrive(), TestSignIns.DisplayName, TestSignIns.Email, TestSignIns.Drive.DriveId, TestSignIns.Drive.Storage));

@@ -195,7 +195,7 @@ public class GivenASyncOverviewViewModel
     }
 
     [Fact]
-    public async Task when_the_source_throws_then_the_exception_is_logged_as_an_error()
+    public async Task when_the_source_throws_then_an_error_naming_only_the_exception_type_is_logged()
     {
         var failure = new InvalidOperationException("provider unreachable");
         var logger = new RecordingLogger<SyncOverviewViewModel>();
@@ -205,7 +205,9 @@ public class GivenASyncOverviewViewModel
 
         var entry = logger.Entries.ShouldHaveSingleItem();
         entry.Level.ShouldBe(LogLevel.Error);
-        entry.Exception.ShouldBeSameAs(failure);
+        entry.Exception.ShouldBeNull();
+        logger.Messages.ShouldHaveSingleItem().ShouldContain(nameof(InvalidOperationException));
+        logger.Messages.ShouldAllBe(message => !message.Contains("provider unreachable"));
     }
 
     [Fact]

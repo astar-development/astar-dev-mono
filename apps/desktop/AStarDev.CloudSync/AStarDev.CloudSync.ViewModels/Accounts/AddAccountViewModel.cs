@@ -2,6 +2,7 @@ using System.ComponentModel;
 using AStarDev.CloudSync.Core.Accounts;
 using AStarDev.Localization;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync.ViewModels.Accounts;
 
@@ -17,8 +18,10 @@ public sealed class AddAccountViewModel : LocalizedObservableObject, IAddAccount
     /// <param name="accountAdder">Runs the add-account attempt.</param>
     /// <param name="consent">The plaintext token question shown inside the dialog.</param>
     /// <param name="localization">Supplies the dialog text.</param>
-    public AddAccountViewModel(IAccountAdder accountAdder, TokenCacheConsentViewModel consent, ILocalizationService localization) : base(localization)
+    /// <param name="logger">Reports an attempt that failed unexpectedly, without account details.</param>
+    public AddAccountViewModel(IAccountAdder accountAdder, TokenCacheConsentViewModel consent, ILocalizationService localization, ILogger<AddAccountViewModel> logger) : base(localization)
     {
+        _ = logger;
         this.accountAdder = accountAdder;
         Consent = consent;
         consent.PropertyChanged += OnConsentChanged;
