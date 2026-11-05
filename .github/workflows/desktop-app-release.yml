@@ -165,6 +165,24 @@ jobs:
             -p:EnableTrimAnalyzer=false \
             --output ./publish/linux-x64
 
+      - name: Inject Application Insights connection string
+        shell: bash
+        env:
+          APPINSIGHTS_CONNECTION_STRING: ${{ secrets.APPINSIGHTS_CONNECTION_STRING }}
+          SETTINGS_FILE: ./publish/linux-x64/appsettings.json
+        run: |
+          if [ ! -f "$SETTINGS_FILE" ] || ! jq -e '.ApplicationInsights.ConnectionString == ""' "$SETTINGS_FILE" > /dev/null; then
+            echo "No empty ApplicationInsights:ConnectionString in $SETTINGS_FILE - nothing to inject"
+            exit 0
+          fi
+          if [ -z "$APPINSIGHTS_CONNECTION_STRING" ]; then
+            echo "::warning::APPINSIGHTS_CONNECTION_STRING secret is not set - the release will not log to Application Insights"
+            exit 0
+          fi
+          jq --arg connectionString "$APPINSIGHTS_CONNECTION_STRING" '.ApplicationInsights.ConnectionString = $connectionString' "$SETTINGS_FILE" > "$SETTINGS_FILE.tmp"
+          mv "$SETTINGS_FILE.tmp" "$SETTINGS_FILE"
+          echo "Injected the Application Insights connection string into $SETTINGS_FILE"
+
       - name: Write release notes
         shell: bash
         run: |
@@ -312,6 +330,24 @@ jobs:
             -p:PublishTrimmed=false \
             -p:EnableTrimAnalyzer=false \
             --output ./publish/${{ matrix.rid }}
+
+      - name: Inject Application Insights connection string
+        shell: bash
+        env:
+          APPINSIGHTS_CONNECTION_STRING: ${{ secrets.APPINSIGHTS_CONNECTION_STRING }}
+          SETTINGS_FILE: ./publish/${{ matrix.rid }}/appsettings.json
+        run: |
+          if [ ! -f "$SETTINGS_FILE" ] || ! jq -e '.ApplicationInsights.ConnectionString == ""' "$SETTINGS_FILE" > /dev/null; then
+            echo "No empty ApplicationInsights:ConnectionString in $SETTINGS_FILE - nothing to inject"
+            exit 0
+          fi
+          if [ -z "$APPINSIGHTS_CONNECTION_STRING" ]; then
+            echo "::warning::APPINSIGHTS_CONNECTION_STRING secret is not set - the release will not log to Application Insights"
+            exit 0
+          fi
+          jq --arg connectionString "$APPINSIGHTS_CONNECTION_STRING" '.ApplicationInsights.ConnectionString = $connectionString' "$SETTINGS_FILE" > "$SETTINGS_FILE.tmp"
+          mv "$SETTINGS_FILE.tmp" "$SETTINGS_FILE"
+          echo "Injected the Application Insights connection string into $SETTINGS_FILE"
 
       - name: Write release notes
         shell: bash
