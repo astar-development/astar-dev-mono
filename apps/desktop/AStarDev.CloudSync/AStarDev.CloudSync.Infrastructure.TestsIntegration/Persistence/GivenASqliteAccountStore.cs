@@ -41,7 +41,7 @@ public class GivenASqliteAccountStore
 
         var found = await database.AccountStore.GetByKeyAsync(CloudProviderFactory.CreateOneDrive(), Key(HomeAccountIdentifier), CancellationToken);
 
-        found.Match(account => account, _ => Option.Some<StoredAccount>(null!)).ShouldBe(Option.None<StoredAccount>());
+        found.Match(account => account.Match(_ => "found", () => "none"), _ => "failed").ShouldBe("none");
     }
 
     [Fact]
@@ -92,16 +92,15 @@ public class GivenASqliteAccountStore
     }
 
     [Fact]
-    public async Task when_the_same_account_is_added_twice_at_once_then_it_is_stored_once()
+    public async Task when_the_same_account_is_added_many_times_at_once_then_it_is_added_once_and_stored_once()
     {
         await using var database = await TemporaryCloudSyncDatabase.CreateAsync(migrated: true, CancellationToken);
+        var identifierCasings = Enumerable.Range(0, 20).Select(attempt => attempt % 2 == 0 ? HomeAccountIdentifier : HomeAccountIdentifier.ToUpperInvariant());
 
-        var outcomes = await Task.WhenAll(
-            database.AccountStore.AddAsync(Registration(HomeAccountIdentifier, "Personal"), CancellationToken),
-            database.AccountStore.AddAsync(Registration(HomeAccountIdentifier.ToUpperInvariant(), "Personal"), CancellationToken));
+        var outcomes = await Task.WhenAll(identifierCasings.Select(identifier => Task.Run(() => database.AccountStore.AddAsync(Registration(identifier, "Personal"), CancellationToken), CancellationToken)));
         var all = await database.AccountStore.GetAllAsync(CancellationToken);
 
-        outcomes.Select(outcome => outcome.GetType()).Order(Comparer<Type>.Create((left, right) => string.CompareOrdinal(left.Name, right.Name))).ShouldBe([typeof(AccountAddOutcome.Added), typeof(AccountAddOutcome.ReAuthenticated)]);
+        (outcomes.Count(outcome => outcome is AccountAddOutcome.Added), outcomes.Count(outcome => outcome is AccountAddOutcome.ReAuthenticated)).ShouldBe((1, 19));
         all.Match(accounts => accounts.Count, _ => -1).ShouldBe(1);
     }
 
