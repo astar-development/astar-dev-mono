@@ -38,10 +38,11 @@ public partial class App : Application, IDisposable
     {
         var configuration = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+            .AddJsonFile("appsettings.Debug.json", optional: true, reloadOnChange: false)
             .Build();
 
         var services = new ServiceCollection();
-        _ = services.AddLogging(logging => logging.ConfigureOTelLogging(configuration));
+        _ = services.AddLogging(logging => logging.ConfigureOTelLogging(configuration, serviceName: "AStarDev.CloudSync"));
         _ = services.AddApplicationServices(configuration);
 
         return services.BuildServiceProvider();
