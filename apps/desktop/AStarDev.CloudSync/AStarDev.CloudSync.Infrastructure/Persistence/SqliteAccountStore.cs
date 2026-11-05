@@ -18,86 +18,84 @@ public sealed class SqliteAccountStore(IDbContextFactory<CloudSyncDbContext> dbC
     private const int SqliteUniqueConstraintErrorCode = 2067;
 
     /// <inheritdoc />
-    public async Task<AccountAddOutcome> AddAsync(AccountRegistration registration, CancellationToken cancellationToken)
-    {
-        try
-        {
-            try
-            {
-                return await AddOrRefreshAsync(registration, cancellationToken).ConfigureAwait(false);
-            }
-            catch (DbUpdateException exception) when (exception.InnerException is SqliteException { SqliteExtendedErrorCode: SqliteUniqueConstraintErrorCode })
-            {
-                return await AddOrRefreshAsync(registration, cancellationToken).ConfigureAwait(false);
-            }
-        }
-        catch (Exception exception) when (exception is not OperationCanceledException)
-        {
-            LogMessage.Error(logger, "Could not save the account.", exception);
-
-            return AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreatePersistFailed());
-        }
-    }
+    public Task<AccountAddOutcome> AddAsync(AccountRegistration registration, CancellationToken cancellationToken) =>
+        TryAddOrRefreshAsync(registration, cancellationToken)
+            .OrElseAsync(exception => IsUniqueConstraintViolation(exception) ? TryAddOrRefreshAsync(registration, cancellationToken) : Task.FromResult<Result<AccountAddOutcome, Exception>>(exception))
+            .MatchAsync(outcome => outcome, PersistFailed);
 
     /// <inheritdoc />
-    public async Task<Result<Option<StoredAccount>, ErrorResponse>> GetByKeyAsync(CloudProvider provider, ProviderAccountKey key, CancellationToken cancellationToken)
-    {
-        try
-        {
-            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-            var providerKey = ToProviderKey(provider);
-            var entity = await dbContext.Accounts.AsNoTracking().SingleOrDefaultAsync(account => account.Provider == providerKey && account.ProviderAccountKey == key.Value, cancellationToken).ConfigureAwait(false);
-
-            return entity is null
-                ? Result.Success<Option<StoredAccount>, ErrorResponse>(Option.None<StoredAccount>())
-                : ToStoredAccount(entity).Map(Option.Some);
-        }
-        catch (Exception exception) when (exception is not OperationCanceledException)
-        {
-            LogMessage.Error(logger, "Could not look up the account.", exception);
-
-            return new ErrorResponse("The account could not be looked up.");
-        }
-    }
+    public Task<Result<Option<StoredAccount>, ErrorResponse>> GetByKeyAsync(CloudProvider provider, ProviderAccountKey key, CancellationToken cancellationToken) =>
+        Try.RunAsync(() => FindAsync(provider, key, cancellationToken), cancellationToken)
+            .MatchAsync(
+                found => found.Match(entity => ToStoredAccount(entity).Map(Option.Some), () => Result.Success<Option<StoredAccount>, ErrorResponse>(Option.None<StoredAccount>())),
+                exception => ReadFailed<Option<StoredAccount>>(exception, "Could not look up the account.", "The account could not be looked up."));
 
     /// <inheritdoc />
-    public async Task<Result<IReadOnlyList<StoredAccount>, ErrorResponse>> GetAllAsync(CancellationToken cancellationToken)
-    {
-        try
-        {
-            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-            var entities = await dbContext.Accounts.AsNoTracking().ToListAsync(cancellationToken).ConfigureAwait(false);
+    public Task<Result<IReadOnlyList<StoredAccount>, ErrorResponse>> GetAllAsync(CancellationToken cancellationToken) =>
+        Try.RunAsync(() => ReadAllAsync(cancellationToken), cancellationToken)
+            .MatchAsync(
+                entities => entities.Aggregate(
+                    Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([]),
+                    (accounts, entity) => accounts.Bind(read => ToStoredAccount(entity).Map(IReadOnlyList<StoredAccount> (account) => [.. read, account]))),
+                exception => ReadFailed<IReadOnlyList<StoredAccount>>(exception, "Could not read the accounts.", "The accounts could not be read."));
 
-            return entities.Aggregate(
-                Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([]),
-                (accounts, entity) => accounts.Bind(read => ToStoredAccount(entity).Map(IReadOnlyList<StoredAccount> (account) => [.. read, account])));
-        }
-        catch (Exception exception) when (exception is not OperationCanceledException)
-        {
-            LogMessage.Error(logger, "Could not read the accounts.", exception);
-
-            return new ErrorResponse("The accounts could not be read.");
-        }
-    }
+    private Task<Result<AccountAddOutcome, Exception>> TryAddOrRefreshAsync(AccountRegistration registration, CancellationToken cancellationToken) =>
+        Try.RunAsync(() => AddOrRefreshAsync(registration, cancellationToken), cancellationToken).ToResultAsync(exception => exception);
 
     private async Task<AccountAddOutcome> AddOrRefreshAsync(AccountRegistration registration, CancellationToken cancellationToken)
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         var providerKey = ToProviderKey(registration.Provider);
-        var existing = await dbContext.Accounts.SingleOrDefaultAsync(account => account.Provider == providerKey && account.ProviderAccountKey == registration.Key.Value, cancellationToken).ConfigureAwait(false);
+        var existing = await dbContext.Accounts.Where(account => account.Provider == providerKey && account.ProviderAccountKey == registration.Key.Value).AsAsyncEnumerable().FirstOrNoneAsync(cancellationToken).ConfigureAwait(false);
+        var outcome = existing.Match(entity => Refresh(entity, registration), () => Add(dbContext, providerKey, registration));
+        await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
-        if (existing is not null)
-        {
-            RefreshProfile(existing, registration);
-            await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return outcome;
+    }
 
-            return AccountAddOutcomeFactory.CreateReAuthenticated(AccountIdFactory.Create(existing.Id));
-        }
+    private async Task<Option<AccountEntity>> FindAsync(CloudProvider provider, ProviderAccountKey key, CancellationToken cancellationToken)
+    {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        var providerKey = ToProviderKey(provider);
 
+        return await dbContext.Accounts.AsNoTracking().Where(account => account.Provider == providerKey && account.ProviderAccountKey == key.Value).AsAsyncEnumerable().FirstOrNoneAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<List<AccountEntity>> ReadAllAsync(CancellationToken cancellationToken)
+    {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+
+        return await dbContext.Accounts.AsNoTracking().ToListAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    private AccountAddOutcome PersistFailed(Exception exception)
+    {
+        LogMessage.Error(logger, "Could not save the account.", exception);
+
+        return AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreatePersistFailed());
+    }
+
+    private Result<T, ErrorResponse> ReadFailed<T>(Exception exception, string logMessage, string errorMessage)
+    {
+        LogMessage.Error(logger, logMessage, exception);
+
+        return new ErrorResponse(errorMessage);
+    }
+
+    private static bool IsUniqueConstraintViolation(Exception exception) => exception is DbUpdateException { InnerException: SqliteException { SqliteExtendedErrorCode: SqliteUniqueConstraintErrorCode } };
+
+    private static AccountAddOutcome Refresh(AccountEntity existing, AccountRegistration registration)
+    {
+        RefreshProfile(existing, registration);
+
+        return AccountAddOutcomeFactory.CreateReAuthenticated(AccountIdFactory.Create(existing.Id));
+    }
+
+    private static AccountAddOutcome Add(CloudSyncDbContext dbContext, string providerKey, AccountRegistration registration)
+    {
         var added = new AccountEntity { Id = Guid.NewGuid(), Provider = providerKey };
         RefreshProfile(added, registration);
         dbContext.Accounts.Add(added);
-        await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         return AccountAddOutcomeFactory.CreateAdded(AccountIdFactory.Create(added.Id));
     }

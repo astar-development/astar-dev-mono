@@ -14,21 +14,23 @@ namespace AStarDev.CloudSync.Infrastructure.Persistence;
 public sealed class SqliteCloudSyncDatabase(IDbContextFactory<CloudSyncDbContext> dbContextFactory, IFileInfo databaseFile, ILogger<SqliteCloudSyncDatabase> logger) : ICloudSyncDatabase
 {
     /// <inheritdoc />
-    public async Task<Result<Unit, ErrorResponse>> MigrateAsync(CancellationToken cancellationToken)
+    public Task<Result<Unit, ErrorResponse>> MigrateAsync(CancellationToken cancellationToken) =>
+        Try.RunAsync(() => CreateAndMigrateAsync(cancellationToken), cancellationToken)
+            .MatchAsync(_ => Result.Success<Unit, ErrorResponse>(Unit.Instance), MigrationFailed);
+
+    private async Task<Unit> CreateAndMigrateAsync(CancellationToken cancellationToken)
     {
-        try
-        {
-            databaseFile.Directory?.Create();
-            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-            await dbContext.Database.MigrateAsync(cancellationToken).ConfigureAwait(false);
+        databaseFile.Directory?.Create();
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await dbContext.Database.MigrateAsync(cancellationToken).ConfigureAwait(false);
 
-            return Unit.Instance;
-        }
-        catch (Exception exception) when (exception is not OperationCanceledException)
-        {
-            LogMessage.Error(logger, "Could not create or migrate the CloudSync database.", exception);
+        return Unit.Instance;
+    }
 
-            return new ErrorResponse("The CloudSync database could not be created or migrated.");
-        }
+    private Result<Unit, ErrorResponse> MigrationFailed(Exception exception)
+    {
+        LogMessage.Error(logger, "Could not create or migrate the CloudSync database.", exception);
+
+        return new ErrorResponse("The CloudSync database could not be created or migrated.");
     }
 }
