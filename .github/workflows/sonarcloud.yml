@@ -21,25 +21,11 @@ on:
       - 'NuGet.Config'
       - '*.slnx'
       - '.github/workflows/sonarcloud.yml'
+  # No paths filter: "Build and analyze" is a required check, and a required
+  # check that a filter skips never reports, which blocks the PR forever.
   pull_request:
     branches:
       - main
-    paths:
-      - 'apps/**/*.cs'
-      - 'apps/**/*.csproj'
-      - 'apps/**/*.axaml'
-      - 'apps/**/*.razor'
-      - 'packages/**/*.cs'
-      - 'packages/**/*.csproj'
-      - 'tests/**/*.cs'
-      - 'tests/**/*.csproj'
-      - 'Directory.Build.props'
-      - 'Directory.Build.targets'
-      - 'Directory.Packages.props'
-      - 'global.json'
-      - 'NuGet.Config'
-      - '*.slnx'
-      - '.github/workflows/sonarcloud.yml'
 
 permissions:
   contents: read
@@ -118,6 +104,8 @@ jobs:
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.cs.cobertura.reportsPaths="TestResults/**/*.cobertura.xml" \
             /d:sonar.coverage.exclusions="**/Migrations/**" \
+            /d:sonar.qualitygate.wait=true \
+            /d:sonar.qualitygate.timeout=600 \
             /d:sonar.scanner.scanAll=false \
             /d:sonar.scanner.skipJreProvisioning=true
 
