@@ -23,7 +23,9 @@
                        Foreground="{DynamicResource CloudSyncTextPrimaryBrush}"
                        TextWrapping="Wrap" />
         </Border>
-        <ContentControl Grid.Row="1"
+        <ContentControl x:Name="LayoutHost"
+                        Grid.Row="1"
+                        IsEnabled="{Binding !AddAccount.IsOpen}"
                         Content="{Binding CurrentLayout}"
                         HorizontalContentAlignment="Stretch"
                         VerticalContentAlignment="Stretch">

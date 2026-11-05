@@ -1,5 +1,8 @@
 using System.ComponentModel;
 using AStarDev.CloudSync.Core.Accounts;
+using AStarDev.CloudSync.Domain.Accounts;
+using AStarDev.FunctionalParadigm;
+using AStarDev.LoggingExtensions;
 using AStarDev.Localization;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -10,9 +13,11 @@ namespace AStarDev.CloudSync.ViewModels.Accounts;
 public sealed class AddAccountViewModel : LocalizedObservableObject, IAddAccountDialog, IDisposable
 {
     private readonly IAccountAdder accountAdder;
+    private readonly ILogger<AddAccountViewModel> logger;
     private TaskCompletionSource closed = CreateClosedSignal(true);
     private CancellationTokenSource attempt = new();
     private CancellationToken callerToken = CancellationToken.None;
+    private CancellationTokenRegistration callerRegistration;
 
     /// <summary>Creates the dialog view model.</summary>
     /// <param name="accountAdder">Runs the add-account attempt.</param>
@@ -21,7 +26,7 @@ public sealed class AddAccountViewModel : LocalizedObservableObject, IAddAccount
     /// <param name="logger">Reports an attempt that failed unexpectedly, without account details.</param>
     public AddAccountViewModel(IAccountAdder accountAdder, TokenCacheConsentViewModel consent, ILocalizationService localization, ILogger<AddAccountViewModel> logger) : base(localization)
     {
-        _ = logger;
+        this.logger = logger;
         this.accountAdder = accountAdder;
         Consent = consent;
         consent.PropertyChanged += OnConsentChanged;
@@ -88,16 +93,19 @@ public sealed class AddAccountViewModel : LocalizedObservableObject, IAddAccount
 
         closed = CreateClosedSignal(false);
         callerToken = cancellationToken;
+        callerRegistration = cancellationToken.Register(Close);
         _ = RunAttemptAsync();
 
         return closed.Task;
     }
 
-    /// <summary>Releases the sign-in cancellation source and stops following the consent question.</summary>
+    /// <summary>Releases the sign-in cancellation source, stops following the consent question and cancels a pending <see cref="ShowAsync"/>.</summary>
     public void Dispose()
     {
         Consent.PropertyChanged -= OnConsentChanged;
+        _ = callerRegistration.Unregister();
         attempt.Dispose();
+        _ = closed.TrySetCanceled();
     }
 
     private static TaskCompletionSource CreateClosedSignal(bool alreadyClosed)
@@ -110,7 +118,15 @@ public sealed class AddAccountViewModel : LocalizedObservableObject, IAddAccount
         return signal;
     }
 
-    private static string FailureKey(AccountAddFailure failure) => $"AddAccount.Failure.{failure.GetType().Name}";
+    private static string FailureKey(AccountAddFailure failure) => failure switch
+    {
+        AccountAddFailure.BrowserUnavailable => "AddAccount.Failure.BrowserUnavailable",
+        AccountAddFailure.AuthRejected => "AddAccount.Failure.AuthRejected",
+        AccountAddFailure.Network => "AddAccount.Failure.Network",
+        AccountAddFailure.TokenCacheUnavailable => "AddAccount.Failure.TokenCacheUnavailable",
+        AccountAddFailure.DriveUnavailable => "AddAccount.Failure.DriveUnavailable",
+        _ => "AddAccount.Failure.PersistFailed",
+    };
 
     private async Task RunAttemptAsync()
     {
@@ -118,7 +134,7 @@ public sealed class AddAccountViewModel : LocalizedObservableObject, IAddAccount
         attempt = CancellationTokenSource.CreateLinkedTokenSource(callerToken);
         SetStep(AddAccountStepFactory.CreateSigningIn());
 
-        var outcome = await accountAdder.AddAsync(attempt.Token);
+        var outcome = await Try.RunAsync(() => accountAdder.AddAsync(attempt.Token)).MatchAsync(added => added, Unexpected);
 
         switch (outcome)
         {
@@ -134,6 +150,13 @@ public sealed class AddAccountViewModel : LocalizedObservableObject, IAddAccount
         }
     }
 
+    private AccountAddOutcome Unexpected(Exception exception)
+    {
+        LogMessage.Error(logger, $"{nameof(AddAccountViewModel)}: the add-account attempt failed unexpectedly ({exception.GetType().Name})");
+
+        return AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreateAuthRejected());
+    }
+
     private void CloseMessage()
     {
         if (IsShowingMessage)
@@ -142,6 +165,7 @@ public sealed class AddAccountViewModel : LocalizedObservableObject, IAddAccount
 
     private void Close()
     {
+        _ = callerRegistration.Unregister();
         SetStep(AddAccountStepFactory.CreateClosed());
         _ = closed.TrySetResult();
     }

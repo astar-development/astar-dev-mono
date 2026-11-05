@@ -8,6 +8,7 @@ using AStarDev.CloudSync.TestHelpers.Accounts;
 using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.CloudSync.TestHelpers.Overview;
 using AStarDev.CloudSync.ViewModels;
+using AStarDev.CloudSync.ViewModels.Accounts;
 using AStarDev.CloudSync.ViewModels.Overview;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
@@ -197,13 +198,19 @@ public class GivenAMainWindow
     [AvaloniaFact]
     public async Task when_the_plaintext_token_question_shows_then_dont_add_the_account_cancels_the_attempt()
     {
-        var addAccount = TestData.CreateAddAccount(new FakeAccountAdder());
+        var consent = new TokenCacheConsentViewModel(new ImmediateUiDispatcher(), TestData.CreateLocalization());
+        var adder = new FakeAccountAdder { Add = async token => { await ((Task)consent.AskAsync(token)).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing | ConfigureAwaitOptions.ContinueOnCapturedContext); return AccountAddOutcomeFactory.CreateCancelled(); } };
+        var addAccount = new AddAccountViewModel(adder, consent, TestData.CreateLocalization(), NullLogger<AddAccountViewModel>.Instance);
         var window = new MainWindow { DataContext = TestData.CreateMainWindowViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), TestData.CreateDisplaySettings(), addAccount) };
         window.Show();
 
-        var declineButton = FindSingle<AddAccountView>(window).GetVisualDescendants().OfType<Button>().Single(button => Equals(button.Content, addAccount.Consent.DeclineText));
+        var shown = addAccount.ShowAsync(TestContext.Current.CancellationToken);
+        window.UpdateLayout();
+        var declineButton = FindSingle<AddAccountView>(window).GetVisualDescendants().OfType<Button>().Single(button => Equals(button.Content, consent.DeclineText));
 
         declineButton.Command.ShouldBeSameAs(addAccount.CancelCommand);
+        addAccount.CancelCommand.Execute(null);
+        await shown.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
     }
 
     private static T FindSingle<T>(Window window) where T : Control => window.GetVisualDescendants().OfType<T>().ShouldHaveSingleItem();

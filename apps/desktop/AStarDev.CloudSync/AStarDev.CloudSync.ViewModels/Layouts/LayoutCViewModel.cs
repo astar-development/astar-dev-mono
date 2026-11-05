@@ -28,7 +28,7 @@ public sealed class LayoutCViewModel : LocalizedObservableObject
         SortOptions = [new LayoutCSortOptionViewModel(LayoutCSortOrderFactory.CreateNeedsAttentionFirst(), "LayoutC.Sort.NeedsAttentionFirst", localization), new LayoutCSortOptionViewModel(LayoutCSortOrderFactory.CreateByName(), "LayoutC.Sort.ByName", localization)];
         selectedSortOption = SortOptions[0];
         SelectAllPairsCommand = new RelayCommand(SelectAllPairs);
-        NewSyncPairCommand = new AsyncRelayCommand(cancellationToken => this.syncActions.AddSyncPairAsync(Option.None<AccountId>(), cancellationToken));
+        NewSyncPairCommand = new AsyncRelayCommand(cancellationToken => syncActions.AddSyncPairAsync(Option.None<AccountId>(), cancellationToken));
         AddAccountCommand = new AsyncRelayCommand(AddAccountAndReloadAsync);
         overview.PropertyChanged += OnOverviewChanged;
         RebuildProviderFilters();

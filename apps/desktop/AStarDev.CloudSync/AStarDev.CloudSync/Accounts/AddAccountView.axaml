@@ -10,12 +10,22 @@
             BorderThickness="1"
             CornerRadius="8"
             Padding="24"
-            Width="460">
-        <StackPanel Spacing="16">
-            <TextBlock Text="{Binding TitleText}"
+            Margin="24"
+            MaxWidth="460">
+        <Grid RowDefinitions="Auto,*"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch">
+            <TextBlock Grid.Row="0"
+                       Margin="0,0,0,16"
+                       Text="{Binding TitleText}"
                        FontSize="18"
                        FontWeight="SemiBold"
                        Foreground="{DynamicResource CloudSyncTextPrimaryBrush}" />
+            <ScrollViewer Grid.Row="1"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          MinHeight="0">
+            <StackPanel Spacing="16">
 
             <StackPanel Spacing="16" IsVisible="{Binding IsSigningIn}">
                 <TextBlock Text="{Binding SigningInText}"
@@ -36,7 +46,7 @@
                            TextWrapping="Wrap"
                            Foreground="{DynamicResource CloudSyncTextPrimaryBrush}" />
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-                    <Button Classes="secondary" Content="{Binding Consent.DeclineText}" Command="{Binding Consent.DeclineCommand}" />
+                    <Button Classes="secondary" Content="{Binding Consent.DeclineText}" Command="{Binding CancelCommand}" />
                     <Button Classes="primary" Content="{Binding Consent.AgreeText}" Command="{Binding Consent.AgreeCommand}" />
                 </StackPanel>
             </StackPanel>
@@ -50,6 +60,8 @@
                     <Button Classes="primary" Content="{Binding CloseText}" Command="{Binding CloseCommand}" />
                 </StackPanel>
             </StackPanel>
-        </StackPanel>
+            </StackPanel>
+            </ScrollViewer>
+        </Grid>
     </Border>
 </UserControl>

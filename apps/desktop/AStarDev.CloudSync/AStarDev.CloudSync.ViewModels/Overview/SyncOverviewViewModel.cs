@@ -66,7 +66,7 @@ public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ISyncActio
 
     private Unit Threw(Exception exception)
     {
-        LogMessage.Error(logger, $"{nameof(SyncOverviewViewModel)} could not load the sync overview", exception);
+        LogMessage.Error(logger, $"{nameof(SyncOverviewViewModel)} could not load the sync overview ({exception.GetType().Name})");
         SetLoadState(SyncOverviewLoadStateFactory.CreateFailed());
 
         return Unit.Instance;

@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
-using AStarDev.CloudSync.Core.Persistence;
 using AStarDev.CloudSync.ViewModels;
 using AStarDev.CloudSync.ViewModels.Overview;
 using AStarDev.LoggingOTel;
@@ -23,7 +22,6 @@ public partial class App : Application, IDisposable
     public override void OnFrameworkInitializationCompleted()
     {
         services = BuildServices();
-        _ = services.GetRequiredService<ICloudSyncDatabase>().MigrateAsync(CancellationToken.None).GetAwaiter().GetResult();
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
