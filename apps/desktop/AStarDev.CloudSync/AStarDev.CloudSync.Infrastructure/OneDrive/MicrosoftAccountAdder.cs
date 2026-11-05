@@ -26,12 +26,12 @@ public sealed class MicrosoftAccountAdder(TokenCacheInitialiser tokenCache, IMsa
     private Task<Result<Unit, AccountAddOutcome>> PrepareTokenCacheAsync(CancellationToken cancellationToken) =>
         tokenCache.EnsureAsync(cancellationToken)
             .MatchAsync(Result.Success<Unit, AccountAddOutcome>, failure => Result.Failure<Unit, AccountAddOutcome>(AccountAddOutcomeFactory.CreateFailed(failure)))
-            .OrCancelledAsync();
+            .OrCancelledAsync(cancellationToken);
 
     private Task<Result<SignInAttempt, AccountAddOutcome>> SignInAsync(CancellationToken cancellationToken) =>
         Try.RunAsync(() => ReadCacheAndSignInAsync(cancellationToken), cancellationToken)
             .MatchAsync(ToAttempt, SignInFailed)
-            .OrCancelledAsync();
+            .OrCancelledAsync(cancellationToken);
 
     private async Task<(IReadOnlyList<string> CachedAccountKeys, MicrosoftSignIn SignIn)> ReadCacheAndSignInAsync(CancellationToken cancellationToken)
     {
@@ -61,7 +61,7 @@ public sealed class MicrosoftAccountAdder(TokenCacheInitialiser tokenCache, IMsa
         driveLookup.GetDriveAsync(attempt.SignIn.AccessToken, cancellationToken)
             .MatchAsync(Result.Success<MicrosoftDrive, AccountAddOutcome>, failure => Result.Failure<MicrosoftDrive, AccountAddOutcome>(AccountAddOutcomeFactory.CreateFailed(failure)))
             .BindAsync(drive => SaveAsync(attempt, drive, cancellationToken))
-            .OrCancelledAsync()
+            .OrCancelledAsync(cancellationToken)
             .OrElseAsync(outcome => RollBackNewAccountAsync(attempt, outcome));
 
     private async Task<Result<AccountAddOutcome, AccountAddOutcome>> SaveAsync(SignInAttempt attempt, MicrosoftDrive drive, CancellationToken cancellationToken)

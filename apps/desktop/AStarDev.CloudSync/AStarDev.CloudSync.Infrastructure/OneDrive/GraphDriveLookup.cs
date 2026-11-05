@@ -38,6 +38,7 @@ public sealed class GraphDriveLookup(IHttpClientFactory httpClientFactory, ILogg
     private Result<MicrosoftDrive, AccountAddFailure> LookupFailed(Exception exception) => exception switch
     {
         HttpRequestException => Failed($"The drive could not be read because Graph could not be reached ({exception.GetType().Name}).", AccountAddFailureFactory.CreateNetwork()),
+        ApiException { ResponseStatusCode: 401 or 403 } apiException => Failed($"Graph refused the access token with HTTP {apiException.ResponseStatusCode} ({exception.GetType().Name}).", AccountAddFailureFactory.CreateAuthRejected()),
         ApiException apiException => Failed($"Graph returned HTTP {apiException.ResponseStatusCode} for the drive ({exception.GetType().Name}).", AccountAddFailureFactory.CreateDriveUnavailable()),
         _ => Failed($"The drive could not be read ({exception.GetType().Name}).", AccountAddFailureFactory.CreateDriveUnavailable()),
     };

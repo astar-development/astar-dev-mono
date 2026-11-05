@@ -2,7 +2,9 @@ using System.IO.Abstractions;
 using AStarDev.CloudSync.Core.Accounts;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Graph;
 using Microsoft.Identity.Client;
 
 namespace AStarDev.CloudSync.Infrastructure.OneDrive;
@@ -14,16 +16,19 @@ public static class OneDriveServiceCollectionExtensions
     /// <param name="services">The service collection to add to.</param>
     /// <param name="configuration">The configuration holding the <see cref="MicrosoftAccountOptions.SectionName"/> section.</param>
     /// <param name="tokenCacheFolder">Gives the folder that holds the token cache files.</param>
+    /// <param name="consentFile">Gives the file that remembers the user's consent to a plaintext token file.</param>
     /// <returns>The <paramref name="services"/> collection to allow further chaining.</returns>
-    public static IServiceCollection AddOneDriveAccounts(this IServiceCollection services, IConfiguration configuration, Func<IServiceProvider, IDirectoryInfo> tokenCacheFolder)
+    public static IServiceCollection AddOneDriveAccounts(this IServiceCollection services, IConfiguration configuration, Func<IServiceProvider, IDirectoryInfo> tokenCacheFolder, Func<IServiceProvider, IFileInfo> consentFile)
     {
-        _ = services.AddHttpClient(GraphDriveLookup.HttpClientName);
+        _ = services.AddHttpClient(GraphDriveLookup.HttpClientName)
+            .ConfigurePrimaryHttpMessageHandler(() => GraphClientFactory.CreatePipeline(GraphClientFactory.CreateDefaultHandlers()));
 
         return services
             .Configure<MicrosoftAccountOptions>(configuration.GetSection(MicrosoftAccountOptions.SectionName))
             .AddSingleton<IPublicClientApplication>(CreatePublicClientApplication)
             .AddSingleton<IMsalClient, MsalClient>()
             .AddSingleton<IMsalTokenCacheStorage>(provider => new MsalCacheHelperStorage(provider.GetRequiredService<IPublicClientApplication>(), tokenCacheFolder(provider)))
+            .AddSingleton<IPlaintextCacheConsentStore>(provider => new JsonPlaintextCacheConsentStore(consentFile(provider), provider.GetRequiredService<ILogger<JsonPlaintextCacheConsentStore>>()))
             .AddSingleton<TokenCacheInitialiser>()
             .AddSingleton<IDriveLookup, GraphDriveLookup>()
             .AddSingleton<IAccountAdder, MicrosoftAccountAdder>();
