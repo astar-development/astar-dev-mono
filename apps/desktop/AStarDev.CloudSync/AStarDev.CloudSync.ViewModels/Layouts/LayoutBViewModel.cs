@@ -29,7 +29,7 @@ public sealed class LayoutBViewModel : LocalizedObservableObject
         Overview = overview;
         this.localPathFormatter = localPathFormatter;
         this.syncActions = syncActions;
-        ConnectProviderCommand = new AsyncRelayCommand(syncActions.AddAccountAsync);
+        ConnectProviderCommand = new AsyncRelayCommand(AddAccountAndReloadAsync);
         detail = new NoAccountDetailViewModel(localization);
         overview.PropertyChanged += OnOverviewChanged;
         Rebuild();
@@ -139,4 +139,10 @@ public sealed class LayoutBViewModel : LocalizedObservableObject
     private bool PairMatches(SyncPairViewModel pair) => Matches(pair.Name) || Matches(pair.LocalPath) || Matches(pair.RemotePath);
 
     private bool Matches(string text) => text.Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase);
+
+    private async Task AddAccountAndReloadAsync(CancellationToken cancellationToken)
+    {
+        await syncActions.AddAccountAsync(cancellationToken);
+        await Overview.LoadAsync(cancellationToken);
+    }
 }

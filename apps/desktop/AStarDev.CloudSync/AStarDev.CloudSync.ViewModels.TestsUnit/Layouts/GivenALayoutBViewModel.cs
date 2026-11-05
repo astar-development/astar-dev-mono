@@ -1,7 +1,7 @@
 using AStarDev.CloudSync.Core.Overview;
 using AStarDev.CloudSync.Domain.Overview;
-using AStarDev.CloudSync.Infrastructure.Placeholder;
 using AStarDev.CloudSync.TestHelpers.Common;
+using AStarDev.CloudSync.TestHelpers.Overview;
 using AStarDev.CloudSync.ViewModels.Layouts;
 using AStarDev.CloudSync.ViewModels.Overview;
 using AStarDev.CloudSync.ViewModels.TestsUnit.Overview;
@@ -301,7 +301,7 @@ public class GivenALayoutBViewModel
 
     private static async Task<LayoutBViewModel> CreateLoadedLayoutAsync()
     {
-        var overview = new SyncOverviewViewModel(new AStarDev.CloudSync.Infrastructure.Placeholder.PlaceholderSyncOverviewSource(TestData.CreateTime()), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var overview = new SyncOverviewViewModel(new PlaceholderSyncOverviewSource(TestData.CreateTime()), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         var layout = new LayoutBViewModel(overview, TestData.CreateLocalPathFormatter(), new RecordingSyncActions(), TestData.CreateLocalization());
         await overview.LoadAsync(TestContext.Current.CancellationToken);
 

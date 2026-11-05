@@ -23,7 +23,7 @@ public sealed class PlaceholderSyncActions(IAddAccountDialog addAccountDialog, I
     public Task PauseAsync(AccountId accountId, CancellationToken cancellationToken) => LogRequestAsync("Pause requested (placeholder: the sync engine is not implemented yet)", accountId.ToString());
 
     /// <inheritdoc />
-    public Task AddAccountAsync(CancellationToken cancellationToken) => LogRequestAsync("Add account requested (placeholder: the sync engine is not implemented yet)", $"{addAccountDialog.GetType().Name}");
+    public Task AddAccountAsync(CancellationToken cancellationToken) => addAccountDialog.ShowAsync(cancellationToken);
 
     /// <inheritdoc />
     public Task AddSyncPairAsync(Option<AccountId> accountId, CancellationToken cancellationToken) => LogRequestAsync("Add sync pair requested (placeholder: the sync engine is not implemented yet)", accountId.Match(id => id.ToString(), () => string.Empty));

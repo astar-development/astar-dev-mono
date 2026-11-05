@@ -4,7 +4,6 @@ using AStarDev.CloudSync.Domain.Common;
 using AStarDev.CloudSync.Domain.Conflicts;
 using AStarDev.CloudSync.Domain.Overview;
 using AStarDev.CloudSync.Domain.SyncPairs;
-using AStarDev.CloudSync.Infrastructure.Placeholder;
 using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.CloudSync.TestHelpers.Overview;
 using AStarDev.CloudSync.ViewModels.Overview;
@@ -136,7 +135,7 @@ public class GivenASyncOverviewViewModel
     [Fact]
     public void when_not_yet_loaded_then_the_collections_are_empty()
     {
-        var viewModel = new SyncOverviewViewModel(new AStarDev.CloudSync.Infrastructure.Placeholder.PlaceholderSyncOverviewSource(TestData.CreateTime()), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var viewModel = new SyncOverviewViewModel(new PlaceholderSyncOverviewSource(TestData.CreateTime()), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
 
         viewModel.Accounts.ShouldBeEmpty();
         viewModel.SyncPairs.ShouldBeEmpty();
@@ -146,7 +145,7 @@ public class GivenASyncOverviewViewModel
     [Fact]
     public async Task when_loaded_then_property_changed_is_raised_for_the_collections()
     {
-        var viewModel = new SyncOverviewViewModel(new AStarDev.CloudSync.Infrastructure.Placeholder.PlaceholderSyncOverviewSource(TestData.CreateTime()), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var viewModel = new SyncOverviewViewModel(new PlaceholderSyncOverviewSource(TestData.CreateTime()), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         var changed = new List<string?>();
         viewModel.PropertyChanged += (_, args) => changed.Add(args.PropertyName);
 
@@ -159,7 +158,7 @@ public class GivenASyncOverviewViewModel
     [Fact]
     public void when_not_yet_loaded_then_the_load_state_is_not_loaded_and_there_is_no_error_text()
     {
-        var viewModel = new SyncOverviewViewModel(new AStarDev.CloudSync.Infrastructure.Placeholder.PlaceholderSyncOverviewSource(TestData.CreateTime()), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var viewModel = new SyncOverviewViewModel(new PlaceholderSyncOverviewSource(TestData.CreateTime()), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
 
         viewModel.LoadState.ShouldBeOfType<SyncOverviewLoadState.NotLoaded>();
         viewModel.LoadErrorText.ShouldBeEmpty();

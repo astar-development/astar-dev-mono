@@ -12,10 +12,8 @@ using AStarDev.CloudSync.Domain.Overview;
 using AStarDev.CloudSync.Domain.SyncPairs;
 using AStarDev.FunctionalParadigm;
 
-namespace AStarDev.CloudSync.Infrastructure.Placeholder;
+namespace AStarDev.CloudSync.TestHelpers.Overview;
 
-/// <summary>Supplies fixed sample data shaped like a real OneDrive setup, until real providers exist. Times are relative to the injected clock.</summary>
-/// <param name="timeProvider">The clock the sample times are relative to.</param>
 public sealed class PlaceholderSyncOverviewSource(TimeProvider timeProvider) : ISyncOverviewSource
 {
     private const string OneDriveLocalRoot = "/home/user/CloudSync/OneDrive";
@@ -25,7 +23,6 @@ public sealed class PlaceholderSyncOverviewSource(TimeProvider timeProvider) : I
 
     private static readonly long[] throughputBytesPerSecond = [180_000, 240_000, 210_000, 900_000, 760_000, 2_400_000, 1_900_000, 3_800_000, 3_100_000, 5_600_000, 4_700_000, 7_200_000, 6_100_000, 8_900_000, 7_800_000, 10_400_000, 9_600_000, 11_800_000, 10_900_000, 12_700_000, 12_100_000, 13_900_000, 13_400_000, 14_889_779];
 
-    /// <inheritdoc />
     public Task<Result<SyncOverview, ErrorResponse>> GetOverviewAsync(CancellationToken cancellationToken)
     {
         var now = timeProvider.GetUtcNow();

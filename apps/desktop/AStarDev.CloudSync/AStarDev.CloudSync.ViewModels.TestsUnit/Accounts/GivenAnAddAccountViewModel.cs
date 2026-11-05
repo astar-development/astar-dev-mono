@@ -145,7 +145,7 @@ public class GivenAnAddAccountViewModel
         var first = dialog.ShowAsync(TestContext.Current.CancellationToken);
         var second = dialog.ShowAsync(TestContext.Current.CancellationToken);
         signIn.SetResult(AccountAddOutcomeFactory.CreateAdded(AddedId));
-        await Task.WhenAll(first, second);
+        await Task.WhenAll(first, second).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
         adder.ReceivedTokens.Count.ShouldBe(1);
     }

@@ -13,6 +13,7 @@ namespace AStarDev.CloudSync.ViewModels.Layouts;
 /// <summary>Layout C ("sync pairs first"): projects the shared overview into a status headline, provider filter chips and a sortable, filterable pair grid.</summary>
 public sealed class LayoutCViewModel : LocalizedObservableObject
 {
+    private readonly ISyncActions syncActions;
     private Func<SyncPairViewModel, bool> pairFilter = _ => true;
     private LayoutCSortOptionViewModel selectedSortOption;
 
@@ -23,11 +24,12 @@ public sealed class LayoutCViewModel : LocalizedObservableObject
     public LayoutCViewModel(SyncOverviewViewModel overview, ISyncActions syncActions, ILocalizationService localization) : base(localization)
     {
         Overview = overview;
+        this.syncActions = syncActions;
         SortOptions = [new LayoutCSortOptionViewModel(LayoutCSortOrderFactory.CreateNeedsAttentionFirst(), "LayoutC.Sort.NeedsAttentionFirst", localization), new LayoutCSortOptionViewModel(LayoutCSortOrderFactory.CreateByName(), "LayoutC.Sort.ByName", localization)];
         selectedSortOption = SortOptions[0];
         SelectAllPairsCommand = new RelayCommand(SelectAllPairs);
-        NewSyncPairCommand = new AsyncRelayCommand(cancellationToken => syncActions.AddSyncPairAsync(Option.None<AccountId>(), cancellationToken));
-        AddAccountCommand = new AsyncRelayCommand(syncActions.AddAccountAsync);
+        NewSyncPairCommand = new AsyncRelayCommand(cancellationToken => this.syncActions.AddSyncPairAsync(Option.None<AccountId>(), cancellationToken));
+        AddAccountCommand = new AsyncRelayCommand(AddAccountAndReloadAsync);
         overview.PropertyChanged += OnOverviewChanged;
         RebuildProviderFilters();
     }
@@ -160,5 +162,11 @@ public sealed class LayoutCViewModel : LocalizedObservableObject
         pairFilter = matches;
         OnPropertyChanged(nameof(IsAllPairsSelected));
         OnPropertyChanged(nameof(SyncPairs));
+    }
+
+    private async Task AddAccountAndReloadAsync(CancellationToken cancellationToken)
+    {
+        await syncActions.AddAccountAsync(cancellationToken);
+        await Overview.LoadAsync(cancellationToken);
     }
 }

@@ -132,5 +132,21 @@
   "Settings.Layout.SyncPairsFirst": "Sync pairs first",
   "Settings.Theme": "Theme",
   "Settings.Theme.Dark": "Dark",
-  "Settings.Theme.Light": "Light"
+  "Settings.Theme.Light": "Light",
+  "AddAccount.Title": "Add a OneDrive account",
+  "AddAccount.SigningIn": "Sign in to your Microsoft account in the browser window that has opened. This dialog will update when you have finished.",
+  "AddAccount.Cancel": "Cancel",
+  "AddAccount.Close": "Close",
+  "AddAccount.TryAgain": "Try again",
+  "AddAccount.AlreadyAdded": "This account was already added. It has been signed in again and its settings were kept.",
+  "AddAccount.Failure.BrowserUnavailable": "The browser could not be opened for sign-in. Check that a default web browser is set, then try again.",
+  "AddAccount.Failure.AuthRejected": "Microsoft did not accept the sign-in. Check the account and its permissions, then try again.",
+  "AddAccount.Failure.Network": "Microsoft could not be reached. Check your internet connection, then try again.",
+  "AddAccount.Failure.TokenCacheUnavailable": "The sign-in could not be saved securely, so the account was not added.",
+  "AddAccount.Failure.DriveUnavailable": "The account signed in, but its OneDrive could not be read. Try again later.",
+  "AddAccount.Failure.PersistFailed": "The account signed in, but it could not be saved. The details have been logged.",
+  "TokenCacheConsent.Title": "Secure storage is unavailable",
+  "TokenCacheConsent.Message": "Your system keyring could not be used to protect your sign-in. CloudSync can keep the sign-in in an unencrypted file in its settings folder instead. Anyone who can read your files could use it to reach your OneDrive. Keep it in that file?",
+  "TokenCacheConsent.Agree": "Keep it in a file",
+  "TokenCacheConsent.Decline": "Don't add the account"
 }

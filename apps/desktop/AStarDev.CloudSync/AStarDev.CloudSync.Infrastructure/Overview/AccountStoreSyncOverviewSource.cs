@@ -1,5 +1,8 @@
 using AStarDev.CloudSync.Core.Accounts;
 using AStarDev.CloudSync.Core.Overview;
+using AStarDev.CloudSync.Domain.Accounts;
+using AStarDev.CloudSync.Domain.Common;
+using AStarDev.CloudSync.Domain.Overview;
 using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.Infrastructure.Overview;
@@ -9,5 +12,10 @@ namespace AStarDev.CloudSync.Infrastructure.Overview;
 public sealed class AccountStoreSyncOverviewSource(IAccountStore accountStore) : ISyncOverviewSource
 {
     /// <inheritdoc />
-    public Task<Result<SyncOverview, ErrorResponse>> GetOverviewAsync(CancellationToken cancellationToken) => throw new NotImplementedException($"{accountStore}{cancellationToken}");
+    public Task<Result<SyncOverview, ErrorResponse>> GetOverviewAsync(CancellationToken cancellationToken) =>
+        accountStore.GetAllAsync(cancellationToken)
+            .MatchAsync(accounts => Result.Success<SyncOverview, ErrorResponse>(SyncOverviewFactory.Create([.. accounts.Select(ToCloudAccount)], [], [], [], [], 0, Option.None<DateTimeOffset>())), Result.Failure<SyncOverview, ErrorResponse>);
+
+    private static CloudAccount ToCloudAccount(StoredAccount account) =>
+        CloudAccountFactory.Create(account.Id, account.Registration.DisplayName, account.Registration.Email, account.Registration.Provider, account.Registration.Storage, 0, 0, SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
 }

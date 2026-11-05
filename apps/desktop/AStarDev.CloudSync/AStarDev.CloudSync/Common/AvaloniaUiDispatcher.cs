@@ -1,4 +1,5 @@
 using AStarDev.CloudSync.ViewModels.Common;
+using Avalonia.Threading;
 
 namespace AStarDev.CloudSync.Common;
 
@@ -6,5 +7,5 @@ namespace AStarDev.CloudSync.Common;
 public sealed class AvaloniaUiDispatcher : IUiDispatcher
 {
     /// <inheritdoc />
-    public Task InvokeAsync(Action action) => throw new NotImplementedException($"{action}");
+    public Task InvokeAsync(Action action) => Dispatcher.UIThread.InvokeAsync(action).GetTask();
 }

@@ -6,15 +6,15 @@ namespace AStarDev.CloudSync.ViewModels.Accounts;
 public static class AddAccountStepFactory
 {
     /// <summary>Creates the closed step.</summary>
-    public static AddAccountStep CreateClosed() => throw new NotImplementedException();
+    public static AddAccountStep CreateClosed() => new AddAccountStep.Closed();
 
     /// <summary>Creates the signing-in step.</summary>
-    public static AddAccountStep CreateSigningIn() => throw new NotImplementedException();
+    public static AddAccountStep CreateSigningIn() => new AddAccountStep.SigningIn();
 
     /// <summary>Creates the already-added step.</summary>
-    public static AddAccountStep CreateAlreadyAdded() => throw new NotImplementedException();
+    public static AddAccountStep CreateAlreadyAdded() => new AddAccountStep.AlreadyAdded();
 
     /// <summary>Creates the failed step.</summary>
     /// <param name="failure">Why the attempt failed.</param>
-    public static AddAccountStep CreateFailed(AccountAddFailure failure) => throw new NotImplementedException($"{failure}");
+    public static AddAccountStep CreateFailed(AccountAddFailure failure) => new AddAccountStep.Failed(failure);
 }

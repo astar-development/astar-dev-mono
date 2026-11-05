@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:accounts="using:AStarDev.CloudSync.Accounts"
         xmlns:layouts="using:AStarDev.CloudSync.Layouts"
         xmlns:vm="using:AStarDev.CloudSync.ViewModels"
         xmlns:vmLayouts="using:AStarDev.CloudSync.ViewModels.Layouts"
@@ -38,5 +39,11 @@
                 </DataTemplate>
             </ContentControl.DataTemplates>
         </ContentControl>
+        <Border Grid.Row="0"
+                Grid.RowSpan="2"
+                Background="{DynamicResource CloudSyncScrimBrush}"
+                IsVisible="{Binding AddAccount.IsOpen}">
+            <accounts:AddAccountView DataContext="{Binding AddAccount}" />
+        </Border>
     </Grid>
 </Window>
