@@ -6,6 +6,7 @@ using AStarDev.CloudSync.Core.DisplaySettings;
 using AStarDev.CloudSync.Core.Overview;
 using AStarDev.CloudSync.Core.Persistence;
 using AStarDev.CloudSync.Infrastructure.Common;
+using AStarDev.CloudSync.Infrastructure.OneDrive;
 using AStarDev.CloudSync.Infrastructure.Persistence;
 using AStarDev.CloudSync.Infrastructure.Placeholder;
 using AStarDev.CloudSync.TestHelpers.DisplaySettings;
@@ -17,6 +18,8 @@ using AStarDev.CloudSync.ViewModels.Overview;
 using AStarDev.Localization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Microsoft.Identity.Client;
 
 namespace AStarDev.CloudSync.TestsUnit;
 
@@ -154,6 +157,49 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
+    public void when_application_services_are_added_then_the_microsoft_account_adder_is_registered()
+    {
+        var services = CreateServices();
+
+        services.ShouldContain(descriptor => descriptor.ServiceType == typeof(IAccountAdder) && descriptor.ImplementationType == typeof(MicrosoftAccountAdder) && descriptor.Lifetime == ServiceLifetime.Singleton);
+    }
+
+    [Fact]
+    public void when_application_services_are_added_then_the_msal_client_drive_lookup_and_public_client_application_are_registered()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        (provider.GetRequiredService<IMsalClient>(), provider.GetRequiredService<IDriveLookup>(), provider.GetRequiredService<IMsalTokenCacheStorage>(), provider.GetRequiredService<IPublicClientApplication>()).ShouldSatisfyAllConditions(
+            services => services.Item1.ShouldBeOfType<MsalClient>(),
+            services => services.Item2.ShouldBeOfType<GraphDriveLookup>(),
+            services => services.Item3.ShouldBeOfType<MsalCacheHelperStorage>(),
+            services => services.Item4.ShouldBeSameAs(provider.GetRequiredService<IPublicClientApplication>()));
+    }
+
+    [Fact]
+    public void when_application_services_are_added_then_the_public_client_application_uses_the_configured_client_id_and_the_consumers_authority()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<IPublicClientApplication>().AppConfig.ShouldSatisfyAllConditions(
+            config => config.ClientId.ShouldBe("3057f494-687d-4abb-a653-4b8066230b6e"),
+            config => config.RedirectUri.ShouldBe("http://localhost"));
+        provider.GetRequiredService<IPublicClientApplication>().Authority.ShouldStartWith("https://login.microsoftonline.com/consumers");
+    }
+
+    [Fact]
+    public void when_the_shipped_settings_are_loaded_then_the_microsoft_account_section_has_the_client_id_and_graph_scopes()
+    {
+        var configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: false).Build();
+
+        using var provider = new ServiceCollection().AddApplicationServices(configuration).BuildServiceProvider();
+
+        provider.GetRequiredService<IOptions<MicrosoftAccountOptions>>().Value.ShouldSatisfyAllConditions(
+            options => options.ClientId.ShouldBe("3057f494-687d-4abb-a653-4b8066230b6e"),
+            options => options.Scopes.ShouldBe(["User.Read", "Files.ReadWrite.All"]));
+    }
+
+    [Fact]
     public void when_application_services_are_added_then_the_system_time_provider_is_registered()
     {
         using var provider = CreateServices().BuildServiceProvider();
@@ -164,7 +210,7 @@ public class GivenServiceCollectionExtensions
     private static IServiceCollection CreateServices()
     {
         var configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?> { ["Updates:GithubRepositoryUrl"] = "https://github.com/astar-development/astar-dev-mono", ["Updates:ChannelPrefix"] = "cloudsync" })
+            .AddInMemoryCollection(new Dictionary<string, string?> { ["Updates:GithubRepositoryUrl"] = "https://github.com/astar-development/astar-dev-mono", ["Updates:ChannelPrefix"] = "cloudsync", ["MicrosoftAccount:ClientId"] = "3057f494-687d-4abb-a653-4b8066230b6e" })
             .Build();
 
         return new ServiceCollection()
