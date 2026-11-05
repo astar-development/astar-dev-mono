@@ -70,7 +70,14 @@
         <member name="T:AStarDev.LoggingOTel.OTelLoggingConfigurator">
             <summary>
                 This class provides extension methods to configure OpenTelemetry logging, exporting to the console and,
-                when a connection string is configured, to Azure Monitor (Application Insights).
+                when a connection string is configured, to Azure Monitor (Application Insights) and, when an endpoint is configured,
+                to an OTLP (gRPC) collector such as the Aspire dashboard.
+            </summary>
+        </member>
+        <member name="F:AStarDev.LoggingOTel.OTelLoggingConfigurator.OtlpEndpointConfigurationKey">
+            <summary>
+                The configuration key holding the OTLP (gRPC) endpoint, e.g. <c>http://localhost:4317</c>. When it is missing or not an
+                absolute <c>http</c>/<c>https</c> URI, no OTLP exporter is added.
             </summary>
         </member>
         <member name="M:AStarDev.LoggingOTel.OTelLoggingConfigurator.ConfigureOTelLogging(Microsoft.Extensions.Logging.ILoggingBuilder,Microsoft.Extensions.Configuration.IConfigurationRoot,System.String,System.String)">
