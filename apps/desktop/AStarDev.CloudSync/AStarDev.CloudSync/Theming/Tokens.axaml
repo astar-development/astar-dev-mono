@@ -16,6 +16,7 @@
             <SolidColorBrush x:Key="CloudSyncWarnSoftBrush" Color="#3A2A17" />
             <SolidColorBrush x:Key="CloudSyncOkBrush" Color="#4CC38A" />
             <SolidColorBrush x:Key="CloudSyncIdleBrush" Color="#8A929D" />
+            <SolidColorBrush x:Key="CloudSyncScrimBrush" Color="#B3000000" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <SolidColorBrush x:Key="CloudSyncBackgroundBrush" Color="#F2F4F7" />
@@ -32,6 +33,7 @@
             <SolidColorBrush x:Key="CloudSyncWarnSoftBrush" Color="#FDF0E1" />
             <SolidColorBrush x:Key="CloudSyncOkBrush" Color="#1D7A4F" />
             <SolidColorBrush x:Key="CloudSyncIdleBrush" Color="#6B727C" />
+            <SolidColorBrush x:Key="CloudSyncScrimBrush" Color="#66000000" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 

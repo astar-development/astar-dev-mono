@@ -2,8 +2,8 @@ using AStarDev.CloudSync.Domain.Common;
 using AStarDev.CloudSync.Domain.Conflicts;
 using AStarDev.CloudSync.Domain.Overview;
 using AStarDev.CloudSync.Domain.SyncPairs;
-using AStarDev.CloudSync.Infrastructure.Placeholder;
 using AStarDev.CloudSync.TestHelpers.Common;
+using AStarDev.CloudSync.TestHelpers.Overview;
 using AStarDev.CloudSync.ViewModels.Layouts;
 using AStarDev.CloudSync.ViewModels.Overview;
 using AStarDev.CloudSync.ViewModels.TestsUnit.Overview;
@@ -23,6 +23,18 @@ public class GivenALayoutCViewModel
         await viewModel.NewSyncPairCommand.ExecuteAsync(null);
 
         syncActions.Calls.ShouldBe(["AddSyncPairAsync:none"]);
+    }
+
+    [Fact]
+    public async Task when_the_add_account_dialog_closes_then_the_overview_is_read_again()
+    {
+        var source = new CountingSyncOverviewSource(await TestData.CreateOverviewAsync());
+        var overview = new SyncOverviewViewModel(source, new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var layout = new LayoutCViewModel(overview, new RecordingSyncActions(), TestData.CreateLocalization());
+
+        await layout.AddAccountCommand.ExecuteAsync(null);
+
+        (source.Reads, overview.LoadState).ShouldBe((1, SyncOverviewLoadStateFactory.CreateLoaded()));
     }
 
     [Fact]

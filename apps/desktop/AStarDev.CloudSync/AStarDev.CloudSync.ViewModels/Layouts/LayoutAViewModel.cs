@@ -23,7 +23,7 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
     {
         Overview = overview;
         this.syncActions = syncActions;
-        AddAccountCommand = new AsyncRelayCommand(syncActions.AddAccountAsync);
+        AddAccountCommand = new AsyncRelayCommand(AddAccountAndReloadAsync);
         overview.PropertyChanged += OnOverviewChanged;
         Rebuild();
     }
@@ -121,5 +121,11 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
     {
         foreach (var card in allCards)
             card.IsSelected = ReferenceEquals(card, selected);
+    }
+
+    private async Task AddAccountAndReloadAsync(CancellationToken cancellationToken)
+    {
+        await syncActions.AddAccountAsync(cancellationToken);
+        await Overview.LoadAsync(cancellationToken);
     }
 }

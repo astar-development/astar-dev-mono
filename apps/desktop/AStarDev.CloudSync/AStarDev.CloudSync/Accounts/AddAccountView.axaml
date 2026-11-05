@@ -1,0 +1,67 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmAccounts="using:AStarDev.CloudSync.ViewModels.Accounts"
+             x:Class="AStarDev.CloudSync.Accounts.AddAccountView"
+             x:DataType="vmAccounts:AddAccountViewModel"
+             HorizontalAlignment="Center"
+             VerticalAlignment="Center">
+    <Border Background="{DynamicResource CloudSyncSurfaceBrush}"
+            BorderBrush="{DynamicResource CloudSyncBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="8"
+            Padding="24"
+            Margin="24"
+            MaxWidth="460">
+        <Grid RowDefinitions="Auto,*"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch">
+            <TextBlock Grid.Row="0"
+                       Margin="0,0,0,16"
+                       Text="{Binding TitleText}"
+                       FontSize="18"
+                       FontWeight="SemiBold"
+                       Foreground="{DynamicResource CloudSyncTextPrimaryBrush}" />
+            <ScrollViewer Grid.Row="1"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          MinHeight="0">
+            <StackPanel Spacing="16">
+
+            <StackPanel Spacing="16" IsVisible="{Binding IsSigningIn}">
+                <TextBlock Text="{Binding SigningInText}"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource CloudSyncTextPrimaryBrush}" />
+                <ProgressBar IsIndeterminate="True" />
+                <Button Classes="secondary"
+                        HorizontalAlignment="Right"
+                        Content="{Binding CancelText}"
+                        Command="{Binding CancelCommand}" />
+            </StackPanel>
+
+            <StackPanel Spacing="12" IsVisible="{Binding IsAskingConsent}">
+                <TextBlock Text="{Binding Consent.TitleText}"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource CloudSyncWarnBrush}" />
+                <TextBlock Text="{Binding Consent.MessageText}"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource CloudSyncTextPrimaryBrush}" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                    <Button Classes="secondary" Content="{Binding Consent.DeclineText}" Command="{Binding CancelCommand}" />
+                    <Button Classes="primary" Content="{Binding Consent.AgreeText}" Command="{Binding Consent.AgreeCommand}" />
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel Spacing="16" IsVisible="{Binding IsShowingMessage}">
+                <TextBlock Text="{Binding MessageText}"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource CloudSyncTextPrimaryBrush}" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                    <Button Classes="secondary" Content="{Binding TryAgainText}" Command="{Binding TryAgainCommand}" IsVisible="{Binding CanTryAgain}" />
+                    <Button Classes="primary" Content="{Binding CloseText}" Command="{Binding CloseCommand}" />
+                </StackPanel>
+            </StackPanel>
+            </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Border>
+</UserControl>

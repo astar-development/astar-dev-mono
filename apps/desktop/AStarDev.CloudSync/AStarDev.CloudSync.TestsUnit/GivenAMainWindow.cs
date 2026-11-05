@@ -1,9 +1,14 @@
+using AStarDev.CloudSync.Accounts;
+using AStarDev.CloudSync.Core.Accounts;
 using AStarDev.CloudSync.DisplaySettings;
+using AStarDev.CloudSync.Domain.Accounts;
 using AStarDev.CloudSync.Domain.DisplaySettings;
 using AStarDev.CloudSync.Layouts;
+using AStarDev.CloudSync.TestHelpers.Accounts;
 using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.CloudSync.TestHelpers.Overview;
 using AStarDev.CloudSync.ViewModels;
+using AStarDev.CloudSync.ViewModels.Accounts;
 using AStarDev.CloudSync.ViewModels.Overview;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
@@ -161,6 +166,51 @@ public class GivenAMainWindow
         window.Show();
 
         window.GetVisualDescendants().OfType<TextBlock>().Where(text => text.IsEffectivelyVisible).Select(text => text.Text).ShouldNotContain("Could not load your accounts and sync pairs. The details have been logged.");
+    }
+
+    [AvaloniaFact]
+    public async Task when_the_add_account_dialog_is_open_then_the_window_shows_it_over_the_layout()
+    {
+        var signIn = new TaskCompletionSource<AccountAddOutcome>();
+        var addAccount = TestData.CreateAddAccount(new FakeAccountAdder { Add = _ => signIn.Task });
+        var window = new MainWindow { DataContext = TestData.CreateMainWindowViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), TestData.CreateDisplaySettings(), addAccount) };
+        window.Show();
+
+        var shown = addAccount.ShowAsync(TestContext.Current.CancellationToken);
+        window.UpdateLayout();
+
+        FindSingle<AddAccountView>(window).IsEffectivelyVisible.ShouldBeTrue();
+        window.FindControl<ContentControl>("LayoutHost").ShouldNotBeNull().IsEffectivelyEnabled.ShouldBeFalse();
+        signIn.SetResult(AccountAddOutcomeFactory.CreateCancelled());
+        await shown;
+    }
+
+    [AvaloniaFact]
+    public async Task when_the_add_account_dialog_is_closed_then_the_window_does_not_show_it()
+    {
+        var window = new MainWindow { DataContext = await CreateViewModelAsync() };
+
+        window.Show();
+
+        window.GetVisualDescendants().OfType<AddAccountView>().ShouldAllBe(view => !view.IsEffectivelyVisible);
+    }
+
+    [AvaloniaFact]
+    public async Task when_the_plaintext_token_question_shows_then_dont_add_the_account_cancels_the_attempt()
+    {
+        var consent = new TokenCacheConsentViewModel(new ImmediateUiDispatcher(), TestData.CreateLocalization());
+        var adder = new FakeAccountAdder { Add = async token => { await ((Task)consent.AskAsync(token)).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing | ConfigureAwaitOptions.ContinueOnCapturedContext); return AccountAddOutcomeFactory.CreateCancelled(); } };
+        var addAccount = new AddAccountViewModel(adder, consent, TestData.CreateLocalization(), NullLogger<AddAccountViewModel>.Instance);
+        var window = new MainWindow { DataContext = TestData.CreateMainWindowViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), TestData.CreateDisplaySettings(), addAccount) };
+        window.Show();
+
+        var shown = addAccount.ShowAsync(TestContext.Current.CancellationToken);
+        window.UpdateLayout();
+        var declineButton = FindSingle<AddAccountView>(window).GetVisualDescendants().OfType<Button>().Single(button => Equals(button.Content, consent.DeclineText));
+
+        declineButton.Command.ShouldBeSameAs(addAccount.CancelCommand);
+        addAccount.CancelCommand.Execute(null);
+        await shown.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
     }
 
     private static T FindSingle<T>(Window window) where T : Control => window.GetVisualDescendants().OfType<T>().ShouldHaveSingleItem();

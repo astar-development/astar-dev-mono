@@ -1,9 +1,10 @@
 using AStarDev.CloudSync.Core.Overview;
 using AStarDev.CloudSync.Domain.Overview;
-using AStarDev.CloudSync.Infrastructure.Placeholder;
 using AStarDev.CloudSync.TestHelpers.Common;
+using AStarDev.CloudSync.TestHelpers.Overview;
 using AStarDev.CloudSync.ViewModels.Layouts;
 using AStarDev.CloudSync.ViewModels.Overview;
+using AStarDev.CloudSync.ViewModels.TestsUnit.Overview;
 using AStarDev.FunctionalParadigm;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -11,6 +12,18 @@ namespace AStarDev.CloudSync.ViewModels.TestsUnit.Layouts;
 
 public class GivenALayoutBViewModel
 {
+    [Fact]
+    public async Task when_the_add_account_dialog_closes_then_the_overview_is_read_again()
+    {
+        var source = new CountingSyncOverviewSource(await TestData.CreateOverviewAsync());
+        var overview = new SyncOverviewViewModel(source, new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var layout = new LayoutBViewModel(overview, TestData.CreateLocalPathFormatter(), new RecordingSyncActions(), TestData.CreateLocalization());
+
+        await layout.ConnectProviderCommand.ExecuteAsync(null);
+
+        (source.Reads, overview.LoadState).ShouldBe((1, SyncOverviewLoadStateFactory.CreateLoaded()));
+    }
+
     [Fact]
     public async Task when_the_connect_provider_command_runs_then_an_account_is_added()
     {
@@ -288,7 +301,7 @@ public class GivenALayoutBViewModel
 
     private static async Task<LayoutBViewModel> CreateLoadedLayoutAsync()
     {
-        var overview = new SyncOverviewViewModel(new AStarDev.CloudSync.Infrastructure.Placeholder.PlaceholderSyncOverviewSource(TestData.CreateTime()), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var overview = new SyncOverviewViewModel(new PlaceholderSyncOverviewSource(TestData.CreateTime()), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         var layout = new LayoutBViewModel(overview, TestData.CreateLocalPathFormatter(), new RecordingSyncActions(), TestData.CreateLocalization());
         await overview.LoadAsync(TestContext.Current.CancellationToken);
 

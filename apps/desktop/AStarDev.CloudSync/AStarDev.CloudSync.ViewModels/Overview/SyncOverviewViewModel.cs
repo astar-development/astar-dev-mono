@@ -60,20 +60,29 @@ public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ISyncActio
 
     /// <summary>Reads the overview from the source and rebuilds every collection. A failing source is logged and reported through <see cref="LoadState"/> instead of throwing; cancellation still throws.</summary>
     /// <param name="cancellationToken">Cancels the read.</param>
-    public async Task LoadAsync(CancellationToken cancellationToken)
+    public async Task LoadAsync(CancellationToken cancellationToken) =>
+        _ = await Try.RunAsync(() => source.GetOverviewAsync(cancellationToken), cancellationToken)
+            .MatchAsync(result => result.Match(Show, NotRead), Threw);
+
+    private Unit Threw(Exception exception)
     {
-        try
-        {
-            overview = await source.GetOverviewAsync(cancellationToken);
-        }
-        catch (Exception exception) when (exception is not OperationCanceledException)
-        {
-            LogMessage.Error(logger, $"{nameof(SyncOverviewViewModel)} could not load the sync overview", exception);
-            SetLoadState(SyncOverviewLoadStateFactory.CreateFailed());
+        LogMessage.Error(logger, $"{nameof(SyncOverviewViewModel)} could not load the sync overview ({exception.GetType().Name})");
+        SetLoadState(SyncOverviewLoadStateFactory.CreateFailed());
 
-            return;
-        }
+        return Unit.Instance;
+    }
 
+    private Unit NotRead(ErrorResponse error)
+    {
+        LogMessage.Error(logger, $"{nameof(SyncOverviewViewModel)} could not load the sync overview: the source reported a failure");
+        SetLoadState(SyncOverviewLoadStateFactory.CreateFailed());
+
+        return Unit.Instance;
+    }
+
+    private Unit Show(SyncOverview loaded)
+    {
+        overview = loaded;
         var accountsById = overview.Accounts.ToDictionary(account => account.Id);
         var pairNamesById = overview.SyncPairs.ToDictionary(pair => pair.Id, pair => pair.Name);
 
@@ -94,6 +103,8 @@ public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ISyncActio
         OnPropertyChanged(nameof(LastChecked));
         OnPropertyChanged(nameof(LastCheckedText));
         SetLoadState(SyncOverviewLoadStateFactory.CreateLoaded());
+
+        return Unit.Instance;
     }
 
     private void SetLoadState(SyncOverviewLoadState state)

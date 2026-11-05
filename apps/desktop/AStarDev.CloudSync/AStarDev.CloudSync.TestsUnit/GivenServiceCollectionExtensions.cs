@@ -1,5 +1,6 @@
 using AStar.Dev.Velopack.Publishing;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
+using AStarDev.CloudSync.Common;
 using AStarDev.CloudSync.Core.Accounts;
 using AStarDev.CloudSync.Core.Common;
 using AStarDev.CloudSync.Core.DisplaySettings;
@@ -7,11 +8,14 @@ using AStarDev.CloudSync.Core.Overview;
 using AStarDev.CloudSync.Core.Persistence;
 using AStarDev.CloudSync.Infrastructure.Common;
 using AStarDev.CloudSync.Infrastructure.OneDrive;
+using AStarDev.CloudSync.Infrastructure.Overview;
 using AStarDev.CloudSync.Infrastructure.Persistence;
-using AStarDev.CloudSync.Infrastructure.Placeholder;
 using AStarDev.CloudSync.TestHelpers.DisplaySettings;
+using AStarDev.CloudSync.TestHelpers.Overview;
 using AStarDev.CloudSync.Theming;
 using AStarDev.CloudSync.ViewModels;
+using AStarDev.CloudSync.ViewModels.Accounts;
+using AStarDev.CloudSync.ViewModels.Common;
 using AStarDev.CloudSync.ViewModels.DisplaySettings;
 using AStarDev.CloudSync.ViewModels.Layouts;
 using AStarDev.CloudSync.ViewModels.Overview;
@@ -85,12 +89,69 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
-    public void when_application_services_are_added_then_the_placeholder_sync_overview_source_is_registered()
+    public void when_application_services_are_added_then_the_overview_is_read_from_the_account_store()
     {
-        var services = CreateServices();
+        using var provider = CreateServices().BuildServiceProvider();
 
-        var descriptor = services.Single(service => service.ServiceType == typeof(ISyncOverviewSource));
-        descriptor.ImplementationType.ShouldBe(typeof(PlaceholderSyncOverviewSource));
+        provider.GetRequiredService<ISyncOverviewSource>().ShouldBeOfType<AccountStoreSyncOverviewSource>();
+    }
+
+    [Fact]
+    public void when_application_services_are_added_then_the_add_account_dialog_and_the_token_cache_consent_are_the_shared_view_models()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<IAddAccountDialog>().ShouldBeSameAs(provider.GetRequiredService<AddAccountViewModel>());
+        provider.GetRequiredService<ITokenCacheConsent>().ShouldBeSameAs(provider.GetRequiredService<TokenCacheConsentViewModel>());
+        provider.GetRequiredService<AddAccountViewModel>().Consent.ShouldBeSameAs(provider.GetRequiredService<TokenCacheConsentViewModel>());
+    }
+
+    [Fact]
+    public void when_application_services_are_added_then_the_account_adder_can_be_resolved()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<IAccountAdder>().ShouldBeOfType<MicrosoftAccountAdder>();
+    }
+
+    [Fact]
+    public void when_application_services_are_added_then_the_avalonia_ui_dispatcher_is_registered()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<IUiDispatcher>().ShouldBeOfType<AvaloniaUiDispatcher>();
+    }
+
+    [Fact]
+    public void when_application_services_are_added_then_the_main_window_shows_the_shared_add_account_dialog()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<MainWindowViewModel>().AddAccount.ShouldBeSameAs(provider.GetRequiredService<AddAccountViewModel>());
+    }
+
+    [Theory]
+    [InlineData("AddAccount.Title")]
+    [InlineData("AddAccount.SigningIn")]
+    [InlineData("AddAccount.Cancel")]
+    [InlineData("AddAccount.Close")]
+    [InlineData("AddAccount.TryAgain")]
+    [InlineData("AddAccount.AlreadyAdded")]
+    [InlineData("AddAccount.Failure.BrowserUnavailable")]
+    [InlineData("AddAccount.Failure.AuthRejected")]
+    [InlineData("AddAccount.Failure.Network")]
+    [InlineData("AddAccount.Failure.TokenCacheUnavailable")]
+    [InlineData("AddAccount.Failure.DriveUnavailable")]
+    [InlineData("AddAccount.Failure.PersistFailed")]
+    [InlineData("TokenCacheConsent.Title")]
+    [InlineData("TokenCacheConsent.Message")]
+    [InlineData("TokenCacheConsent.Agree")]
+    [InlineData("TokenCacheConsent.Decline")]
+    public void when_application_services_are_added_then_the_add_account_dialog_keys_are_localised(string key)
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<ILocalizationService>().GetLocal(key).ShouldNotBe(key);
     }
 
     [Fact]

@@ -3,9 +3,11 @@ using AStarDev.CloudSync.Core.Accounts;
 using AStarDev.CloudSync.Core.Common;
 using AStarDev.CloudSync.Core.Overview;
 using AStarDev.CloudSync.Domain.Accounts;
-using AStarDev.CloudSync.Infrastructure.Placeholder;
+using AStarDev.CloudSync.TestHelpers.Accounts;
 using AStarDev.CloudSync.TestHelpers.DisplaySettings;
+using AStarDev.CloudSync.TestHelpers.Overview;
 using AStarDev.CloudSync.ViewModels;
+using AStarDev.CloudSync.ViewModels.Accounts;
 using AStarDev.CloudSync.ViewModels.Common;
 using AStarDev.CloudSync.ViewModels.DisplaySettings;
 using AStarDev.CloudSync.ViewModels.Layouts;
@@ -34,7 +36,7 @@ public static class TestData
 
     public static LocalPathFormatter CreateLocalPathFormatter() => new(new FixedHomeFolder(Option.Some(new DirectoryInfo("/home/user"))));
 
-    public static Task<SyncOverview> CreateOverviewAsync() => new PlaceholderSyncOverviewSource(CreateTime()).GetOverviewAsync(TestContext.Current.CancellationToken);
+    public static Task<SyncOverview> CreateOverviewAsync() => new PlaceholderSyncOverviewSource(CreateTime()).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(overview => overview, error => throw new InvalidOperationException(error.Message));
 
     public static async Task<SyncOverviewViewModel> CreateLoadedOverviewViewModelAsync()
     {
@@ -48,11 +50,15 @@ public static class TestData
 
     public static DisplaySettingsViewModel CreateDisplaySettings() => new(new InMemoryDisplayPreferencesStore(), new RecordingThemeApplier(), CreateLocalization());
 
-    public static MainWindowViewModel CreateMainWindowViewModel(SyncOverviewViewModel overview, DisplaySettingsViewModel displaySettings)
+    public static AddAccountViewModel CreateAddAccount(IAccountAdder accountAdder) => new(accountAdder, new TokenCacheConsentViewModel(new ImmediateUiDispatcher(), CreateLocalization()), CreateLocalization(), NullLogger<AddAccountViewModel>.Instance);
+
+    public static MainWindowViewModel CreateMainWindowViewModel(SyncOverviewViewModel overview, DisplaySettingsViewModel displaySettings) => CreateMainWindowViewModel(overview, displaySettings, CreateAddAccount(new FakeAccountAdder()));
+
+    public static MainWindowViewModel CreateMainWindowViewModel(SyncOverviewViewModel overview, DisplaySettingsViewModel displaySettings, AddAccountViewModel addAccount)
     {
         var localization = CreateLocalization();
         var syncActions = new RecordingSyncActions();
 
-        return new MainWindowViewModel(localization, displaySettings, new LayoutAViewModel(overview, syncActions, localization), new LayoutBViewModel(overview, CreateLocalPathFormatter(), syncActions, localization), new LayoutCViewModel(overview, syncActions, localization));
+        return new MainWindowViewModel(localization, displaySettings, new LayoutAViewModel(overview, syncActions, localization), new LayoutBViewModel(overview, CreateLocalPathFormatter(), syncActions, localization), new LayoutCViewModel(overview, syncActions, localization), addAccount);
     }
 }
