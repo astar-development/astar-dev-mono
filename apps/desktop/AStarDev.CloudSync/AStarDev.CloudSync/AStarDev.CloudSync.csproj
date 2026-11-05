@@ -13,7 +13,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AStarDev.LoggingOTel" />
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
@@ -26,12 +25,14 @@
     <AvaloniaResource Include="Assets/**" Exclude="Assets/Localization/**" />
     <EmbeddedResource Include="Assets/Localization/*.json" />
     <None Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="appsettings.Debug.json" CopyToOutputDirectory="PreserveNewest" Condition="'$(Configuration)' == 'Debug'" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="../AStarDev.CloudSync.Infrastructure/AStarDev.CloudSync.Infrastructure.csproj" />
     <ProjectReference Include="../AStarDev.CloudSync.ViewModels/AStarDev.CloudSync.ViewModels.csproj" />
     <ProjectReference Include="../../../../packages/core/logging/AStarDev.LoggingExtensions/AStarDev.LoggingExtensions.csproj" />
+    <ProjectReference Include="../../../../packages/core/logging/AStarDev.LoggingOTel/AStarDev.LoggingOTel.csproj" />
     <ProjectReference Include="../../../../packages/core/utilities/AStarDev.Localization/AStarDev.Localization.csproj" />
     <ProjectReference Include="../../../../packages/core/utilities/AStarDev.Utilities/AStarDev.Utilities.csproj" />
     <ProjectReference Include="../../../../packages/core/utilities/AStarDev.VelopackPublishing/AStarDev.VelopackPublishing.csproj" />

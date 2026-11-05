@@ -9,10 +9,17 @@ namespace AStarDev.LoggingOTel;
 
 /// <summary>
 ///     This class provides extension methods to configure OpenTelemetry logging, exporting to the console and,
-///     when a connection string is configured, to Azure Monitor (Application Insights).
+///     when a connection string is configured, to Azure Monitor (Application Insights) and, when an endpoint is configured,
+///     to an OTLP (gRPC) collector such as the Aspire dashboard.
 /// </summary>
 public static class OTelLoggingConfigurator
 {
+    /// <summary>
+    ///     The configuration key holding the OTLP (gRPC) endpoint, e.g. <c>http://localhost:4317</c>. When it is missing or not an
+    ///     absolute <c>http</c>/<c>https</c> URI, no OTLP exporter is added.
+    /// </summary>
+    public const string OtlpEndpointConfigurationKey = "OpenTelemetry:OtlpEndpoint";
+
     /// <summary>
     ///     The <see cref="ConfigureOTelLogging(ILoggingBuilder,IConfigurationRoot,string,string)" /> method wires up OpenTelemetry
     ///     logging: console output plus an Azure Monitor log exporter when a connection string is configured.
@@ -56,5 +63,8 @@ public static class OTelLoggingConfigurator
 
         if (!string.IsNullOrWhiteSpace(connectionString))
             _ = options.AddAzureMonitorLogExporter(exporterOptions => exporterOptions.ConnectionString = connectionString);
+
+        if (Uri.TryCreate(configuration[OtlpEndpointConfigurationKey], UriKind.Absolute, out Uri? otlpEndpoint) && (otlpEndpoint.Scheme == Uri.UriSchemeHttp || otlpEndpoint.Scheme == Uri.UriSchemeHttps))
+            _ = options.AddOtlpExporter(exporterOptions => exporterOptions.Endpoint = otlpEndpoint);
     }
 }

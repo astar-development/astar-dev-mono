@@ -1,6 +1,6 @@
 # AStarDev.LoggingOTel
 
-OpenTelemetry logging configuration helper: console exporter + Azure Monitor (Application Insights) log exporter, driven by `IConfigurationRoot`.
+OpenTelemetry logging configuration helper: console exporter + Azure Monitor (Application Insights) log exporter + optional OTLP exporter, driven by `IConfigurationRoot`.
 
 [![NuGet](https://img.shields.io/nuget/v/AStarDev.LoggingOTel)](https://www.nuget.org/packages/AStarDev.LoggingOTel)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -25,6 +25,7 @@ Wires up OpenTelemetry logging that:
 
 - writes to the console
 - exports to Azure Monitor when a connection string is present at `connectionStringConfigurationKey` in the supplied `IConfigurationRoot`
+- exports over OTLP (gRPC) when `OpenTelemetry:OtlpEndpoint` (`OTelLoggingConfigurator.OtlpEndpointConfigurationKey`) holds an absolute `http`/`https` URI, e.g. `http://localhost:4317` for the Aspire dashboard
 - includes formatted messages, scopes, and structured state values
 
 An overload additionally accepts an `InMemoryLogProcessor`, routing log records to it as well — used for the in-app log viewer feature (`AStarDev.LoggingOTel.LogViewer`).
