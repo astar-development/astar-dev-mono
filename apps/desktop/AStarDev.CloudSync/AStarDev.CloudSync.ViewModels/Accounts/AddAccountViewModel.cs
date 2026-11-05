@@ -105,7 +105,7 @@ public sealed class AddAccountViewModel : LocalizedObservableObject, IAddAccount
         Consent.PropertyChanged -= OnConsentChanged;
         _ = callerRegistration.Unregister();
         attempt.Dispose();
-        _ = closed.TrySetCanceled();
+        _ = closed.TrySetCanceled(CancellationToken.None);
     }
 
     private static TaskCompletionSource CreateClosedSignal(bool alreadyClosed)
@@ -134,7 +134,7 @@ public sealed class AddAccountViewModel : LocalizedObservableObject, IAddAccount
         attempt = CancellationTokenSource.CreateLinkedTokenSource(callerToken);
         SetStep(AddAccountStepFactory.CreateSigningIn());
 
-        var outcome = await Try.RunAsync(() => accountAdder.AddAsync(attempt.Token)).MatchAsync(added => added, Unexpected);
+        var outcome = await Try.RunAsync(() => accountAdder.AddAsync(attempt.Token), CancellationToken.None).MatchAsync(added => added, Unexpected);
 
         switch (outcome)
         {
