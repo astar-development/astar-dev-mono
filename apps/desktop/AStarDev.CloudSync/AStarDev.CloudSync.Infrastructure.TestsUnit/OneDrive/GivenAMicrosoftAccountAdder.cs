@@ -99,7 +99,7 @@ public class GivenAMicrosoftAccountAdder
     };
 
     [Theory]
-    [MemberData(nameof(SignInExceptionsAndOutcomes))]
+    [MemberData(nameof(SignInExceptionsAndOutcomes), DisableDiscoveryEnumeration = true)]
     public async Task when_sign_in_throws_then_the_exception_becomes_the_matching_outcome(Exception exception, AccountAddOutcome expectedOutcome)
     {
         msal = new FakeMsalClient { SignIn = _ => Task.FromException<MicrosoftSignIn>(exception) };

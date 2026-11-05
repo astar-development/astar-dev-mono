@@ -33,7 +33,7 @@ public sealed class TokenCacheInitialiser(IMsalTokenCacheStorage storage, IToken
     private static bool IsAttachedOrAttaching(Task<Result<Unit, AccountAddFailure>> attempt) => !attempt.IsCompleted || (attempt.IsCompletedSuccessfully && attempt.Result.Match(_ => true, _ => false));
 
     private Task<Result<Unit, AccountAddFailure>> AttachAsync(CancellationToken cancellationToken) =>
-        Try.RunAsync(() => Task.Run(() => UnitTask.RunAsync(storage.AttachSecureStoreAsync)), cancellationToken)
+        Try.RunAsync(() => Task.Run(() => UnitTask.RunAsync(storage.AttachSecureStoreAsync), cancellationToken), cancellationToken)
             .ToResultAsync(exception => exception)
             .MatchAsync(_ => Task.FromResult(Attached("The token cache uses the secure store.")), exception => UsePlaintextFileIfAllowedAsync(exception, cancellationToken));
 
@@ -65,7 +65,7 @@ public sealed class TokenCacheInitialiser(IMsalTokenCacheStorage storage, IToken
     }
 
     private Task<Result<Unit, AccountAddFailure>> AttachPlaintextFileAsync(string attachedMessage, CancellationToken cancellationToken) =>
-        Try.RunAsync(() => Task.Run(() => UnitTask.RunAsync(storage.AttachPlaintextFileAsync)), cancellationToken)
+        Try.RunAsync(() => Task.Run(() => UnitTask.RunAsync(storage.AttachPlaintextFileAsync), cancellationToken), cancellationToken)
             .MatchAsync(_ => Attached(attachedMessage), PlaintextFileFailed);
 
     private Result<Unit, AccountAddFailure> Attached(string message)

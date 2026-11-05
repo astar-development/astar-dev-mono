@@ -11,7 +11,10 @@ internal static class CancelledOutcomeExtensions
         await ((Task)step).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
 
         return step.IsCanceled
-            ? Result.Failure<T, AccountAddOutcome>(cancellationToken.IsCancellationRequested ? AccountAddOutcomeFactory.CreateCancelled() : AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreateNetwork()))
+            ? Result.Failure<T, AccountAddOutcome>(CancelledOutcome(cancellationToken))
             : await step.ConfigureAwait(false);
     }
+
+    private static AccountAddOutcome CancelledOutcome(CancellationToken cancellationToken) =>
+        cancellationToken.IsCancellationRequested ? AccountAddOutcomeFactory.CreateCancelled() : AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreateNetwork());
 }

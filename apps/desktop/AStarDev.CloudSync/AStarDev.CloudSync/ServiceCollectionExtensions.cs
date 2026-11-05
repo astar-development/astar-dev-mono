@@ -28,13 +28,15 @@ namespace AStarDev.CloudSync;
 /// <summary>Registers the application's services with the dependency injection container.</summary>
 public static class ServiceCollectionExtensions
 {
-    private static string SettingsFilePath => "AStarDev.CloudSync".ApplicationDirectory().CombinePath("display-preferences.json");
+    private const string ApplicationName = "AStarDev.CloudSync";
 
-    private static string DatabaseFilePath => "AStarDev.CloudSync".ApplicationDirectory().CombinePath("cloudsync.db");
+    private static string SettingsFilePath => ApplicationName.ApplicationDirectory().CombinePath("display-preferences.json");
 
-    private static string TokenCacheFolderPath => "AStarDev.CloudSync".ApplicationDirectory();
+    private static string DatabaseFilePath => ApplicationName.ApplicationDirectory().CombinePath("cloudsync.db");
 
-    private static string TokenCacheConsentFilePath => "AStarDev.CloudSync".ApplicationDirectory().CombinePath("token-cache-consent.json");
+    private static string TokenCacheFolderPath => ApplicationName.ApplicationDirectory();
+
+    private static string TokenCacheConsentFilePath => ApplicationName.ApplicationDirectory().CombinePath("token-cache-consent.json");
 
     /// <summary>Registers localisation, the Velopack update services, the placeholder sync data and sync actions, the CloudSync database and account store, the Microsoft account sign-in and OneDrive drive lookup, the display settings and the view models, including layouts A, B and C.</summary>
     /// <param name="services">The service collection to register the application's services with.</param>
