@@ -188,6 +188,39 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
+    public void when_application_services_are_added_then_the_plaintext_cache_consent_store_is_registered()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<IPlaintextCacheConsentStore>().ShouldBeOfType<JsonPlaintextCacheConsentStore>();
+    }
+
+    [Fact]
+    public void when_application_services_are_added_then_the_graph_http_client_uses_the_graph_retry_and_redirect_handlers()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        var handlerTypes = HandlerChain(provider.GetRequiredService<IHttpMessageHandlerFactory>().CreateHandler(GraphDriveLookup.HttpClientName)).Select(handler => handler.GetType().Name).ToList();
+
+        handlerTypes.ShouldContain("RetryHandler");
+        handlerTypes.ShouldContain("RedirectHandler");
+    }
+
+    private static IEnumerable<HttpMessageHandler> HandlerChain(HttpMessageHandler handler)
+    {
+        var current = handler;
+
+        while (current is DelegatingHandler delegating)
+        {
+            yield return delegating;
+            current = delegating.InnerHandler;
+        }
+
+        if (current is not null)
+            yield return current;
+    }
+
+    [Fact]
     public void when_the_shipped_settings_are_loaded_then_the_microsoft_account_section_has_the_client_id_and_graph_scopes()
     {
         var configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: false).Build();

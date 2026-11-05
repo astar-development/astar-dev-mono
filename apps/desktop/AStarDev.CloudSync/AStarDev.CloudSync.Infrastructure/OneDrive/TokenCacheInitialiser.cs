@@ -9,8 +9,9 @@ namespace AStarDev.CloudSync.Infrastructure.OneDrive;
 /// <summary>Connects the MSAL token cache to storage once. It prefers the secure store and uses a plaintext file only with the user's consent.</summary>
 /// <param name="storage">Connects the cache to the secure store or the plaintext file.</param>
 /// <param name="consent">Asks the user before the plaintext file is used.</param>
+/// <param name="consentStore">Remembers between runs that the user agreed to the plaintext file.</param>
 /// <param name="logger">Reports the storage chosen and failures, without paths or account details.</param>
-public sealed class TokenCacheInitialiser(IMsalTokenCacheStorage storage, ITokenCacheConsent consent, ILogger<TokenCacheInitialiser> logger)
+public sealed class TokenCacheInitialiser(IMsalTokenCacheStorage storage, ITokenCacheConsent consent, IPlaintextCacheConsentStore consentStore, ILogger<TokenCacheInitialiser> logger)
 {
     private readonly Lock gate = new();
     private Option<Task<Result<Unit, AccountAddFailure>>> attachment = Option.None<Task<Result<Unit, AccountAddFailure>>>();
@@ -39,6 +40,7 @@ public sealed class TokenCacheInitialiser(IMsalTokenCacheStorage storage, IToken
     private async Task<Result<Unit, AccountAddFailure>> AskForPlaintextFileAsync(Exception exception, CancellationToken cancellationToken)
     {
         LogMessage.Warning(logger, nameof(TokenCacheInitialiser), $"The secure token store is unavailable ({exception.GetType().Name}); asking the user before using a plaintext token file.");
+        _ = consentStore;
 
         return await consent.AskAsync(cancellationToken).ConfigureAwait(false) switch
         {

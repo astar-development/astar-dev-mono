@@ -8,7 +8,7 @@ public sealed class FakeAccountStore : IAccountStore
 {
     private readonly List<AccountRegistration> savedRegistrations = [];
 
-    public Func<AccountRegistration, AccountAddOutcome> Save { get; init; } = _ => AccountAddOutcomeFactory.CreateAdded(TestSignIns.AccountId);
+    public Func<AccountRegistration, CancellationToken, Task<AccountAddOutcome>> Save { get; init; } = (_, _) => Task.FromResult(AccountAddOutcomeFactory.CreateAdded(TestSignIns.AccountId));
 
     public IReadOnlyList<AccountRegistration> SavedRegistrations => savedRegistrations;
 
@@ -16,7 +16,7 @@ public sealed class FakeAccountStore : IAccountStore
     {
         savedRegistrations.Add(registration);
 
-        return Task.FromResult(Save(registration));
+        return Save(registration, cancellationToken);
     }
 
     public Task<Result<Option<StoredAccount>, ErrorResponse>> GetByKeyAsync(CloudProvider provider, ProviderAccountKey key, CancellationToken cancellationToken) => Task.FromResult(Result.Success<Option<StoredAccount>, ErrorResponse>(Option.None<StoredAccount>()));

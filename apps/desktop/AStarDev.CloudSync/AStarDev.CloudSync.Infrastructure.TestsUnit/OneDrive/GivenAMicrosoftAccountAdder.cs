@@ -15,6 +15,7 @@ public class GivenAMicrosoftAccountAdder
     private FakeMsalClient msal = new();
     private FakeDriveLookup driveLookup = new();
     private FakeAccountStore accountStore = new();
+    private InMemoryPlaintextCacheConsentStore consentStore = new();
 
     [Fact]
     public async Task when_a_new_account_signs_in_then_it_is_saved_with_its_profile_drive_and_quota_and_added()
@@ -42,7 +43,7 @@ public class GivenAMicrosoftAccountAdder
     [Fact]
     public async Task when_the_account_was_already_added_then_the_outcome_is_re_authenticated()
     {
-        accountStore = new FakeAccountStore { Save = _ => AccountAddOutcomeFactory.CreateReAuthenticated(TestSignIns.AccountId) };
+        accountStore = new FakeAccountStore { Save = (_, _) => Task.FromResult(AccountAddOutcomeFactory.CreateReAuthenticated(TestSignIns.AccountId)) };
 
         var outcome = await CreateAdder().AddAsync(TestContext.Current.CancellationToken);
 
@@ -134,7 +135,7 @@ public class GivenAMicrosoftAccountAdder
     [Fact]
     public async Task when_the_save_fails_for_a_new_account_then_the_msal_account_is_removed()
     {
-        accountStore = new FakeAccountStore { Save = _ => AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreatePersistFailed()) };
+        accountStore = new FakeAccountStore { Save = (_, _) => Task.FromResult(AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreatePersistFailed())) };
 
         var outcome = await CreateAdder().AddAsync(TestContext.Current.CancellationToken);
 
@@ -146,7 +147,7 @@ public class GivenAMicrosoftAccountAdder
     public async Task when_the_save_fails_for_an_account_already_in_the_token_cache_then_the_msal_account_is_kept()
     {
         msal = new FakeMsalClient { CachedAccountKeys = [TestSignIns.AccountKey.ToUpperInvariant()] };
-        accountStore = new FakeAccountStore { Save = _ => AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreatePersistFailed()) };
+        accountStore = new FakeAccountStore { Save = (_, _) => Task.FromResult(AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreatePersistFailed())) };
 
         var outcome = await CreateAdder().AddAsync(TestContext.Current.CancellationToken);
 
@@ -168,6 +169,60 @@ public class GivenAMicrosoftAccountAdder
     }
 
     [Fact]
+    public async Task when_sign_in_times_out_without_the_user_cancelling_then_the_failure_is_network()
+    {
+        msal = new FakeMsalClient { SignIn = async _ => { await Task.Yield(); throw new TaskCanceledException("The request timed out."); } };
+
+        var outcome = await CreateAdder().AddAsync(TestContext.Current.CancellationToken);
+
+        outcome.ShouldBe(AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreateNetwork()));
+    }
+
+    [Fact]
+    public async Task when_the_drive_lookup_times_out_without_the_user_cancelling_then_the_failure_is_network_and_the_new_msal_account_is_removed()
+    {
+        driveLookup = new FakeDriveLookup { Lookup = async _ => { await Task.Yield(); throw new TaskCanceledException("The request timed out."); } };
+
+        var outcome = await CreateAdder().AddAsync(TestContext.Current.CancellationToken);
+
+        outcome.ShouldBe(AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreateNetwork()));
+        msal.RemovedKeys.ShouldHaveSingleItem().Value.ShouldBe(TestSignIns.AccountKey);
+    }
+
+    [Fact]
+    public async Task when_the_user_cancels_during_the_save_of_a_new_account_then_the_outcome_is_cancelled_and_the_msal_account_is_removed()
+    {
+        using var cancellation = new CancellationTokenSource();
+        accountStore = new FakeAccountStore { Save = async (_, token) => { await cancellation.CancelAsync(); token.ThrowIfCancellationRequested(); return AccountAddOutcomeFactory.CreateAdded(TestSignIns.AccountId); } };
+
+        var outcome = await CreateAdder().AddAsync(cancellation.Token);
+
+        outcome.ShouldBe(AccountAddOutcomeFactory.CreateCancelled());
+        msal.RemovedKeys.ShouldHaveSingleItem().Value.ShouldBe(TestSignIns.AccountKey);
+    }
+
+    [Fact]
+    public async Task when_the_consent_question_fails_then_the_add_fails_with_token_cache_unavailable_instead_of_throwing()
+    {
+        storage = new FakeMsalTokenCacheStorage { SecureStoreFails = true };
+        consent = new FakeTokenCacheConsent { Fails = true };
+
+        var outcome = await CreateAdder().AddAsync(TestContext.Current.CancellationToken);
+
+        outcome.ShouldBe(AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreateTokenCacheUnavailable()));
+    }
+
+    [Fact]
+    public async Task when_the_save_fails_for_an_account_that_is_stored_but_not_in_the_token_cache_then_the_msal_account_is_removed()
+    {
+        accountStore = new FakeAccountStore { Save = (_, _) => Task.FromResult(AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreatePersistFailed())) };
+
+        _ = await CreateAdder().AddAsync(TestContext.Current.CancellationToken);
+
+        msal.RemovedKeys.ShouldHaveSingleItem().Value.ShouldBe(TestSignIns.AccountKey);
+    }
+
+    [Fact]
     public async Task when_the_add_fails_then_the_log_contains_no_email_name_or_token()
     {
         msal = new FakeMsalClient { SignIn = _ => Task.FromException<MicrosoftSignIn>(new MsalServiceException("invalid_grant", $"AADSTS50126: {TestSignIns.Email} could not sign in.")) };
@@ -182,12 +237,12 @@ public class GivenAMicrosoftAccountAdder
     [Fact]
     public async Task when_the_save_fails_then_the_log_contains_no_account_key()
     {
-        accountStore = new FakeAccountStore { Save = _ => AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreatePersistFailed()) };
+        accountStore = new FakeAccountStore { Save = (_, _) => Task.FromResult(AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreatePersistFailed())) };
 
         _ = await CreateAdder().AddAsync(TestContext.Current.CancellationToken);
 
         logger.Messages.ShouldAllBe(message => !message.Contains(TestSignIns.AccountKey, StringComparison.OrdinalIgnoreCase));
     }
 
-    private MicrosoftAccountAdder CreateAdder() => new(new TokenCacheInitialiser(storage, consent, new RecordingLogger<TokenCacheInitialiser>()), msal, driveLookup, accountStore, logger);
+    private MicrosoftAccountAdder CreateAdder() => new(new TokenCacheInitialiser(storage, consent, consentStore, new RecordingLogger<TokenCacheInitialiser>()), msal, driveLookup, accountStore, logger);
 }

@@ -9,12 +9,19 @@ public sealed class FakeTokenCacheConsent : ITokenCacheConsent
 
     public PlaintextCacheConsent Answer { get; set; } = PlaintextCacheConsentFactory.CreateDeclined();
 
+    public bool Fails { get; init; }
+
+    public CancellationTokenSource? CancelOnFirstQuestion { get; init; }
+
     public int QuestionsAsked => questionsAsked;
 
-    public Task<PlaintextCacheConsent> AskAsync(CancellationToken cancellationToken)
+    public async Task<PlaintextCacheConsent> AskAsync(CancellationToken cancellationToken)
     {
-        _ = Interlocked.Increment(ref questionsAsked);
+        if (Interlocked.Increment(ref questionsAsked) == 1 && CancelOnFirstQuestion is not null)
+            await CancelOnFirstQuestion.CancelAsync();
 
-        return Task.FromResult(Answer);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        return Fails ? throw new InvalidOperationException("The consent dialog could not open.") : Answer;
     }
 }

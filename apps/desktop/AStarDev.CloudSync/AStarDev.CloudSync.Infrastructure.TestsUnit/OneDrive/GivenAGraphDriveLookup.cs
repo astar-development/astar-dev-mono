@@ -40,6 +40,17 @@ public class GivenAGraphDriveLookup
 
     [Theory]
     [InlineData(HttpStatusCode.Unauthorized)]
+    [InlineData(HttpStatusCode.Forbidden)]
+    public async Task when_graph_refuses_the_token_then_the_failure_is_auth_rejected(HttpStatusCode statusCode)
+    {
+        var handler = new FakeGraphHandler { Respond = (_, _) => Task.FromResult(FakeGraphHandler.Json(statusCode, """{ "error": { "code": "InvalidAuthenticationToken", "message": "Access token is empty." } }""")) };
+
+        var failure = await CreateLookup(handler).GetDriveAsync(TestSignIns.AccessToken, TestContext.Current.CancellationToken).MatchAsync(drive => (object)drive, error => error);
+
+        failure.ShouldBe(AccountAddFailureFactory.CreateAuthRejected());
+    }
+
+    [Theory]
     [InlineData(HttpStatusCode.NotFound)]
     [InlineData(HttpStatusCode.InternalServerError)]
     public async Task when_graph_returns_an_error_then_the_drive_is_unavailable_and_a_warning_is_logged(HttpStatusCode statusCode)

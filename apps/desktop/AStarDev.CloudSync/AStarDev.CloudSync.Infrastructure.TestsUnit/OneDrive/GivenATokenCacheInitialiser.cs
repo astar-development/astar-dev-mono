@@ -10,6 +10,7 @@ namespace AStarDev.CloudSync.Infrastructure.TestsUnit.OneDrive;
 public class GivenATokenCacheInitialiser
 {
     private readonly RecordingLogger<TokenCacheInitialiser> logger = new();
+    private readonly InMemoryPlaintextCacheConsentStore consentStore = new();
 
     [Fact]
     public async Task when_the_secure_store_is_available_then_the_cache_is_attached_without_asking_the_user()
@@ -104,5 +105,69 @@ public class GivenATokenCacheInitialiser
         logger.Entries.ShouldAllBe(entry => entry.Exception == null);
     }
 
-    private TokenCacheInitialiser CreateInitialiser(FakeMsalTokenCacheStorage storage, FakeTokenCacheConsent consent) => new(storage, consent, logger);
+    [Fact]
+    public async Task when_the_user_cancels_the_consent_question_then_the_attempt_is_cancelled_and_the_next_call_asks_again()
+    {
+        using var cancellation = new CancellationTokenSource();
+        var storage = new FakeMsalTokenCacheStorage { SecureStoreFails = true };
+        var consent = new FakeTokenCacheConsent { Answer = PlaintextCacheConsentFactory.CreateGranted(), CancelOnFirstQuestion = cancellation };
+        var initialiser = CreateInitialiser(storage, consent);
+
+        await Should.ThrowAsync<OperationCanceledException>(() => initialiser.EnsureAsync(cancellation.Token));
+        var attached = await initialiser.EnsureAsync(TestContext.Current.CancellationToken).MatchAsync(_ => true, _ => false);
+
+        (attached, consent.QuestionsAsked).ShouldBe((true, 2));
+    }
+
+    [Fact]
+    public async Task when_the_consent_question_fails_then_the_token_cache_is_unavailable_and_the_failure_message_is_not_logged()
+    {
+        var storage = new FakeMsalTokenCacheStorage { SecureStoreFails = true };
+
+        var failure = await CreateInitialiser(storage, new FakeTokenCacheConsent { Fails = true }).EnsureAsync(TestContext.Current.CancellationToken).MatchAsync(attached => (object)attached, failure => failure);
+
+        (failure, storage.PlaintextFileAttempts).ShouldBe((AccountAddFailureFactory.CreateTokenCacheUnavailable(), 0));
+        logger.Messages.ShouldAllBe(message => !message.Contains("could not open"));
+    }
+
+    [Fact]
+    public async Task when_the_user_agrees_then_the_consent_is_remembered()
+    {
+        _ = await CreateInitialiser(new FakeMsalTokenCacheStorage { SecureStoreFails = true }, new FakeTokenCacheConsent { Answer = PlaintextCacheConsentFactory.CreateGranted() }).EnsureAsync(TestContext.Current.CancellationToken);
+
+        consentStore.SavedAnswers.ShouldBe([PlaintextCacheConsentFactory.CreateGranted()]);
+    }
+
+    [Fact]
+    public async Task when_the_user_declines_then_no_consent_is_remembered()
+    {
+        _ = await CreateInitialiser(new FakeMsalTokenCacheStorage { SecureStoreFails = true }, new FakeTokenCacheConsent { Answer = PlaintextCacheConsentFactory.CreateDeclined() }).EnsureAsync(TestContext.Current.CancellationToken);
+
+        consentStore.Load().Match(_ => "remembered", () => "none").ShouldBe("none");
+    }
+
+    [Fact]
+    public async Task when_the_user_agreed_on_an_earlier_run_then_the_plaintext_file_is_used_without_asking_again()
+    {
+        consentStore.Remembered = Option.Some(PlaintextCacheConsentFactory.CreateGranted());
+        var storage = new FakeMsalTokenCacheStorage { SecureStoreFails = true };
+        var consent = new FakeTokenCacheConsent();
+
+        var attached = await CreateInitialiser(storage, consent).EnsureAsync(TestContext.Current.CancellationToken).MatchAsync(_ => true, _ => false);
+
+        (attached, consent.QuestionsAsked, storage.PlaintextFileAttempts).ShouldBe((true, 0, 1));
+    }
+
+    [Fact]
+    public async Task when_the_secure_store_works_then_a_remembered_consent_is_not_used()
+    {
+        consentStore.Remembered = Option.Some(PlaintextCacheConsentFactory.CreateGranted());
+        var storage = new FakeMsalTokenCacheStorage();
+
+        _ = await CreateInitialiser(storage, new FakeTokenCacheConsent()).EnsureAsync(TestContext.Current.CancellationToken);
+
+        storage.PlaintextFileAttempts.ShouldBe(0);
+    }
+
+    private TokenCacheInitialiser CreateInitialiser(FakeMsalTokenCacheStorage storage, FakeTokenCacheConsent consent) => new(storage, consent, consentStore, logger);
 }
