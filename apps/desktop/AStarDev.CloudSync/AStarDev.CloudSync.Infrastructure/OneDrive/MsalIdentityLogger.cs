@@ -8,8 +8,22 @@ namespace AStarDev.CloudSync.Infrastructure.OneDrive;
 public sealed class MsalIdentityLogger(ILogger<MsalIdentityLogger> logger) : IIdentityLogger
 {
     /// <inheritdoc />
-    public bool IsEnabled(EventLogLevel eventLogLevel) => throw new NotImplementedException($"{logger}{eventLogLevel}");
+    public bool IsEnabled(EventLogLevel eventLogLevel) => eventLogLevel is EventLogLevel.Critical or EventLogLevel.Error or EventLogLevel.Warning;
 
     /// <inheritdoc />
-    public void Log(LogEntry entry) => throw new NotImplementedException($"{entry}");
+    public void Log(LogEntry entry)
+    {
+        if (!IsEnabled(entry.EventLogLevel))
+            return;
+
+        var level = ToLogLevel(entry.EventLogLevel);
+        AccountAddLog.MsalMessage(logger, level, entry.Message ?? string.Empty);
+    }
+
+    private static LogLevel ToLogLevel(EventLogLevel eventLogLevel) => eventLogLevel switch
+    {
+        EventLogLevel.Critical => LogLevel.Critical,
+        EventLogLevel.Error => LogLevel.Error,
+        _ => LogLevel.Warning,
+    };
 }

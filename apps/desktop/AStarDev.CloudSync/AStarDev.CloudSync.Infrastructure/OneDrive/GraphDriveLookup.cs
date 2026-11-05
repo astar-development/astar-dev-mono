@@ -1,7 +1,6 @@
 using AStarDev.CloudSync.Core.Accounts;
 using AStarDev.CloudSync.Domain.Accounts;
 using AStarDev.FunctionalParadigm;
-using AStarDev.LoggingExtensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.Graph.Models;
@@ -33,19 +32,19 @@ public sealed class GraphDriveLookup(IHttpClientFactory httpClientFactory, ILogg
     private Result<MicrosoftDrive, AccountAddFailure> ToDrive(Drive? drive) =>
         DriveIdFactory.Create(drive?.Id).Match(
             driveId => Result.Success<MicrosoftDrive, AccountAddFailure>(MicrosoftDriveFactory.Create(driveId, StorageUsageFactory.Create(drive?.Quota?.Used ?? 0, drive?.Quota?.Total ?? 0))),
-            _ => Failed("Graph returned a drive without an id.", AccountAddFailureFactory.CreateDriveUnavailable()));
+            _ => Failed("Graph returned a drive without an id", 200, "none", AccountAddFailureFactory.CreateDriveUnavailable()));
 
     private Result<MicrosoftDrive, AccountAddFailure> LookupFailed(Exception exception) => exception switch
     {
-        HttpRequestException => Failed($"The drive could not be read because Graph could not be reached ({exception.GetType().Name}).", AccountAddFailureFactory.CreateNetwork()),
-        ApiException { ResponseStatusCode: 401 or 403 } apiException => Failed($"Graph refused the access token with HTTP {apiException.ResponseStatusCode} ({exception.GetType().Name}).", AccountAddFailureFactory.CreateAuthRejected()),
-        ApiException apiException => Failed($"Graph returned HTTP {apiException.ResponseStatusCode} for the drive ({exception.GetType().Name}).", AccountAddFailureFactory.CreateDriveUnavailable()),
-        _ => Failed($"The drive could not be read ({exception.GetType().Name}).", AccountAddFailureFactory.CreateDriveUnavailable()),
+        HttpRequestException => Failed("Graph could not be reached", 0, exception.GetType().Name, AccountAddFailureFactory.CreateNetwork()),
+        ApiException { ResponseStatusCode: 401 or 403 } apiException => Failed("Graph refused the access token", apiException.ResponseStatusCode, exception.GetType().Name, AccountAddFailureFactory.CreateAuthRejected()),
+        ApiException apiException => Failed("Graph returned an error", apiException.ResponseStatusCode, exception.GetType().Name, AccountAddFailureFactory.CreateDriveUnavailable()),
+        _ => Failed("unexpected error", 0, exception.GetType().Name, AccountAddFailureFactory.CreateDriveUnavailable()),
     };
 
-    private Result<MicrosoftDrive, AccountAddFailure> Failed(string message, AccountAddFailure failure)
+    private Result<MicrosoftDrive, AccountAddFailure> Failed(string reason, int statusCode, string exceptionType, AccountAddFailure failure)
     {
-        LogMessage.Warning(logger, nameof(GraphDriveLookup), message);
+        AccountAddLog.DriveLookupFailed(logger, reason, statusCode, exceptionType);
 
         return Result.Failure<MicrosoftDrive, AccountAddFailure>(failure);
     }

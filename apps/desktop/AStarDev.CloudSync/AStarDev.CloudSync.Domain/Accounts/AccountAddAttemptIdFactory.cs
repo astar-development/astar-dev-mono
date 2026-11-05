@@ -7,5 +7,5 @@ public static class AccountAddAttemptIdFactory
 {
     /// <summary>Creates an attempt id from a GUID.</summary>
     /// <param name="value">The GUID that identifies the attempt.</param>
-    public static AccountAddAttemptId Create(Guid value) => throw new NotImplementedException($"{value}");
+    public static AccountAddAttemptId Create(Guid value) => new(value);
 }
