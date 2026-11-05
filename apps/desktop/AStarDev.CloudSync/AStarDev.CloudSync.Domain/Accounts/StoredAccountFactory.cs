@@ -8,5 +8,5 @@ public static class StoredAccountFactory
     /// <summary>Creates a stored account.</summary>
     /// <param name="id">CloudSync's id for the account.</param>
     /// <param name="registration">The account details from its latest sign-in.</param>
-    public static StoredAccount Create(AccountId id, AccountRegistration registration) => throw new NotImplementedException();
+    public static StoredAccount Create(AccountId id, AccountRegistration registration) => new(id, registration);
 }
