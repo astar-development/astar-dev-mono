@@ -24,12 +24,21 @@ public class GivenAProviderAccountKeyFactory
     }
 
     [Fact]
-    public void when_two_identifiers_differ_only_by_case_then_the_keys_are_equal()
+    public void when_created_with_mixed_case_then_the_key_keeps_its_case()
     {
-        var lowerCaseKey = ProviderAccountKeyFactory.Create(HomeAccountIdentifier);
-        var upperCaseKey = ProviderAccountKeyFactory.Create(HomeAccountIdentifier.ToUpperInvariant());
+        var mixedCaseIdentifier = "00000000-0000-0000-A1B2-c3d4e5f60718.9188040D-6c67-4c5b-b112-36a304b66dad";
 
-        upperCaseKey.ShouldBe(lowerCaseKey);
+        var keyValue = ProviderAccountKeyFactory.Create(mixedCaseIdentifier).Match(key => key.Value, error => error.Message);
+
+        keyValue.ShouldBe(mixedCaseIdentifier);
+    }
+
+    [Fact]
+    public void when_the_key_is_converted_to_text_then_the_identifier_is_not_shown()
+    {
+        var keyText = ProviderAccountKeyFactory.Create(HomeAccountIdentifier).Match(key => key.ToString(), error => error.Message);
+
+        keyText.ShouldBe("ProviderAccountKey(redacted)");
     }
 
     [Theory]

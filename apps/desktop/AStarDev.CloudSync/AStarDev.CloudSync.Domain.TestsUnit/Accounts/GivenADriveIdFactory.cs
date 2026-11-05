@@ -21,6 +21,14 @@ public class GivenADriveIdFactory
         driveIdValue.ShouldBe("b!AbCdEf");
     }
 
+    [Fact]
+    public void when_the_drive_id_is_converted_to_text_then_the_value_is_not_shown()
+    {
+        var driveIdText = DriveIdFactory.Create("8A3F2C1D0E9B7A65").Match(driveId => driveId.ToString(), error => error.Message);
+
+        driveIdText.ShouldBe("DriveId(redacted)");
+    }
+
     [Theory]
     [InlineData(null)]
     [InlineData("")]
