@@ -26,6 +26,18 @@ public class GivenALayoutCViewModel
     }
 
     [Fact]
+    public async Task when_the_add_account_dialog_closes_then_the_overview_is_read_again()
+    {
+        var source = new CountingSyncOverviewSource(await TestData.CreateOverviewAsync());
+        var overview = new SyncOverviewViewModel(source, new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var layout = new LayoutCViewModel(overview, new RecordingSyncActions(), TestData.CreateLocalization());
+
+        await layout.AddAccountCommand.ExecuteAsync(null);
+
+        (source.Reads, overview.LoadState).ShouldBe((1, SyncOverviewLoadStateFactory.CreateLoaded()));
+    }
+
+    [Fact]
     public async Task when_the_add_account_command_runs_then_an_account_is_added()
     {
         var syncActions = new RecordingSyncActions();

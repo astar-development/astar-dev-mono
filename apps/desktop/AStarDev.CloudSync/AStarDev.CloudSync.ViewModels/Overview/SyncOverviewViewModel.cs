@@ -64,7 +64,7 @@ public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ISyncActio
     {
         try
         {
-            overview = await source.GetOverviewAsync(cancellationToken);
+            overview = await source.GetOverviewAsync(cancellationToken).MatchAsync(loaded => loaded, error => throw new NotImplementedException(error.Message));
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {

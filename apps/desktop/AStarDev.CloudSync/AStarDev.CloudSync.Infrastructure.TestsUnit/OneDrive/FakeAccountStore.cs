@@ -21,5 +21,7 @@ public sealed class FakeAccountStore : IAccountStore
 
     public Task<Result<Option<StoredAccount>, ErrorResponse>> GetByKeyAsync(CloudProvider provider, ProviderAccountKey key, CancellationToken cancellationToken) => Task.FromResult(Result.Success<Option<StoredAccount>, ErrorResponse>(Option.None<StoredAccount>()));
 
-    public Task<Result<IReadOnlyList<StoredAccount>, ErrorResponse>> GetAllAsync(CancellationToken cancellationToken) => Task.FromResult(Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([]));
+    public Func<Result<IReadOnlyList<StoredAccount>, ErrorResponse>> All { get; init; } = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([]);
+
+    public Task<Result<IReadOnlyList<StoredAccount>, ErrorResponse>> GetAllAsync(CancellationToken cancellationToken) => Task.FromResult(All());
 }

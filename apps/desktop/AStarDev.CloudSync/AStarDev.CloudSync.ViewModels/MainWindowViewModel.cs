@@ -1,12 +1,13 @@
 using System.ComponentModel;
 using AStarDev.CloudSync.Core.DisplaySettings;
+using AStarDev.CloudSync.ViewModels.Accounts;
 using AStarDev.CloudSync.ViewModels.DisplaySettings;
 using AStarDev.CloudSync.ViewModels.Layouts;
 using AStarDev.Localization;
 
 namespace AStarDev.CloudSync.ViewModels;
 
-/// <summary>View model for the CloudSync main window: shows the layout chosen in the display settings.</summary>
+/// <summary>View model for the CloudSync main window: shows the layout chosen in the display settings and the add-account dialog over it.</summary>
 public sealed class MainWindowViewModel : LocalizedObservableObject
 {
     /// <summary>Creates the view model and follows layout changes in the display settings.</summary>
@@ -15,12 +16,14 @@ public sealed class MainWindowViewModel : LocalizedObservableObject
     /// <param name="layoutA">Layout A, the unified account list.</param>
     /// <param name="layoutB">Layout B, grouped by provider.</param>
     /// <param name="layoutC">Layout C, sync pairs first.</param>
-    public MainWindowViewModel(ILocalizationService localization, DisplaySettingsViewModel displaySettings, LayoutAViewModel layoutA, LayoutBViewModel layoutB, LayoutCViewModel layoutC) : base(localization)
+    /// <param name="addAccount">The add-account dialog shown over the layout.</param>
+    public MainWindowViewModel(ILocalizationService localization, DisplaySettingsViewModel displaySettings, LayoutAViewModel layoutA, LayoutBViewModel layoutB, LayoutCViewModel layoutC, AddAccountViewModel addAccount) : base(localization)
     {
         DisplaySettings = displaySettings;
         LayoutA = layoutA;
         LayoutB = layoutB;
         LayoutC = layoutC;
+        AddAccount = addAccount;
         displaySettings.PropertyChanged += OnDisplaySettingsChanged;
     }
 
@@ -38,6 +41,9 @@ public sealed class MainWindowViewModel : LocalizedObservableObject
 
     /// <summary>Layout C, sync pairs first.</summary>
     public LayoutCViewModel LayoutC { get; }
+
+    /// <summary>The add-account dialog shown over the layout.</summary>
+    public AddAccountViewModel AddAccount { get; }
 
     /// <summary>The view model of the layout to show. Each layout keeps its own state, so switching back restores it.</summary>
     public object CurrentLayout => DisplaySettings.CurrentLayout switch

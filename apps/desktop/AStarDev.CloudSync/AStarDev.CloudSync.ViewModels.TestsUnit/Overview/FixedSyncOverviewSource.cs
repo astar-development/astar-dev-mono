@@ -1,8 +1,9 @@
 using AStarDev.CloudSync.Core.Overview;
+using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.ViewModels.TestsUnit.Overview;
 
 internal sealed class FixedSyncOverviewSource(SyncOverview overview) : ISyncOverviewSource
 {
-    public Task<SyncOverview> GetOverviewAsync(CancellationToken cancellationToken) => Task.FromResult(overview);
+    public Task<Result<SyncOverview, ErrorResponse>> GetOverviewAsync(CancellationToken cancellationToken) => Task.FromResult(Result.Success<SyncOverview, ErrorResponse>(overview));
 }

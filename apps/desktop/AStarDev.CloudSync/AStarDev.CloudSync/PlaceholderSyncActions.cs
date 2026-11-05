@@ -8,9 +8,10 @@ using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync;
 
-/// <summary>Stands in for the sync engine until it exists: logs each requested action and does nothing else.</summary>
-/// <param name="logger">Records each requested action.</param>
-public sealed class PlaceholderSyncActions(ILogger<PlaceholderSyncActions> logger) : ISyncActions
+/// <summary>Stands in for the sync engine until it exists: opens the add-account dialog for "add account", and logs every other requested action without doing anything else.</summary>
+/// <param name="addAccountDialog">Shows the add-account dialog.</param>
+/// <param name="logger">Records each requested placeholder action.</param>
+public sealed class PlaceholderSyncActions(IAddAccountDialog addAccountDialog, ILogger<PlaceholderSyncActions> logger) : ISyncActions
 {
     /// <inheritdoc />
     public Task SyncNowAsync(AccountId accountId, CancellationToken cancellationToken) => LogRequestAsync("Sync now requested (placeholder: the sync engine is not implemented yet)", accountId.ToString());
@@ -22,7 +23,7 @@ public sealed class PlaceholderSyncActions(ILogger<PlaceholderSyncActions> logge
     public Task PauseAsync(AccountId accountId, CancellationToken cancellationToken) => LogRequestAsync("Pause requested (placeholder: the sync engine is not implemented yet)", accountId.ToString());
 
     /// <inheritdoc />
-    public Task AddAccountAsync(CancellationToken cancellationToken) => LogRequestAsync("Add account requested (placeholder: the sync engine is not implemented yet)", string.Empty);
+    public Task AddAccountAsync(CancellationToken cancellationToken) => LogRequestAsync("Add account requested (placeholder: the sync engine is not implemented yet)", $"{addAccountDialog.GetType().Name}");
 
     /// <inheritdoc />
     public Task AddSyncPairAsync(Option<AccountId> accountId, CancellationToken cancellationToken) => LogRequestAsync("Add sync pair requested (placeholder: the sync engine is not implemented yet)", accountId.Match(id => id.ToString(), () => string.Empty));

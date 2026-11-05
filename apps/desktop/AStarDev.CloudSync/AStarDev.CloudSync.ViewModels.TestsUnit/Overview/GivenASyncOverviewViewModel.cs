@@ -230,6 +230,20 @@ public class GivenASyncOverviewViewModel
         await Should.ThrowAsync<OperationCanceledException>(() => viewModel.LoadAsync(TestContext.Current.CancellationToken));
     }
 
+    [Fact]
+    public async Task when_the_source_reports_a_failure_then_the_load_state_is_failed_and_an_error_without_the_failure_text_is_logged()
+    {
+        var logger = new RecordingLogger<SyncOverviewViewModel>();
+        var viewModel = new SyncOverviewViewModel(new FailingSyncOverviewSource("database /home/user/cloudsync.db is locked"), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), logger);
+
+        await viewModel.LoadAsync(TestContext.Current.CancellationToken);
+
+        viewModel.LoadState.ShouldBeOfType<SyncOverviewLoadState.Failed>();
+        viewModel.LoadErrorText.ShouldBe("Could not load your accounts and sync pairs. The details have been logged.");
+        logger.Entries.ShouldHaveSingleItem().Level.ShouldBe(LogLevel.Error);
+        logger.Messages.ShouldAllBe(message => !message.Contains("/home/user"));
+    }
+
     private static async Task<SyncOverviewViewModel> CreateLoadedViewModelAsync(SyncOverview overview)
     {
         var viewModel = new SyncOverviewViewModel(new FixedSyncOverviewSource(overview), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
