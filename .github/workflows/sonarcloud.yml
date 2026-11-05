@@ -117,6 +117,7 @@ jobs:
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" \
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.cs.cobertura.reportsPaths="TestResults/**/*.cobertura.xml" \
+            /d:sonar.coverage.exclusions="**/Migrations/**" \
             /d:sonar.scanner.scanAll=false \
             /d:sonar.scanner.skipJreProvisioning=true
 
@@ -131,7 +132,7 @@ jobs:
         run: |
           mkdir -p TestResults
 
-          mapfile -t projects < <(find . -name '*.Tests*.csproj' ! -name '*.TestsIntegration.csproj')
+          mapfile -t projects < <(find . -name '*.Tests*.csproj' \( ! -name '*.TestsIntegration.csproj' -o -name 'AStarDev.CloudSync.*.TestsIntegration.csproj' \))
 
           for proj in "${projects[@]}"; do
             echo "Running tests for $proj"
