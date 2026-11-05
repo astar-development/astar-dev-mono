@@ -23,7 +23,7 @@ public sealed class MsalClient(IPublicClientApplication application, IOptions<Mi
             .ExecuteAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        return MicrosoftSignInFactory.Create(result.Account?.HomeAccountId?.Identifier, result.Account?.Username, result.ClaimsPrincipal?.FindFirst("name")?.Value, result.AccessToken);
+        return MicrosoftSignInFactory.Create(result.Account?.HomeAccountId?.Identifier, result.Account?.Username, result.ClaimsPrincipal?.FindFirst("name")?.Value, result.AccessToken, result.Scopes);
     }
 
     /// <inheritdoc />

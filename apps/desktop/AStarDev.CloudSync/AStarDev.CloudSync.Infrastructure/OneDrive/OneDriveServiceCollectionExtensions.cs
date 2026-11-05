@@ -2,6 +2,7 @@ using System.IO.Abstractions;
 using AStarDev.CloudSync.Core.Accounts;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Graph;
@@ -20,11 +21,13 @@ public static class OneDriveServiceCollectionExtensions
     /// <returns>The <paramref name="services"/> collection to allow further chaining.</returns>
     public static IServiceCollection AddOneDriveAccounts(this IServiceCollection services, IConfiguration configuration, Func<IServiceProvider, IDirectoryInfo> tokenCacheFolder, Func<IServiceProvider, IFileInfo> consentFile)
     {
+        services.TryAddSingleton(TimeProvider.System);
         _ = services.AddHttpClient(GraphDriveLookup.HttpClientName)
             .ConfigurePrimaryHttpMessageHandler(() => GraphClientFactory.CreatePipeline(GraphClientFactory.CreateDefaultHandlers()));
 
         return services
             .Configure<MicrosoftAccountOptions>(configuration.GetSection(MicrosoftAccountOptions.SectionName))
+            .AddSingleton<MsalIdentityLogger>()
             .AddSingleton<IPublicClientApplication>(CreatePublicClientApplication)
             .AddSingleton<IMsalClient, MsalClient>()
             .AddSingleton<IMsalTokenCacheStorage>(provider => new MsalCacheHelperStorage(provider.GetRequiredService<IPublicClientApplication>(), tokenCacheFolder(provider)))
@@ -41,6 +44,7 @@ public static class OneDriveServiceCollectionExtensions
         return PublicClientApplicationBuilder.Create(options.ClientId)
             .WithAuthority(options.Authority)
             .WithRedirectUri(options.RedirectUri.OriginalString)
+            .WithLogging(provider.GetRequiredService<MsalIdentityLogger>(), enablePiiLogging: false)
             .Build();
     }
 }

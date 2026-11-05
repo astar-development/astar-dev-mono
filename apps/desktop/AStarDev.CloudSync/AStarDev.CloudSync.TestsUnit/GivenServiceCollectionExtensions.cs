@@ -244,7 +244,8 @@ public class GivenServiceCollectionExtensions
 
         provider.GetRequiredService<IPublicClientApplication>().AppConfig.ShouldSatisfyAllConditions(
             config => config.ClientId.ShouldBe("3057f494-687d-4abb-a653-4b8066230b6e"),
-            config => config.RedirectUri.ShouldBe("http://localhost"));
+            config => config.RedirectUri.ShouldBe("http://localhost"),
+            config => config.EnablePiiLogging.ShouldBeFalse());
         provider.GetRequiredService<IPublicClientApplication>().Authority.ShouldStartWith("https://login.microsoftonline.com/consumers");
     }
 

@@ -1,7 +1,6 @@
 using AStarDev.CloudSync.Core.Accounts;
 using AStarDev.CloudSync.Domain.Accounts;
 using AStarDev.FunctionalParadigm;
-using AStarDev.LoggingExtensions;
 using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync.Infrastructure.OneDrive;
@@ -23,11 +22,19 @@ public sealed class TokenCacheInitialiser(IMsalTokenCacheStorage storage, IToken
     {
         lock (gate)
         {
-            var current = attachment.Filter(IsAttachedOrAttaching).Match(inProgress => inProgress, () => AttachAsync(cancellationToken));
+            var current = attachment.Filter(IsAttachedOrAttaching).Match(Reuse, () => AttachAsync(cancellationToken));
             attachment = Option.Some(current);
 
             return current;
         }
+    }
+
+    private Task<Result<Unit, AccountAddFailure>> Reuse(Task<Result<Unit, AccountAddFailure>> attached)
+    {
+        if (attached.IsCompletedSuccessfully)
+            AccountAddLog.TokenCacheInitialised(logger, "AlreadyAttached");
+
+        return attached;
     }
 
     private static bool IsAttachedOrAttaching(Task<Result<Unit, AccountAddFailure>> attempt) => !attempt.IsCompleted || (attempt.IsCompletedSuccessfully && attempt.Result.Match(_ => true, _ => false));
@@ -35,15 +42,22 @@ public sealed class TokenCacheInitialiser(IMsalTokenCacheStorage storage, IToken
     private Task<Result<Unit, AccountAddFailure>> AttachAsync(CancellationToken cancellationToken) =>
         Try.RunAsync(() => Task.Run(() => UnitTask.RunAsync(storage.AttachSecureStoreAsync), cancellationToken), cancellationToken)
             .ToResultAsync(exception => exception)
-            .MatchAsync(_ => Task.FromResult(Attached("The token cache uses the secure store.")), exception => UsePlaintextFileIfAllowedAsync(exception, cancellationToken));
+            .MatchAsync(_ => Task.FromResult(Attached("SecureStore")), exception => UsePlaintextFileIfAllowedAsync(exception, cancellationToken));
 
     private Task<Result<Unit, AccountAddFailure>> UsePlaintextFileIfAllowedAsync(Exception exception, CancellationToken cancellationToken)
     {
-        LogMessage.Warning(logger, nameof(TokenCacheInitialiser), $"The secure token store is unavailable ({exception.GetType().Name}).");
+        AccountAddLog.SecureStoreUnavailable(logger, exception.GetType().Name);
 
         return consentStore.Load()
             .Filter(remembered => remembered is PlaintextCacheConsent.Granted)
-            .Match(_ => AttachPlaintextFileAsync("The user agreed to a plaintext token file on an earlier run; the token cache uses it.", cancellationToken), () => AskForConsentAsync(cancellationToken));
+            .Match(_ => UseRememberedConsentAsync(cancellationToken), () => AskForConsentAsync(cancellationToken));
+    }
+
+    private Task<Result<Unit, AccountAddFailure>> UseRememberedConsentAsync(CancellationToken cancellationToken)
+    {
+        AccountAddLog.TokenCacheConsent(logger, "Remembered");
+
+        return AttachPlaintextFileAsync(cancellationToken);
     }
 
     private Task<Result<Unit, AccountAddFailure>> AskForConsentAsync(CancellationToken cancellationToken) =>
@@ -59,39 +73,40 @@ public sealed class TokenCacheInitialiser(IMsalTokenCacheStorage storage, IToken
 
     private Task<Result<Unit, AccountAddFailure>> RememberAndAttachPlaintextFileAsync(PlaintextCacheConsent answer, CancellationToken cancellationToken)
     {
+        AccountAddLog.TokenCacheConsent(logger, "Granted");
         _ = consentStore.Save(answer);
 
-        return AttachPlaintextFileAsync("The user agreed to a plaintext token file; the token cache uses it.", cancellationToken);
+        return AttachPlaintextFileAsync(cancellationToken);
     }
 
-    private Task<Result<Unit, AccountAddFailure>> AttachPlaintextFileAsync(string attachedMessage, CancellationToken cancellationToken) =>
+    private Task<Result<Unit, AccountAddFailure>> AttachPlaintextFileAsync(CancellationToken cancellationToken) =>
         Try.RunAsync(() => Task.Run(() => UnitTask.RunAsync(storage.AttachPlaintextFileAsync), cancellationToken), cancellationToken)
-            .MatchAsync(_ => Attached(attachedMessage), PlaintextFileFailed);
+            .MatchAsync(_ => Attached("PlaintextFile"), PlaintextFileFailed);
 
-    private Result<Unit, AccountAddFailure> Attached(string message)
+    private Result<Unit, AccountAddFailure> Attached(string mode)
     {
-        LogMessage.Information(logger, nameof(TokenCacheInitialiser), message);
+        AccountAddLog.TokenCacheInitialised(logger, mode);
 
         return Result.Success<Unit, AccountAddFailure>(Unit.Instance);
     }
 
     private Result<Unit, AccountAddFailure> Declined()
     {
-        LogMessage.Information(logger, nameof(TokenCacheInitialiser), "The user declined a plaintext token file; the token cache is unavailable.");
+        AccountAddLog.TokenCacheConsent(logger, "Declined");
 
         return Result.Failure<Unit, AccountAddFailure>(AccountAddFailureFactory.CreateTokenCacheUnavailable());
     }
 
     private Result<Unit, AccountAddFailure> ConsentQuestionFailed(Exception exception)
     {
-        LogMessage.Warning(logger, nameof(TokenCacheInitialiser), $"The plaintext token file question could not be asked ({exception.GetType().Name}); the token cache is unavailable.");
+        AccountAddLog.TokenCacheUnavailable(logger, "the plaintext token file question could not be asked", exception.GetType().Name);
 
         return Result.Failure<Unit, AccountAddFailure>(AccountAddFailureFactory.CreateTokenCacheUnavailable());
     }
 
     private Result<Unit, AccountAddFailure> PlaintextFileFailed(Exception exception)
     {
-        LogMessage.Warning(logger, nameof(TokenCacheInitialiser), $"The plaintext token file could not be used ({exception.GetType().Name}); the token cache is unavailable.");
+        AccountAddLog.TokenCacheUnavailable(logger, "the plaintext token file could not be used", exception.GetType().Name);
 
         return Result.Failure<Unit, AccountAddFailure>(AccountAddFailureFactory.CreateTokenCacheUnavailable());
     }
