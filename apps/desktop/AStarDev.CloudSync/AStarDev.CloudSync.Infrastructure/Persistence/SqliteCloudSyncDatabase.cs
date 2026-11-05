@@ -1,6 +1,7 @@
 using System.IO.Abstractions;
 using AStarDev.CloudSync.Core.Persistence;
 using AStarDev.FunctionalParadigm;
+using AStarDev.LoggingExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -13,5 +14,21 @@ namespace AStarDev.CloudSync.Infrastructure.Persistence;
 public sealed class SqliteCloudSyncDatabase(IDbContextFactory<CloudSyncDbContext> dbContextFactory, IFileInfo databaseFile, ILogger<SqliteCloudSyncDatabase> logger) : ICloudSyncDatabase
 {
     /// <inheritdoc />
-    public Task<Result<Unit, ErrorResponse>> MigrateAsync(CancellationToken cancellationToken) => throw new NotImplementedException($"{dbContextFactory}{databaseFile}{logger}");
+    public async Task<Result<Unit, ErrorResponse>> MigrateAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            databaseFile.Directory?.Create();
+            await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+            await dbContext.Database.MigrateAsync(cancellationToken).ConfigureAwait(false);
+
+            return Unit.Instance;
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            LogMessage.Error(logger, "Could not create or migrate the CloudSync database.", exception);
+
+            return new ErrorResponse("The CloudSync database could not be created or migrated.");
+        }
+    }
 }

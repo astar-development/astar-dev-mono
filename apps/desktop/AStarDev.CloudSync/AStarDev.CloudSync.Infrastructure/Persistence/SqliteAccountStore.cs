@@ -15,7 +15,7 @@ namespace AStarDev.CloudSync.Infrastructure.Persistence;
 public sealed class SqliteAccountStore(IDbContextFactory<CloudSyncDbContext> dbContextFactory, ILogger<SqliteAccountStore> logger) : IAccountStore
 {
     private const string OneDriveProviderKey = "OneDrive";
-    private const int SqliteConstraintErrorCode = 19;
+    private const int SqliteUniqueConstraintErrorCode = 2067;
 
     /// <inheritdoc />
     public async Task<AccountAddOutcome> AddAsync(AccountRegistration registration, CancellationToken cancellationToken)
@@ -26,7 +26,7 @@ public sealed class SqliteAccountStore(IDbContextFactory<CloudSyncDbContext> dbC
             {
                 return await AddOrRefreshAsync(registration, cancellationToken).ConfigureAwait(false);
             }
-            catch (DbUpdateException exception) when (exception.InnerException is SqliteException { SqliteErrorCode: SqliteConstraintErrorCode })
+            catch (DbUpdateException exception) when (exception.InnerException is SqliteException { SqliteExtendedErrorCode: SqliteUniqueConstraintErrorCode })
             {
                 return await AddOrRefreshAsync(registration, cancellationToken).ConfigureAwait(false);
             }
@@ -94,7 +94,7 @@ public sealed class SqliteAccountStore(IDbContextFactory<CloudSyncDbContext> dbC
             return AccountAddOutcomeFactory.CreateReAuthenticated(AccountIdFactory.Create(existing.Id));
         }
 
-        var added = new AccountEntity { Id = Guid.NewGuid(), Provider = providerKey, ProviderAccountKey = registration.Key.Value };
+        var added = new AccountEntity { Id = Guid.NewGuid(), Provider = providerKey };
         RefreshProfile(added, registration);
         dbContext.Accounts.Add(added);
         await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -104,6 +104,7 @@ public sealed class SqliteAccountStore(IDbContextFactory<CloudSyncDbContext> dbC
 
     private static void RefreshProfile(AccountEntity entity, AccountRegistration registration)
     {
+        entity.ProviderAccountKey = registration.Key.Value;
         entity.DisplayName = registration.DisplayName;
         entity.Email = registration.Email;
         entity.DriveId = registration.DriveId.Value;
