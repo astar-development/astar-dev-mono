@@ -54,6 +54,7 @@ launchSettings.json
 TestResults/
 coverage/
 CoverageReport/
+StrykerOutput/
 *.coverage
 *.coveragexml
 *.cobertura.xml
