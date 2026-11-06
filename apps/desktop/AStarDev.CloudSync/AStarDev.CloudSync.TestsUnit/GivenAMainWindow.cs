@@ -146,6 +146,23 @@ public class GivenAMainWindow
     }
 
     [AvaloniaFact]
+    public async Task when_the_settings_flyout_opens_after_a_plaintext_consent_was_granted_then_the_withdraw_setting_shows()
+    {
+        var consent = new FakePlaintextCacheConsentSettings();
+        var viewModel = TestData.CreateMainWindowViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), TestData.CreateDisplaySettings(consent));
+        var window = new MainWindow { DataContext = viewModel };
+        window.Show();
+        var button = FindSingle<DisplaySettingsButton>(window).GetVisualDescendants().OfType<Button>().Single();
+        var flyout = button.Flyout.ShouldBeOfType<Flyout>();
+        consent.Consent = PlaintextCacheConsentFactory.CreateGranted();
+
+        flyout.ShowAt(button);
+
+        viewModel.DisplaySettings.PlaintextCacheConsent.IsVisible.ShouldBeTrue();
+        flyout.Hide();
+    }
+
+    [AvaloniaFact]
     public async Task when_the_overview_fails_to_load_then_the_window_shows_the_load_error()
     {
         var overview = new SyncOverviewViewModel(new ThrowingSyncOverviewSource(new InvalidOperationException("provider unreachable")), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);

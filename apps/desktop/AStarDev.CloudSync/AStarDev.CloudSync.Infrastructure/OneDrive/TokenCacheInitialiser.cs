@@ -10,10 +10,11 @@ namespace AStarDev.CloudSync.Infrastructure.OneDrive;
 /// <param name="consent">Asks the user before the plaintext file is used.</param>
 /// <param name="consentStore">Remembers between runs that the user agreed to the plaintext file.</param>
 /// <param name="logger">Reports the storage chosen and failures, without paths or account details.</param>
-public sealed class TokenCacheInitialiser(IMsalTokenCacheStorage storage, ITokenCacheConsent consent, IPlaintextCacheConsentStore consentStore, ILogger<TokenCacheInitialiser> logger)
+public sealed class TokenCacheInitialiser(IMsalTokenCacheStorage storage, ITokenCacheConsent consent, IPlaintextCacheConsentStore consentStore, ILogger<TokenCacheInitialiser> logger) : IPlaintextCacheConsentSettings
 {
     private readonly Lock gate = new();
     private Option<Task<Result<Unit, AccountAddFailure>>> attachment = Option.None<Task<Result<Unit, AccountAddFailure>>>();
+    private int generation;
 
     /// <summary>Connects the token cache, unless an earlier call already did or is doing so. A failed, declined or cancelled attempt is tried again on the next call.</summary>
     /// <param name="cancellationToken">Cancels the consent question. Calls made while an attempt is running share that attempt, so they also see its cancellation.</param>
@@ -22,11 +23,27 @@ public sealed class TokenCacheInitialiser(IMsalTokenCacheStorage storage, IToken
     {
         lock (gate)
         {
-            var current = attachment.Filter(IsAttachedOrAttaching).Match(Reuse, () => AttachAsync(cancellationToken));
+            var current = attachment.Filter(IsAttachedOrAttaching).Match(Reuse, () => AttachAsync(generation, cancellationToken));
             attachment = Option.Some(current);
 
             return current;
         }
+    }
+
+    /// <inheritdoc />
+    public PlaintextCacheConsent Current() => consentStore.Load().Match(remembered => remembered, PlaintextCacheConsentFactory.CreateDeclined);
+
+    /// <inheritdoc />
+    public Task<Result<Unit, ErrorResponse>> WithdrawAsync()
+    {
+        lock (gate)
+        {
+            attachment = Option.None<Task<Result<Unit, AccountAddFailure>>>();
+            generation++;
+        }
+
+        return Try.RunAsync(() => Task.Run(() => UnitTask.RunAsync(storage.DetachPlaintextFileAsync)), CancellationToken.None)
+            .MatchAsync(_ => ForgetConsent(), PlaintextFileNotDetached);
     }
 
     private Task<Result<Unit, AccountAddFailure>> Reuse(Task<Result<Unit, AccountAddFailure>> attached)
@@ -39,49 +56,91 @@ public sealed class TokenCacheInitialiser(IMsalTokenCacheStorage storage, IToken
 
     private static bool IsAttachedOrAttaching(Task<Result<Unit, AccountAddFailure>> attempt) => !attempt.IsCompleted || (attempt.IsCompletedSuccessfully && attempt.Result.Match(_ => true, _ => false));
 
-    private Task<Result<Unit, AccountAddFailure>> AttachAsync(CancellationToken cancellationToken) =>
+    private bool IsCurrent(int startedGeneration)
+    {
+        lock (gate)
+            return generation == startedGeneration;
+    }
+
+    private Task<Result<Unit, AccountAddFailure>> AttachAsync(int startedGeneration, CancellationToken cancellationToken) =>
         Try.RunAsync(() => Task.Run(() => UnitTask.RunAsync(storage.AttachSecureStoreAsync), cancellationToken), cancellationToken)
             .ToResultAsync(exception => exception)
-            .MatchAsync(_ => Task.FromResult(Attached("SecureStore")), exception => UsePlaintextFileIfAllowedAsync(exception, cancellationToken));
+            .MatchAsync(_ => MoveOldPlaintextTokensAsync(), exception => UsePlaintextFileIfAllowedAsync(exception, startedGeneration, cancellationToken));
 
-    private Task<Result<Unit, AccountAddFailure>> UsePlaintextFileIfAllowedAsync(Exception exception, CancellationToken cancellationToken)
+    private Task<Result<Unit, AccountAddFailure>> MoveOldPlaintextTokensAsync() =>
+        Try.RunAsync(() => Task.Run(storage.MovePlaintextFileToSecureStoreAsync), CancellationToken.None)
+            .MatchAsync(PlaintextFileChecked, PlaintextTokenMoveFailed);
+
+    private Result<Unit, AccountAddFailure> PlaintextFileChecked(PlaintextTokenMove move)
+    {
+        if (move is PlaintextTokenMove.Moved)
+            AccountAddLog.PlaintextTokensMoved(logger);
+
+        _ = consentStore.Save(PlaintextCacheConsentFactory.CreateDeclined());
+
+        return Attached("SecureStore");
+    }
+
+    private Result<Unit, AccountAddFailure> PlaintextTokenMoveFailed(Exception exception)
+    {
+        AccountAddLog.PlaintextTokenMoveFailed(logger, exception.GetType().Name);
+
+        return Attached("SecureStore");
+    }
+
+    private Task<Result<Unit, AccountAddFailure>> UsePlaintextFileIfAllowedAsync(Exception exception, int startedGeneration, CancellationToken cancellationToken)
     {
         AccountAddLog.SecureStoreUnavailable(logger, exception.GetType().Name);
 
         return consentStore.Load()
             .Filter(remembered => remembered is PlaintextCacheConsent.Granted)
-            .Match(_ => UseRememberedConsentAsync(cancellationToken), () => AskForConsentAsync(cancellationToken));
+            .Match(_ => UseRememberedConsentAsync(startedGeneration, cancellationToken), () => AskForConsentAsync(startedGeneration, cancellationToken));
     }
 
-    private Task<Result<Unit, AccountAddFailure>> UseRememberedConsentAsync(CancellationToken cancellationToken)
+    private Task<Result<Unit, AccountAddFailure>> UseRememberedConsentAsync(int startedGeneration, CancellationToken cancellationToken)
     {
         AccountAddLog.TokenCacheConsent(logger, "Remembered");
 
-        return AttachPlaintextFileAsync(cancellationToken);
+        return AttachPlaintextFileAsync(startedGeneration, cancellationToken);
     }
 
-    private Task<Result<Unit, AccountAddFailure>> AskForConsentAsync(CancellationToken cancellationToken) =>
+    private Task<Result<Unit, AccountAddFailure>> AskForConsentAsync(int startedGeneration, CancellationToken cancellationToken) =>
         Try.RunAsync(() => consent.AskAsync(cancellationToken), cancellationToken)
             .ToResultAsync(exception => exception)
-            .MatchAsync(answer => AnsweredAsync(answer, cancellationToken), exception => Task.FromResult(ConsentQuestionFailed(exception)));
+            .MatchAsync(answer => AnsweredAsync(answer, startedGeneration, cancellationToken), exception => Task.FromResult(ConsentQuestionFailed(exception)));
 
-    private Task<Result<Unit, AccountAddFailure>> AnsweredAsync(PlaintextCacheConsent answer, CancellationToken cancellationToken) => answer switch
+    private Task<Result<Unit, AccountAddFailure>> AnsweredAsync(PlaintextCacheConsent answer, int startedGeneration, CancellationToken cancellationToken) => answer switch
     {
-        PlaintextCacheConsent.Granted => RememberAndAttachPlaintextFileAsync(answer, cancellationToken),
+        PlaintextCacheConsent.Granted when !IsCurrent(startedGeneration) => Task.FromResult(WithdrawnDuringAttempt()),
+        PlaintextCacheConsent.Granted => RememberAndAttachPlaintextFileAsync(answer, startedGeneration, cancellationToken),
         _ => Task.FromResult(Declined()),
     };
 
-    private Task<Result<Unit, AccountAddFailure>> RememberAndAttachPlaintextFileAsync(PlaintextCacheConsent answer, CancellationToken cancellationToken)
+    private Task<Result<Unit, AccountAddFailure>> RememberAndAttachPlaintextFileAsync(PlaintextCacheConsent answer, int startedGeneration, CancellationToken cancellationToken)
     {
         AccountAddLog.TokenCacheConsent(logger, "Granted");
         _ = consentStore.Save(answer);
 
-        return AttachPlaintextFileAsync(cancellationToken);
+        return AttachPlaintextFileAsync(startedGeneration, cancellationToken);
     }
 
-    private Task<Result<Unit, AccountAddFailure>> AttachPlaintextFileAsync(CancellationToken cancellationToken) =>
+    private Task<Result<Unit, AccountAddFailure>> AttachPlaintextFileAsync(int startedGeneration, CancellationToken cancellationToken) =>
         Try.RunAsync(() => Task.Run(() => UnitTask.RunAsync(storage.AttachPlaintextFileAsync), cancellationToken), cancellationToken)
-            .MatchAsync(_ => Attached("PlaintextFile"), PlaintextFileFailed);
+            .ToResultAsync(exception => exception)
+            .MatchAsync(_ => AttachedUnlessWithdrawnAsync(startedGeneration), exception => Task.FromResult(PlaintextFileFailed(exception)));
+
+    private Task<Result<Unit, AccountAddFailure>> AttachedUnlessWithdrawnAsync(int startedGeneration) =>
+        IsCurrent(startedGeneration)
+            ? Task.FromResult(Attached("PlaintextFile"))
+            : Try.RunAsync(() => Task.Run(() => UnitTask.RunAsync(storage.DetachPlaintextFileAsync)), CancellationToken.None)
+                .MatchAsync(_ => WithdrawnDuringAttempt(), _ => WithdrawnDuringAttempt());
+
+    private Result<Unit, AccountAddFailure> WithdrawnDuringAttempt()
+    {
+        AccountAddLog.TokenCacheConsent(logger, "WithdrawnDuringAttempt");
+
+        return Result.Failure<Unit, AccountAddFailure>(AccountAddFailureFactory.CreateTokenCacheUnavailable());
+    }
 
     private Result<Unit, AccountAddFailure> Attached(string mode)
     {
@@ -109,5 +168,29 @@ public sealed class TokenCacheInitialiser(IMsalTokenCacheStorage storage, IToken
         AccountAddLog.TokenCacheUnavailable(logger, "the plaintext token file could not be used", exception.GetType().Name);
 
         return Result.Failure<Unit, AccountAddFailure>(AccountAddFailureFactory.CreateTokenCacheUnavailable());
+    }
+
+    private Result<Unit, ErrorResponse> ForgetConsent() =>
+        consentStore.Save(PlaintextCacheConsentFactory.CreateDeclined()).Match(ConsentWithdrawn, ConsentNotForgotten);
+
+    private Result<Unit, ErrorResponse> ConsentWithdrawn(Unit forgotten)
+    {
+        AccountAddLog.PlaintextConsentWithdrawn(logger);
+
+        return Result.Success<Unit, ErrorResponse>(forgotten);
+    }
+
+    private Result<Unit, ErrorResponse> ConsentNotForgotten(ErrorResponse error)
+    {
+        AccountAddLog.PlaintextConsentNotForgotten(logger);
+
+        return Result.Failure<Unit, ErrorResponse>(error);
+    }
+
+    private Result<Unit, ErrorResponse> PlaintextFileNotDetached(Exception exception)
+    {
+        AccountAddLog.PlaintextConsentWithdrawFailed(logger, "the plaintext token file could not be deleted", exception.GetType().Name);
+
+        return Result.Failure<Unit, ErrorResponse>(new ErrorResponse("The plaintext token file could not be deleted."));
     }
 }

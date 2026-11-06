@@ -1,5 +1,6 @@
 using AStarDev.CloudSync.Core.DisplaySettings;
 using AStarDev.CloudSync.Domain.DisplaySettings;
+using AStarDev.CloudSync.ViewModels.Accounts;
 using AStarDev.Localization;
 
 namespace AStarDev.CloudSync.ViewModels.DisplaySettings;
@@ -14,9 +15,11 @@ public sealed class DisplaySettingsViewModel : LocalizedObservableObject
     /// <summary>Loads the saved preferences and applies the saved theme.</summary>
     /// <param name="store">Loads and saves the preferences.</param>
     /// <param name="themeApplier">Applies the theme to the running application.</param>
+    /// <param name="plaintextCacheConsent">The setting that withdraws a remembered consent to the plaintext token file.</param>
     /// <param name="localization">Supplies the text.</param>
-    public DisplaySettingsViewModel(IDisplayPreferencesStore store, IThemeApplier themeApplier, ILocalizationService localization) : base(localization)
+    public DisplaySettingsViewModel(IDisplayPreferencesStore store, IThemeApplier themeApplier, PlaintextCacheConsentSettingsViewModel plaintextCacheConsent, ILocalizationService localization) : base(localization)
     {
+        PlaintextCacheConsent = plaintextCacheConsent;
         this.store = store;
         this.themeApplier = themeApplier;
         preferences = store.Load();
@@ -46,6 +49,9 @@ public sealed class DisplaySettingsViewModel : LocalizedObservableObject
 
     /// <summary>Dark, then light.</summary>
     public IReadOnlyList<DisplayOptionViewModel> ThemeOptions { get; }
+
+    /// <summary>The setting that withdraws a remembered consent to the plaintext token file.</summary>
+    public PlaintextCacheConsentSettingsViewModel PlaintextCacheConsent { get; }
 
     /// <summary>The settings panel title and settings button name.</summary>
     public string Title => Localization.GetLocal("Settings.Title");

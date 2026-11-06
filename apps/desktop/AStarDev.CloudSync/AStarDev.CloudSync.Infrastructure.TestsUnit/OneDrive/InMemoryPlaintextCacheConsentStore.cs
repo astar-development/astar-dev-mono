@@ -12,10 +12,15 @@ public sealed class InMemoryPlaintextCacheConsentStore : IPlaintextCacheConsentS
 
     public IReadOnlyList<PlaintextCacheConsent> SavedAnswers => savedAnswers;
 
+    public bool SaveFails { get; init; }
+
     public Option<PlaintextCacheConsent> Load() => Remembered;
 
     public Result<Unit, ErrorResponse> Save(PlaintextCacheConsent consent)
     {
+        if (SaveFails)
+            return Result.Failure<Unit, ErrorResponse>(new ErrorResponse("The consent file is read-only."));
+
         savedAnswers.Add(consent);
         Remembered = consent is PlaintextCacheConsent.Granted ? Option.Some(consent) : Option.None<PlaintextCacheConsent>();
 

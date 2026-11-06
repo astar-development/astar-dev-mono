@@ -61,6 +61,21 @@ internal static partial class AccountAddLog
     [LoggerMessage(EventId = 5123, Level = LogLevel.Warning, Message = "The token cache is unavailable: {Reason} ({ExceptionType}).")]
     public static partial void TokenCacheUnavailable(ILogger logger, string reason, string exceptionType);
 
+    [LoggerMessage(EventId = 5124, Level = LogLevel.Information, Message = "The tokens in the old plaintext token file were moved to the secure store and the file was deleted.")]
+    public static partial void PlaintextTokensMoved(ILogger logger);
+
+    [LoggerMessage(EventId = 5125, Level = LogLevel.Warning, Message = "The old plaintext token file could not be moved to the secure store ({ExceptionType}); it is kept and moved on the next attempt.")]
+    public static partial void PlaintextTokenMoveFailed(ILogger logger, string exceptionType);
+
+    [LoggerMessage(EventId = 5126, Level = LogLevel.Information, Message = "The plaintext token file consent was withdrawn; the file was deleted and the accounts must sign in again.")]
+    public static partial void PlaintextConsentWithdrawn(ILogger logger);
+
+    [LoggerMessage(EventId = 5127, Level = LogLevel.Warning, Message = "The plaintext token file consent could not be withdrawn: {Reason} ({ExceptionType}).")]
+    public static partial void PlaintextConsentWithdrawFailed(ILogger logger, string reason, string exceptionType);
+
+    [LoggerMessage(EventId = 5128, Level = LogLevel.Warning, Message = "The plaintext token file was deleted but the consent could not be forgotten.")]
+    public static partial void PlaintextConsentNotForgotten(ILogger logger);
+
     [LoggerMessage(EventId = 5130, Level = LogLevel.Warning, Message = "The drive could not be read: {Reason}, HTTP {StatusCode} ({ExceptionType}).")]
     public static partial void DriveLookupFailed(ILogger logger, string reason, int statusCode, string exceptionType);
 

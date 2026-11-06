@@ -14,7 +14,7 @@ public class GivenADisplaySettingsViewModel
         var store = new InMemoryDisplayPreferencesStore(DisplayPreferencesFactory.Create(MainLayoutFactory.CreateGroupedByProvider(), AppThemeFactory.CreateLight()));
         var themeApplier = new RecordingThemeApplier();
 
-        var settings = new DisplaySettingsViewModel(store, themeApplier, TestData.CreateLocalization());
+        var settings = new DisplaySettingsViewModel(store, themeApplier, TestData.CreatePlaintextCacheConsentSettings(), TestData.CreateLocalization());
 
         settings.CurrentLayout.ShouldBeOfType<MainLayout.GroupedByProvider>();
         settings.CurrentTheme.ShouldBeOfType<AppTheme.Light>();
@@ -26,7 +26,7 @@ public class GivenADisplaySettingsViewModel
     {
         var store = new InMemoryDisplayPreferencesStore(DisplayPreferencesFactory.Create(MainLayoutFactory.CreateSyncPairsFirst(), AppThemeFactory.CreateDark()));
 
-        var settings = new DisplaySettingsViewModel(store, new RecordingThemeApplier(), TestData.CreateLocalization());
+        var settings = new DisplaySettingsViewModel(store, new RecordingThemeApplier(), TestData.CreatePlaintextCacheConsentSettings(), TestData.CreateLocalization());
 
         settings.LayoutOptions.Select(option => option.Label).ShouldBe(["Unified account list", "Grouped by provider", "Sync pairs first"]);
         settings.LayoutOptions.Select(option => option.IsSelected).ShouldBe([false, false, true]);
@@ -39,7 +39,7 @@ public class GivenADisplaySettingsViewModel
     public void when_a_layout_option_is_chosen_then_the_layout_switches_is_saved_and_the_change_is_raised()
     {
         var store = new InMemoryDisplayPreferencesStore();
-        var settings = new DisplaySettingsViewModel(store, new RecordingThemeApplier(), TestData.CreateLocalization());
+        var settings = new DisplaySettingsViewModel(store, new RecordingThemeApplier(), TestData.CreatePlaintextCacheConsentSettings(), TestData.CreateLocalization());
         var changed = new List<string?>();
         settings.PropertyChanged += (_, e) => changed.Add(e.PropertyName);
 
@@ -57,7 +57,7 @@ public class GivenADisplaySettingsViewModel
     {
         var store = new InMemoryDisplayPreferencesStore();
         var themeApplier = new RecordingThemeApplier();
-        var settings = new DisplaySettingsViewModel(store, themeApplier, TestData.CreateLocalization());
+        var settings = new DisplaySettingsViewModel(store, themeApplier, TestData.CreatePlaintextCacheConsentSettings(), TestData.CreateLocalization());
 
         settings.ThemeOptions[1].SelectCommand.Execute(null);
 
@@ -72,7 +72,7 @@ public class GivenADisplaySettingsViewModel
     public void when_the_current_layout_is_chosen_again_then_nothing_is_saved_or_raised()
     {
         var store = new InMemoryDisplayPreferencesStore();
-        var settings = new DisplaySettingsViewModel(store, new RecordingThemeApplier(), TestData.CreateLocalization());
+        var settings = new DisplaySettingsViewModel(store, new RecordingThemeApplier(), TestData.CreatePlaintextCacheConsentSettings(), TestData.CreateLocalization());
         var changed = new List<string?>();
         settings.PropertyChanged += (_, e) => changed.Add(e.PropertyName);
 
