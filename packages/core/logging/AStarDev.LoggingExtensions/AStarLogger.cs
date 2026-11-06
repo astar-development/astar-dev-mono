@@ -13,7 +13,7 @@ public sealed class AStarLogger<TCategoryName>(ILogger<TCategoryName> logger) : 
     public void LogPageView(string pageName)
     {
         ArgumentNullException.ThrowIfNull(pageName);
-        LogMessage.NotFound(logger, "/missing-resource");
+        LogMessage.PageView(logger, pageName);
     }
 
     /// <inheritdoc />
