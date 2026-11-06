@@ -98,7 +98,7 @@ public class GivenASnapshotProbe
         Assert.SkipUnless(OperatingSystem.IsLinux(), Snapshot.LinuxOnlyReason);
         var progressBar = new ProgressBar { IsIndeterminate = true, Margin = new Avalonia.Thickness(16) };
 
-        _ = Snapshot.Compare(new Window { Content = progressBar }, ThemeVariant.Dark, "snapshot-probe-indeterminate-progress", 320, 120);
+        Snapshot.ShouldMatchBaseline(new Window { Content = progressBar }, ThemeVariant.Dark, "snapshot-probe-indeterminate-progress", 320, 120);
 
         progressBar.IsIndeterminate.ShouldBeFalse();
     }
