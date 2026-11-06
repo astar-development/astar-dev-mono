@@ -88,7 +88,7 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
             }
             catch (OperationCanceledException)
             {
-                OneDriveSyncClientMessages.DownloadCancelledDuringBackoff(logger, url, attempt, HttpRetryPolicy.MaxRetries);
+                OneDriveSyncClientMessages.DownloadCancelledDuringBackoff(logger, attempt, HttpRetryPolicy.MaxRetries);
                 throw;
             }
         }
