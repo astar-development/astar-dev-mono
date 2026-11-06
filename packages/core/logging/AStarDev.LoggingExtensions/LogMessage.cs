@@ -11,12 +11,6 @@ public static partial class LogMessage
     [LoggerMessage(EventId = 200, Level = LogLevel.Information, Message = "Page `{PageName}` viewed.")]
     public static partial void PageView(ILogger logger, string pageName);
 
-    /// <summary>Logs an informational message indicating that a specific page has been viewed.</summary>
-    /// <param name="logger">The logger to be used for logging the event.</param>
-    /// <param name="pageName">The name of the page that was viewed.</param>
-    [LoggerMessage(EventId = 204, Level = LogLevel.Information, Message = "Page `{PageName}` viewed.")]
-    public static partial void Trace(ILogger logger, string pageName);
-
     /// <summary>Logs a debug message for the specified location.</summary>
     /// <param name="logger">The logger to be used for logging the event.</param>
     /// <param name="location">The location of the event.</param>
@@ -110,11 +104,11 @@ public static partial class LogMessage
     [LoggerMessage(EventId = 429, Level = LogLevel.Warning, Message = "Too Many Requests (429) for `{Path}`")]
     public static partial void TooManyRequests(ILogger logger, string path);
 
-    /// <summary>Logs an error message for a Not Implemented (501) event, including the requested path.</summary>
+    /// <summary>Logs an internal server error event (EventId 5002), including the requested path and the exception.</summary>
     /// <param name="logger">The logger to be used for logging the event.</param>
-    /// <param name="path">The path of the HTTP request that caused the Not Implemented error.</param>
-    /// <param name="ex">The exception associated with the Not Implemented error.</param>
-    [LoggerMessage(EventId = 501, Level = LogLevel.Error, Message = "Not Implemented (501) for `{Path}`")]
+    /// <param name="path">The path of the HTTP request that caused the Internal Server Error.</param>
+    /// <param name="ex">The exception associated with the Internal Server Error.</param>
+    [LoggerMessage(EventId = 5002, Level = LogLevel.Error, Message = "Internal Server Error (500) for `{Path}`")]
     public static partial void InternalServerError(ILogger logger, string path, Exception ex);
 
     /// <summary>Logs an application error event (EventId 505).</summary>
