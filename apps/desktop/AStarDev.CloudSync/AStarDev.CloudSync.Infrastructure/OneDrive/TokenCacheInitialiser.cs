@@ -10,7 +10,7 @@ namespace AStarDev.CloudSync.Infrastructure.OneDrive;
 /// <param name="consent">Asks the user before the plaintext file is used.</param>
 /// <param name="consentStore">Remembers between runs that the user agreed to the plaintext file.</param>
 /// <param name="logger">Reports the storage chosen and failures, without paths or account details.</param>
-public sealed class TokenCacheInitialiser(IMsalTokenCacheStorage storage, ITokenCacheConsent consent, IPlaintextCacheConsentStore consentStore, ILogger<TokenCacheInitialiser> logger)
+public sealed class TokenCacheInitialiser(IMsalTokenCacheStorage storage, ITokenCacheConsent consent, IPlaintextCacheConsentStore consentStore, ILogger<TokenCacheInitialiser> logger) : IPlaintextCacheConsentSettings
 {
     private readonly Lock gate = new();
     private Option<Task<Result<Unit, AccountAddFailure>>> attachment = Option.None<Task<Result<Unit, AccountAddFailure>>>();
@@ -28,6 +28,12 @@ public sealed class TokenCacheInitialiser(IMsalTokenCacheStorage storage, IToken
             return current;
         }
     }
+
+    /// <inheritdoc />
+    public PlaintextCacheConsent Current() => throw new NotImplementedException();
+
+    /// <inheritdoc />
+    public Task<Result<Unit, ErrorResponse>> WithdrawAsync() => throw new NotImplementedException();
 
     private Task<Result<Unit, AccountAddFailure>> Reuse(Task<Result<Unit, AccountAddFailure>> attached)
     {

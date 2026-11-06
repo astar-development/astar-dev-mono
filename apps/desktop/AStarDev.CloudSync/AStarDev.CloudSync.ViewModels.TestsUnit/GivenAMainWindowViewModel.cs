@@ -58,7 +58,7 @@ public class GivenAMainWindowViewModel
     public async Task when_a_layout_was_saved_then_the_window_starts_on_it()
     {
         var store = new InMemoryDisplayPreferencesStore(DisplayPreferencesFactory.Create(MainLayoutFactory.CreateSyncPairsFirst(), AppThemeFactory.CreateDark()));
-        var settings = new DisplaySettingsViewModel(store, new RecordingThemeApplier(), TestData.CreateLocalization());
+        var settings = new DisplaySettingsViewModel(store, new RecordingThemeApplier(), TestData.CreatePlaintextCacheConsentSettings(), TestData.CreateLocalization());
 
         var viewModel = TestData.CreateMainWindowViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), settings);
 

@@ -258,6 +258,22 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
+    public void when_application_services_are_added_then_the_plaintext_cache_consent_settings_are_the_token_cache_initialiser()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<IPlaintextCacheConsentSettings>().ShouldBeSameAs(provider.GetRequiredService<TokenCacheInitialiser>());
+    }
+
+    [Fact]
+    public void when_application_services_are_added_then_the_display_settings_hold_the_plaintext_cache_consent_setting()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<DisplaySettingsViewModel>().PlaintextCacheConsent.ShouldBeSameAs(provider.GetRequiredService<PlaintextCacheConsentSettingsViewModel>());
+    }
+
+    [Fact]
     public void when_application_services_are_added_then_the_graph_http_client_uses_the_graph_retry_and_redirect_handlers()
     {
         using var provider = CreateServices().BuildServiceProvider();

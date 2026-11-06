@@ -27,6 +27,12 @@ public sealed class MsalCacheHelperStorage(IPublicClientApplication application,
             .WithUnprotectedFile()
             .Build());
 
+    /// <inheritdoc />
+    public Task<PlaintextTokenMove> MovePlaintextFileToSecureStoreAsync() => throw new NotImplementedException();
+
+    /// <inheritdoc />
+    public Task DetachPlaintextFileAsync() => throw new NotImplementedException();
+
     private async Task RegisterAsync(StorageCreationProperties properties)
     {
         cacheFolder.Create();

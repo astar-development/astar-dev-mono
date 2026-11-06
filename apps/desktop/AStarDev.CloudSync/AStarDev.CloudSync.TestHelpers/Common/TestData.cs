@@ -48,7 +48,13 @@ public static class TestData
 
     public static CloudAccount CreateAccount(SyncStatus status, Option<DateTimeOffset> lastSync) => CloudAccountFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), "Work", "work@example.com", CloudProviderFactory.CreateOneDrive(), StorageUsageFactory.Create(782_643_000_000, 1_099_511_627_776), 30, 240_686, status, lastSync);
 
-    public static DisplaySettingsViewModel CreateDisplaySettings() => new(new InMemoryDisplayPreferencesStore(), new RecordingThemeApplier(), CreateLocalization());
+    public static DisplaySettingsViewModel CreateDisplaySettings() => CreateDisplaySettings(new FakePlaintextCacheConsentSettings());
+
+    public static DisplaySettingsViewModel CreateDisplaySettings(FakePlaintextCacheConsentSettings plaintextCacheConsent) => new(new InMemoryDisplayPreferencesStore(), new RecordingThemeApplier(), CreatePlaintextCacheConsentSettings(plaintextCacheConsent), CreateLocalization());
+
+    public static PlaintextCacheConsentSettingsViewModel CreatePlaintextCacheConsentSettings() => CreatePlaintextCacheConsentSettings(new FakePlaintextCacheConsentSettings());
+
+    public static PlaintextCacheConsentSettingsViewModel CreatePlaintextCacheConsentSettings(FakePlaintextCacheConsentSettings settings) => new(settings, CreateLocalization());
 
     public static AddAccountViewModel CreateAddAccount(IAccountAdder accountAdder) => new(accountAdder, new TokenCacheConsentViewModel(new ImmediateUiDispatcher(), CreateLocalization()), CreateLocalization(), NullLogger<AddAccountViewModel>.Instance);
 
