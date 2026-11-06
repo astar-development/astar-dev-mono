@@ -81,7 +81,7 @@ public class App : Application, IDisposable
         _ = services.AddViews();
         _ = services.AddViewModels();
         var configuration = RegisterOptions(services);
-        _ = services.AddLogging(logging => logging.ConfigureOTelLogging(configuration, inMemoryLogProcessor).AddFileLogging(ApplicationDirectories.LogsDirectory, ApplicationMetadata.ApplicationNameHyphenated));
+        _ = services.AddLogging(logging => logging.ConfigureOTelLogging(configuration, inMemoryLogProcessor, ApplicationMetadata.ApplicationName).AddFileLogging(ApplicationDirectories.LogsDirectory, ApplicationMetadata.ApplicationNameHyphenated));
 
         _ = services.AddVelopackUpdates(configuration);
         _ = services.AddShell(inMemoryLogProcessor);

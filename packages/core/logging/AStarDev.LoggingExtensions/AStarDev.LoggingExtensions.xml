@@ -142,21 +142,23 @@
                 tracing, and metrics, exported to Azure Monitor / Application Insights.
             </summary>
         </member>
-        <member name="M:AStarDev.LoggingExtensions.LoggingExtensions.AddOTelLogging(Microsoft.AspNetCore.Builder.WebApplicationBuilder,System.String)">
+        <member name="M:AStarDev.LoggingExtensions.LoggingExtensions.AddOTelLogging(Microsoft.AspNetCore.Builder.WebApplicationBuilder,System.String,System.String)">
             <summary>
-                The <see cref="M:AStarDev.LoggingExtensions.LoggingExtensions.AddOTelLogging(Microsoft.AspNetCore.Builder.WebApplicationBuilder,System.String)" /> method will add OpenTelemetry logging,
+                The <see cref="M:AStarDev.LoggingExtensions.LoggingExtensions.AddOTelLogging(Microsoft.AspNetCore.Builder.WebApplicationBuilder,System.String,System.String)" /> method will add OpenTelemetry logging,
                 tracing, and metrics, exported to Azure Monitor, to the logging providers.
             </summary>
             <param name="builder">The instance of <see cref="T:Microsoft.AspNetCore.Builder.WebApplicationBuilder" /> to which OpenTelemetry logging will be added.</param>
+            <param name="serviceName">The <c>service.name</c> on the OpenTelemetry resource (the cloud role name in Azure Monitor); when blank, the host application name is used.</param>
             <param name="externalSettingsFile">The name (including extension) of an optional file containing additional configuration settings to layer onto the application configuration.</param>
             <returns>The original instance of <see cref="T:Microsoft.AspNetCore.Builder.WebApplicationBuilder" /> for further method chaining.</returns>
         </member>
-        <member name="M:AStarDev.LoggingExtensions.LoggingExtensions.AddOTelLogging(Microsoft.Extensions.Hosting.HostApplicationBuilder,System.String)">
+        <member name="M:AStarDev.LoggingExtensions.LoggingExtensions.AddOTelLogging(Microsoft.Extensions.Hosting.HostApplicationBuilder,System.String,System.String)">
             <summary>
-                The <see cref="M:AStarDev.LoggingExtensions.LoggingExtensions.AddOTelLogging(Microsoft.Extensions.Hosting.HostApplicationBuilder,System.String)" /> method will add OpenTelemetry logging,
+                The <see cref="M:AStarDev.LoggingExtensions.LoggingExtensions.AddOTelLogging(Microsoft.Extensions.Hosting.HostApplicationBuilder,System.String,System.String)" /> method will add OpenTelemetry logging,
                 tracing, and metrics, exported to Azure Monitor, to the logging providers.
             </summary>
             <param name="builder">The instance of <see cref="T:Microsoft.Extensions.Hosting.HostApplicationBuilder" /> to which OpenTelemetry logging will be added.</param>
+            <param name="serviceName">The <c>service.name</c> on the OpenTelemetry resource (the cloud role name in Azure Monitor); when blank, the host application name is used.</param>
             <param name="externalSettingsFile">The name (including extension) of an optional file containing additional configuration settings to layer onto the application configuration.</param>
             <returns>The original instance of <see cref="T:Microsoft.Extensions.Hosting.HostApplicationBuilder" /> for further method chaining.</returns>
         </member>

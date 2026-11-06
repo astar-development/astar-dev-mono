@@ -10,7 +10,7 @@ using Blazored.LocalStorage;
 using Microsoft.FluentUI.AspNetCore.Components;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.AddOTelLogging();
+builder.AddOTelLogging("AStarDev.Web");
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
