@@ -17,6 +17,8 @@ public sealed class FakeMsalTokenCacheStorage : IMsalTokenCacheStorage
 
     public bool MoveFails { get; init; }
 
+    public Func<Task>? DuringPlaintextAttach { get; set; }
+
     public bool DetachFails { get; init; }
 
     public TimeSpan AttachDelay { get; init; } = TimeSpan.Zero;
@@ -38,11 +40,15 @@ public sealed class FakeMsalTokenCacheStorage : IMsalTokenCacheStorage
             throw new InvalidOperationException("The keyring is locked.");
     }
 
-    public Task AttachPlaintextFileAsync()
+    public async Task AttachPlaintextFileAsync()
     {
         _ = Interlocked.Increment(ref plaintextFileAttempts);
 
-        return PlaintextFileFails ? Task.FromException(new IOException("The cache file is read-only.")) : Task.CompletedTask;
+        if (DuringPlaintextAttach is not null)
+            await DuringPlaintextAttach();
+
+        if (PlaintextFileFails)
+            throw new IOException("The cache file is read-only.");
     }
 
     public Task<PlaintextTokenMove> MovePlaintextFileToSecureStoreAsync()

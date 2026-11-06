@@ -13,6 +13,8 @@ public sealed class FakeTokenCacheConsent : ITokenCacheConsent
 
     public CancellationTokenSource? CancelOnFirstQuestion { get; init; }
 
+    public TaskCompletionSource<PlaintextCacheConsent>? PendingAnswer { get; init; }
+
     public int QuestionsAsked => questionsAsked;
 
     public async Task<PlaintextCacheConsent> AskAsync(CancellationToken cancellationToken)
@@ -21,6 +23,9 @@ public sealed class FakeTokenCacheConsent : ITokenCacheConsent
             await CancelOnFirstQuestion.CancelAsync();
 
         cancellationToken.ThrowIfCancellationRequested();
+
+        if (PendingAnswer is not null)
+            return await PendingAnswer.Task;
 
         return Fails ? throw new InvalidOperationException("The consent dialog could not open.") : Answer;
     }

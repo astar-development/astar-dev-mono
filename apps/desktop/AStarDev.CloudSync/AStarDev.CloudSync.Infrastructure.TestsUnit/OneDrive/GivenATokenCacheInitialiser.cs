@@ -279,5 +279,45 @@ public class GivenATokenCacheInitialiser
         logger.Messages.ShouldAllBe(message => !message.Contains('/') && !message.Contains("msalcache") && !message.Contains(".json"));
     }
 
+    [Fact]
+    public async Task when_the_consent_is_withdrawn_while_the_question_is_open_then_a_later_agree_does_not_restore_the_plaintext_file()
+    {
+        var answer = new TaskCompletionSource<PlaintextCacheConsent>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var storage = new FakeMsalTokenCacheStorage { SecureStoreFails = true };
+        var initialiser = CreateInitialiser(storage, new FakeTokenCacheConsent { PendingAnswer = answer });
+        var attempt = initialiser.EnsureAsync(TestContext.Current.CancellationToken);
+
+        _ = await initialiser.WithdrawAsync();
+        answer.SetResult(PlaintextCacheConsentFactory.CreateGranted());
+        var failure = await attempt.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken).MatchAsync(attached => (object)attached, failure => failure);
+
+        (failure, storage.PlaintextFileAttempts, consentStore.Remembered.Match(_ => true, () => false)).ShouldBe((AccountAddFailureFactory.CreateTokenCacheUnavailable(), 0, false));
+    }
+
+    [Fact]
+    public async Task when_the_consent_is_withdrawn_while_the_plaintext_file_is_being_attached_then_the_file_is_detached_again()
+    {
+        consentStore.Remembered = Option.Some(PlaintextCacheConsentFactory.CreateGranted());
+        var storage = new FakeMsalTokenCacheStorage { SecureStoreFails = true };
+        var initialiser = CreateInitialiser(storage, new FakeTokenCacheConsent());
+        storage.DuringPlaintextAttach = async () => _ = await initialiser.WithdrawAsync();
+
+        var failure = await initialiser.EnsureAsync(TestContext.Current.CancellationToken).MatchAsync(attached => (object)attached, failure => failure);
+
+        (failure, storage.Detaches, consentStore.Remembered.Match(_ => true, () => false)).ShouldBe((AccountAddFailureFactory.CreateTokenCacheUnavailable(), 2, false));
+    }
+
+    [Fact]
+    public async Task when_the_consent_cannot_be_forgotten_then_the_withdrawal_fails_and_a_warning_is_logged()
+    {
+        var store = new InMemoryPlaintextCacheConsentStore { Remembered = Option.Some(PlaintextCacheConsentFactory.CreateGranted()), SaveFails = true };
+        var initialiser = new TokenCacheInitialiser(new FakeMsalTokenCacheStorage(), new FakeTokenCacheConsent(), store, logger);
+
+        var withdrawn = await initialiser.WithdrawAsync().MatchAsync(_ => true, _ => false);
+
+        withdrawn.ShouldBeFalse();
+        logger.EventNames.ShouldContain("PlaintextConsentNotForgotten");
+    }
+
     private TokenCacheInitialiser CreateInitialiser(FakeMsalTokenCacheStorage storage, FakeTokenCacheConsent consent) => new(storage, consent, consentStore, logger);
 }
