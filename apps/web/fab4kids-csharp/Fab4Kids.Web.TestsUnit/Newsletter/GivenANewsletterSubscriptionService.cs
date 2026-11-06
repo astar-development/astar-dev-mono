@@ -136,4 +136,30 @@ public class GivenANewsletterSubscriptionService
 
         logger.ValuesOf("ConfirmationEmailFailed")["Reason"].ShouldBe("Something went wrong sending your confirmation email.");
     }
+
+    [Theory]
+    [InlineData("ada@example.com", false, false)]
+    [InlineData("ada@example", true, false)]
+    [InlineData("ada@example.com", true, true)]
+    [InlineData("ada@example.com", true, false)]
+    public async Task when_a_subscription_is_attempted_then_no_log_value_contains_the_email_address(string email, bool consent, bool alreadySubscribed)
+    {
+        subscriberStore.ExistsAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(alreadySubscribed);
+        var sut = CreateSut();
+
+        await sut.SubscribeAsync(email, consent, TestContext.Current.CancellationToken);
+
+        logger.AllLoggedValues().ShouldNotBeEmpty();
+        logger.AllLoggedValues().ShouldAllBe(value => !value.Contains("ada@example", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task when_a_new_subscriber_is_stored_then_a_dedicated_subscribed_event_is_logged()
+    {
+        var sut = CreateSut();
+
+        await sut.SubscribeAsync("ada@example.com", consent: true, TestContext.Current.CancellationToken);
+
+        logger.ValuesOf("Subscribed").ShouldNotBeNull();
+    }
 }

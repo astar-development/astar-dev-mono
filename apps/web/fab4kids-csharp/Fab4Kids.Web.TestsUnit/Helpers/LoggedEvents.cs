@@ -18,4 +18,10 @@ internal static class LoggedEvents
             .Where(call => call.GetMethodInfo().Name == nameof(ILogger.Log) && ((EventId)call.GetArguments()[1]!).Name == eventName)
             .Select(call => (IReadOnlyDictionary<string, object?>)((IEnumerable<KeyValuePair<string, object?>>)call.GetArguments()[2]!).ToDictionary(pair => pair.Key, pair => pair.Value))
             .ShouldHaveSingleItem();
+
+    public static IReadOnlyList<string> AllLoggedValues(this ILogger logger)
+        => [.. logger.ReceivedCalls()
+            .Where(call => call.GetMethodInfo().Name == nameof(ILogger.Log))
+            .SelectMany(call => (IEnumerable<KeyValuePair<string, object?>>)call.GetArguments()[2]!)
+            .Select(pair => pair.Value?.ToString() ?? string.Empty)];
 }
