@@ -168,6 +168,20 @@ public sealed class GivenAnApplicationInitializer
     }
 
     [Fact]
+    public async Task when_the_startup_quota_refresh_throws_then_initialisation_still_completes()
+    {
+        var account = BuildAccount("acc-1");
+        _startupService.RestoreAccountsAsync().Returns(OkResult([account]));
+        _quotaRefreshService.TryRefreshAsync(account, Arg.Any<CancellationToken>()).Returns(Task.FromException(new HttpRequestException("quota unavailable for user@test.com")));
+
+        var sut = CreateSut(CreateAccountsViewModel(), CreateFilesViewModel(), CreateDashboardViewModel(), CreateActivityViewModel(), CreateSettingsViewModel());
+
+        var exception = await Record.ExceptionAsync(() => sut.InitializeAsync(TestContext.Current.CancellationToken));
+
+        exception.ShouldBeNull();
+    }
+
+    [Fact]
     public async Task when_startup_service_returns_error_then_exception_is_thrown_and_rethrown()
     {
         _startupService.RestoreAccountsAsync().Returns(ErrorResult("DB failure"));

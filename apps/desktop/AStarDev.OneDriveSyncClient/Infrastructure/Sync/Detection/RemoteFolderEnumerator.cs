@@ -108,7 +108,7 @@ public sealed class RemoteFolderEnumerator(IGraphService graphService, ISyncRule
                     }
                     catch (Exception ex) when (ex is not OperationCanceledException and not SyncReAuthRequiredException)
                     {
-                        OneDriveSyncClientMessages.RemoteFolderEnumeratorFailed(logger, rule.RemotePath, ex.Message);
+                        OneDriveSyncClientMessages.RemoteFolderEnumeratorFailed(logger, rule.RemotePath, ex.GetType().Name);
                         context.HadEnumerationFailures = true;
                         break;
                     }

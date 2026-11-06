@@ -116,11 +116,11 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
 
                     return Unit.Default;
                 })
-                .TapErrorAsync(error => OneDriveSyncClientMessages.AccountOnboardingWizardError(logger, error));
+                .TapErrorAsync(error => OneDriveSyncClientMessages.AccountOnboardingWizardError(logger, error.GetType().Name));
         }
         catch (Exception ex)
         {
-            OneDriveSyncClientMessages.AccountsViewModelWizardError(logger, ex.Message, ex);
+            OneDriveSyncClientMessages.AccountsViewModelWizardError(logger, ex.GetType().Name);
         }
     }
 
@@ -151,7 +151,7 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
         }
         catch (Exception ex)
         {
-            OneDriveSyncClientMessages.AccountSetActiveFailed(logger, ex.Message, ex);
+            OneDriveSyncClientMessages.AccountSetActiveFailed(logger, ex.GetType().Name);
         }
     }
 
@@ -202,7 +202,7 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
         }
         catch (Exception ex)
         {
-            OneDriveSyncClientMessages.AuthInteractiveUnexpectedException(logger, ex);
+            OneDriveSyncClientMessages.AuthInteractiveUnexpectedException(logger, ex.GetType().Name);
         }
     }
 

@@ -132,7 +132,7 @@ public class GivenASqliteAccountStore
 
         await database.AccountStore.AddAsync(Registration(HomeAccountIdentifier, "Personal"), CancellationToken);
 
-        database.StoreLogger.Entries.ShouldContain(entry => entry.Level == LogLevel.Error && entry.Exception != null);
+        database.StoreLogger.Entries.ShouldContain(entry => entry.Level == LogLevel.Error && entry.Exception == null);
     }
 
     [Fact]

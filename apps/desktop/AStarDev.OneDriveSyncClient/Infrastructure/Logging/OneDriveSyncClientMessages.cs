@@ -26,16 +26,16 @@ public static partial class OneDriveSyncClientMessages
     public static partial void SyncPipelineFinalProgress(ILogger logger, int done, int total);
 
     /// <summary>Logs worker exception during sync pipeline.</summary>
-    [LoggerMessage(EventId = 2003, Level = LogLevel.Error, Message = "[Pipeline] Worker threw unhandled exception: {Type} {Error}")]
-    public static partial void SyncPipelineWorkerException(ILogger logger, string type, string error, Exception ex);
+    [LoggerMessage(EventId = 2003, Level = LogLevel.Error, Message = "[Pipeline] Worker threw unhandled exception: {Type}")]
+    public static partial void SyncPipelineWorkerException(ILogger logger, string type);
 
     /// <summary>Logs worker processing a sync job.</summary>
     [LoggerMessage(EventId = 2004, Level = LogLevel.Debug, Message = "[Worker {Id}] Processing {JobType} {Path}")]
     public static partial void SyncWorkerProcessing(ILogger logger, int id, string jobType, string path);
 
     /// <summary>Logs worker exception with details.</summary>
-    [LoggerMessage(EventId = 2005, Level = LogLevel.Error, Message = "[Worker {Id}] EXCEPTION type={Type} message={Error} path={Path}")]
-    public static partial void SyncWorkerException(ILogger logger, int id, string type, string error, string path, Exception ex);
+    [LoggerMessage(EventId = 2005, Level = LogLevel.Error, Message = "[Worker {Id}] EXCEPTION type={Type} path={Path}")]
+    public static partial void SyncWorkerException(ILogger logger, int id, string type, string path);
 
     /// <summary>Logs when no handler is registered for a job type.</summary>
     [LoggerMessage(EventId = 2006, Level = LogLevel.Warning, Message = "[Worker {Id}] No handler registered for job type {JobType}")]
@@ -64,8 +64,8 @@ public static partial class OneDriveSyncClientMessages
     public static partial void SyncServiceComplete(ILogger logger, string accountId);
 
     /// <summary>Logs unhandled error during sync.</summary>
-    [LoggerMessage(EventId = 2102, Level = LogLevel.Error, Message = "[SyncService] Unhandled error syncing {AccountId}: {Error}")]
-    public static partial void SyncServiceError(ILogger logger, string accountId, string error, Exception ex);
+    [LoggerMessage(EventId = 2102, Level = LogLevel.Error, Message = "[SyncService] Unhandled error syncing {AccountId}: {ErrorType}")]
+    public static partial void SyncServiceError(ILogger logger, string accountId, string errorType);
 
     /// <summary>Logs when re-authentication is required during sync.</summary>
     [LoggerMessage(EventId = 2103, Level = LogLevel.Warning, Message = "[SyncService] Re-authentication required for {AccountId}")]
@@ -74,16 +74,16 @@ public static partial class OneDriveSyncClientMessages
     // Sync Scheduler (2200-2299)
 
     /// <summary>Logs scheduled sync failure.</summary>
-    [LoggerMessage(EventId = 2200, Level = LogLevel.Error, Message = "[SyncScheduler] Scheduled sync failed for {Id}: {Error}")]
-    public static partial void SyncSchedulerFailed(ILogger logger, string id, string error, Exception ex);
+    [LoggerMessage(EventId = 2200, Level = LogLevel.Error, Message = "[SyncScheduler] Scheduled sync failed for {Id}: {ErrorType}")]
+    public static partial void SyncSchedulerFailed(ILogger logger, string id, string errorType);
 
     /// <summary>Logs unhandled exception in sync scheduler timer callback.</summary>
-    [LoggerMessage(EventId = 2201, Level = LogLevel.Error, Message = "[SyncScheduler] Unhandled exception in timer callback: {Error}")]
-    public static partial void SyncSchedulerTimerError(ILogger logger, string error, Exception ex);
+    [LoggerMessage(EventId = 2201, Level = LogLevel.Error, Message = "[SyncScheduler] Unhandled exception in timer callback: {ErrorType}")]
+    public static partial void SyncSchedulerTimerError(ILogger logger, string errorType);
 
     /// <summary>Logs fatal error creating timer in sync scheduler.</summary>
-    [LoggerMessage(EventId = 2202, Level = LogLevel.Error, Message = "[SyncScheduler] FATAL ERROR creating Timer: {Error}")]
-    public static partial void SyncSchedulerTimerFatal(ILogger logger, string error, Exception ex);
+    [LoggerMessage(EventId = 2202, Level = LogLevel.Error, Message = "[SyncScheduler] FATAL ERROR creating Timer: {ErrorType}")]
+    public static partial void SyncSchedulerTimerFatal(ILogger logger, string errorType);
 
     /// <summary>Logs trigger called for unknown account.</summary>
     [LoggerMessage(EventId = 2203, Level = LogLevel.Warning, Message = "[SyncScheduler] TriggerAccountAsync called for unknown account {AccountId}")]
@@ -104,8 +104,8 @@ public static partial class OneDriveSyncClientMessages
     public static partial void LocalChangeDetectorFound(ILogger logger, int count, string path);
 
     /// <summary>Logs error scanning local directory.</summary>
-    [LoggerMessage(EventId = 2301, Level = LogLevel.Error, Message = "[LocalChangeDetector] Error scanning {Path}: {Error}")]
-    public static partial void LocalChangeDetectorError(ILogger logger, string path, string error, Exception ex);
+    [LoggerMessage(EventId = 2301, Level = LogLevel.Error, Message = "[LocalChangeDetector] Error scanning {Path}: {ErrorType}")]
+    public static partial void LocalChangeDetectorError(ILogger logger, string path, string errorType);
 
     /// <summary>Logs access denied when scanning local directory.</summary>
     [LoggerMessage(EventId = 2302, Level = LogLevel.Warning, Message = "[LocalChangeDetector] Access denied: {Path} — {Error}")]
@@ -125,8 +125,8 @@ public static partial class OneDriveSyncClientMessages
     public static partial void LocalDeletionDetectorRemoteDeleted(ILogger logger, string remoteId);
 
     /// <summary>Logs failure to delete remote item with an exception.</summary>
-    [LoggerMessage(EventId = 2402, Level = LogLevel.Error, Message = "[LocalDeletionDetector] Failed to delete remote item {RemoteId}: {Error}")]
-    public static partial void LocalDeletionDetectorDeleteFailed(ILogger logger, string remoteId, string error, Exception ex);
+    [LoggerMessage(EventId = 2402, Level = LogLevel.Error, Message = "[LocalDeletionDetector] Failed to delete remote item {RemoteId}: {ErrorType}")]
+    public static partial void LocalDeletionDetectorDeleteException(ILogger logger, string remoteId, string errorType);
 
     /// <summary>Logs failure to delete remote item without an exception (API error string only).</summary>
     [LoggerMessage(EventId = 2403, Level = LogLevel.Error, Message = "[LocalDeletionDetector] Failed to delete remote item {RemoteId}: {Error}")]
@@ -307,8 +307,8 @@ public static partial class OneDriveSyncClientMessages
     public static partial void RootFoldersLoadFailed(ILogger logger, string accountId, string error);
 
     /// <summary>Logs failure to persist folder selection.</summary>
-    [LoggerMessage(EventId = 2904, Level = LogLevel.Error, Message = "[AccountFilesViewModel] Failed to persist folder selection for account {AccountId} — {Error}")]
-    public static partial void FolderSelectionPersistFailed(ILogger logger, string accountId, string error, Exception ex);
+    [LoggerMessage(EventId = 2904, Level = LogLevel.Error, Message = "[AccountFilesViewModel] Failed to persist folder selection for account {AccountId} — {ErrorType}")]
+    public static partial void FolderSelectionPersistFailed(ILogger logger, string accountId, string errorType);
 
     /// <summary>Logs failure to load folder tree children.</summary>
     [LoggerMessage(EventId = 2905, Level = LogLevel.Warning, Message = "[FolderTreeNodeViewModel] Failed to load children for {Path}: {Error}")]
@@ -331,62 +331,62 @@ public static partial class OneDriveSyncClientMessages
     // Account Operations (3000-3099)
 
     /// <summary>Logs error completing account onboarding wizard.</summary>
-    [LoggerMessage(EventId = 3000, Level = LogLevel.Error, Message = "Error completing account onboarding wizard")]
-    public static partial void AccountOnboardingWizardError(ILogger logger, Exception error);
+    [LoggerMessage(EventId = 3000, Level = LogLevel.Error, Message = "Error completing account onboarding wizard: {ErrorType}")]
+    public static partial void AccountOnboardingWizardError(ILogger logger, string errorType);
 
     /// <summary>Logs unhandled exception in accounts view model wizard completion.</summary>
-    [LoggerMessage(EventId = 3001, Level = LogLevel.Error, Message = "[AccountsViewModel.OnWizardCompletedAsync] Unhandled exception: {Error}")]
-    public static partial void AccountsViewModelWizardError(ILogger logger, string error, Exception ex);
+    [LoggerMessage(EventId = 3001, Level = LogLevel.Error, Message = "[AccountsViewModel.OnWizardCompletedAsync] Unhandled exception: {ErrorType}")]
+    public static partial void AccountsViewModelWizardError(ILogger logger, string errorType);
 
     /// <summary>Logs failure to set active account.</summary>
-    [LoggerMessage(EventId = 3002, Level = LogLevel.Error, Message = "[AccountsViewModel.OnCardSelected] Failed to set active account: {Error}")]
-    public static partial void AccountSetActiveFailed(ILogger logger, string error, Exception ex);
+    [LoggerMessage(EventId = 3002, Level = LogLevel.Error, Message = "[AccountsViewModel.OnCardSelected] Failed to set active account: {ErrorType}")]
+    public static partial void AccountSetActiveFailed(ILogger logger, string errorType);
 
     /// <summary>Logs error adding account.</summary>
-    [LoggerMessage(EventId = 3003, Level = LogLevel.Error, Message = "[MainWindowViewModel.OnAccountAddedAsync] Error: {Error}")]
-    public static partial void AccountAddError(ILogger logger, string error, Exception ex);
+    [LoggerMessage(EventId = 3003, Level = LogLevel.Error, Message = "[MainWindowViewModel.OnAccountAddedAsync] Error: {ErrorType}")]
+    public static partial void AccountAddError(ILogger logger, string errorType);
 
     /// <summary>Logs unhandled exception when account added.</summary>
-    [LoggerMessage(EventId = 3004, Level = LogLevel.Error, Message = "[MainWindowViewModel.OnAccountAddedAsync] Unhandled exception: {Error}")]
-    public static partial void AccountAddUnhandledError(ILogger logger, string error, Exception ex);
+    [LoggerMessage(EventId = 3004, Level = LogLevel.Error, Message = "[MainWindowViewModel.OnAccountAddedAsync] Unhandled exception: {ErrorType}")]
+    public static partial void AccountAddUnhandledError(ILogger logger, string errorType);
 
     /// <summary>Logs error selecting account.</summary>
-    [LoggerMessage(EventId = 3005, Level = LogLevel.Error, Message = "[MainWindowViewModel.OnAccountSelectedAsync] Error: {Error}")]
-    public static partial void AccountSelectError(ILogger logger, string error, Exception ex);
+    [LoggerMessage(EventId = 3005, Level = LogLevel.Error, Message = "[MainWindowViewModel.OnAccountSelectedAsync] Error: {ErrorType}")]
+    public static partial void AccountSelectError(ILogger logger, string errorType);
 
     /// <summary>Logs unhandled exception when account selected.</summary>
-    [LoggerMessage(EventId = 3006, Level = LogLevel.Error, Message = "[MainWindowViewModel.OnAccountSelectedAsync] Unhandled exception: {Error}")]
-    public static partial void AccountSelectUnhandledError(ILogger logger, string error, Exception ex);
+    [LoggerMessage(EventId = 3006, Level = LogLevel.Error, Message = "[MainWindowViewModel.OnAccountSelectedAsync] Unhandled exception: {ErrorType}")]
+    public static partial void AccountSelectUnhandledError(ILogger logger, string errorType);
 
     /// <summary>Logs fatal error during main window initialization.</summary>
-    [LoggerMessage(EventId = 3007, Level = LogLevel.Error, Message = "[MainWindowViewModel.InitialiseAsync] FATAL ERROR: {Error}")]
-    public static partial void MainWindowInitializeFatal(ILogger logger, string error, Exception ex);
+    [LoggerMessage(EventId = 3007, Level = LogLevel.Error, Message = "[MainWindowViewModel.InitialiseAsync] FATAL ERROR: {ErrorType}")]
+    public static partial void MainWindowInitializeFatal(ILogger logger, string errorType);
 
     /// <summary>Logs a manual "Sync Now" request for an account no longer present in the repository.</summary>
     [LoggerMessage(EventId = 3008, Level = LogLevel.Warning, Message = "[DashboardAccountViewModel.SyncNowAsync] Account {AccountId} not found — sync not triggered")]
     public static partial void SyncNowAccountNotFound(ILogger logger, string accountId);
 
     /// <summary>Logs an unhandled exception while manually triggering sync for an account.</summary>
-    [LoggerMessage(EventId = 3009, Level = LogLevel.Error, Message = "[DashboardAccountViewModel.SyncNowAsync] Unhandled exception triggering sync for {AccountId}: {Error}")]
-    public static partial void SyncNowFailed(ILogger logger, string accountId, string error, Exception ex);
+    [LoggerMessage(EventId = 3009, Level = LogLevel.Error, Message = "[DashboardAccountViewModel.SyncNowAsync] Unhandled exception triggering sync for {AccountId}: {ErrorType}")]
+    public static partial void SyncNowFailed(ILogger logger, string accountId, string errorType);
 
     // Bootstrap & Initialization (3100-3199)
 
     /// <summary>Logs fatal error during bootstrap.</summary>
-    [LoggerMessage(EventId = 3100, Level = LogLevel.Error, Message = "[AppBootstrapper] Fatal error during bootstrap: {Message}")]
-    public static partial void BootstrapFatal(ILogger logger, string message, Exception ex);
+    [LoggerMessage(EventId = 3100, Level = LogLevel.Error, Message = "[AppBootstrapper] Fatal error during bootstrap: {ErrorType}")]
+    public static partial void BootstrapFatal(ILogger logger, string errorType);
 
     /// <summary>Logs fatal error during application initialization.</summary>
-    [LoggerMessage(EventId = 3101, Level = LogLevel.Error, Message = "[ApplicationInitializer.InitializeAsync] FATAL ERROR: {Error}")]
-    public static partial void ApplicationInitializeFatal(ILogger logger, string error, Exception ex);
+    [LoggerMessage(EventId = 3101, Level = LogLevel.Error, Message = "[ApplicationInitializer.InitializeAsync] FATAL ERROR: {ErrorType}")]
+    public static partial void ApplicationInitializeFatal(ILogger logger, string errorType);
 
     /// <summary>Logs failure to deserialize settings.</summary>
-    [LoggerMessage(EventId = 3102, Level = LogLevel.Warning, Message = "[SettingsService] Failed to deserialize settings from {Path}; using defaults")]
-    public static partial void SettingsDeserializeFailed(ILogger logger, string path, Exception ex);
+    [LoggerMessage(EventId = 3102, Level = LogLevel.Warning, Message = "[SettingsService] Failed to deserialize settings from {Path} ({ErrorType}); using defaults")]
+    public static partial void SettingsDeserializeFailed(ILogger logger, string path, string errorType);
 
     /// <summary>Logs token cache failure.</summary>
-    [LoggerMessage(EventId = 3103, Level = LogLevel.Warning, Message = "Token cache operation failed")]
-    public static partial void TokenCacheFailed(ILogger logger, Exception ex);
+    [LoggerMessage(EventId = 3103, Level = LogLevel.Warning, Message = "Token cache operation failed: {ErrorType}")]
+    public static partial void TokenCacheFailed(ILogger logger, string errorType);
 
     /// <summary>Logs when MSAL silent token acquisition requires UI interaction, capturing the MSAL error code and classification for diagnosis.</summary>
     [LoggerMessage(EventId = 3104, Level = LogLevel.Warning, Message = "[AuthService] Silent token requires UI interaction: ErrorCode={ErrorCode} Classification={Classification}")]
@@ -394,15 +394,15 @@ public static partial class OneDriveSyncClientMessages
 
     /// <summary>Logs a MSAL exception during interactive sign-in; the full exception detail is kept out of the UI-facing error message.</summary>
     [LoggerMessage(EventId = 3105, Level = LogLevel.Warning, Message = "[AuthService] MSAL exception during interactive sign-in: ErrorCode={ErrorCode}")]
-    public static partial void AuthInteractiveMsalException(ILogger logger, string errorCode, Exception ex);
+    public static partial void AuthInteractiveMsalException(ILogger logger, string errorCode);
 
     /// <summary>Logs an unexpected exception during interactive sign-in; the full exception detail is kept out of the UI-facing error message.</summary>
-    [LoggerMessage(EventId = 3106, Level = LogLevel.Warning, Message = "[AuthService] Unexpected exception during interactive sign-in")]
-    public static partial void AuthInteractiveUnexpectedException(ILogger logger, Exception ex);
+    [LoggerMessage(EventId = 3106, Level = LogLevel.Warning, Message = "[AuthService] Unexpected exception during interactive sign-in: {ErrorType}")]
+    public static partial void AuthInteractiveUnexpectedException(ILogger logger, string errorType);
 
     /// <summary>Logs a MSAL exception during silent token refresh; the full exception detail is kept out of the UI-facing error message.</summary>
     [LoggerMessage(EventId = 3107, Level = LogLevel.Warning, Message = "[AuthService] MSAL exception during silent token refresh: ErrorCode={ErrorCode}")]
-    public static partial void AuthSilentMsalException(ILogger logger, string errorCode, Exception ex);
+    public static partial void AuthSilentMsalException(ILogger logger, string errorCode);
 
     // Quota Refresh (3200-3299)
 
@@ -415,20 +415,20 @@ public static partial class OneDriveSyncClientMessages
     public static partial void QuotaRefreshFetchFailed(ILogger logger, string accountId, string error);
 
     /// <summary>Logs a failure recording a completed transfer for the throughput graph — the sample is dropped.</summary>
-    [LoggerMessage(EventId = 3204, Level = LogLevel.Warning, Message = "[ThroughputRecorder] Could not record throughput for account {AccountId}: {Error}")]
-    public static partial void ThroughputRecordFailed(ILogger logger, string accountId, string error, Exception ex);
+    [LoggerMessage(EventId = 3204, Level = LogLevel.Warning, Message = "[ThroughputRecorder] Could not record throughput for account {AccountId}: {ErrorType}")]
+    public static partial void ThroughputRecordFailed(ILogger logger, string accountId, string errorType);
 
     /// <summary>Logs a failure refreshing the throughput graph — the previous bars stay displayed.</summary>
-    [LoggerMessage(EventId = 3205, Level = LogLevel.Warning, Message = "[ThroughputGraphViewModel] Throughput refresh failed: {Error}")]
-    public static partial void ThroughputRefreshFailed(ILogger logger, string error, Exception ex);
+    [LoggerMessage(EventId = 3205, Level = LogLevel.Warning, Message = "[ThroughputGraphViewModel] Throughput refresh failed: {ErrorType}")]
+    public static partial void ThroughputRefreshFailed(ILogger logger, string errorType);
 
     /// <summary>Logs a failure refreshing the dashboard synced file count for an account — the previous count stays displayed.</summary>
-    [LoggerMessage(EventId = 3203, Level = LogLevel.Warning, Message = "[DashboardFileCountRefresher] File count refresh failed for account {AccountId}: {Error}")]
-    public static partial void DashboardFileCountRefreshFailed(ILogger logger, string accountId, string error, Exception ex);
+    [LoggerMessage(EventId = 3203, Level = LogLevel.Warning, Message = "[DashboardFileCountRefresher] File count refresh failed for account {AccountId}: {ErrorType}")]
+    public static partial void DashboardFileCountRefreshFailed(ILogger logger, string accountId, string errorType);
 
     /// <summary>Logs unexpected exception during the startup quota refresh pass — startup continues normally.</summary>
-    [LoggerMessage(EventId = 3202, Level = LogLevel.Warning, Message = "[ApplicationInitializer] Startup quota refresh failed: {Error}")]
-    public static partial void QuotaRefreshStartupFailed(ILogger logger, string error, Exception ex);
+    [LoggerMessage(EventId = 3202, Level = LogLevel.Warning, Message = "[ApplicationInitializer] Startup quota refresh failed: {ErrorType}")]
+    public static partial void QuotaRefreshStartupFailed(ILogger logger, string errorType);
 
     // Classification Repository (3300-3399)
 
@@ -490,8 +490,8 @@ public static partial class OneDriveSyncClientMessages
     /// <param name="command">The command that failed to start.</param>
     /// <param name="error">The error message.</param>
     /// <param name="ex">The exception.</param>
-    [LoggerMessage(EventId = 3500, Level = LogLevel.Warning, Message = "[ProcessNotificationSender] Could not show notification using {Command}: {Error}")]
-    public static partial void NotificationFailed(ILogger<ProcessNotificationSender> logger, string command, string error, Exception ex);
+    [LoggerMessage(EventId = 3500, Level = LogLevel.Warning, Message = "[ProcessNotificationSender] Could not show notification using {Command}: {ErrorType}")]
+    public static partial void NotificationFailed(ILogger<ProcessNotificationSender> logger, string command, string errorType);
 
     // Autostart (3600-3699)
 

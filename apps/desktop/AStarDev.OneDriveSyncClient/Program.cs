@@ -40,7 +40,7 @@ internal static class Program
         }
         catch (Exception ex)
         {
-            LogMessage.Error(logger, "Application terminated unexpectedly", ex);
+            LogMessage.Error(logger, $"Application terminated unexpectedly ({ex.GetType().Name})");
         }
     }
 
@@ -52,5 +52,5 @@ internal static class Program
             .LogToTrace()
             .With(new X11PlatformOptions { EnableIme = false })
             .AfterSetup(_ => AppDomain.CurrentDomain.UnhandledException += (_, e) =>
-                LogMessage.Error(logger, $"[Unhandled] {(e.ExceptionObject as Exception)?.Message ?? "Unknown"}", e.ExceptionObject as Exception ?? new InvalidOperationException("Unknown unhandled exception")));
+                LogMessage.Error(logger, $"[Unhandled] application exception ({e.ExceptionObject.GetType().Name})"));
 }

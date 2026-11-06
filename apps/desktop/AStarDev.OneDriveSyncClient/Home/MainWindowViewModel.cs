@@ -173,7 +173,7 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
                 await initializer.InitializeAsync();
                 return Unit.Default;
             })
-            .TapErrorAsync(e => OneDriveSyncClientMessages.MainWindowInitializeFatal(logger, e.Message, e));
+            .TapErrorAsync(e => OneDriveSyncClientMessages.MainWindowInitializeFatal(logger, e.GetType().Name));
 
     [RelayCommand]
     private async Task SyncNowAsync()
@@ -206,11 +206,11 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
                     await activity.SetActiveAccountAsync(card.Id, card.Email);
                     return Unit.Default;
                 })
-                .TapErrorAsync(e => OneDriveSyncClientMessages.AccountSelectError(logger, e.Message, e));
+                .TapErrorAsync(e => OneDriveSyncClientMessages.AccountSelectError(logger, e.GetType().Name));
         }
         catch (Exception ex)
         {
-            OneDriveSyncClientMessages.AccountSelectUnhandledError(logger, ex.Message, ex);
+            OneDriveSyncClientMessages.AccountSelectUnhandledError(logger, ex.GetType().Name);
         }
     }
 
@@ -229,11 +229,11 @@ public sealed partial class MainWindowViewModel(IApplicationInitializer initiali
                     await activity.SetActiveAccountAsync(account.Id.Value, account.Profile.Email);
                     return Unit.Default;
                 })
-                .TapErrorAsync(e => OneDriveSyncClientMessages.AccountAddError(logger, e.Message, e));
+                .TapErrorAsync(e => OneDriveSyncClientMessages.AccountAddError(logger, e.GetType().Name));
         }
         catch (Exception ex)
         {
-            OneDriveSyncClientMessages.AccountAddUnhandledError(logger, ex.Message, ex);
+            OneDriveSyncClientMessages.AccountAddUnhandledError(logger, ex.GetType().Name);
         }
     }
 

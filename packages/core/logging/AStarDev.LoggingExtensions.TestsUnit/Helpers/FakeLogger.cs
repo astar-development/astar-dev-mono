@@ -4,6 +4,8 @@ internal sealed class FakeLogger : ILogger
 {
     public List<(LogLevel Level, EventId EventId, string Message, Exception? Exception)> Logs { get; } = [];
 
+    public List<IReadOnlyList<KeyValuePair<string, object?>>> States { get; } = [];
+
     public IDisposable BeginScope<TState>(TState? state) where TState : notnull => NullScope.Instance;
 
     public bool IsEnabled(LogLevel logLevel) => true;
@@ -12,6 +14,7 @@ internal sealed class FakeLogger : ILogger
     {
         string message = formatter(state, exception);
         Logs.Add((logLevel, eventId, message, exception));
+        States.Add(state as IReadOnlyList<KeyValuePair<string, object?>> ?? []);
     }
 
     private sealed class NullScope : IDisposable

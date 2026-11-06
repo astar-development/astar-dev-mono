@@ -122,7 +122,7 @@ public sealed partial class UpdateAvailableViewModel : ObservableObject, IDispos
         }
         catch (Exception ex)
         {
-            LogMessage.LogException(logger, nameof(UpdateAvailableViewModel), ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+            LogMessage.ExceptionCaught(logger, nameof(UpdateAvailableViewModel), ex.ErrorType());
             ErrorMessage = ex.Message;
         }
         finally

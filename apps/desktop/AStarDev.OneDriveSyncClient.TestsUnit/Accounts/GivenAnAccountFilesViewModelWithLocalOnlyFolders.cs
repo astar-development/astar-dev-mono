@@ -73,6 +73,19 @@ public sealed class GivenAnAccountFilesViewModelWithLocalOnlyFolders
     }
 
     [Fact]
+    public async Task when_persisting_a_discovered_local_only_folder_fails_then_a_load_error_is_shown()
+    {
+        var fileSystem = new MockFileSystem();
+        fileSystem.Directory.CreateDirectory($"{SyncRoot}/Drafts");
+        var (sut, ruleRepository) = BuildSut(fileSystem, "Photos");
+        ruleRepository.UpsertAsync(Arg.Any<AccountId>(), "/Drafts", RuleType.Include, null, Arg.Any<CancellationToken>()).Returns(Task.FromException(new IOException("disk full")));
+
+        await sut.LoadCommand.ExecuteAsync(null);
+
+        sut.HasLoadError.ShouldBeTrue();
+    }
+
+    [Fact]
     public async Task when_a_remote_root_folder_has_no_rule_then_no_rule_is_persisted_on_load()
     {
         var (sut, ruleRepository) = BuildSut(new MockFileSystem(), "Photos");

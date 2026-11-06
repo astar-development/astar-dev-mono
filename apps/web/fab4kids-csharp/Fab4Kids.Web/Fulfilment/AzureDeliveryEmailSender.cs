@@ -29,7 +29,7 @@ public sealed class AzureDeliveryEmailSender(IOptions<FulfilmentOptions> options
             return Unit.Instance;
         }, cancellationToken).ToResultAsync(ex =>
         {
-            LogMessage.LogException(logger, nameof(AzureDeliveryEmailSender), ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+            LogMessage.ExceptionCaught(logger, nameof(AzureDeliveryEmailSender), ex.ErrorType());
 
             return "Something went wrong sending your download links.";
         });

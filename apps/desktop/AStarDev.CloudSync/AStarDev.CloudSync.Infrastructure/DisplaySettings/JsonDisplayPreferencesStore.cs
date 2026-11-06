@@ -27,7 +27,7 @@ public sealed class JsonDisplayPreferencesStore(IFileInfo settingsFile, ILogger<
         }
         catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
         {
-            LogMessage.Warning(logger, nameof(JsonDisplayPreferencesStore), $"Could not read the display preferences, using the defaults: {exception.Message}");
+            LogMessage.Warning(logger, nameof(JsonDisplayPreferencesStore), $"Could not read the display preferences, using the defaults ({exception.ErrorType()})");
 
             return DisplayPreferencesFactory.CreateDefault();
         }
@@ -43,7 +43,7 @@ public sealed class JsonDisplayPreferencesStore(IFileInfo settingsFile, ILogger<
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
-            LogMessage.Warning(logger, nameof(JsonDisplayPreferencesStore), $"Could not save the display preferences: {exception.Message}");
+            LogMessage.Warning(logger, nameof(JsonDisplayPreferencesStore), $"Could not save the display preferences ({exception.ErrorType()})");
         }
     }
 

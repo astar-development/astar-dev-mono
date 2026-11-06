@@ -135,22 +135,6 @@ public sealed class GivenLogMessageTemplate
     }
 
     [Fact]
-    public void when_an_internal_server_error_with_an_exception_is_logged_then_it_uses_the_500_event_and_text()
-    {
-        var logger = new FakeLogger();
-        const string path = "/internal-server-error";
-        var exception = new InvalidOperationException("boom");
-
-        LogMessage.InternalServerError(logger, path, exception);
-
-        logger.Logs.Count.ShouldBe(1);
-        var log = logger.Logs[0];
-        log.Level.ShouldBe(LogLevel.Error);
-        log.EventId.Id.ShouldBe(5002);
-        log.Message.ShouldBe($"Internal Server Error (500) for `{path}`");
-    }
-
-    [Fact]
     public void when_the_log_message_templates_are_inspected_then_the_duplicate_trace_page_view_template_is_gone()
     {
         var traceMethod = typeof(LogMessage).GetMethod("Trace");

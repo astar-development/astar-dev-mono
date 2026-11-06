@@ -77,6 +77,18 @@ public class GivenAnAzureTableNewsletterSubscriberStore
     }
 
     [Fact]
+    public async Task when_the_lookup_fails_with_a_server_error_then_exists_returns_an_error()
+    {
+        tableClient.GetEntityAsync<NewsletterSubscriberEntity>("subscribers", "ada@example.com", null, Arg.Any<CancellationToken>())
+            .Returns<Task<Response<NewsletterSubscriberEntity>>>(_ => throw new RequestFailedException(500, "Table unavailable for ada@example.com"));
+        var sut = CreateSut(tableClient);
+
+        var result = await sut.ExistsAsync("ada@example.com", TestContext.Current.CancellationToken);
+
+        result.Match(_ => "ok", err => err).ShouldBe("Something went wrong checking your subscription.");
+    }
+
+    [Fact]
     public async Task when_upserting_throws_then_add_returns_an_error()
     {
         tableClient.UpsertEntityAsync(Arg.Any<NewsletterSubscriberEntity>(), Arg.Any<TableUpdateMode>(), Arg.Any<CancellationToken>())

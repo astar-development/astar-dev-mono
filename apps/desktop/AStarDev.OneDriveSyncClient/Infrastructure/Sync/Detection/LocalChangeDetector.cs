@@ -83,11 +83,11 @@ public sealed class LocalChangeDetector(IFileSystem fileSystem, ILogger<LocalCha
         }
         catch (UnauthorizedAccessException ex)
         {
-            OneDriveSyncClientMessages.LocalChangeDetectorAccessDenied(logger, localDir, ex.Message);
+            OneDriveSyncClientMessages.LocalChangeDetectorAccessDenied(logger, localDir, ex.GetType().Name);
         }
         catch (Exception ex)
         {
-            OneDriveSyncClientMessages.LocalChangeDetectorError(logger, localDir, ex.Message, ex);
+            OneDriveSyncClientMessages.LocalChangeDetectorError(logger, localDir, ex.GetType().Name);
         }
     }
 

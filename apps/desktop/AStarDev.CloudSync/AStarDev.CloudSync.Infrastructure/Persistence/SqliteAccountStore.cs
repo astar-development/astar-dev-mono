@@ -70,14 +70,14 @@ public sealed class SqliteAccountStore(IDbContextFactory<CloudSyncDbContext> dbC
 
     private AccountAddOutcome PersistFailed(Exception exception)
     {
-        LogMessage.Error(logger, "Could not save the account.", exception);
+        LogMessage.Error(logger, "Could not save the account.", exception.ErrorType());
 
         return AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreatePersistFailed());
     }
 
     private Result<T, ErrorResponse> ReadFailed<T>(Exception exception, string logMessage, string errorMessage)
     {
-        LogMessage.Error(logger, logMessage, exception);
+        LogMessage.Error(logger, logMessage, exception.ErrorType());
 
         return new ErrorResponse(errorMessage);
     }

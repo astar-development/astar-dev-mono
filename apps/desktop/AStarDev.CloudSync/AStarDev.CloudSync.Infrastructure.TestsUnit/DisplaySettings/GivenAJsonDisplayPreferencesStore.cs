@@ -1,6 +1,8 @@
 using AStarDev.CloudSync.Core.DisplaySettings;
 using AStarDev.CloudSync.Domain.DisplaySettings;
 using AStarDev.CloudSync.Infrastructure.DisplaySettings;
+using AStarDev.CloudSync.TestHelpers.Common;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Testably.Abstractions.Testing;
 
@@ -55,6 +57,21 @@ public class GivenAJsonDisplayPreferencesStore
         var preferences = CreateStore(fileSystem).Load();
 
         preferences.ShouldBe(DisplayPreferencesFactory.CreateDefault());
+    }
+
+    [Fact]
+    public void when_the_preferences_cannot_be_saved_then_a_warning_names_the_exception_type_but_not_the_path()
+    {
+        var fileSystem = new MockFileSystem();
+        fileSystem.Directory.CreateDirectory(SettingsPath);
+        var logger = new RecordingLogger<JsonDisplayPreferencesStore>();
+
+        new JsonDisplayPreferencesStore(fileSystem.FileInfo.New(SettingsPath), logger).Save(DisplayPreferencesFactory.CreateDefault());
+
+        string warning = logger.Messages.ShouldHaveSingleItem();
+        logger.Entries[0].Level.ShouldBe(LogLevel.Warning);
+        warning.ShouldStartWith("JsonDisplayPreferencesStore has raised: `Could not save the display preferences (System.");
+        warning.ShouldNotContain("/home/user");
     }
 
     private static JsonDisplayPreferencesStore CreateStore(MockFileSystem fileSystem) => new(fileSystem.FileInfo.New(SettingsPath), NullLogger<JsonDisplayPreferencesStore>.Instance);

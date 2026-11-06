@@ -204,7 +204,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAcco
         }
         catch (Exception ex)
         {
-            OneDriveSyncClientMessages.FolderSelectionPersistFailed(logger, account.Id.Value, ex.Message, ex);
+            OneDriveSyncClientMessages.FolderSelectionPersistFailed(logger, account.Id.Value, ex.GetType().Name);
             HasLoadError = true;
             LoadError = ex.Message;
         }
@@ -224,7 +224,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAcco
         }
         catch (Exception ex)
         {
-            OneDriveSyncClientMessages.FolderSelectionPersistFailed(logger, account.Id.Value, ex.Message, ex);
+            OneDriveSyncClientMessages.FolderSelectionPersistFailed(logger, account.Id.Value, ex.GetType().Name);
             HasLoadError = true;
             LoadError = ex.Message;
         }

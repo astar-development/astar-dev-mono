@@ -39,7 +39,7 @@ public sealed class FulfilmentService(
         return await Try.RunAsync(() => sessionService.GetAsync(sessionId, ExpandedLineItemsOptions(), cancellationToken: cancellationToken), cancellationToken)
             .ToResultAsync(ex =>
             {
-                LogMessage.LogException(logger, nameof(FulfilmentService), ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+                LogMessage.ExceptionCaught(logger, nameof(FulfilmentService), ex.ErrorType());
 
                 return "Unable to retrieve checkout session.";
             })
@@ -67,7 +67,7 @@ public sealed class FulfilmentService(
         return await Try.RunAsync(() => sessionService.GetAsync(orderReference, ExpandedLineItemsOptions(), cancellationToken: cancellationToken), cancellationToken)
             .ToResultAsync(ex =>
             {
-                LogMessage.LogException(logger, nameof(FulfilmentService), ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+                LogMessage.ExceptionCaught(logger, nameof(FulfilmentService), ex.ErrorType());
 
                 return "Unable to resend your download links.";
             })

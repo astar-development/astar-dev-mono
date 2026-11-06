@@ -29,6 +29,19 @@ public class GivenABlobSasDeliveryLinkGenerator
     }
 
     [Fact]
+    public async Task when_building_the_signed_url_throws_then_an_error_is_returned()
+    {
+        var containerClient = Substitute.For<BlobContainerClient>();
+        containerClient.CanGenerateSasUri.Returns(true);
+        containerClient.GetBlobClient(Arg.Any<string>()).Returns(_ => throw new InvalidOperationException("signing key rejected"));
+        var sut = CreateSut(containerClient);
+
+        var result = await sut.GenerateSignedUrlAsync("pdfs/file1.pdf", TestContext.Current.CancellationToken);
+
+        result.Match(_ => "ok", err => err).ShouldBe("Something went wrong generating your download link.");
+    }
+
+    [Fact]
     public async Task when_blob_storage_is_configured_then_a_signed_url_is_returned()
     {
         var sut = CreateSut(FakeContainerClient());

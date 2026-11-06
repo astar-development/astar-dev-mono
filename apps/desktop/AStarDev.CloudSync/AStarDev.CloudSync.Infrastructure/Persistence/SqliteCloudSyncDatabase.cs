@@ -29,7 +29,7 @@ public sealed class SqliteCloudSyncDatabase(IDbContextFactory<CloudSyncDbContext
 
     private Result<Unit, ErrorResponse> MigrationFailed(Exception exception)
     {
-        LogMessage.Error(logger, "Could not create or migrate the CloudSync database.", exception);
+        LogMessage.Error(logger, "Could not create or migrate the CloudSync database.", exception.ErrorType());
 
         return new ErrorResponse("The CloudSync database could not be created or migrated.");
     }

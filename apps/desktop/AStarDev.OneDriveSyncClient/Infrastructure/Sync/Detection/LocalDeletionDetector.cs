@@ -63,7 +63,7 @@ public sealed class LocalDeletionDetector(IGraphService graphService, ISyncedIte
             }
             catch (Exception ex)
             {
-                OneDriveSyncClientMessages.LocalDeletionDetectorDeleteFailed(logger, knownItem.RemoteItemId.Value, ex.Message, ex);
+                OneDriveSyncClientMessages.LocalDeletionDetectorDeleteException(logger, knownItem.RemoteItemId.Value, ex.GetType().Name);
             }
         }
 

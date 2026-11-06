@@ -34,7 +34,7 @@ public sealed class StripeCheckoutSessionService(IOptions<CheckoutOptions> optio
 
         return await Try.RunAsync(() => sessionService.CreateAsync(sessionOptions, cancellationToken: cancellationToken), cancellationToken).ToResultAsync(ex =>
         {
-            LogMessage.LogException(logger, nameof(StripeCheckoutSessionService), ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+            LogMessage.ExceptionCaught(logger, nameof(StripeCheckoutSessionService), ex.ErrorType());
 
             return "Unable to create checkout session.";
         }).MatchAsync(
@@ -54,7 +54,7 @@ public sealed class StripeCheckoutSessionService(IOptions<CheckoutOptions> optio
 
         var result = await Try.RunAsync(() => sessionService.GetAsync(sessionId, cancellationToken: cancellationToken), cancellationToken).ToResultAsync(ex =>
         {
-            LogMessage.LogException(logger, nameof(StripeCheckoutSessionService), ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+            LogMessage.ExceptionCaught(logger, nameof(StripeCheckoutSessionService), ex.ErrorType());
 
             return ex.Message;
         });

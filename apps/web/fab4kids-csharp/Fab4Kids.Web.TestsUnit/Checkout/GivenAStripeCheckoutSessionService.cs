@@ -119,6 +119,18 @@ public class GivenAStripeCheckoutSessionService
     }
 
     [Fact]
+    public async Task when_reading_the_session_throws_then_no_customer_email_is_returned()
+    {
+        sessionService.GetAsync("cs_test_123", Arg.Any<SessionGetOptions>(), Arg.Any<RequestOptions>(), Arg.Any<CancellationToken>())
+            .Returns<Task<Session>>(_ => throw new StripeException("session lookup failed for ada@example.com"));
+        var sut = CreateSut(sessionService, ConfiguredOptions());
+
+        var email = await sut.GetCustomerEmailAsync("cs_test_123", TestContext.Current.CancellationToken);
+
+        email.TryGetValue(out string _).ShouldBeFalse();
+    }
+
+    [Fact]
     public async Task when_the_session_has_a_customer_email_then_it_is_returned()
     {
         sessionService.GetAsync("cs_test_123", Arg.Any<SessionGetOptions>(), Arg.Any<RequestOptions>(), Arg.Any<CancellationToken>())

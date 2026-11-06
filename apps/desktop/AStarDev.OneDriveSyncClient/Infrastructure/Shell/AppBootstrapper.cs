@@ -66,7 +66,7 @@ public sealed class AppBootstrapper(IDbContextFactory<AppDbContext> dbContextFac
         }
         catch (Exception ex)
         {
-            OneDriveSyncClientMessages.BootstrapFatal(logger, ex.Message, ex);
+            OneDriveSyncClientMessages.BootstrapFatal(logger, ex.GetType().Name);
             throw;
         }
     }

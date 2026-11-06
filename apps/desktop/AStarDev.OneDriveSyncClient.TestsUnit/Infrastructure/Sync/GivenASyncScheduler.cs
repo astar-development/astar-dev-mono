@@ -83,6 +83,22 @@ public sealed class GivenASyncScheduler
     }
 
     [Fact]
+    public async Task when_trigger_now_and_the_account_sync_throws_then_the_pass_completes_and_the_account_is_reported_complete()
+    {
+        var mockSyncService = Substitute.For<ISyncService>();
+        var mockRepository = Substitute.For<IAccountRepository>();
+        _ = mockRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns([new() { Id = new AccountId("failing-account"), Profile = AccountProfileFactory.Create("test", "test@example.com") }]);
+        _ = mockSyncService.SyncAccountAsync(Arg.Any<OneDriveAccount>(), Arg.Any<CancellationToken>()).Returns(Task.FromException(new InvalidOperationException("Sync failed for test@example.com")));
+        var scheduler = CreateScheduler(mockSyncService, mockRepository, BuildSyncRuleRepository());
+        string? completedAccountId = null;
+        scheduler.SyncCompleted += (_, accountId) => completedAccountId = accountId;
+
+        await scheduler.TriggerNowAsync(TestContext.Current.CancellationToken);
+
+        completedAccountId.ShouldBe("failing-account");
+    }
+
+    [Fact]
     public async Task when_trigger_now_then_repository_get_all_called_once()
     {
         var mockSyncService = Substitute.For<ISyncService>();

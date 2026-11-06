@@ -180,7 +180,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            LogMessage.Error(logger, $"Failed to delete category {id.Value}", ex);
+            LogMessage.Error(logger, $"Failed to delete category {id.Value} ({ex.GetType().Name})");
 
             return new Fail<FileClassificationCategoryId, string>(ex.Message);
         }
