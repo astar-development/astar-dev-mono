@@ -74,6 +74,25 @@
                 ensures consistent reference to the expected configuration file across the application.
             </remarks>
         </member>
+        <member name="T:AStarDev.LoggingExtensions.ErrorTypes">
+            <summary>Produces low-cardinality <c>error.type</c> values for failed operations: the exception's full type name, <see cref="F:AStarDev.LoggingExtensions.ErrorTypes.Timeout" />, an HTTP status code or <see cref="F:AStarDev.LoggingExtensions.ErrorTypes.Other" />.</summary>
+        </member>
+        <member name="F:AStarDev.LoggingExtensions.ErrorTypes.Timeout">
+            <summary>The value for an operation that timed out.</summary>
+        </member>
+        <member name="F:AStarDev.LoggingExtensions.ErrorTypes.Other">
+            <summary>The semantic-convention fallback when no meaningful error type is known.</summary>
+        </member>
+        <member name="M:AStarDev.LoggingExtensions.ErrorTypes.From(System.Exception)">
+            <summary>Describes a failure caused by an exception. A <see cref="T:System.TimeoutException" />, or a cancellation caused by one such as an HttpClient timeout, gives <see cref="F:AStarDev.LoggingExtensions.ErrorTypes.Timeout" />; anything else gives its full type name.</summary>
+            <param name="exception">The exception that caused the failure.</param>
+            <returns>The error type value.</returns>
+        </member>
+        <member name="M:AStarDev.LoggingExtensions.ErrorTypes.FromStatusCode(System.Int32)">
+            <summary>Describes a failure reported by an HTTP status code.</summary>
+            <param name="statusCode">The HTTP status code.</param>
+            <returns>The status code as invariant text, for example <c>503</c>.</returns>
+        </member>
         <member name="T:AStarDev.LoggingExtensions.ExceptionExtensions">
             <summary>Provides the PII-free exception detail that may be logged (LG-02): the type name, never the message, stack trace or instance.</summary>
         </member>
