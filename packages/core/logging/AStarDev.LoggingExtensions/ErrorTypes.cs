@@ -12,10 +12,19 @@ public static class ErrorTypes
     /// <summary>The semantic-convention fallback when no meaningful error type is known.</summary>
     public const string Other = ErrorTypeLogProcessor.OtherValue;
 
-    /// <summary>Describes a failure caused by an exception. A <see cref="TimeoutException" />, or a cancellation caused by one such as an HttpClient timeout, gives <see cref="Timeout" />; anything else gives its full type name.</summary>
+    /// <summary>
+    ///     Describes a failure caused by an exception. A <see cref="TimeoutException" />, or an <see cref="OperationCanceledException" /> whose direct inner
+    ///     exception is one (an HttpClient timeout), gives <see cref="Timeout" />. Deeper nesting is not unwrapped. Any other exception gives its full
+    ///     type name, and no exception gives <see cref="Other" />.
+    /// </summary>
     /// <param name="exception">The exception that caused the failure.</param>
     /// <returns>The error type value.</returns>
-    public static string From(Exception exception) => exception is TimeoutException || exception.InnerException is TimeoutException ? Timeout : exception.ErrorType();
+    public static string From(Exception? exception) => exception switch
+    {
+        null => Other,
+        TimeoutException or OperationCanceledException { InnerException: TimeoutException } => Timeout,
+        _ => exception.ErrorType(),
+    };
 
     /// <summary>Describes a failure reported by an HTTP status code.</summary>
     /// <param name="statusCode">The HTTP status code.</param>

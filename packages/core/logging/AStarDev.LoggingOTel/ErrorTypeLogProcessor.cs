@@ -6,7 +6,8 @@ namespace AStarDev.LoggingOTel;
 /// <summary>
 ///     Copies the PascalCase <c>ErrorType</c> or <c>ExceptionType</c> attribute of a failed operation to the semantic-convention key
 ///     <c>error.type</c>, which a <c>[LoggerMessage]</c> placeholder cannot produce because it cannot contain a dot. Records without
-///     either attribute, such as successes, are left alone. It must be added before any exporter.
+///     either attribute, such as successes, are left alone. When a record carries both, the first one in template order wins. It must be added
+///     before any exporter.
 /// </summary>
 public sealed class ErrorTypeLogProcessor : BaseProcessor<LogRecord>
 {

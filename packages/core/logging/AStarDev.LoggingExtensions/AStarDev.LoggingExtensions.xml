@@ -84,7 +84,11 @@
             <summary>The semantic-convention fallback when no meaningful error type is known.</summary>
         </member>
         <member name="M:AStarDev.LoggingExtensions.ErrorTypes.From(System.Exception)">
-            <summary>Describes a failure caused by an exception. A <see cref="T:System.TimeoutException" />, or a cancellation caused by one such as an HttpClient timeout, gives <see cref="F:AStarDev.LoggingExtensions.ErrorTypes.Timeout" />; anything else gives its full type name.</summary>
+            <summary>
+                Describes a failure caused by an exception. A <see cref="T:System.TimeoutException" />, or an <see cref="T:System.OperationCanceledException" /> whose direct inner
+                exception is one (an HttpClient timeout), gives <see cref="F:AStarDev.LoggingExtensions.ErrorTypes.Timeout" />. Deeper nesting is not unwrapped. Any other exception gives its full
+                type name, and no exception gives <see cref="F:AStarDev.LoggingExtensions.ErrorTypes.Other" />.
+            </summary>
             <param name="exception">The exception that caused the failure.</param>
             <returns>The error type value.</returns>
         </member>
