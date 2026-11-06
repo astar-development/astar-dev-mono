@@ -30,6 +30,15 @@ public sealed class GivenTheDatabaseMigrator : IDisposable
     }
 
     [Fact]
+    public async Task when_the_database_file_cannot_be_opened_then_the_migration_failure_is_rethrown()
+    {
+        await using var folderAsDatabase = new ServiceCollection().AddDataServices(Path.GetTempPath()).BuildServiceProvider();
+        var factory = folderAsDatabase.GetRequiredService<IDbContextFactory<ControlDbContext>>();
+
+        _ = await Should.ThrowAsync<Exception>(() => DatabaseMigrator.MigrateAsync(factory, NullLogger.Instance));
+    }
+
+    [Fact]
     public async Task when_a_new_database_is_migrated_then_the_model_has_no_pending_changes()
     {
         var factory = serviceProvider.GetRequiredService<IDbContextFactory<ControlDbContext>>();

@@ -15,6 +15,22 @@ public sealed class GivenALocalChangeDetector
 
     private static Dictionary<string, SyncedItemEntity> EmptyLookup() => [];
 
+    [Theory]
+    [MemberData(nameof(ScanFailures))]
+    public void when_scanning_an_included_folder_throws_then_the_folder_is_skipped_without_escaping(Exception scanFailure)
+    {
+        var fileSystem = Substitute.For<IFileSystem>();
+        fileSystem.Directory.Exists($"{BasePath}/Documents").Returns(true);
+        fileSystem.Directory.EnumerateFiles($"{BasePath}/Documents").Returns(_ => throw scanFailure);
+        var sut = new LocalChangeDetector(fileSystem, Substitute.For<ILogger<LocalChangeDetector>>());
+
+        var jobs = sut.DetectNewAndModifiedFiles(AccountId, BasePath, [Rule("/Documents", RuleType.Include)], EmptyLookup());
+
+        jobs.ShouldBeEmpty();
+    }
+
+    public static TheoryData<Exception> ScanFailures() => [new UnauthorizedAccessException("access denied to /sync-root/Documents"), new IOException("device not ready")];
+
     [Fact]
     public void when_no_rules_are_provided_then_returns_empty_list()
     {

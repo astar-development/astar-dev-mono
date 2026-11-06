@@ -37,11 +37,35 @@ public sealed class GivenAnAccountsViewModelHandlingReAuthentication
         context.Exceptions.ShouldBeEmpty();
     }
 
-    private static AccountsViewModel BuildSut(IAuthService authService)
+    [Fact]
+    public void when_saving_the_selected_account_as_active_throws_then_the_exception_does_not_escape_the_handler()
+    {
+        var repository = Substitute.For<IAccountRepository>();
+        repository.SetActiveAccountAsync(Arg.Any<AccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromException(new IOException("database locked for test@outlook.com")));
+        var sut = BuildSut(Substitute.For<IAuthService>(), repository);
+        sut.RestoreAccounts([CreateAccount()]);
+        var context = new CapturingSynchronizationContext();
+        var original = SynchronizationContext.Current;
+        SynchronizationContext.SetSynchronizationContext(context);
+
+        try
+        {
+            sut.Accounts[0].SelectCommand.Execute(null);
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(original);
+        }
+
+        context.Exceptions.ShouldBeEmpty();
+        sut.ActiveAccount.ShouldBe(sut.Accounts[0]);
+    }
+
+    private static AccountsViewModel BuildSut(IAuthService authService, IAccountRepository? repository = null)
     {
         var graphService = Substitute.For<IGraphService>();
 
-        return new(authService, graphService, Substitute.For<IAccountRepository>(), Substitute.For<IAccountOnboardingService>(), Substitute.For<IQuotaRefreshService>(), Substitute.For<ISyncEventAggregator>(), new AddAccountWizardViewModelFactory(authService, graphService, Substitute.For<ILocalizationService>()), new AccountCardViewModelFactory(Substitute.For<ILocalizationService>()), Substitute.For<ILogger<AccountsViewModel>>());
+        return new(authService, graphService, repository ?? Substitute.For<IAccountRepository>(), Substitute.For<IAccountOnboardingService>(), Substitute.For<IQuotaRefreshService>(), Substitute.For<ISyncEventAggregator>(), new AddAccountWizardViewModelFactory(authService, graphService, Substitute.For<ILocalizationService>()), new AccountCardViewModelFactory(Substitute.For<ILocalizationService>()), Substitute.For<ILogger<AccountsViewModel>>());
     }
 
     private static OneDriveAccount CreateAccount() => new()

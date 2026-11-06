@@ -56,6 +56,18 @@ public sealed class GivenAnAccountsViewModelWithACompletingWizard
     }
 
     [Fact]
+    public async Task when_onboarding_the_completed_account_throws_then_no_account_is_added()
+    {
+        var (authService, graphService, repository, onboardingService, quotaRefreshService) = BuildMocks();
+        onboardingService.CompleteOnboardingAsync(Arg.Any<OneDriveAccount>(), Arg.Any<CancellationToken>()).Returns(Task.FromException<OneDriveAccount>(new IOException("database locked for test@outlook.com")));
+        var sut = BuildSut(authService, graphService, repository, onboardingService, quotaRefreshService);
+
+        await DriveWizardToCompletionAsync(sut);
+
+        sut.Accounts.ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task when_wizard_is_cancelled_then_account_onboarding_service_is_not_called()
     {
         var (authService, graphService, repository, onboardingService, quotaRefreshService) = BuildMocks();
