@@ -58,16 +58,6 @@ public static partial class LogMessage
     [LoggerMessage(EventId = 400, Level = LogLevel.Warning, Message = "{Location} has raised: `{message}`.")]
     public static partial void Warning(ILogger logger, string location, string message);
 
-    /// <summary>Logs a critical exception event, providing detailed information about the exception type, message, and stack trace.</summary>
-    /// <param name="logger">The logger used to log the event.</param>
-    /// <param name="location">The location of the event.</param>
-    /// <param name="exceptionType">The type of the exception being logged.</param>
-    /// <param name="exceptionMessage">The message associated with the exception.</param>
-    /// <param name="exceptionStack">The stack trace of the exception.</param>
-    [Obsolete("Logs the exception message and stack trace, which can carry PII (LG-02). Use ExceptionCaught(logger, location, exception.ErrorType()) instead.")]
-    [LoggerMessage(EventId = 5001, Level = LogLevel.Error, Message = "{Location} encountered {exceptionType} with `{exceptionMessage}`\nExceptionStack: {exceptionStack}")]
-    public static partial void LogException(ILogger logger, string location, string exceptionType, string exceptionMessage, string exceptionStack);
-
     /// <summary>Logs that an exception was caught, recording only the exception type name; the message, stack trace and instance are never logged (LG-02).</summary>
     /// <param name="logger">The logger used to log the event.</param>
     /// <param name="location">The location of the event.</param>
@@ -117,22 +107,6 @@ public static partial class LogMessage
     /// <param name="path">The path of the HTTP request that caused the Too Many Requests.</param>
     [LoggerMessage(EventId = 429, Level = LogLevel.Warning, Message = "Too Many Requests (429) for `{Path}`")]
     public static partial void TooManyRequests(ILogger logger, string path);
-
-    /// <summary>Logs an error message for a Not Implemented (501) event, including the requested path.</summary>
-    /// <param name="logger">The logger to be used for logging the event.</param>
-    /// <param name="path">The path of the HTTP request that caused the Not Implemented error.</param>
-    /// <param name="ex">The exception associated with the Not Implemented error.</param>
-    [Obsolete("Attaches the exception instance, which can carry PII (LG-02). Use InternalServerError(logger, path) with ExceptionCaught(logger, location, exception.ErrorType()) instead.")]
-    [LoggerMessage(EventId = 501, Level = LogLevel.Error, Message = "Not Implemented (501) for `{Path}`")]
-    public static partial void InternalServerError(ILogger logger, string path, Exception ex);
-
-    /// <summary>Logs an application error event (EventId 505).</summary>
-    /// <param name="logger">The logger to be used for logging the event.</param>
-    /// <param name="errorMessage">The error message to log.</param>
-    /// <param name="ex">The exception associated with the error.</param>
-    [Obsolete("Attaches the exception instance, which can carry PII (LG-02). Use Error(logger, errorMessage, exception.ErrorType()) instead.")]
-    [LoggerMessage(EventId = 505, Level = LogLevel.Error, Message = "Error occurred : `{ErrorMessage}`")]
-    public static partial void Error(ILogger logger, string errorMessage, Exception ex);
 
     /// <summary>Logs an application error event caused by an exception (EventId 507), recording only the exception type name (LG-02).</summary>
     /// <param name="logger">The logger to be used for logging the event.</param>
