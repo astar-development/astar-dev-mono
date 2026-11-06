@@ -146,17 +146,16 @@ public sealed class GivenLogMessageTemplate
         logger.Logs.Count.ShouldBe(1);
         var log = logger.Logs[0];
         log.Level.ShouldBe(LogLevel.Error);
-        log.EventId.Id.ShouldBe(500);
+        log.EventId.Id.ShouldBe(5002);
         log.Message.ShouldBe($"Internal Server Error (500) for `{path}`");
     }
 
     [Fact]
-    public void when_the_trace_template_is_inspected_then_it_is_marked_obsolete_in_favour_of_page_view()
+    public void when_the_log_message_templates_are_inspected_then_the_duplicate_trace_page_view_template_is_gone()
     {
         var traceMethod = typeof(LogMessage).GetMethod("Trace");
 
-        traceMethod.ShouldNotBeNull();
-        traceMethod.IsDefined(typeof(ObsoleteAttribute), false).ShouldBeTrue();
+        traceMethod.ShouldBeNull();
     }
 
     [Fact]
