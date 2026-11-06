@@ -64,8 +64,16 @@ public static partial class LogMessage
     /// <param name="exceptionType">The type of the exception being logged.</param>
     /// <param name="exceptionMessage">The message associated with the exception.</param>
     /// <param name="exceptionStack">The stack trace of the exception.</param>
+    [Obsolete("Logs the exception message and stack trace, which can carry PII (LG-02). Use ExceptionCaught(logger, location, exception.ErrorType()) instead.")]
     [LoggerMessage(EventId = 5001, Level = LogLevel.Error, Message = "{Location} encountered {exceptionType} with `{exceptionMessage}`\nExceptionStack: {exceptionStack}")]
     public static partial void LogException(ILogger logger, string location, string exceptionType, string exceptionMessage, string exceptionStack);
+
+    /// <summary>Logs that an exception was caught, recording only the exception type name; the message, stack trace and instance are never logged (LG-02).</summary>
+    /// <param name="logger">The logger used to log the event.</param>
+    /// <param name="location">The location of the event.</param>
+    /// <param name="errorType">The full type name of the exception, from <see cref="ExceptionExtensions.ErrorType" />.</param>
+    [LoggerMessage(EventId = 5002, EventName = "exception", Level = LogLevel.Error, Message = "{Location} encountered {ErrorType}")]
+    public static partial void ExceptionCaught(ILogger logger, string location, string errorType);
 
     /// <summary>Logs a warning message for a Bad Request (400) event, including the requested path.</summary>
     /// <param name="logger">The logger to be used for logging the event.</param>
@@ -114,6 +122,7 @@ public static partial class LogMessage
     /// <param name="logger">The logger to be used for logging the event.</param>
     /// <param name="path">The path of the HTTP request that caused the Not Implemented error.</param>
     /// <param name="ex">The exception associated with the Not Implemented error.</param>
+    [Obsolete("Attaches the exception instance, which can carry PII (LG-02). Use InternalServerError(logger, path) with ExceptionCaught(logger, location, exception.ErrorType()) instead.")]
     [LoggerMessage(EventId = 501, Level = LogLevel.Error, Message = "Not Implemented (501) for `{Path}`")]
     public static partial void InternalServerError(ILogger logger, string path, Exception ex);
 
@@ -121,8 +130,16 @@ public static partial class LogMessage
     /// <param name="logger">The logger to be used for logging the event.</param>
     /// <param name="errorMessage">The error message to log.</param>
     /// <param name="ex">The exception associated with the error.</param>
+    [Obsolete("Attaches the exception instance, which can carry PII (LG-02). Use Error(logger, errorMessage, exception.ErrorType()) instead.")]
     [LoggerMessage(EventId = 505, Level = LogLevel.Error, Message = "Error occurred : `{ErrorMessage}`")]
     public static partial void Error(ILogger logger, string errorMessage, Exception ex);
+
+    /// <summary>Logs an application error event caused by an exception (EventId 507), recording only the exception type name (LG-02).</summary>
+    /// <param name="logger">The logger to be used for logging the event.</param>
+    /// <param name="errorMessage">The error message to log; never the exception message.</param>
+    /// <param name="errorType">The full type name of the exception, from <see cref="ExceptionExtensions.ErrorType" />.</param>
+    [LoggerMessage(EventId = 507, Level = LogLevel.Error, Message = "Error occurred : `{ErrorMessage}` ({ErrorType})")]
+    public static partial void Error(ILogger logger, string errorMessage, string errorType);
 
     /// <summary>Logs an application error event (EventId 506).</summary>
     /// <param name="logger">The logger to be used for logging the event.</param>
