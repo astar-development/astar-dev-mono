@@ -1,5 +1,4 @@
 using AStarDev.FunctionalParadigm;
-using AStarDev.LoggingExtensions;
 
 namespace Fab4Kids.Web.Newsletter;
 
@@ -10,7 +9,7 @@ public sealed class NewsletterSubscriptionService(INewsletterSubscriberStore sub
     {
         if (!consent)
         {
-            LogMessage.Warning(logger, "newsletter/no-consent", email);
+            NewsletterLog.ConsentNotGiven(logger);
 
             return NewsletterSubscriptionOutcomeFactory.NoConsent();
         }
@@ -18,20 +17,20 @@ public sealed class NewsletterSubscriptionService(INewsletterSubscriberStore sub
         var validation = NewsletterValidator.Validate(email);
         if (validation.TryGetErrors(out var errors))
         {
-            LogMessage.Warning(logger, "newsletter/invalid-email", email);
+            NewsletterLog.InvalidEmail(logger);
 
             return NewsletterSubscriptionOutcomeFactory.ValidationFailed(errors);
         }
 
         validation.TryGetValue(out string validatedEmail);
-        LogMessage.Information(logger, "newsletter/subscribe-start", validatedEmail);
+        NewsletterLog.SubscribeStarted(logger);
 
         return await subscriberStore.ExistsAsync(validatedEmail, cancellationToken).MatchAsync(
             async alreadySubscribed =>
             {
                 if (alreadySubscribed)
                 {
-                    LogMessage.Information(logger, "newsletter/already-subscribed", validatedEmail);
+                    NewsletterLog.AlreadySubscribed(logger);
 
                     return NewsletterSubscriptionOutcomeFactory.AlreadySubscribed();
                 }
@@ -53,7 +52,7 @@ public sealed class NewsletterSubscriptionService(INewsletterSubscriberStore sub
         return subscriberStore.AddAsync(subscriber, cancellationToken).MatchAsync(
             async _ =>
             {
-                LogMessage.Information(logger, "newsletter/subscribed", email);
+                NewsletterLog.Subscribed(logger);
 
                 var emailResult = await emailSender.SendAsync(subscriber, cancellationToken);
                 emailResult.TapError(error => NewsletterLog.ConfirmationEmailFailed(logger, error));
