@@ -11,12 +11,6 @@ public static partial class LogMessage
     [LoggerMessage(EventId = 200, Level = LogLevel.Information, Message = "Page `{PageName}` viewed.")]
     public static partial void PageView(ILogger logger, string pageName);
 
-    /// <summary>Logs an informational message indicating that a specific page has been viewed.</summary>
-    /// <param name="logger">The logger to be used for logging the event.</param>
-    /// <param name="pageName">The name of the page that was viewed.</param>
-    [LoggerMessage(EventId = 204, Level = LogLevel.Information, Message = "Page `{PageName}` viewed.")]
-    public static partial void Trace(ILogger logger, string pageName);
-
     /// <summary>Logs a debug message for the specified location.</summary>
     /// <param name="logger">The logger to be used for logging the event.</param>
     /// <param name="location">The location of the event.</param>

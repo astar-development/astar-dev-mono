@@ -135,6 +135,14 @@ public sealed class GivenLogMessageTemplate
     }
 
     [Fact]
+    public void when_the_log_message_templates_are_inspected_then_the_duplicate_trace_page_view_template_is_gone()
+    {
+        var traceMethod = typeof(LogMessage).GetMethod("Trace");
+
+        traceMethod.ShouldBeNull();
+    }
+
+    [Fact]
     public void LogBadGateway_WithValidPath_ShouldLogCorrectMessage()
     {
         var logger = new FakeLogger();

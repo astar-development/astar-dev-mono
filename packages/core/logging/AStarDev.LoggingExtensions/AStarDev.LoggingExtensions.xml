@@ -168,11 +168,6 @@
             <param name="logger">The logger to be used for logging the event.</param>
             <param name="pageName">The name of the page that was viewed.</param>
         </member>
-        <member name="M:AStarDev.LoggingExtensions.LogMessage.Trace(Microsoft.Extensions.Logging.ILogger,System.String)">
-            <summary>Logs an informational message indicating that a specific page has been viewed.</summary>
-            <param name="logger">The logger to be used for logging the event.</param>
-            <param name="pageName">The name of the page that was viewed.</param>
-        </member>
         <member name="M:AStarDev.LoggingExtensions.LogMessage.Debug(Microsoft.Extensions.Logging.ILogger,System.String,System.String)">
             <summary>Logs a debug message for the specified location.</summary>
             <param name="logger">The logger to be used for logging the event.</param>
