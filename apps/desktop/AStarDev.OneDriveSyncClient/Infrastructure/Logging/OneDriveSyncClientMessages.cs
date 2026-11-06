@@ -518,4 +518,31 @@ public static partial class OneDriveSyncClientMessages
     /// <param name="reason">The reason registration failed.</param>
     [LoggerMessage(EventId = 3601, Level = LogLevel.Warning, Message = "[Autostart] Could not register to launch at startup: {Reason}")]
     public static partial void AutostartFailed(ILogger<AutostartService> logger, string reason);
+
+    // Application lifetime & data (3700-3799)
+
+    /// <summary>
+    /// Logs that the application terminated because of an exception, recording only the exception type name.
+    /// </summary>
+    /// <param name="logger">The logger instance.</param>
+    /// <param name="errorType">The full type name of the exception.</param>
+    [LoggerMessage(EventId = 3700, Level = LogLevel.Error, Message = "Application terminated unexpectedly ({ErrorType})")]
+    public static partial void ApplicationTerminatedUnexpectedly(ILogger logger, string errorType);
+
+    /// <summary>
+    /// Logs an unhandled application exception, recording only the exception type name.
+    /// </summary>
+    /// <param name="logger">The logger instance.</param>
+    /// <param name="errorType">The full type name of the exception.</param>
+    [LoggerMessage(EventId = 3701, Level = LogLevel.Error, Message = "[Unhandled] application exception ({ErrorType})")]
+    public static partial void UnhandledApplicationException(ILogger logger, string errorType);
+
+    /// <summary>
+    /// Logs that a file classification category could not be deleted, recording only the exception type name.
+    /// </summary>
+    /// <param name="logger">The logger instance.</param>
+    /// <param name="categoryId">The identifier of the category that could not be deleted.</param>
+    /// <param name="errorType">The full type name of the exception.</param>
+    [LoggerMessage(EventId = 3702, Level = LogLevel.Error, Message = "Failed to delete category {CategoryId} ({ErrorType})")]
+    public static partial void CategoryDeleteFailed(ILogger logger, int categoryId, string errorType);
 }

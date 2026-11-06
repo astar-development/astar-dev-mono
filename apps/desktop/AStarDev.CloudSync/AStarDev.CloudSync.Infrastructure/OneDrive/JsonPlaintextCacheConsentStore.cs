@@ -35,7 +35,7 @@ public sealed class JsonPlaintextCacheConsentStore(IFileInfo consentFile, ILogge
 
     private Option<PlaintextCacheConsent> Unreadable(Exception exception)
     {
-        LogMessage.Warning(logger, nameof(JsonPlaintextCacheConsentStore), $"The plaintext token file consent could not be read ({exception.GetType().Name}); the user will be asked again.");
+        AccountAddLog.PlaintextConsentUnreadable(logger, exception.ErrorType());
 
         return Option.None<PlaintextCacheConsent>();
     }
@@ -60,7 +60,7 @@ public sealed class JsonPlaintextCacheConsentStore(IFileInfo consentFile, ILogge
 
     private Result<Unit, ErrorResponse> NotSaved(Exception exception)
     {
-        LogMessage.Warning(logger, nameof(JsonPlaintextCacheConsentStore), $"The plaintext token file consent could not be saved ({exception.GetType().Name}).");
+        AccountAddLog.PlaintextConsentNotSaved(logger, exception.ErrorType());
 
         return Result.Failure<Unit, ErrorResponse>(new ErrorResponse("The plaintext token file consent could not be saved."));
     }

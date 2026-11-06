@@ -59,12 +59,10 @@ public sealed class VelopackUpdateService : IVelopackUpdateService
         {
             var updateInfo = await updateManager.CheckForUpdatesAsync().ConfigureAwait(false);
 
-            LogMessage.Information(
-                logger,
-                nameof(VelopackUpdateService),
-                updateInfo is null
-                    ? $"Up to date. Current version: {updateManager.CurrentVersion}."
-                    : $"Update available: {updateManager.CurrentVersion} -> {updateInfo.TargetFullRelease.Version}.");
+            if (updateInfo is null)
+                VelopackUpdateLog.UpToDate(logger, updateManager.CurrentVersion);
+            else
+                VelopackUpdateLog.UpdateAvailable(logger, updateManager.CurrentVersion, updateInfo.TargetFullRelease.Version);
 
             return updateInfo is null ? UpdateCheckResultFactory.CreateUpToDate() : UpdateCheckResultFactory.CreateFound(updateInfo);
         }

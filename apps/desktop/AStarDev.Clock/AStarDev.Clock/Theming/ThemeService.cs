@@ -50,7 +50,7 @@ public sealed class ThemeService(IFileSystem fileSystem, ILogger<ThemeService> l
         }
         catch (JsonException exception)
         {
-            LogMessage.Warning(logger, nameof(ThemeService), $"Could not parse persisted theme settings ({exception.ErrorType()})");
+            ThemeLog.ThemeSettingsUnreadable(logger, exception.ErrorType());
 
             return ThemeMode.System;
         }

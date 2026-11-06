@@ -6,7 +6,6 @@ using AStarDev.OneDriveSyncClient.Infrastructure.Logging;
 using AStarDev.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using LogMessage = AStarDev.LoggingExtensions.LogMessage;
 
 namespace AStarDev.OneDriveSyncClient.Data.Repositories;
 
@@ -180,7 +179,7 @@ public sealed class FileClassificationRepository(IDbContextFactory<AppDbContext>
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            LogMessage.Error(logger, $"Failed to delete category {id.Value} ({ex.GetType().Name})");
+            OneDriveSyncClientMessages.CategoryDeleteFailed(logger, id.Value, AStarDev.LoggingExtensions.ExceptionExtensions.ErrorType(ex));
 
             return new Fail<FileClassificationCategoryId, string>(ex.Message);
         }

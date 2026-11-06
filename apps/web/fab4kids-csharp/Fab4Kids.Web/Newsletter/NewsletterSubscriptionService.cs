@@ -40,7 +40,7 @@ public sealed class NewsletterSubscriptionService(INewsletterSubscriberStore sub
             },
             error =>
             {
-                LogMessage.Error(logger, $"newsletter/exists-check-failed: {error}");
+                NewsletterLog.ExistsCheckFailed(logger, error);
 
                 return Task.FromResult(NewsletterSubscriptionOutcomeFactory.SubscribeFailed(error));
             });
@@ -56,13 +56,13 @@ public sealed class NewsletterSubscriptionService(INewsletterSubscriberStore sub
                 LogMessage.Information(logger, "newsletter/subscribed", email);
 
                 var emailResult = await emailSender.SendAsync(subscriber, cancellationToken);
-                emailResult.TapError(error => LogMessage.Error(logger, $"newsletter/confirmation-email-failed: {error}"));
+                emailResult.TapError(error => NewsletterLog.ConfirmationEmailFailed(logger, error));
 
                 return NewsletterSubscriptionOutcomeFactory.Succeeded();
             },
             error =>
             {
-                LogMessage.Error(logger, $"newsletter/subscribe-failed: {error}");
+                NewsletterLog.SubscribeFailed(logger, error);
 
                 return Task.FromResult(NewsletterSubscriptionOutcomeFactory.SubscribeFailed(error));
             });
