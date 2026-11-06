@@ -33,7 +33,7 @@ public sealed class AzureTableNewsletterSubscriberStore(ILogger<AzureTableNewsle
             }
         }, cancellationToken).ToResultAsync(ex =>
         {
-            LogMessage.LogException(logger, nameof(AzureTableNewsletterSubscriberStore), ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+            LogMessage.ExceptionCaught(logger, nameof(AzureTableNewsletterSubscriberStore), ex.ErrorType());
 
             return "Something went wrong checking your subscription.";
         });
@@ -58,7 +58,7 @@ public sealed class AzureTableNewsletterSubscriberStore(ILogger<AzureTableNewsle
             return Unit.Instance;
         }, cancellationToken).ToResultAsync(ex =>
         {
-            LogMessage.LogException(logger, nameof(AzureTableNewsletterSubscriberStore), ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+            LogMessage.ExceptionCaught(logger, nameof(AzureTableNewsletterSubscriberStore), ex.ErrorType());
 
             return "Something went wrong saving your subscription.";
         });

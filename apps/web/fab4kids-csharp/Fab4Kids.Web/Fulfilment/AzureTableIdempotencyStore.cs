@@ -36,7 +36,7 @@ public sealed class AzureTableIdempotencyStore(ILogger<AzureTableIdempotencyStor
             }
         }, cancellationToken).ToResultAsync(ex =>
         {
-            LogMessage.LogException(logger, nameof(AzureTableIdempotencyStore), ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+            LogMessage.ExceptionCaught(logger, nameof(AzureTableIdempotencyStore), ex.ErrorType());
 
             return "Something went wrong recording this order.";
         });

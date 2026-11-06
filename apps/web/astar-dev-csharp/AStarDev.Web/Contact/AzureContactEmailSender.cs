@@ -30,7 +30,7 @@ public sealed class AzureContactEmailSender(IOptions<ContactFormOptions> options
             return Unit.Instance;
         }, cancellationToken).ToResultAsync(ex =>
         {
-            LogMessage.LogException(logger, nameof(AzureContactEmailSender), ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+            LogMessage.ExceptionCaught(logger, nameof(AzureContactEmailSender), ex.ErrorType());
 
             return $"Something went wrong. Please email {settings.ToAddress} directly.";
         });

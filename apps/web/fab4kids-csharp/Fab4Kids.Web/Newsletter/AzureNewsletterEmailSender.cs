@@ -32,7 +32,7 @@ public sealed class AzureNewsletterEmailSender(IOptions<NewsletterOptions> optio
             return Unit.Instance;
         }, cancellationToken).ToResultAsync(ex =>
         {
-            LogMessage.LogException(logger, nameof(AzureNewsletterEmailSender), ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+            LogMessage.ExceptionCaught(logger, nameof(AzureNewsletterEmailSender), ex.ErrorType());
 
             return "Something went wrong sending your confirmation email.";
         });

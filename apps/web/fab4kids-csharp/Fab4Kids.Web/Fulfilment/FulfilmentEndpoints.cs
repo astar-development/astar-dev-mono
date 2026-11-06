@@ -37,7 +37,7 @@ public static class FulfilmentEndpoints
         }
         catch (Exception ex)
         {
-            LogMessage.LogException(logger, "webhook/signature-verification-failed", ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+            LogMessage.ExceptionCaught(logger, "webhook/signature-verification-failed", ex.ErrorType());
 
             return Results.BadRequest(new { error = "Invalid signature" });
         }

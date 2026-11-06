@@ -70,7 +70,7 @@ public sealed class VelopackUpdateService : IVelopackUpdateService
         }
         catch (Exception ex)
         {
-            LogMessage.LogException(logger, nameof(VelopackUpdateService), ex.GetType().Name, ex.Message, ex.StackTrace ?? string.Empty);
+            LogMessage.ExceptionCaught(logger, nameof(VelopackUpdateService), ex.ErrorType());
 
             return UpdateCheckResultFactory.CreateFailed(ex.Message);
         }
