@@ -71,12 +71,11 @@ public static partial class LogMessage
     [LoggerMessage(EventId = 401, Level = LogLevel.Warning, Message = "Unauthorized (401) for `{Path}`")]
     public static partial void Unauthorized(ILogger logger, string path);
 
-    /// <summary>Logs a warning message for a Forbidden (403) event, including the requested path and user information.</summary>
+    /// <summary>Logs a warning message for a Forbidden (403) event, including the requested path; the user is never logged (LG-02).</summary>
     /// <param name="logger">The logger to be used for logging the event.</param>
     /// <param name="path">The path of the HTTP request that caused the Forbidden error.</param>
-    /// <param name="user">The user associated with the HTTP request; defaults to "Not known" if not provided.</param>
-    [LoggerMessage(EventId = 403, Level = LogLevel.Warning, Message = "Forbidden (403) for `{Path}` for user `{User}`")]
-    public static partial void Forbidden(ILogger logger, string path, string user = "Not known");
+    [LoggerMessage(EventId = 403, Level = LogLevel.Warning, Message = "Forbidden (403) for `{Path}`")]
+    public static partial void Forbidden(ILogger logger, string path);
 
     /// <summary>Logs a warning message for a Not Found (404) event, including the requested path.</summary>
     /// <param name="logger">The logger to be used for logging the event.</param>
@@ -146,21 +145,6 @@ public static partial class LogMessage
     /// <param name="delaySeconds">Delay in seconds before the next retry.</param>
     [LoggerMessage(EventId = 4291, Level = LogLevel.Debug, Message = "Graph API throttled (attempt {Attempt}/{MaxRetries}), retrying after {DelaySeconds}s")]
     public static partial void GraphApiThrottled(ILogger logger, int attempt, int maxRetries, double delaySeconds);
-
-    /// <summary>Logs successful completion of a file download.</summary>
-    /// <param name="logger">The logger.</param>
-    /// <param name="bytes">Total bytes written to disk.</param>
-    /// <param name="localPath">Destination path on the local file system.</param>
-    [LoggerMessage(EventId = 102, Level = LogLevel.Debug, Message = "Downloaded {Bytes} bytes to {LocalPath}")]
-    public static partial void FileDownloaded(ILogger logger, long bytes, string localPath);
-
-    /// <summary>Logs successful completion of a file upload (direct or chunked).</summary>
-    /// <param name="logger">The logger.</param>
-    /// <param name="fileName">Name of the uploaded file.</param>
-    /// <param name="bytes">Total bytes transferred.</param>
-    /// <param name="remoteItemId">Graph item ID assigned to the uploaded file.</param>
-    [LoggerMessage(EventId = 103, Level = LogLevel.Debug, Message = "Uploaded {FileName} ({Bytes} bytes) → remote id {RemoteItemId}")]
-    public static partial void FileUploaded(ILogger logger, string fileName, long bytes, string remoteItemId);
 
     /// <summary>Logs the current memory usage of the application in megabytes, providing insights into resource consumption for debugging and performance monitoring purposes.</summary>
     /// <param name="logger">The logger.</param>

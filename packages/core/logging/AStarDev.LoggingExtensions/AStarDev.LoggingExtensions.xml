@@ -162,6 +162,14 @@
             <param name="externalSettingsFile">The name (including extension) of an optional file containing additional configuration settings to layer onto the application configuration.</param>
             <returns>The original instance of <see cref="T:Microsoft.Extensions.Hosting.HostApplicationBuilder" /> for further method chaining.</returns>
         </member>
+        <member name="T:AStarDev.LoggingExtensions.LogHash">
+            <summary>Creates short, stable hashes of personal values (paths, account ids) so log records can be correlated without exposing the value (LG-02).</summary>
+        </member>
+        <member name="M:AStarDev.LoggingExtensions.LogHash.Of(System.String)">
+            <summary>Returns the first 16 lower-case hex characters of the SHA-256 of <paramref name="value" />. The hash is case-sensitive and unsalted, so it pseudonymises but does not anonymise.</summary>
+            <param name="value">The personal value to hash.</param>
+            <returns>The 16-character hash.</returns>
+        </member>
         <member name="T:AStarDev.LoggingExtensions.LogMessage">
             <summary>Provides extension methods for logging common application events, such as startup, shutdown, and errors, using strongly-typed log messages with structured logging support.</summary>
         </member>
@@ -221,11 +229,10 @@
             <param name="logger">The logger to be used for logging the event.</param>
             <param name="path">The path of the HTTP request that caused the Unauthorized access.</param>
         </member>
-        <member name="M:AStarDev.LoggingExtensions.LogMessage.Forbidden(Microsoft.Extensions.Logging.ILogger,System.String,System.String)">
-            <summary>Logs a warning message for a Forbidden (403) event, including the requested path and user information.</summary>
+        <member name="M:AStarDev.LoggingExtensions.LogMessage.Forbidden(Microsoft.Extensions.Logging.ILogger,System.String)">
+            <summary>Logs a warning message for a Forbidden (403) event, including the requested path; the user is never logged (LG-02).</summary>
             <param name="logger">The logger to be used for logging the event.</param>
             <param name="path">The path of the HTTP request that caused the Forbidden error.</param>
-            <param name="user">The user associated with the HTTP request; defaults to "Not known" if not provided.</param>
         </member>
         <member name="M:AStarDev.LoggingExtensions.LogMessage.NotFound(Microsoft.Extensions.Logging.ILogger,System.String)">
             <summary>Logs a warning message for a Not Found (404) event, including the requested path.</summary>
@@ -284,19 +291,6 @@
             <param name="attempt">Current retry attempt (1-based).</param>
             <param name="maxRetries">Maximum number of retries.</param>
             <param name="delaySeconds">Delay in seconds before the next retry.</param>
-        </member>
-        <member name="M:AStarDev.LoggingExtensions.LogMessage.FileDownloaded(Microsoft.Extensions.Logging.ILogger,System.Int64,System.String)">
-            <summary>Logs successful completion of a file download.</summary>
-            <param name="logger">The logger.</param>
-            <param name="bytes">Total bytes written to disk.</param>
-            <param name="localPath">Destination path on the local file system.</param>
-        </member>
-        <member name="M:AStarDev.LoggingExtensions.LogMessage.FileUploaded(Microsoft.Extensions.Logging.ILogger,System.String,System.Int64,System.String)">
-            <summary>Logs successful completion of a file upload (direct or chunked).</summary>
-            <param name="logger">The logger.</param>
-            <param name="fileName">Name of the uploaded file.</param>
-            <param name="bytes">Total bytes transferred.</param>
-            <param name="remoteItemId">Graph item ID assigned to the uploaded file.</param>
         </member>
         <member name="M:AStarDev.LoggingExtensions.LogMessage.MemoryUsage(Microsoft.Extensions.Logging.ILogger,System.Double)">
             <summary>Logs the current memory usage of the application in megabytes, providing insights into resource consumption for debugging and performance monitoring purposes.</summary>

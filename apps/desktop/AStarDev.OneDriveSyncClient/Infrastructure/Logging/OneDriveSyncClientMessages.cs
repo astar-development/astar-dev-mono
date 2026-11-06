@@ -1,7 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
 using AStarDev.OneDriveSyncClient.Classifications;
 using AStarDev.OneDriveSyncClient.Data.Repositories;
 using AStarDev.OneDriveSyncClient.Infrastructure.Autostart;
 using AStarDev.OneDriveSyncClient.Infrastructure.Notifications;
+using AStarDev.LoggingExtensions;
 using Microsoft.Extensions.Logging;
 
 namespace AStarDev.OneDriveSyncClient.Infrastructure.Logging;
@@ -9,6 +11,7 @@ namespace AStarDev.OneDriveSyncClient.Infrastructure.Logging;
 /// <summary>
 /// Provides extension methods for logging OneDrive Sync Client-specific events, including sync operations, file transfers, and account management.
 /// </summary>
+[SuppressMessage("Performance", "CA1873:Avoid potentially expensive logging", Justification = "Hashing personal values with LogHash.Of is a single SHA-256 of a short string; it must run before the call so no raw value reaches the logger.")]
 public static partial class OneDriveSyncClientMessages
 {
     // Sync Progress & Pipeline (2000-2099)
@@ -30,46 +33,64 @@ public static partial class OneDriveSyncClientMessages
     public static partial void SyncPipelineWorkerException(ILogger logger, string type);
 
     /// <summary>Logs worker processing a sync job.</summary>
-    [LoggerMessage(EventId = 2004, Level = LogLevel.Debug, Message = "[Worker {Id}] Processing {JobType} {Path}")]
-    public static partial void SyncWorkerProcessing(ILogger logger, int id, string jobType, string path);
+    public static void SyncWorkerProcessing(ILogger logger, int id, string jobType, string path) => SyncWorkerProcessingLogged(logger, id, jobType, LogHash.Of(path));
+
+    [LoggerMessage(EventName = "SyncWorkerProcessing", EventId = 2004, Level = LogLevel.Debug, Message = "[Worker {Id}] Processing {JobType} {PathHash}")]
+    private static partial void SyncWorkerProcessingLogged(ILogger logger, int id, string jobType, string pathHash);
 
     /// <summary>Logs worker exception with details.</summary>
-    [LoggerMessage(EventId = 2005, Level = LogLevel.Error, Message = "[Worker {Id}] EXCEPTION type={Type} path={Path}")]
-    public static partial void SyncWorkerException(ILogger logger, int id, string type, string path);
+    public static void SyncWorkerException(ILogger logger, int id, string type, string path) => SyncWorkerExceptionLogged(logger, id, type, LogHash.Of(path));
+
+    [LoggerMessage(EventName = "SyncWorkerException", EventId = 2005, Level = LogLevel.Error, Message = "[Worker {Id}] EXCEPTION type={Type} path={PathHash}")]
+    private static partial void SyncWorkerExceptionLogged(ILogger logger, int id, string type, string pathHash);
 
     /// <summary>Logs when no handler is registered for a job type.</summary>
     [LoggerMessage(EventId = 2006, Level = LogLevel.Warning, Message = "[Worker {Id}] No handler registered for job type {JobType}")]
     public static partial void SyncWorkerNoHandler(ILogger logger, int id, string jobType);
 
     /// <summary>Logs when a sync worker job is cancelled and re-queued.</summary>
-    [LoggerMessage(EventId = 2007, Level = LogLevel.Warning, Message = "[Worker {Id}] Job cancelled — re-queued: {Path}")]
-    public static partial void SyncWorkerJobCancelledRequeued(ILogger logger, int id, string path);
+    public static void SyncWorkerJobCancelledRequeued(ILogger logger, int id, string path) => SyncWorkerJobCancelledRequeuedLogged(logger, id, LogHash.Of(path));
+
+    [LoggerMessage(EventName = "SyncWorkerJobCancelledRequeued", EventId = 2007, Level = LogLevel.Warning, Message = "[Worker {Id}] Job cancelled — re-queued: {PathHash}")]
+    private static partial void SyncWorkerJobCancelledRequeuedLogged(ILogger logger, int id, string pathHash);
 
     /// <summary>Logs the start of pass preparation (drive state, classifications) before enumeration begins.</summary>
-    [LoggerMessage(EventId = 2008, Level = LogLevel.Information, Message = "[Pipeline] Preparing sync pass for {AccountId}")]
-    public static partial void SyncPipelinePreparing(ILogger logger, string accountId);
+    public static void SyncPipelinePreparing(ILogger logger, string accountId) => SyncPipelinePreparingLogged(logger, LogHash.Of(accountId));
+
+    [LoggerMessage(EventName = "SyncPipelinePreparing", EventId = 2008, Level = LogLevel.Information, Message = "[Pipeline] Preparing sync pass for {AccountIdHash}")]
+    private static partial void SyncPipelinePreparingLogged(ILogger logger, string accountIdHash);
 
     /// <summary>Logs how long a named stage of a sync pass took.</summary>
-    [LoggerMessage(EventId = 2009, Level = LogLevel.Information, Message = "[Pipeline] Stage {Stage} for {AccountId} took {ElapsedMs} ms")]
-    public static partial void SyncPipelineStageTiming(ILogger logger, string stage, string accountId, long elapsedMs);
+    public static void SyncPipelineStageTiming(ILogger logger, string stage, string accountId, long elapsedMs) => SyncPipelineStageTimingLogged(logger, stage, LogHash.Of(accountId), elapsedMs);
+
+    [LoggerMessage(EventName = "SyncPipelineStageTiming", EventId = 2009, Level = LogLevel.Information, Message = "[Pipeline] Stage {Stage} for {AccountIdHash} took {ElapsedMs} ms")]
+    private static partial void SyncPipelineStageTimingLogged(ILogger logger, string stage, string accountIdHash, long elapsedMs);
 
     // Sync Service (2100-2199)
 
     /// <summary>Logs start of account sync.</summary>
-    [LoggerMessage(EventId = 2100, Level = LogLevel.Information, Message = "[SyncService] SyncAccountAsync for {AccountId}")]
-    public static partial void SyncServiceStarting(ILogger logger, string accountId);
+    public static void SyncServiceStarting(ILogger logger, string accountId) => SyncServiceStartingLogged(logger, LogHash.Of(accountId));
+
+    [LoggerMessage(EventName = "SyncServiceStarting", EventId = 2100, Level = LogLevel.Information, Message = "[SyncService] SyncAccountAsync for {AccountIdHash}")]
+    private static partial void SyncServiceStartingLogged(ILogger logger, string accountIdHash);
 
     /// <summary>Logs completion of account sync.</summary>
-    [LoggerMessage(EventId = 2101, Level = LogLevel.Information, Message = "[SyncService] Sync complete for {AccountId}")]
-    public static partial void SyncServiceComplete(ILogger logger, string accountId);
+    public static void SyncServiceComplete(ILogger logger, string accountId) => SyncServiceCompleteLogged(logger, LogHash.Of(accountId));
+
+    [LoggerMessage(EventName = "SyncServiceComplete", EventId = 2101, Level = LogLevel.Information, Message = "[SyncService] Sync complete for {AccountIdHash}")]
+    private static partial void SyncServiceCompleteLogged(ILogger logger, string accountIdHash);
 
     /// <summary>Logs unhandled error during sync.</summary>
-    [LoggerMessage(EventId = 2102, Level = LogLevel.Error, Message = "[SyncService] Unhandled error syncing {AccountId}: {ErrorType}")]
-    public static partial void SyncServiceError(ILogger logger, string accountId, string errorType);
+    public static void SyncServiceError(ILogger logger, string accountId, string errorType) => SyncServiceErrorLogged(logger, LogHash.Of(accountId), errorType);
+
+    [LoggerMessage(EventName = "SyncServiceError", EventId = 2102, Level = LogLevel.Error, Message = "[SyncService] Unhandled error syncing {AccountIdHash}: {ErrorType}")]
+    private static partial void SyncServiceErrorLogged(ILogger logger, string accountIdHash, string errorType);
 
     /// <summary>Logs when re-authentication is required during sync.</summary>
-    [LoggerMessage(EventId = 2103, Level = LogLevel.Warning, Message = "[SyncService] Re-authentication required for {AccountId}")]
-    public static partial void SyncServiceReAuthRequired(ILogger logger, string accountId);
+    public static void SyncServiceReAuthRequired(ILogger logger, string accountId) => SyncServiceReAuthRequiredLogged(logger, LogHash.Of(accountId));
+
+    [LoggerMessage(EventName = "SyncServiceReAuthRequired", EventId = 2103, Level = LogLevel.Warning, Message = "[SyncService] Re-authentication required for {AccountIdHash}")]
+    private static partial void SyncServiceReAuthRequiredLogged(ILogger logger, string accountIdHash);
 
     // Sync Scheduler (2200-2299)
 
@@ -86,39 +107,55 @@ public static partial class OneDriveSyncClientMessages
     public static partial void SyncSchedulerTimerFatal(ILogger logger, string errorType);
 
     /// <summary>Logs trigger called for unknown account.</summary>
-    [LoggerMessage(EventId = 2203, Level = LogLevel.Warning, Message = "[SyncScheduler] TriggerAccountAsync called for unknown account {AccountId}")]
-    public static partial void SyncSchedulerUnknownAccount(ILogger logger, string accountId);
+    public static void SyncSchedulerUnknownAccount(ILogger logger, string accountId) => SyncSchedulerUnknownAccountLogged(logger, LogHash.Of(accountId));
+
+    [LoggerMessage(EventName = "SyncSchedulerUnknownAccount", EventId = 2203, Level = LogLevel.Warning, Message = "[SyncScheduler] TriggerAccountAsync called for unknown account {AccountIdHash}")]
+    private static partial void SyncSchedulerUnknownAccountLogged(ILogger logger, string accountIdHash);
 
     /// <summary>Logs sync cancellation requested for an account.</summary>
-    [LoggerMessage(EventId = 2204, Level = LogLevel.Information, Message = "[SyncScheduler] Sync cancellation requested for {AccountId}")]
-    public static partial void SyncSchedulerCancelled(ILogger logger, string accountId);
+    public static void SyncSchedulerCancelled(ILogger logger, string accountId) => SyncSchedulerCancelledLogged(logger, LogHash.Of(accountId));
+
+    [LoggerMessage(EventName = "SyncSchedulerCancelled", EventId = 2204, Level = LogLevel.Information, Message = "[SyncScheduler] Sync cancellation requested for {AccountIdHash}")]
+    private static partial void SyncSchedulerCancelledLogged(ILogger logger, string accountIdHash);
 
     /// <summary>Logs that a sync was skipped because a sync for the same account is already in progress.</summary>
-    [LoggerMessage(EventId = 2205, Level = LogLevel.Warning, Message = "[SyncScheduler] Skipping sync for {AccountId} — already in progress")]
-    public static partial void SyncSchedulerSkippedAlreadyRunning(ILogger logger, string accountId);
+    public static void SyncSchedulerSkippedAlreadyRunning(ILogger logger, string accountId) => SyncSchedulerSkippedAlreadyRunningLogged(logger, LogHash.Of(accountId));
+
+    [LoggerMessage(EventName = "SyncSchedulerSkippedAlreadyRunning", EventId = 2205, Level = LogLevel.Warning, Message = "[SyncScheduler] Skipping sync for {AccountIdHash} — already in progress")]
+    private static partial void SyncSchedulerSkippedAlreadyRunningLogged(ILogger logger, string accountIdHash);
 
     // Local Change Detection (2300-2399)
 
     /// <summary>Logs new/modified local files found.</summary>
-    [LoggerMessage(EventId = 2300, Level = LogLevel.Information, Message = "[LocalChangeDetector] Found {Count} local new/modified files under {Path}")]
-    public static partial void LocalChangeDetectorFound(ILogger logger, int count, string path);
+    public static void LocalChangeDetectorFound(ILogger logger, int count, string path) => LocalChangeDetectorFoundLogged(logger, count, LogHash.Of(path));
+
+    [LoggerMessage(EventName = "LocalChangeDetectorFound", EventId = 2300, Level = LogLevel.Information, Message = "[LocalChangeDetector] Found {Count} local new/modified files under {PathHash}")]
+    private static partial void LocalChangeDetectorFoundLogged(ILogger logger, int count, string pathHash);
 
     /// <summary>Logs error scanning local directory.</summary>
-    [LoggerMessage(EventId = 2301, Level = LogLevel.Error, Message = "[LocalChangeDetector] Error scanning {Path}: {ErrorType}")]
-    public static partial void LocalChangeDetectorError(ILogger logger, string path, string errorType);
+    public static void LocalChangeDetectorError(ILogger logger, string path, string errorType) => LocalChangeDetectorErrorLogged(logger, LogHash.Of(path), errorType);
+
+    [LoggerMessage(EventName = "LocalChangeDetectorError", EventId = 2301, Level = LogLevel.Error, Message = "[LocalChangeDetector] Error scanning {PathHash}: {ErrorType}")]
+    private static partial void LocalChangeDetectorErrorLogged(ILogger logger, string pathHash, string errorType);
 
     /// <summary>Logs access denied when scanning local directory.</summary>
-    [LoggerMessage(EventId = 2302, Level = LogLevel.Warning, Message = "[LocalChangeDetector] Access denied: {Path} — {Error}")]
-    public static partial void LocalChangeDetectorAccessDenied(ILogger logger, string path, string error);
+    public static void LocalChangeDetectorAccessDenied(ILogger logger, string path, string error) => LocalChangeDetectorAccessDeniedLogged(logger, LogHash.Of(path), error);
+
+    [LoggerMessage(EventName = "LocalChangeDetectorAccessDenied", EventId = 2302, Level = LogLevel.Warning, Message = "[LocalChangeDetector] Access denied: {PathHash} — {Error}")]
+    private static partial void LocalChangeDetectorAccessDeniedLogged(ILogger logger, string pathHash, string error);
 
     // Local Deletion Detection (2400-2499)
 
     /// <summary>Logs local file deleted, removing remote.</summary>
-    [LoggerMessage(EventId = 2400, Level = LogLevel.Information, Message = "[LocalDeletionDetector] Local file deleted — removing remote: {Path}")]
-    public static partial void LocalDeletionDetectorDeleted(ILogger logger, string path);
+    public static void LocalDeletionDetectorDeleted(ILogger logger, string path) => LocalDeletionDetectorDeletedLogged(logger, LogHash.Of(path));
 
-    [LoggerMessage(EventId = 2404, Level = LogLevel.Information, Message = "[LocalDeletionDetector] Local folder deleted — removing remote: {Path}")]
-    public static partial void LocalDeletionDetectorFolderDeleted(ILogger logger, string path);
+    [LoggerMessage(EventName = "LocalDeletionDetectorDeleted", EventId = 2400, Level = LogLevel.Information, Message = "[LocalDeletionDetector] Local file deleted — removing remote: {PathHash}")]
+    private static partial void LocalDeletionDetectorDeletedLogged(ILogger logger, string pathHash);
+
+    public static void LocalDeletionDetectorFolderDeleted(ILogger logger, string path) => LocalDeletionDetectorFolderDeletedLogged(logger, LogHash.Of(path));
+
+    [LoggerMessage(EventName = "LocalDeletionDetectorFolderDeleted", EventId = 2404, Level = LogLevel.Information, Message = "[LocalDeletionDetector] Local folder deleted — removing remote: {PathHash}")]
+    private static partial void LocalDeletionDetectorFolderDeletedLogged(ILogger logger, string pathHash);
 
     /// <summary>Logs deleted remote item.</summary>
     [LoggerMessage(EventId = 2401, Level = LogLevel.Debug, Message = "[LocalDeletionDetector] Deleted remote item {RemoteId}")]
@@ -135,108 +172,156 @@ public static partial class OneDriveSyncClientMessages
     // Remote Deletion Detection (2500-2599)
 
     /// <summary>Logs remote file deleted, removing local.</summary>
-    [LoggerMessage(EventId = 2500, Level = LogLevel.Information, Message = "[RemoteDeletionDetector] Remote file deleted — removing local: {Path}")]
-    public static partial void RemoteDeletionDetectorFileDeleted(ILogger logger, string path);
+    public static void RemoteDeletionDetectorFileDeleted(ILogger logger, string path) => RemoteDeletionDetectorFileDeletedLogged(logger, LogHash.Of(path));
+
+    [LoggerMessage(EventName = "RemoteDeletionDetectorFileDeleted", EventId = 2500, Level = LogLevel.Information, Message = "[RemoteDeletionDetector] Remote file deleted — removing local: {PathHash}")]
+    private static partial void RemoteDeletionDetectorFileDeletedLogged(ILogger logger, string pathHash);
 
     /// <summary>Logs remote folder deleted, removing local.</summary>
-    [LoggerMessage(EventId = 2501, Level = LogLevel.Information, Message = "[RemoteDeletionDetector] Remote folder deleted — removing local: {Path}")]
-    public static partial void RemoteDeletionDetectorFolderDeleted(ILogger logger, string path);
+    public static void RemoteDeletionDetectorFolderDeleted(ILogger logger, string path) => RemoteDeletionDetectorFolderDeletedLogged(logger, LogHash.Of(path));
+
+    [LoggerMessage(EventName = "RemoteDeletionDetectorFolderDeleted", EventId = 2501, Level = LogLevel.Information, Message = "[RemoteDeletionDetector] Remote folder deleted — removing local: {PathHash}")]
+    private static partial void RemoteDeletionDetectorFolderDeletedLogged(ILogger logger, string pathHash);
 
     /// <summary>Logs remote item no longer present, treating as deleted.</summary>
-    [LoggerMessage(EventId = 2502, Level = LogLevel.Information, Message = "[RemoteDeletionDetector] Remote item no longer present — treating as deleted: {Path}")]
-    public static partial void RemoteDeletionDetectorNotPresent(ILogger logger, string path);
+    public static void RemoteDeletionDetectorNotPresent(ILogger logger, string path) => RemoteDeletionDetectorNotPresentLogged(logger, LogHash.Of(path));
+
+    [LoggerMessage(EventName = "RemoteDeletionDetectorNotPresent", EventId = 2502, Level = LogLevel.Information, Message = "[RemoteDeletionDetector] Remote item no longer present — treating as deleted: {PathHash}")]
+    private static partial void RemoteDeletionDetectorNotPresentLogged(ILogger logger, string pathHash);
 
     // Remote Folder Enumeration (2600-2699)
 
     /// <summary>Logs enumeration of remote folder.</summary>
-    [LoggerMessage(EventId = 2600, Level = LogLevel.Information, Message = "[RemoteFolderEnumerator] Enumerating {Path} for {AccountId}")]
-    public static partial void RemoteFolderEnumeratorEnumerating(ILogger logger, string path, string accountId);
+    public static void RemoteFolderEnumeratorEnumerating(ILogger logger, string path, string accountId) => RemoteFolderEnumeratorEnumeratingLogged(logger, LogHash.Of(path), LogHash.Of(accountId));
+
+    [LoggerMessage(EventName = "RemoteFolderEnumeratorEnumerating", EventId = 2600, Level = LogLevel.Information, Message = "[RemoteFolderEnumerator] Enumerating {PathHash} for {AccountIdHash}")]
+    private static partial void RemoteFolderEnumeratorEnumeratingLogged(ILogger logger, string pathHash, string accountIdHash);
 
     /// <summary>Logs enumeration completed with item count.</summary>
-    [LoggerMessage(EventId = 2601, Level = LogLevel.Information, Message = "[RemoteFolderEnumerator] Enumerated {Count} items under {Path}")]
-    public static partial void RemoteFolderEnumeratorEnumerated(ILogger logger, int count, string path);
+    public static void RemoteFolderEnumeratorEnumerated(ILogger logger, int count, string path) => RemoteFolderEnumeratorEnumeratedLogged(logger, count, LogHash.Of(path));
+
+    [LoggerMessage(EventName = "RemoteFolderEnumeratorEnumerated", EventId = 2601, Level = LogLevel.Information, Message = "[RemoteFolderEnumerator] Enumerated {Count} items under {PathHash}")]
+    private static partial void RemoteFolderEnumeratorEnumeratedLogged(ILogger logger, int count, string pathHash);
 
     /// <summary>Logs no sync rules configured for account.</summary>
-    [LoggerMessage(EventId = 2602, Level = LogLevel.Information, Message = "[RemoteFolderEnumerator] No sync rules configured for {AccountId} — nothing to sync")]
-    public static partial void RemoteFolderEnumeratorNoRules(ILogger logger, string accountId);
+    public static void RemoteFolderEnumeratorNoRules(ILogger logger, string accountId) => RemoteFolderEnumeratorNoRulesLogged(logger, LogHash.Of(accountId));
+
+    [LoggerMessage(EventName = "RemoteFolderEnumeratorNoRules", EventId = 2602, Level = LogLevel.Information, Message = "[RemoteFolderEnumerator] No sync rules configured for {AccountIdHash} — nothing to sync")]
+    private static partial void RemoteFolderEnumeratorNoRulesLogged(ILogger logger, string accountIdHash);
 
     /// <summary>Logs backfill of RemoteItemId for rule.</summary>
-    [LoggerMessage(EventId = 2603, Level = LogLevel.Debug, Message = "[RemoteFolderEnumerator] Back-filling RemoteItemId for rule {Path}")]
-    public static partial void RemoteFolderEnumeratorBackfilling(ILogger logger, string path);
+    public static void RemoteFolderEnumeratorBackfilling(ILogger logger, string path) => RemoteFolderEnumeratorBackfillingLogged(logger, LogHash.Of(path));
+
+    [LoggerMessage(EventName = "RemoteFolderEnumeratorBackfilling", EventId = 2603, Level = LogLevel.Debug, Message = "[RemoteFolderEnumerator] Back-filling RemoteItemId for rule {PathHash}")]
+    private static partial void RemoteFolderEnumeratorBackfillingLogged(ILogger logger, string pathHash);
 
     /// <summary>Logs failure to enumerate remote folder.</summary>
-    [LoggerMessage(EventId = 2604, Level = LogLevel.Error, Message = "[RemoteFolderEnumerator] Failed to enumerate {Path}: {Error}")]
-    public static partial void RemoteFolderEnumeratorFailed(ILogger logger, string path, string error);
+    public static void RemoteFolderEnumeratorFailed(ILogger logger, string path, string error) => RemoteFolderEnumeratorFailedLogged(logger, LogHash.Of(path), error);
+
+    [LoggerMessage(EventName = "RemoteFolderEnumeratorFailed", EventId = 2604, Level = LogLevel.Error, Message = "[RemoteFolderEnumerator] Failed to enumerate {PathHash}: {Error}")]
+    private static partial void RemoteFolderEnumeratorFailedLogged(ILogger logger, string pathHash, string error);
 
     /// <summary>Logs generic enumeration error.</summary>
     [LoggerMessage(EventId = 2605, Level = LogLevel.Error, Message = "[RemoteFolderEnumerator] {Error}")]
     public static partial void RemoteFolderEnumeratorError(ILogger logger, string error);
 
     /// <summary>Logs cannot resolve folder ID for rule.</summary>
-    [LoggerMessage(EventId = 2606, Level = LogLevel.Warning, Message = "[RemoteFolderEnumerator] Cannot resolve folder ID for rule path {Path} — skipping")]
-    public static partial void RemoteFolderEnumeratorCannotResolveId(ILogger logger, string path);
+    public static void RemoteFolderEnumeratorCannotResolveId(ILogger logger, string path) => RemoteFolderEnumeratorCannotResolveIdLogged(logger, LogHash.Of(path));
+
+    [LoggerMessage(EventName = "RemoteFolderEnumeratorCannotResolveId", EventId = 2606, Level = LogLevel.Warning, Message = "[RemoteFolderEnumerator] Cannot resolve folder ID for rule path {PathHash} — skipping")]
+    private static partial void RemoteFolderEnumeratorCannotResolveIdLogged(ILogger logger, string pathHash);
 
     /// <summary>Logs creation of a missing remote folder for a local-only rule.</summary>
-    [LoggerMessage(EventId = 2609, Level = LogLevel.Information, Message = "[RemoteFolderCreator] Created remote folder for rule path {Path}")]
-    public static partial void RemoteFolderCreated(ILogger logger, string path);
+    public static void RemoteFolderCreated(ILogger logger, string path) => RemoteFolderCreatedLogged(logger, LogHash.Of(path));
+
+    [LoggerMessage(EventName = "RemoteFolderCreated", EventId = 2609, Level = LogLevel.Information, Message = "[RemoteFolderCreator] Created remote folder for rule path {PathHash}")]
+    private static partial void RemoteFolderCreatedLogged(ILogger logger, string pathHash);
 
     /// <summary>Logs failure to create a missing remote folder for a local-only rule.</summary>
-    [LoggerMessage(EventId = 2610, Level = LogLevel.Warning, Message = "[RemoteFolderCreator] Cannot create remote folder for rule path {Path}: {Error}")]
-    public static partial void RemoteFolderCreateFailed(ILogger logger, string path, string error);
+    public static void RemoteFolderCreateFailed(ILogger logger, string path, string error) => RemoteFolderCreateFailedLogged(logger, LogHash.Of(path), error);
+
+    [LoggerMessage(EventName = "RemoteFolderCreateFailed", EventId = 2610, Level = LogLevel.Warning, Message = "[RemoteFolderCreator] Cannot create remote folder for rule path {PathHash}: {Error}")]
+    private static partial void RemoteFolderCreateFailedLogged(ILogger logger, string pathHash, string error);
 
     /// <summary>Logs failure to resolve the drive before creating missing remote folders.</summary>
-    [LoggerMessage(EventId = 2611, Level = LogLevel.Warning, Message = "[RemoteFolderCreator] Cannot resolve drive for account {AccountId}: {Error}")]
-    public static partial void RemoteFolderCreatorDriveUnavailable(ILogger logger, string accountId, string error);
+    public static void RemoteFolderCreatorDriveUnavailable(ILogger logger, string accountId, string error) => RemoteFolderCreatorDriveUnavailableLogged(logger, LogHash.Of(accountId), error);
+
+    [LoggerMessage(EventName = "RemoteFolderCreatorDriveUnavailable", EventId = 2611, Level = LogLevel.Warning, Message = "[RemoteFolderCreator] Cannot resolve drive for account {AccountIdHash}: {Error}")]
+    private static partial void RemoteFolderCreatorDriveUnavailableLogged(ILogger logger, string accountIdHash, string error);
 
     /// <summary>Logs the start of drive ID resolution against the Graph API.</summary>
-    [LoggerMessage(EventId = 2607, Level = LogLevel.Debug, Message = "[RemoteFolderEnumerator] Connecting to drive for {AccountId}")]
-    public static partial void RemoteFolderEnumeratorConnectingToDrive(ILogger logger, string accountId);
+    public static void RemoteFolderEnumeratorConnectingToDrive(ILogger logger, string accountId) => RemoteFolderEnumeratorConnectingToDriveLogged(logger, LogHash.Of(accountId));
+
+    [LoggerMessage(EventName = "RemoteFolderEnumeratorConnectingToDrive", EventId = 2607, Level = LogLevel.Debug, Message = "[RemoteFolderEnumerator] Connecting to drive for {AccountIdHash}")]
+    private static partial void RemoteFolderEnumeratorConnectingToDriveLogged(ILogger logger, string accountIdHash);
 
     /// <summary>Logs the start of folder ID resolution for a sync rule.</summary>
-    [LoggerMessage(EventId = 2608, Level = LogLevel.Debug, Message = "[RemoteFolderEnumerator] Resolving folder id for {Path}")]
-    public static partial void RemoteFolderEnumeratorResolvingFolder(ILogger logger, string path);
+    public static void RemoteFolderEnumeratorResolvingFolder(ILogger logger, string path) => RemoteFolderEnumeratorResolvingFolderLogged(logger, LogHash.Of(path));
+
+    [LoggerMessage(EventName = "RemoteFolderEnumeratorResolvingFolder", EventId = 2608, Level = LogLevel.Debug, Message = "[RemoteFolderEnumerator] Resolving folder id for {PathHash}")]
+    private static partial void RemoteFolderEnumeratorResolvingFolderLogged(ILogger logger, string pathHash);
 
     /// <summary>Logs the remote change gate decision for a sync pass.</summary>
-    [LoggerMessage(EventId = 2612, Level = LogLevel.Information, Message = "[RemoteChangeGate] {Outcome} for {AccountId}: {Reason}")]
-    public static partial void RemoteChangeGateDecided(ILogger logger, string outcome, string accountId, string reason);
+    public static void RemoteChangeGateDecided(ILogger logger, string outcome, string accountId, string reason) => RemoteChangeGateDecidedLogged(logger, outcome, LogHash.Of(accountId), reason);
+
+    [LoggerMessage(EventName = "RemoteChangeGateDecided", EventId = 2612, Level = LogLevel.Information, Message = "[RemoteChangeGate] {Outcome} for {AccountIdHash}: {Reason}")]
+    private static partial void RemoteChangeGateDecidedLogged(ILogger logger, string outcome, string accountIdHash, string reason);
 
     /// <summary>Logs why the Graph delta query could not be used, so the sync falls back to a full walk.</summary>
-    [LoggerMessage(EventId = 2613, Level = LogLevel.Warning, Message = "[RemoteChangeGate] Delta query unavailable for {AccountId}: {Error}")]
-    public static partial void RemoteChangeGateDeltaFailed(ILogger logger, string accountId, string error);
+    public static void RemoteChangeGateDeltaFailed(ILogger logger, string accountId, string error) => RemoteChangeGateDeltaFailedLogged(logger, LogHash.Of(accountId), error);
+
+    [LoggerMessage(EventName = "RemoteChangeGateDeltaFailed", EventId = 2613, Level = LogLevel.Warning, Message = "[RemoteChangeGate] Delta query unavailable for {AccountIdHash}: {Error}")]
+    private static partial void RemoteChangeGateDeltaFailedLogged(ILogger logger, string accountIdHash, string error);
 
     /// <summary>Logs how many remote changes affect the synced scope, with a sample, so a triggered walk can be explained.</summary>
-    [LoggerMessage(EventId = 2614, Level = LogLevel.Information, Message = "[RemoteChangeGate] {RelevantCount} of {TotalCount} remote changes affect the synced scope for {AccountId}; first changes: {Changes}")]
-    public static partial void RemoteChangeGateRelevantChanges(ILogger logger, string accountId, int relevantCount, int totalCount, string changes);
+    public static void RemoteChangeGateRelevantChanges(ILogger logger, string accountId, int relevantCount, int totalCount, string changes) => RemoteChangeGateRelevantChangesLogged(logger, LogHash.Of(accountId), relevantCount, totalCount, changes);
+
+    [LoggerMessage(EventName = "RemoteChangeGateRelevantChanges", EventId = 2614, Level = LogLevel.Information, Message = "[RemoteChangeGate] {RelevantCount} of {TotalCount} remote changes affect the synced scope for {AccountIdHash}; first changes: {Changes}")]
+    private static partial void RemoteChangeGateRelevantChangesLogged(ILogger logger, string accountIdHash, int relevantCount, int totalCount, string changes);
 
     /// <summary>Logs a Graph children page that took long to return, which points at throttling or a slow network.</summary>
-    [LoggerMessage(EventId = 2615, Level = LogLevel.Warning, Message = "[GraphFolderEnumerator] Slow children page for {FolderPath}: {ElapsedMs} ms")]
-    public static partial void GraphFolderEnumeratorSlowPage(ILogger logger, string folderPath, long elapsedMs);
+    public static void GraphFolderEnumeratorSlowPage(ILogger logger, string folderPath, long elapsedMs) => GraphFolderEnumeratorSlowPageLogged(logger, LogHash.Of(folderPath), elapsedMs);
+
+    [LoggerMessage(EventName = "GraphFolderEnumeratorSlowPage", EventId = 2615, Level = LogLevel.Warning, Message = "[GraphFolderEnumerator] Slow children page for {FolderPathHash}: {ElapsedMs} ms")]
+    private static partial void GraphFolderEnumeratorSlowPageLogged(ILogger logger, string folderPathHash, long elapsedMs);
 
     /// <summary>Logs periodic progress of a recursive folder walk.</summary>
-    [LoggerMessage(EventId = 2616, Level = LogLevel.Information, Message = "[GraphFolderEnumerator] {RootPath}: {Pages} pages fetched in {ElapsedMs} ms, currently in {FolderPath}")]
-    public static partial void GraphFolderEnumeratorProgress(ILogger logger, string rootPath, int pages, long elapsedMs, string folderPath);
+    public static void GraphFolderEnumeratorProgress(ILogger logger, string rootPath, int pages, long elapsedMs, string folderPath) => GraphFolderEnumeratorProgressLogged(logger, LogHash.Of(rootPath), pages, elapsedMs, LogHash.Of(folderPath));
+
+    [LoggerMessage(EventName = "GraphFolderEnumeratorProgress", EventId = 2616, Level = LogLevel.Information, Message = "[GraphFolderEnumerator] {RootPathHash}: {Pages} pages fetched in {ElapsedMs} ms, currently in {FolderPathHash}")]
+    private static partial void GraphFolderEnumeratorProgressLogged(ILogger logger, string rootPathHash, int pages, long elapsedMs, string folderPathHash);
 
     /// <summary>Logs the totals for a completed recursive folder walk.</summary>
-    [LoggerMessage(EventId = 2617, Level = LogLevel.Information, Message = "[GraphFolderEnumerator] {RootPath} walk complete: {Items} items, {Pages} pages, {ElapsedMs} ms")]
-    public static partial void GraphFolderEnumeratorCompleted(ILogger logger, string rootPath, int items, int pages, long elapsedMs);
+    public static void GraphFolderEnumeratorCompleted(ILogger logger, string rootPath, int items, int pages, long elapsedMs) => GraphFolderEnumeratorCompletedLogged(logger, LogHash.Of(rootPath), items, pages, elapsedMs);
+
+    [LoggerMessage(EventName = "GraphFolderEnumeratorCompleted", EventId = 2617, Level = LogLevel.Information, Message = "[GraphFolderEnumerator] {RootPathHash} walk complete: {Items} items, {Pages} pages, {ElapsedMs} ms")]
+    private static partial void GraphFolderEnumeratorCompletedLogged(ILogger logger, string rootPathHash, int items, int pages, long elapsedMs);
 
     // Download Operations (2700-2799)
 
     /// <summary>Logs ETag match, skipping download.</summary>
-    [LoggerMessage(EventId = 2700, Level = LogLevel.Debug, Message = "[DownloadJobBuilder] ETag match — skipping unchanged file {Path}")]
-    public static partial void DownloadETagMatch(ILogger logger, string path);
+    public static void DownloadETagMatch(ILogger logger, string path) => DownloadETagMatchLogged(logger, LogHash.Of(path));
+
+    [LoggerMessage(EventName = "DownloadETagMatch", EventId = 2700, Level = LogLevel.Debug, Message = "[DownloadJobBuilder] ETag match — skipping unchanged file {PathHash}")]
+    private static partial void DownloadETagMatchLogged(ILogger logger, string pathHash);
 
     /// <summary>Logs download URL absent, fetching on-demand.</summary>
-    [LoggerMessage(EventId = 2701, Level = LogLevel.Debug, Message = "DownloadUrl absent for {Path} — fetching on-demand")]
-    public static partial void DownloadUrlAbsent(ILogger logger, string path);
+    public static void DownloadUrlAbsent(ILogger logger, string path) => DownloadUrlAbsentLogged(logger, LogHash.Of(path));
+
+    [LoggerMessage(EventName = "DownloadUrlAbsent", EventId = 2701, Level = LogLevel.Debug, Message = "DownloadUrl absent for {PathHash} — fetching on-demand")]
+    private static partial void DownloadUrlAbsentLogged(ILogger logger, string pathHash);
 
     /// <summary>Logs failure to resolve download URL.</summary>
-    [LoggerMessage(EventId = 2702, Level = LogLevel.Error, Message = "Could not resolve download URL for {Path}: {Error}")]
-    public static partial void DownloadUrlResolveFailed(ILogger logger, string path, string error);
+    public static void DownloadUrlResolveFailed(ILogger logger, string path, string error) => DownloadUrlResolveFailedLogged(logger, LogHash.Of(path), error);
+
+    [LoggerMessage(EventName = "DownloadUrlResolveFailed", EventId = 2702, Level = LogLevel.Error, Message = "Could not resolve download URL for {PathHash}: {Error}")]
+    private static partial void DownloadUrlResolveFailedLogged(ILogger logger, string pathHash, string error);
 
     /// <summary>Logs download failure.</summary>
-    [LoggerMessage(EventId = 2703, Level = LogLevel.Error, Message = "Download failed for {Path}: {Error}")]
-    public static partial void DownloadFailed(ILogger logger, string path, string error);
+    public static void DownloadFailed(ILogger logger, string path, string error) => DownloadFailedLogged(logger, LogHash.Of(path), error);
+
+    [LoggerMessage(EventName = "DownloadFailed", EventId = 2703, Level = LogLevel.Error, Message = "Download failed for {PathHash}: {Error}")]
+    private static partial void DownloadFailedLogged(ILogger logger, string pathHash, string error);
 
     /// <summary>Logs HTTP 429 throttle during download with retry details.</summary>
     [LoggerMessage(EventId = 2704, Level = LogLevel.Warning, Message = "[HttpDownloader] 429 received, waiting {Delay:F1}s (attempt {Attempt}/{Max})")]
@@ -247,34 +332,46 @@ public static partial class OneDriveSyncClientMessages
     public static partial void DownloadNetworkError(ILogger logger, double delay, int attempt, int max);
 
     /// <summary>Logs download cancelled during 429 backoff wait.</summary>
-    [LoggerMessage(EventId = 2706, Level = LogLevel.Warning, Message = "[HttpDownloader] Download cancelled during 429 backoff — {Url} attempt {Attempt}/{Max}")]
-    public static partial void DownloadCancelledDuringBackoff(ILogger logger, string url, int attempt, int max);
+    [LoggerMessage(EventId = 2706, Level = LogLevel.Warning, Message = "[HttpDownloader] Download cancelled during 429 backoff — attempt {Attempt}/{Max}")]
+    public static partial void DownloadCancelledDuringBackoff(ILogger logger, int attempt, int max);
 
     /// <summary>Logs a failed file move attempt with retry details.</summary>
-    [LoggerMessage(EventId = 2707, Level = LogLevel.Warning, Message = "[HttpDownloader] Move to '{Path}' failed — retrying (attempt {Attempt}/{Max})")]
-    public static partial void DownloadMoveRetrying(ILogger logger, string path, int attempt, int max);
+    public static void DownloadMoveRetrying(ILogger logger, string path, int attempt, int max) => DownloadMoveRetryingLogged(logger, LogHash.Of(path), attempt, max);
+
+    [LoggerMessage(EventName = "DownloadMoveRetrying", EventId = 2707, Level = LogLevel.Warning, Message = "[HttpDownloader] Move to '{PathHash}' failed — retrying (attempt {Attempt}/{Max})")]
+    private static partial void DownloadMoveRetryingLogged(ILogger logger, string pathHash, int attempt, int max);
 
     /// <summary>Logs file move exhausted all retries.</summary>
-    [LoggerMessage(EventId = 2708, Level = LogLevel.Error, Message = "[HttpDownloader] Move to '{Path}' failed after {Max} attempts — {Error}")]
-    public static partial void DownloadMoveExhausted(ILogger logger, string path, int max, string error);
+    public static void DownloadMoveExhausted(ILogger logger, string path, int max, string error) => DownloadMoveExhaustedLogged(logger, LogHash.Of(path), max, error);
+
+    [LoggerMessage(EventName = "DownloadMoveExhausted", EventId = 2708, Level = LogLevel.Error, Message = "[HttpDownloader] Move to '{PathHash}' failed after {Max} attempts — {Error}")]
+    private static partial void DownloadMoveExhaustedLogged(ILogger logger, string pathHash, int max, string error);
 
     // Upload Operations (2800-2899)
 
     /// <summary>Logs file upload completion.</summary>
-    [LoggerMessage(EventId = 2800, Level = LogLevel.Information, Message = "Uploaded {Path}")]
-    public static partial void UploadCompleted(ILogger logger, string path);
+    public static void UploadCompleted(ILogger logger, string path) => UploadCompletedLogged(logger, LogHash.Of(path));
+
+    [LoggerMessage(EventName = "UploadCompleted", EventId = 2800, Level = LogLevel.Information, Message = "Uploaded {PathHash}")]
+    private static partial void UploadCompletedLogged(ILogger logger, string pathHash);
 
     /// <summary>Logs upload service starting upload.</summary>
-    [LoggerMessage(EventId = 2801, Level = LogLevel.Information, Message = "[UploadService] Starting upload: {Path} ({Size:F2} MB)")]
-    public static partial void UploadServiceStarting(ILogger logger, string path, double size);
+    public static void UploadServiceStarting(ILogger logger, string path, double size) => UploadServiceStartingLogged(logger, LogHash.Of(path), size);
+
+    [LoggerMessage(EventName = "UploadServiceStarting", EventId = 2801, Level = LogLevel.Information, Message = "[UploadService] Starting upload: {PathHash} ({Size:F2} MB)")]
+    private static partial void UploadServiceStartingLogged(ILogger logger, string pathHash, double size);
 
     /// <summary>Logs upload service completed upload.</summary>
-    [LoggerMessage(EventId = 2802, Level = LogLevel.Information, Message = "[UploadService] Upload complete: {Path}")]
-    public static partial void UploadServiceCompleted(ILogger logger, string path);
+    public static void UploadServiceCompleted(ILogger logger, string path) => UploadServiceCompletedLogged(logger, LogHash.Of(path));
+
+    [LoggerMessage(EventName = "UploadServiceCompleted", EventId = 2802, Level = LogLevel.Information, Message = "[UploadService] Upload complete: {PathHash}")]
+    private static partial void UploadServiceCompletedLogged(ILogger logger, string pathHash);
 
     /// <summary>Logs upload failure.</summary>
-    [LoggerMessage(EventId = 2803, Level = LogLevel.Error, Message = "Upload failed for {Path}: {Error}")]
-    public static partial void UploadFailed(ILogger logger, string path, string error);
+    public static void UploadFailed(ILogger logger, string path, string error) => UploadFailedLogged(logger, LogHash.Of(path), error);
+
+    [LoggerMessage(EventName = "UploadFailed", EventId = 2803, Level = LogLevel.Error, Message = "Upload failed for {PathHash}: {Error}")]
+    private static partial void UploadFailedLogged(ILogger logger, string pathHash, string error);
 
     /// <summary>Logs HTTP 429 throttle during chunked upload.</summary>
     [LoggerMessage(EventId = 2804, Level = LogLevel.Warning, Message = "[UploadService] 429 on chunk {Start}-{End}, waiting {Delay:F1}s (attempt {A}/{Max})")]
@@ -285,48 +382,68 @@ public static partial class OneDriveSyncClientMessages
     public static partial void UploadChunkNetworkError(ILogger logger, long start, long end, double delay, int a, int max);
 
     /// <summary>Logs HTTP 412 precondition failure when creating an upload session, before a retry.</summary>
-    [LoggerMessage(EventId = 2806, Level = LogLevel.Warning, Message = "[UploadService] 412 creating upload session for {Path}, retrying in {Delay:F1}s (attempt {A}/{Max})")]
-    public static partial void UploadSessionPreconditionFailed(ILogger logger, string path, double delay, int a, int max);
+    public static void UploadSessionPreconditionFailed(ILogger logger, string path, double delay, int a, int max) => UploadSessionPreconditionFailedLogged(logger, LogHash.Of(path), delay, a, max);
+
+    [LoggerMessage(EventName = "UploadSessionPreconditionFailed", EventId = 2806, Level = LogLevel.Warning, Message = "[UploadService] 412 creating upload session for {PathHash}, retrying in {Delay:F1}s (attempt {A}/{Max})")]
+    private static partial void UploadSessionPreconditionFailedLogged(ILogger logger, string pathHash, double delay, int a, int max);
 
     // Sync Rules & Items (2900-2999)
 
     /// <summary>Logs persisting sync rule.</summary>
-    [LoggerMessage(EventId = 2900, Level = LogLevel.Debug, Message = "[AccountFilesViewModel] Persisting {RuleType} rule for {Path} (account {AccountId})")]
-    public static partial void RulePersisting(ILogger logger, string ruleType, string path, string accountId);
+    public static void RulePersisting(ILogger logger, string ruleType, string path, string accountId) => RulePersistingLogged(logger, ruleType, LogHash.Of(path), LogHash.Of(accountId));
+
+    [LoggerMessage(EventName = "RulePersisting", EventId = 2900, Level = LogLevel.Debug, Message = "[AccountFilesViewModel] Persisting {RuleType} rule for {PathHash} (account {AccountIdHash})")]
+    private static partial void RulePersistingLogged(ILogger logger, string ruleType, string pathHash, string accountIdHash);
 
     /// <summary>Logs file exists locally without SyncedItemEntity.</summary>
-    [LoggerMessage(EventId = 2901, Level = LogLevel.Debug, Message = "[SyncedItemRegistrar] File exists locally without SyncedItemEntity — treating as synced: {Path}")]
-    public static partial void SyncedItemLocalExists(ILogger logger, string path);
+    public static void SyncedItemLocalExists(ILogger logger, string path) => SyncedItemLocalExistsLogged(logger, LogHash.Of(path));
+
+    [LoggerMessage(EventName = "SyncedItemLocalExists", EventId = 2901, Level = LogLevel.Debug, Message = "[SyncedItemRegistrar] File exists locally without SyncedItemEntity — treating as synced: {PathHash}")]
+    private static partial void SyncedItemLocalExistsLogged(ILogger logger, string pathHash);
 
     /// <summary>Logs drive ID not available.</summary>
-    [LoggerMessage(EventId = 2902, Level = LogLevel.Warning, Message = "[AccountFilesViewModel] Drive ID not available when building folder tree for account {AccountId}")]
-    public static partial void DriveIdNotAvailable(ILogger logger, string accountId);
+    public static void DriveIdNotAvailable(ILogger logger, string accountId) => DriveIdNotAvailableLogged(logger, LogHash.Of(accountId));
+
+    [LoggerMessage(EventName = "DriveIdNotAvailable", EventId = 2902, Level = LogLevel.Warning, Message = "[AccountFilesViewModel] Drive ID not available when building folder tree for account {AccountIdHash}")]
+    private static partial void DriveIdNotAvailableLogged(ILogger logger, string accountIdHash);
 
     /// <summary>Logs failure to load root folders.</summary>
-    [LoggerMessage(EventId = 2903, Level = LogLevel.Warning, Message = "[AccountFilesViewModel] Failed to load root folders for account {AccountId}: {Error}")]
-    public static partial void RootFoldersLoadFailed(ILogger logger, string accountId, string error);
+    public static void RootFoldersLoadFailed(ILogger logger, string accountId, string error) => RootFoldersLoadFailedLogged(logger, LogHash.Of(accountId), error);
+
+    [LoggerMessage(EventName = "RootFoldersLoadFailed", EventId = 2903, Level = LogLevel.Warning, Message = "[AccountFilesViewModel] Failed to load root folders for account {AccountIdHash}: {Error}")]
+    private static partial void RootFoldersLoadFailedLogged(ILogger logger, string accountIdHash, string error);
 
     /// <summary>Logs failure to persist folder selection.</summary>
-    [LoggerMessage(EventId = 2904, Level = LogLevel.Error, Message = "[AccountFilesViewModel] Failed to persist folder selection for account {AccountId} — {ErrorType}")]
-    public static partial void FolderSelectionPersistFailed(ILogger logger, string accountId, string errorType);
+    public static void FolderSelectionPersistFailed(ILogger logger, string accountId, string errorType) => FolderSelectionPersistFailedLogged(logger, LogHash.Of(accountId), errorType);
+
+    [LoggerMessage(EventName = "FolderSelectionPersistFailed", EventId = 2904, Level = LogLevel.Error, Message = "[AccountFilesViewModel] Failed to persist folder selection for account {AccountIdHash} — {ErrorType}")]
+    private static partial void FolderSelectionPersistFailedLogged(ILogger logger, string accountIdHash, string errorType);
 
     /// <summary>Logs failure to load folder tree children.</summary>
-    [LoggerMessage(EventId = 2905, Level = LogLevel.Warning, Message = "[FolderTreeNodeViewModel] Failed to load children for {Path}: {Error}")]
-    public static partial void FolderChildrenLoadFailed(ILogger logger, string path, string error);
+    public static void FolderChildrenLoadFailed(ILogger logger, string path, string error) => FolderChildrenLoadFailedLogged(logger, LogHash.Of(path), error);
+
+    [LoggerMessage(EventName = "FolderChildrenLoadFailed", EventId = 2905, Level = LogLevel.Warning, Message = "[FolderTreeNodeViewModel] Failed to load children for {PathHash}: {Error}")]
+    private static partial void FolderChildrenLoadFailedLogged(ILogger logger, string pathHash, string error);
 
     /// <summary>Logs refusal to open a path that escapes the OneDrive base directory.</summary>
-    [LoggerMessage(EventId = 2906, Level = LogLevel.Warning, Message = "[AccountFilesViewModel] Refused to open folder — path escapes OneDrive base: {CandidatePath}")]
-    public static partial void FileManagerPathEscapesBase(ILogger logger, string candidatePath);
+    public static void FileManagerPathEscapesBase(ILogger logger, string candidatePath) => FileManagerPathEscapesBaseLogged(logger, LogHash.Of(candidatePath));
+
+    [LoggerMessage(EventName = "FileManagerPathEscapesBase", EventId = 2906, Level = LogLevel.Warning, Message = "[AccountFilesViewModel] Refused to open folder — path escapes OneDrive base: {CandidatePathHash}")]
+    private static partial void FileManagerPathEscapesBaseLogged(ILogger logger, string candidatePathHash);
 
     // Conflict Resolution (2950-2999)
 
     /// <summary>Logs conflict resolution failure to get download URL.</summary>
-    [LoggerMessage(EventId = 2950, Level = LogLevel.Error, Message = "[ConflictApplier] Could not resolve download URL for {Path}: {Error}")]
-    public static partial void ConflictDownloadUrlFailed(ILogger logger, string path, string error);
+    public static void ConflictDownloadUrlFailed(ILogger logger, string path, string error) => ConflictDownloadUrlFailedLogged(logger, LogHash.Of(path), error);
+
+    [LoggerMessage(EventName = "ConflictDownloadUrlFailed", EventId = 2950, Level = LogLevel.Error, Message = "[ConflictApplier] Could not resolve download URL for {PathHash}: {Error}")]
+    private static partial void ConflictDownloadUrlFailedLogged(ILogger logger, string pathHash, string error);
 
     /// <summary>Logs conflict resolution download failure.</summary>
-    [LoggerMessage(EventId = 2951, Level = LogLevel.Error, Message = "[ConflictApplier] Download failed for {Path}: {Error}")]
-    public static partial void ConflictDownloadFailed(ILogger logger, string path, string error);
+    public static void ConflictDownloadFailed(ILogger logger, string path, string error) => ConflictDownloadFailedLogged(logger, LogHash.Of(path), error);
+
+    [LoggerMessage(EventName = "ConflictDownloadFailed", EventId = 2951, Level = LogLevel.Error, Message = "[ConflictApplier] Download failed for {PathHash}: {Error}")]
+    private static partial void ConflictDownloadFailedLogged(ILogger logger, string pathHash, string error);
 
     // Account Operations (3000-3099)
 
@@ -363,12 +480,16 @@ public static partial class OneDriveSyncClientMessages
     public static partial void MainWindowInitializeFatal(ILogger logger, string errorType);
 
     /// <summary>Logs a manual "Sync Now" request for an account no longer present in the repository.</summary>
-    [LoggerMessage(EventId = 3008, Level = LogLevel.Warning, Message = "[DashboardAccountViewModel.SyncNowAsync] Account {AccountId} not found — sync not triggered")]
-    public static partial void SyncNowAccountNotFound(ILogger logger, string accountId);
+    public static void SyncNowAccountNotFound(ILogger logger, string accountId) => SyncNowAccountNotFoundLogged(logger, LogHash.Of(accountId));
+
+    [LoggerMessage(EventName = "SyncNowAccountNotFound", EventId = 3008, Level = LogLevel.Warning, Message = "[DashboardAccountViewModel.SyncNowAsync] Account {AccountIdHash} not found — sync not triggered")]
+    private static partial void SyncNowAccountNotFoundLogged(ILogger logger, string accountIdHash);
 
     /// <summary>Logs an unhandled exception while manually triggering sync for an account.</summary>
-    [LoggerMessage(EventId = 3009, Level = LogLevel.Error, Message = "[DashboardAccountViewModel.SyncNowAsync] Unhandled exception triggering sync for {AccountId}: {ErrorType}")]
-    public static partial void SyncNowFailed(ILogger logger, string accountId, string errorType);
+    public static void SyncNowFailed(ILogger logger, string accountId, string errorType) => SyncNowFailedLogged(logger, LogHash.Of(accountId), errorType);
+
+    [LoggerMessage(EventName = "SyncNowFailed", EventId = 3009, Level = LogLevel.Error, Message = "[DashboardAccountViewModel.SyncNowAsync] Unhandled exception triggering sync for {AccountIdHash}: {ErrorType}")]
+    private static partial void SyncNowFailedLogged(ILogger logger, string accountIdHash, string errorType);
 
     // Bootstrap & Initialization (3100-3199)
 
@@ -381,8 +502,10 @@ public static partial class OneDriveSyncClientMessages
     public static partial void ApplicationInitializeFatal(ILogger logger, string errorType);
 
     /// <summary>Logs failure to deserialize settings.</summary>
-    [LoggerMessage(EventId = 3102, Level = LogLevel.Warning, Message = "[SettingsService] Failed to deserialize settings from {Path} ({ErrorType}); using defaults")]
-    public static partial void SettingsDeserializeFailed(ILogger logger, string path, string errorType);
+    public static void SettingsDeserializeFailed(ILogger logger, string path, string errorType) => SettingsDeserializeFailedLogged(logger, LogHash.Of(path), errorType);
+
+    [LoggerMessage(EventName = "SettingsDeserializeFailed", EventId = 3102, Level = LogLevel.Warning, Message = "[SettingsService] Failed to deserialize settings from {PathHash} ({ErrorType}); using defaults")]
+    private static partial void SettingsDeserializeFailedLogged(ILogger logger, string pathHash, string errorType);
 
     /// <summary>Logs token cache failure.</summary>
     [LoggerMessage(EventId = 3103, Level = LogLevel.Warning, Message = "Token cache operation failed: {ErrorType}")]
@@ -407,24 +530,32 @@ public static partial class OneDriveSyncClientMessages
     // Quota Refresh (3200-3299)
 
     /// <summary>Logs failure to acquire a silent token during quota refresh.</summary>
-    [LoggerMessage(EventId = 3200, Level = LogLevel.Warning, Message = "[QuotaRefreshService] Silent token failed for account {AccountId} — quota not refreshed")]
-    public static partial void QuotaRefreshTokenFailed(ILogger logger, string accountId);
+    public static void QuotaRefreshTokenFailed(ILogger logger, string accountId) => QuotaRefreshTokenFailedLogged(logger, LogHash.Of(accountId));
+
+    [LoggerMessage(EventName = "QuotaRefreshTokenFailed", EventId = 3200, Level = LogLevel.Warning, Message = "[QuotaRefreshService] Silent token failed for account {AccountIdHash} — quota not refreshed")]
+    private static partial void QuotaRefreshTokenFailedLogged(ILogger logger, string accountIdHash);
 
     /// <summary>Logs failure to fetch quota from the Graph API.</summary>
-    [LoggerMessage(EventId = 3201, Level = LogLevel.Warning, Message = "[QuotaRefreshService] Graph quota fetch failed for account {AccountId}: {Error}")]
-    public static partial void QuotaRefreshFetchFailed(ILogger logger, string accountId, string error);
+    public static void QuotaRefreshFetchFailed(ILogger logger, string accountId, string error) => QuotaRefreshFetchFailedLogged(logger, LogHash.Of(accountId), error);
+
+    [LoggerMessage(EventName = "QuotaRefreshFetchFailed", EventId = 3201, Level = LogLevel.Warning, Message = "[QuotaRefreshService] Graph quota fetch failed for account {AccountIdHash}: {Error}")]
+    private static partial void QuotaRefreshFetchFailedLogged(ILogger logger, string accountIdHash, string error);
 
     /// <summary>Logs a failure recording a completed transfer for the throughput graph — the sample is dropped.</summary>
-    [LoggerMessage(EventId = 3204, Level = LogLevel.Warning, Message = "[ThroughputRecorder] Could not record throughput for account {AccountId}: {ErrorType}")]
-    public static partial void ThroughputRecordFailed(ILogger logger, string accountId, string errorType);
+    public static void ThroughputRecordFailed(ILogger logger, string accountId, string errorType) => ThroughputRecordFailedLogged(logger, LogHash.Of(accountId), errorType);
+
+    [LoggerMessage(EventName = "ThroughputRecordFailed", EventId = 3204, Level = LogLevel.Warning, Message = "[ThroughputRecorder] Could not record throughput for account {AccountIdHash}: {ErrorType}")]
+    private static partial void ThroughputRecordFailedLogged(ILogger logger, string accountIdHash, string errorType);
 
     /// <summary>Logs a failure refreshing the throughput graph — the previous bars stay displayed.</summary>
     [LoggerMessage(EventId = 3205, Level = LogLevel.Warning, Message = "[ThroughputGraphViewModel] Throughput refresh failed: {ErrorType}")]
     public static partial void ThroughputRefreshFailed(ILogger logger, string errorType);
 
     /// <summary>Logs a failure refreshing the dashboard synced file count for an account — the previous count stays displayed.</summary>
-    [LoggerMessage(EventId = 3203, Level = LogLevel.Warning, Message = "[DashboardFileCountRefresher] File count refresh failed for account {AccountId}: {ErrorType}")]
-    public static partial void DashboardFileCountRefreshFailed(ILogger logger, string accountId, string errorType);
+    public static void DashboardFileCountRefreshFailed(ILogger logger, string accountId, string errorType) => DashboardFileCountRefreshFailedLogged(logger, LogHash.Of(accountId), errorType);
+
+    [LoggerMessage(EventName = "DashboardFileCountRefreshFailed", EventId = 3203, Level = LogLevel.Warning, Message = "[DashboardFileCountRefresher] File count refresh failed for account {AccountIdHash}: {ErrorType}")]
+    private static partial void DashboardFileCountRefreshFailedLogged(ILogger logger, string accountIdHash, string errorType);
 
     /// <summary>Logs unexpected exception during the startup quota refresh pass — startup continues normally.</summary>
     [LoggerMessage(EventId = 3202, Level = LogLevel.Warning, Message = "[ApplicationInitializer] Startup quota refresh failed: {ErrorType}")]
@@ -500,16 +631,20 @@ public static partial class OneDriveSyncClientMessages
     /// </summary>
     /// <param name="logger">The logger instance.</param>
     /// <param name="location">The file or registry value that was written.</param>
-    [LoggerMessage(EventId = 3600, Level = LogLevel.Information, Message = "[Autostart] Registered to launch at startup via {Location}")]
-    public static partial void AutostartRegistered(ILogger<AutostartService> logger, string location);
+    public static void AutostartRegistered(ILogger<AutostartService> logger, string location) => AutostartRegisteredLogged(logger, LogHash.Of(location));
+
+    [LoggerMessage(EventName = "AutostartRegistered", EventId = 3600, Level = LogLevel.Information, Message = "[Autostart] Registered to launch at startup via {LocationHash}")]
+    private static partial void AutostartRegisteredLogged(ILogger<AutostartService> logger, string locationHash);
 
     /// <summary>
     /// Logs that the launch-at-OS-startup registration was removed.
     /// </summary>
     /// <param name="logger">The logger instance.</param>
     /// <param name="location">The file or registry value that was removed.</param>
-    [LoggerMessage(EventId = 3602, Level = LogLevel.Information, Message = "[Autostart] Removed launch at startup registration {Location}")]
-    public static partial void AutostartUnregistered(ILogger<AutostartService> logger, string location);
+    public static void AutostartUnregistered(ILogger<AutostartService> logger, string location) => AutostartUnregisteredLogged(logger, LogHash.Of(location));
+
+    [LoggerMessage(EventName = "AutostartUnregistered", EventId = 3602, Level = LogLevel.Information, Message = "[Autostart] Removed launch at startup registration {LocationHash}")]
+    private static partial void AutostartUnregisteredLogged(ILogger<AutostartService> logger, string locationHash);
 
     /// <summary>
     /// Logs that registering the application to launch at OS startup failed.
