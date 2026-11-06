@@ -1,5 +1,6 @@
 using AStarDev.FunctionalParadigm;
 using AStarDev.Web.Packages;
+using AStarDev.Web.TestsUnit.Helpers;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
@@ -10,7 +11,7 @@ public class GivenANugetPackageService : IDisposable
 {
     private readonly INugetApiClient apiClient = Substitute.For<INugetApiClient>();
     private readonly MemoryCache cache = new(new MemoryCacheOptions());
-    private readonly ILogger<NugetPackageService> logger = Substitute.For<ILogger<NugetPackageService>>();
+    private readonly ILogger<NugetPackageService> logger = LoggedEvents.CreateEnabledLogger<NugetPackageService>();
     private bool disposed;
 
     private NugetPackageService CreateSut() => new(apiClient, cache, logger);
@@ -80,5 +81,30 @@ public class GivenANugetPackageService : IDisposable
         var result = await sut.GetPackageDataAsync("AStar.Dev.Unknown", TestContext.Current.CancellationToken);
 
         result.Match(ok => (PackageData?)ok, err => null).ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task when_the_live_fetch_fails_but_a_last_known_good_value_exists_then_a_dedicated_warning_carries_the_package_id()
+    {
+        var package = PackageDataFactory.Create("AStarDev.Utilities", "1.6.8", "Utilities", 1000, "https://www.nuget.org/packages/AStarDev.Utilities");
+        apiClient.FetchAsync("AStarDev.Utilities", TestContext.Current.CancellationToken).Returns(Option.Some(package), Option.None<PackageData>());
+        var sut = CreateSut();
+        await sut.GetPackageDataAsync("AStarDev.Utilities", TestContext.Current.CancellationToken);
+        cache.Remove("nuget:fresh:AStarDev.Utilities");
+
+        await sut.GetPackageDataAsync("AStarDev.Utilities", TestContext.Current.CancellationToken);
+
+        logger.ValuesOf("ApiUnreachableUsingLastKnownGood")["PackageId"].ShouldBe("AStarDev.Utilities");
+    }
+
+    [Fact]
+    public async Task when_the_live_fetch_fails_and_no_cached_value_exists_then_a_dedicated_error_carries_the_package_id()
+    {
+        apiClient.FetchAsync("AStar.Dev.Unknown", TestContext.Current.CancellationToken).Returns(Option.None<PackageData>());
+        var sut = CreateSut();
+
+        await sut.GetPackageDataAsync("AStar.Dev.Unknown", TestContext.Current.CancellationToken);
+
+        logger.ValuesOf("ApiUnreachableWithNoCachedData")["PackageId"].ShouldBe("AStar.Dev.Unknown");
     }
 }

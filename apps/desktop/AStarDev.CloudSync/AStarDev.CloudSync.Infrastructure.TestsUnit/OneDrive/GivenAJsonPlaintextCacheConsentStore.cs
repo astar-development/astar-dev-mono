@@ -65,6 +65,7 @@ public class GivenAJsonPlaintextCacheConsentStore
 
         logger.Entries.ShouldContain(entry => entry.Level == LogLevel.Warning);
         logger.Messages.ShouldAllBe(message => !message.Contains("/home/user"));
+        logger.ValuesOf("PlaintextConsentUnreadable")["ErrorType"].ShouldBe(typeof(System.Text.Json.JsonException).FullName);
     }
 
     [Fact]
@@ -77,6 +78,7 @@ public class GivenAJsonPlaintextCacheConsentStore
 
         saved.ShouldBeFalse();
         logger.Entries.ShouldContain(entry => entry.Level == LogLevel.Warning);
+        logger.ValuesOf("PlaintextConsentNotSaved").ShouldContainKey("ErrorType");
     }
 
     private static string RememberedAnswer(JsonPlaintextCacheConsentStore store) => store.Load().Match(consent => consent.GetType().Name, () => "none");

@@ -8,11 +8,16 @@ internal sealed class CapturingLogger<T> : ILogger<T>
 {
     public List<(LogLevel Level, string Message)> Entries { get; } = [];
 
+    public List<(string? Name, IReadOnlyDictionary<string, object?> Values)> Events { get; } = [];
+
     public IDisposable? BeginScope<TState>(TState state)
         where TState : notnull => null;
 
     public bool IsEnabled(LogLevel logLevel) => true;
 
-    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) =>
+    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+    {
         Entries.Add((logLevel, formatter(state, exception)));
+        Events.Add((eventId.Name, state is IEnumerable<KeyValuePair<string, object?>> pairs ? pairs.ToDictionary(pair => pair.Key, pair => pair.Value) : new Dictionary<string, object?>()));
+    }
 }

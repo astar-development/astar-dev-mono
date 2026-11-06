@@ -70,8 +70,21 @@ public class GivenAJsonDisplayPreferencesStore
 
         string warning = logger.Messages.ShouldHaveSingleItem();
         logger.Entries[0].Level.ShouldBe(LogLevel.Warning);
-        warning.ShouldStartWith("JsonDisplayPreferencesStore has raised: `Could not save the display preferences (System.");
+        logger.ValuesOf("PreferencesNotSaved")["ErrorType"].ShouldBe(typeof(UnauthorizedAccessException).FullName);
         warning.ShouldNotContain("/home/user");
+    }
+
+    [Fact]
+    public void when_the_saved_file_is_unreadable_then_a_dedicated_warning_carries_the_error_type()
+    {
+        var fileSystem = new MockFileSystem();
+        fileSystem.Directory.CreateDirectory("/home/user/.config/AStarDev.CloudSync");
+        fileSystem.File.WriteAllText(SettingsPath, "not json");
+        var logger = new RecordingLogger<JsonDisplayPreferencesStore>();
+
+        _ = new JsonDisplayPreferencesStore(fileSystem.FileInfo.New(SettingsPath), logger).Load();
+
+        logger.ValuesOf("PreferencesUnreadable")["ErrorType"].ShouldBe(typeof(System.Text.Json.JsonException).FullName);
     }
 
     private static JsonDisplayPreferencesStore CreateStore(MockFileSystem fileSystem) => new(fileSystem.FileInfo.New(SettingsPath), NullLogger<JsonDisplayPreferencesStore>.Instance);

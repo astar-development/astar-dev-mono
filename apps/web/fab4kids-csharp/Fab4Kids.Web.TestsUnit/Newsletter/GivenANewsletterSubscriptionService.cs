@@ -1,5 +1,6 @@
 using AStarDev.FunctionalParadigm;
 using Fab4Kids.Web.Newsletter;
+using Fab4Kids.Web.TestsUnit.Helpers;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using NSubstitute;
@@ -11,7 +12,7 @@ public class GivenANewsletterSubscriptionService
     private readonly INewsletterSubscriberStore subscriberStore = Substitute.For<INewsletterSubscriberStore>();
     private readonly INewsletterEmailSender emailSender = Substitute.For<INewsletterEmailSender>();
     private readonly FakeTimeProvider timeProvider = new();
-    private readonly ILogger<NewsletterSubscriptionService> logger = Substitute.For<ILogger<NewsletterSubscriptionService>>();
+    private readonly ILogger<NewsletterSubscriptionService> logger = LoggedEvents.CreateEnabledLogger<NewsletterSubscriptionService>();
 
     public GivenANewsletterSubscriptionService()
     {
@@ -101,5 +102,38 @@ public class GivenANewsletterSubscriptionService
         var outcome = await sut.SubscribeAsync("ada@example.com", consent: true, TestContext.Current.CancellationToken);
 
         outcome.ShouldBeOfType<NewsletterSubscriptionSucceeded>();
+    }
+
+    [Fact]
+    public async Task when_checking_for_an_existing_subscriber_fails_then_a_dedicated_error_carries_the_reason()
+    {
+        subscriberStore.ExistsAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns("Something went wrong checking your subscription.");
+        var sut = CreateSut();
+
+        await sut.SubscribeAsync("ada@example.com", consent: true, TestContext.Current.CancellationToken);
+
+        logger.ValuesOf("ExistsCheckFailed")["Reason"].ShouldBe("Something went wrong checking your subscription.");
+    }
+
+    [Fact]
+    public async Task when_storing_the_subscriber_fails_then_a_dedicated_error_carries_the_reason()
+    {
+        subscriberStore.AddAsync(Arg.Any<NewsletterSubscriber>(), Arg.Any<CancellationToken>()).Returns("Something went wrong saving your subscription.");
+        var sut = CreateSut();
+
+        await sut.SubscribeAsync("ada@example.com", consent: true, TestContext.Current.CancellationToken);
+
+        logger.ValuesOf("SubscribeFailed")["Reason"].ShouldBe("Something went wrong saving your subscription.");
+    }
+
+    [Fact]
+    public async Task when_sending_the_confirmation_email_fails_then_a_dedicated_error_carries_the_reason()
+    {
+        emailSender.SendAsync(Arg.Any<NewsletterSubscriber>(), Arg.Any<CancellationToken>()).Returns("Something went wrong sending your confirmation email.");
+        var sut = CreateSut();
+
+        await sut.SubscribeAsync("ada@example.com", consent: true, TestContext.Current.CancellationToken);
+
+        logger.ValuesOf("ConfirmationEmailFailed")["Reason"].ShouldBe("Something went wrong sending your confirmation email.");
     }
 }

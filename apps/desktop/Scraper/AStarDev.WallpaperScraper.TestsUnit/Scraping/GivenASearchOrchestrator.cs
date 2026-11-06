@@ -7,7 +7,6 @@ using AStarDev.WallpaperScraper.Scraping.WallhavenResponses.SearchResponse;
 using AStarDev.WallpaperScraper.TestsUnit.Fakes;
 using AStarDev.WallpaperScraper.WallpaperIngestion;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AStarDev.WallpaperScraper.TestsUnit.Scraping;
 
@@ -17,6 +16,7 @@ public sealed class GivenASearchOrchestrator
     private readonly FakePageFetcher pageFetcher = new();
     private readonly FakeUnitOfWork unitOfWork = new();
     private readonly CapturingProgress progress = new();
+    private readonly CapturingLogger<SearchOrchestrator> logger = new();
 
     public GivenASearchOrchestrator() => _ = unitOfWork.Register<FileEntity, FileId>();
 
@@ -137,6 +137,7 @@ public sealed class GivenASearchOrchestrator
 
         FetchedLabels.ShouldBe(["top wallpapers", "search category category 1", "search category category 2"]);
         progress.Messages.Where(message => message.Contains("boom", StringComparison.Ordinal)).ShouldHaveSingleItem().ShouldBe("The hot wallpapers search failed: boom");
+        logger.Events.Where(recorded => recorded.Name == "SearchFailed").ShouldHaveSingleItem().Values["SearchLabel"].ShouldBe("hot wallpapers");
     }
 
     [Fact]
@@ -263,7 +264,7 @@ public sealed class GivenASearchOrchestrator
     {
         var pagesProcessor = new PagesProcessor(new WallpaperIngestionContextFactory(new FakeClientFactory(), unitOfWork, new FakeSaveDirectoryResolver()), pageFetcher, new PageIngestionStep(new FakeIngestionService(), unitOfWork), new ScrapeResumePolicy(limits), DownloadPacing.None, TimeProvider.System);
 
-        return new SearchOrchestrator(pagesProcessor, limits, NullLogger<SearchOrchestrator>.Instance).RunSearchesAsync(configuration, selection, progress, cancellationToken);
+        return new SearchOrchestrator(pagesProcessor, limits, logger).RunSearchesAsync(configuration, selection, progress, cancellationToken);
     }
 
     private sealed class FakeClientFactory : IWallhavenClientFactory
