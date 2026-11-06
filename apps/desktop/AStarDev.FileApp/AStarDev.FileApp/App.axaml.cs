@@ -66,7 +66,7 @@ public partial class App : Application
         var configuration = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
             .Build();
-        _ = services.AddLogging(logging => logging.ConfigureOTelLogging(configuration));
+        _ = services.AddLogging(logging => logging.ConfigureOTelLogging(configuration, ApplicationMetadata.ApplicationName));
         _ = services.AddVelopackUpdateServices(configuration);
 
         var serviceProvider = services.BuildServiceProvider();

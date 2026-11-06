@@ -46,7 +46,7 @@ public partial class App : Application, IDisposable
         _ = services.AddSingleton<IFileSystem, RealFileSystem>();
         _ = services.AddSingleton<IThemeService, ThemeService>();
         _ = services.AddScoped<MainWindowViewModel>();
-        _ = services.AddLogging(logging => logging.ConfigureOTelLogging(configuration));
+        _ = services.AddLogging(logging => logging.ConfigureOTelLogging(configuration, ApplicationMetadata.ApplicationNameDotted));
         _ = services.AddVelopackUpdateServices(configuration);
 
         return services.BuildServiceProvider();

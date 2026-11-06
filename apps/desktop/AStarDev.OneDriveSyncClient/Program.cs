@@ -28,7 +28,7 @@ internal static class Program
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
             .Build();
 
-        using var loggerFactory = LoggerFactory.Create(logging => logging.ConfigureOTelLogging(configuration));
+        using var loggerFactory = LoggerFactory.Create(logging => logging.ConfigureOTelLogging(configuration, ApplicationMetadata.ApplicationName));
         logger = loggerFactory.CreateLogger(ApplicationMetadata.ApplicationName);
 
         try

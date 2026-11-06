@@ -19,7 +19,7 @@ Or via the NuGet Package Manager in Visual Studio / Rider.
 
 ## Available extensions
 
-`ILoggingBuilder.ConfigureOTelLogging(configuration, connectionStringConfigurationKey = "ApplicationInsights:ConnectionString")`
+`ILoggingBuilder.ConfigureOTelLogging(configuration, serviceName, connectionStringConfigurationKey = "ApplicationInsights:ConnectionString")`
 
 Wires up OpenTelemetry logging that:
 
@@ -27,6 +27,7 @@ Wires up OpenTelemetry logging that:
 - exports to Azure Monitor when a connection string is present at `connectionStringConfigurationKey` in the supplied `IConfigurationRoot`
 - exports over OTLP (gRPC) when `OpenTelemetry:OtlpEndpoint` (`OTelLoggingConfigurator.OtlpEndpointConfigurationKey`) holds an absolute `http`/`https` URI, e.g. `http://localhost:4317` for the Aspire dashboard
 - includes formatted messages, scopes, and structured state values
+- sets the OpenTelemetry resource: `service.name` (required; a blank value falls back to the entry assembly name), `service.version` (the entry assembly informational version without `+` build metadata), an auto-generated `service.instance.id`, and `deployment.environment.name` from `OpenTelemetry:DeploymentEnvironment` (`OTelLoggingConfigurator.DeploymentEnvironmentConfigurationKey`), else the `DOTNET_ENVIRONMENT` environment variable, else `production`, lower-cased
 
 An overload additionally accepts an `InMemoryLogProcessor`, routing log records to it as well — used for the in-app log viewer feature (`AStarDev.LoggingOTel.LogViewer`).
 

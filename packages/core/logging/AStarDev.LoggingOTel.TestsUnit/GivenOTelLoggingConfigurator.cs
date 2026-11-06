@@ -1,4 +1,5 @@
 using System.Net;
+using System.Reflection;
 using System.Net.Sockets;
 using AStarDev.LoggingOTel.LogViewer;
 using Microsoft.Extensions.Configuration;
@@ -12,6 +13,8 @@ namespace AStarDev.LoggingOTel.TestsUnit;
 
 public sealed class GivenOTelLoggingConfigurator
 {
+    private const string TestServiceName = "the-test-service";
+
     private static IConfigurationRoot CreateConfiguration() =>
         new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: false, reloadOnChange: true).Build();
 
@@ -20,7 +23,7 @@ public sealed class GivenOTelLoggingConfigurator
     {
         var configuration = CreateConfiguration();
         var services = new ServiceCollection();
-        _ = services.AddLogging(builder => builder.ConfigureOTelLogging(configuration));
+        _ = services.AddLogging(builder => builder.ConfigureOTelLogging(configuration, TestServiceName));
         using var serviceProvider = services.BuildServiceProvider();
 
         var logger = serviceProvider.GetRequiredService<ILogger<GivenOTelLoggingConfigurator>>();
@@ -33,7 +36,7 @@ public sealed class GivenOTelLoggingConfigurator
     {
         var configuration = CreateConfiguration();
         var services = new ServiceCollection();
-        _ = services.AddLogging(builder => builder.ConfigureOTelLogging(configuration));
+        _ = services.AddLogging(builder => builder.ConfigureOTelLogging(configuration, TestServiceName));
         using var serviceProvider = services.BuildServiceProvider();
         var logger = serviceProvider.GetRequiredService<ILogger<GivenOTelLoggingConfigurator>>();
 
@@ -48,7 +51,7 @@ public sealed class GivenOTelLoggingConfigurator
         var configuration = CreateConfiguration();
         using var inMemoryLogProcessor = new InMemoryLogProcessor();
         var services = new ServiceCollection();
-        _ = services.AddLogging(builder => builder.ConfigureOTelLogging(configuration, inMemoryLogProcessor));
+        _ = services.AddLogging(builder => builder.ConfigureOTelLogging(configuration, inMemoryLogProcessor, TestServiceName));
         using var serviceProvider = services.BuildServiceProvider();
         var logger = serviceProvider.GetRequiredService<ILogger<GivenOTelLoggingConfigurator>>();
 
@@ -75,14 +78,48 @@ public sealed class GivenOTelLoggingConfigurator
     }
 
     [Fact]
-    public void when_no_service_name_is_supplied_then_the_sdk_default_service_name_is_kept()
+    public void when_a_blank_service_name_is_supplied_then_the_entry_assembly_name_is_used_instead_of_unknown_service()
     {
         var configuration = CreateConfiguration();
         var services = new ServiceCollection();
-        _ = services.AddLogging(builder => builder.ConfigureOTelLogging(configuration));
+        _ = services.AddLogging(builder => builder.ConfigureOTelLogging(configuration, " "));
         using var serviceProvider = services.BuildServiceProvider();
 
-        ResourceServiceName(serviceProvider).ShouldStartWith("unknown_service");
+        ResourceAttribute(serviceProvider, "service.name").ShouldBe(Assembly.GetEntryAssembly()!.GetName().Name);
+    }
+
+    [Fact]
+    public void when_logging_is_configured_then_the_resource_carries_the_entry_assembly_version_without_build_metadata()
+    {
+        var configuration = CreateConfiguration();
+        var services = new ServiceCollection();
+        _ = services.AddLogging(builder => builder.ConfigureOTelLogging(configuration, TestServiceName));
+        using var serviceProvider = services.BuildServiceProvider();
+        var expectedVersion = Assembly.GetEntryAssembly()!.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion.Split('+')[0];
+
+        ResourceAttribute(serviceProvider, "service.version").ShouldBe(expectedVersion);
+    }
+
+    [Fact]
+    public void when_logging_is_configured_then_the_resource_carries_a_service_instance_id()
+    {
+        var configuration = CreateConfiguration();
+        var services = new ServiceCollection();
+        _ = services.AddLogging(builder => builder.ConfigureOTelLogging(configuration, TestServiceName));
+        using var serviceProvider = services.BuildServiceProvider();
+
+        ResourceAttribute(serviceProvider, "service.instance.id").ShouldNotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public void when_a_deployment_environment_is_configured_then_the_resource_carries_it_in_lower_case()
+    {
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { ["OpenTelemetry:DeploymentEnvironment"] = "Staging" }).Build();
+        var services = new ServiceCollection();
+        _ = services.AddLogging(builder => builder.ConfigureOTelLogging(configuration, TestServiceName));
+        using var serviceProvider = services.BuildServiceProvider();
+
+        ResourceAttribute(serviceProvider, "deployment.environment.name").ShouldBe("staging");
     }
 
     [Fact]
@@ -93,7 +130,7 @@ public sealed class GivenOTelLoggingConfigurator
         var otlpPort = ((IPEndPoint)otlpListener.LocalEndpoint).Port;
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { ["OpenTelemetry:OtlpEndpoint"] = $"http://127.0.0.1:{otlpPort}" }).Build();
         var services = new ServiceCollection();
-        _ = services.AddLogging(builder => builder.ConfigureOTelLogging(configuration));
+        _ = services.AddLogging(builder => builder.ConfigureOTelLogging(configuration, TestServiceName));
         using var serviceProvider = services.BuildServiceProvider();
         var logger = serviceProvider.GetRequiredService<ILogger<GivenOTelLoggingConfigurator>>();
         var exportConnection = otlpListener.AcceptTcpClientAsync(TestContext.Current.CancellationToken).AsTask();
@@ -110,7 +147,7 @@ public sealed class GivenOTelLoggingConfigurator
     {
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { ["OpenTelemetry:OtlpEndpoint"] = "not a uri" }).Build();
         var services = new ServiceCollection();
-        _ = services.AddLogging(builder => builder.ConfigureOTelLogging(configuration));
+        _ = services.AddLogging(builder => builder.ConfigureOTelLogging(configuration, TestServiceName));
         using var serviceProvider = services.BuildServiceProvider();
         var logger = serviceProvider.GetRequiredService<ILogger<GivenOTelLoggingConfigurator>>();
 
@@ -119,7 +156,9 @@ public sealed class GivenOTelLoggingConfigurator
         act.ShouldNotThrow();
     }
 
-    private static string ResourceServiceName(ServiceProvider serviceProvider)
+    private static string ResourceServiceName(ServiceProvider serviceProvider) => ResourceAttribute(serviceProvider, "service.name");
+
+    private static string ResourceAttribute(ServiceProvider serviceProvider, string key)
         => serviceProvider.GetRequiredService<LoggerProvider>().GetResource().Attributes
-            .Single(attribute => attribute.Key == "service.name").Value.ToString()!;
+            .Single(attribute => attribute.Key == key).Value.ToString()!;
 }

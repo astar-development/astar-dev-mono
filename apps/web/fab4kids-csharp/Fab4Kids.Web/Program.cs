@@ -16,7 +16,7 @@ using Stripe;
 using Stripe.Checkout;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.AddOTelLogging();
+builder.AddOTelLogging("Fab4Kids.Web");
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();

@@ -9,6 +9,7 @@
         <PackageId>AStarDev.LoggingExtensions</PackageId>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReleaseNotes>
+        v2.0.0 feat(logging)!: complete the OTel resource (service.version, instance id, deployment environment) (#1370)
         v1.0.0 fix(logging)!: log exception type names only, remove exception-taking templates (#1371)
         v0.1.0 fix(logging)!: log exception type names only, remove exception-taking templates (#1371)
         v0.1.0 fix(logging): log page views as PageView and 500 errors with EventId 500 (#1377)
