@@ -92,6 +92,17 @@ public class GivenASnapshotProbe
         result.ShouldBeOfType<SnapshotResult.Mismatch>();
     }
 
+    [AvaloniaFact]
+    public void when_an_indeterminate_progress_bar_is_captured_then_its_moving_indicator_is_stopped()
+    {
+        Assert.SkipUnless(OperatingSystem.IsLinux(), Snapshot.LinuxOnlyReason);
+        var progressBar = new ProgressBar { IsIndeterminate = true, Margin = new Avalonia.Thickness(16) };
+
+        Snapshot.ShouldMatchBaseline(new Window { Content = progressBar }, ThemeVariant.Dark, "snapshot-probe-indeterminate-progress", 320, 120);
+
+        progressBar.IsIndeterminate.ShouldBeFalse();
+    }
+
     private static Window CreateFullWindowProbe(string label, double barFillWidth) => new()
     {
         Content = new StackPanel

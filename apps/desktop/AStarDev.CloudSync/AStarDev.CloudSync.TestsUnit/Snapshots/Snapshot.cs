@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
+using Avalonia.LogicalTree;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Styling;
@@ -80,6 +81,7 @@ internal static class Snapshot
         window.Width = width;
         window.Height = height;
         window.RequestedThemeVariant = theme;
+        StopIndeterminateProgressBars(window);
         window.Show();
         Dispatcher.UIThread.RunJobs();
 
@@ -87,6 +89,12 @@ internal static class Snapshot
         window.Close();
 
         return frame;
+    }
+
+    private static void StopIndeterminateProgressBars(Window window)
+    {
+        foreach (var progressBar in window.GetLogicalDescendants().OfType<ProgressBar>().Where(progressBar => progressBar.IsIndeterminate))
+            progressBar.IsIndeterminate = false;
     }
 
     private static PixelBuffer ReadPixels(Bitmap bitmap)
