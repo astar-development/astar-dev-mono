@@ -66,28 +66,6 @@ public sealed class GivenAnInMemoryLogProcessor
     }
 
     [Fact]
-    public void when_a_log_entry_is_emitted_with_an_account_id_property_then_entry_account_id_is_extracted()
-    {
-        using var sut = new InMemoryLogProcessor();
-        var logger = CreateLogger(sut);
-
-        logger.LogInformation("account event for {AccountId}", "acc-test");
-
-        sut.GetSnapshot()[0].AccountId.ShouldBe("acc-test");
-    }
-
-    [Fact]
-    public void when_a_log_entry_is_emitted_without_an_account_id_property_then_entry_account_id_is_null()
-    {
-        using var sut = new InMemoryLogProcessor();
-        var logger = CreateLogger(sut);
-
-        logger.LogInformation("no account here");
-
-        sut.GetSnapshot()[0].AccountId.ShouldBeNull();
-    }
-
-    [Fact]
     public void when_a_log_entry_is_emitted_then_entry_added_observable_fires()
     {
         using var sut = new InMemoryLogProcessor();

@@ -58,13 +58,13 @@
         <member name="T:AStarDev.LoggingOTel.LogViewer.LogEntry">
             <summary>An immutable snapshot of a single OpenTelemetry log record, with PII already scrubbed.</summary>
         </member>
-        <member name="M:AStarDev.LoggingOTel.LogViewer.LogEntry.#ctor(System.DateTimeOffset,Microsoft.Extensions.Logging.LogLevel,System.String,System.String)">
+        <member name="M:AStarDev.LoggingOTel.LogViewer.LogEntry.#ctor(System.DateTimeOffset,Microsoft.Extensions.Logging.LogLevel,System.String)">
             <summary>An immutable snapshot of a single OpenTelemetry log record, with PII already scrubbed.</summary>
         </member>
         <member name="T:AStarDev.LoggingOTel.LogViewer.LogEntryFactory">
             <summary>Factory for <see cref="T:AStarDev.LoggingOTel.LogViewer.LogEntry"/>.</summary>
         </member>
-        <member name="M:AStarDev.LoggingOTel.LogViewer.LogEntryFactory.Create(System.DateTimeOffset,Microsoft.Extensions.Logging.LogLevel,System.String,System.String)">
+        <member name="M:AStarDev.LoggingOTel.LogViewer.LogEntryFactory.Create(System.DateTimeOffset,Microsoft.Extensions.Logging.LogLevel,System.String)">
             <summary>Creates a <see cref="T:AStarDev.LoggingOTel.LogViewer.LogEntry"/> with the supplied values.</summary>
         </member>
         <member name="M:AStarDev.LoggingOTel.LogViewer.PiiScrubber.EmailRegex">
