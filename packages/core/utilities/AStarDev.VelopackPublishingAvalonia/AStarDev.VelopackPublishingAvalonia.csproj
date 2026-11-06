@@ -18,6 +18,7 @@
 
   <PropertyGroup>
         <PackageReleaseNotes>
+        v0.3.1 fix(logging): log exception type names only, never messages or instances (#1371)
         v0.3.0 feat(localization): extract localisation service into AStarDev.Localization package
         v0.3.0 feat(velopack-publishing): localized update dialog text provider backed by AStarDev.Localization
         v0.2.0 feat(velopack-publishing): expose update check outcome

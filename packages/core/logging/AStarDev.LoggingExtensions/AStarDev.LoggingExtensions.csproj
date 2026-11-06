@@ -9,11 +9,10 @@
         <PackageId>AStarDev.LoggingExtensions</PackageId>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReleaseNotes>
+        v0.1.0 fix(logging): log exception type names only, never messages or instances (#1371)
         v0.2.0 feat: key-point logging and a local log file
         v0.1.2 chore: enforce code style in build repo-wide
         v0.1.1 chore: solution cleanup - namespaces, XML doc formatting, test folder alignment
-        v0.1.0 Rename infrastructure/ to packages/ and add fully automatic NuGet release pipeline
-        v0.1.0 Migrate from Serilog + classic Application Insights SDK to OpenTelemetry + Azure Monitor OTel Distro (App Insights V3 path)
         </PackageReleaseNotes>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
         <PackageTags>Logging Application Insights OpenTelemetry LoggerMessage Templates</PackageTags>
