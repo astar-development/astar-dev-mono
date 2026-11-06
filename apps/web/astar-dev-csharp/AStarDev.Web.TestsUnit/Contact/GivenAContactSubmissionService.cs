@@ -1,5 +1,6 @@
 using AStarDev.FunctionalParadigm;
 using AStarDev.Web.Contact;
+using AStarDev.Web.TestsUnit.Helpers;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 
@@ -9,7 +10,7 @@ public class GivenAContactSubmissionService
 {
     private readonly IContactRateLimiter rateLimiter = Substitute.For<IContactRateLimiter>();
     private readonly IContactEmailSender emailSender = Substitute.For<IContactEmailSender>();
-    private readonly ILogger<ContactSubmissionService> logger = Substitute.For<ILogger<ContactSubmissionService>>();
+    private readonly ILogger<ContactSubmissionService> logger = LoggedEvents.CreateEnabledLogger<ContactSubmissionService>();
 
     public GivenAContactSubmissionService()
     {
@@ -74,5 +75,34 @@ public class GivenAContactSubmissionService
 
         var sendFailed = outcome.ShouldBeOfType<ContactSubmissionSendFailed>();
         sendFailed.Message.ShouldBe("Something went wrong.");
+    }
+
+    [Theory]
+    [InlineData("https://spam.example", true)]
+    [InlineData("", false)]
+    [InlineData("", true)]
+    public async Task when_a_contact_message_is_submitted_then_no_log_value_contains_the_email_or_the_ip_address(string website, bool withinRateLimit)
+    {
+        rateLimiter.TryAcquire("1.2.3.4").Returns(withinRateLimit);
+        var sut = CreateSut();
+
+        await sut.SubmitAsync("Ada Lovelace", "ada@example.com", "Interested in working together.", sendCopy: false, website, ipAddress: "1.2.3.4", TestContext.Current.CancellationToken);
+
+        logger.AllLoggedValues().ShouldNotBeEmpty();
+        logger.AllLoggedValues().ShouldAllBe(value => !value.Contains("ada@example.com", StringComparison.OrdinalIgnoreCase) && !value.Contains("1.2.3.4", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task when_the_rate_limit_is_exceeded_twice_by_one_client_then_both_events_carry_the_same_short_client_hash()
+    {
+        rateLimiter.TryAcquire("1.2.3.4").Returns(false);
+        var sut = CreateSut();
+
+        await sut.SubmitAsync("Ada Lovelace", "ada@example.com", "Hello.", sendCopy: false, website: "", ipAddress: "1.2.3.4", TestContext.Current.CancellationToken);
+        await sut.SubmitAsync("Ada Lovelace", "ada@example.com", "Hello.", sendCopy: false, website: "", ipAddress: "1.2.3.4", TestContext.Current.CancellationToken);
+
+        var hashes = logger.AllLoggedValuesOf("RateLimitExceeded", "ClientHash");
+        hashes.Count.ShouldBe(2);
+        hashes.Distinct().ShouldHaveSingleItem().ShouldMatch("^[0-9a-f]{16}$");
     }
 }
