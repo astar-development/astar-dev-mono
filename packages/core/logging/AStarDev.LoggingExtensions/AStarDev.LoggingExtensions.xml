@@ -160,11 +160,6 @@
             <param name="logger">The logger to be used for logging the event.</param>
             <param name="pageName">The name of the page that was viewed.</param>
         </member>
-        <member name="M:AStarDev.LoggingExtensions.LogMessage.Trace(Microsoft.Extensions.Logging.ILogger,System.String)">
-            <summary>Logs an informational message indicating that a specific page has been viewed.</summary>
-            <param name="logger">The logger to be used for logging the event.</param>
-            <param name="pageName">The name of the page that was viewed.</param>
-        </member>
         <member name="M:AStarDev.LoggingExtensions.LogMessage.Debug(Microsoft.Extensions.Logging.ILogger,System.String,System.String)">
             <summary>Logs a debug message for the specified location.</summary>
             <param name="logger">The logger to be used for logging the event.</param>
@@ -245,7 +240,7 @@
             <param name="path">The path of the HTTP request that caused the Too Many Requests.</param>
         </member>
         <member name="M:AStarDev.LoggingExtensions.LogMessage.InternalServerError(Microsoft.Extensions.Logging.ILogger,System.String,System.Exception)">
-            <summary>Logs an internal server error event (EventId 500), including the requested path and the exception.</summary>
+            <summary>Logs an internal server error event (EventId 5002), including the requested path and the exception.</summary>
             <param name="logger">The logger to be used for logging the event.</param>
             <param name="path">The path of the HTTP request that caused the Internal Server Error.</param>
             <param name="ex">The exception associated with the Internal Server Error.</param>
