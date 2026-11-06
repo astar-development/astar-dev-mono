@@ -41,7 +41,7 @@ public static class ServiceCollectionExtensions
 
     private static string TokenCacheConsentFilePath => ApplicationName.ApplicationDirectory().CombinePath("token-cache-consent.json");
 
-    /// <summary>Registers localisation, the Velopack update services, the account-store overview, the placeholder sync actions, the add-account dialog and its token cache question, the CloudSync database and account store, the Microsoft account sign-in and OneDrive drive lookup, the display settings and the view models, including layouts A, B and C.</summary>
+    /// <summary>Registers localisation, the Velopack update services, the account-store overview, the placeholder sync actions, the add-account dialog and its token cache question, the CloudSync database and account store, the Microsoft account sign-in and OneDrive drive lookup, the display settings with the plaintext token file setting, and the view models, including layouts A, B and C.</summary>
     /// <param name="services">The service collection to register the application's services with.</param>
     /// <param name="configuration">The application configuration used to bind the options sections.</param>
     /// <returns>The <paramref name="services" /> collection to allow further chaining.</returns>
@@ -66,6 +66,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IThemeApplier, AvaloniaThemeApplier>()
             .AddSingleton<IHomeFolder, UserProfileHomeFolder>()
             .AddSingleton<LocalPathFormatter>()
+            .AddSingleton<PlaintextCacheConsentSettingsViewModel>()
             .AddSingleton<DisplaySettingsViewModel>()
             .AddSingleton<SyncOverviewViewModel>()
             .AddSingleton<LayoutBViewModel>()

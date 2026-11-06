@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vmDisplaySettings="using:AStarDev.CloudSync.ViewModels.DisplaySettings"
+             xmlns:vmAccounts="using:AStarDev.CloudSync.ViewModels.Accounts"
              x:Class="AStarDev.CloudSync.DisplaySettings.DisplaySettingsView"
              x:DataType="vmDisplaySettings:DisplaySettingsViewModel"
              Foreground="{DynamicResource CloudSyncTextPrimaryBrush}"
@@ -34,5 +35,28 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </StackPanel>
+        <Border DataContext="{Binding PlaintextCacheConsent}">
+            <StackPanel x:DataType="vmAccounts:PlaintextCacheConsentSettingsViewModel"
+                        Spacing="6"
+                        IsVisible="{Binding IsVisible}">
+                <TextBlock Classes="muted" Text="{Binding HeadingText}" />
+                <TextBlock Text="{Binding GrantedText}" TextWrapping="Wrap" IsVisible="{Binding IsGranted}" />
+                <Button Classes="secondary"
+                        HorizontalAlignment="Left"
+                        Content="{Binding WithdrawText}"
+                        Command="{Binding WithdrawCommand}"
+                        IsVisible="{Binding IsGranted}" />
+                <StackPanel Spacing="6" IsVisible="{Binding IsConfirming}">
+                    <TextBlock Text="{Binding ConfirmMessageText}"
+                               TextWrapping="Wrap"
+                               Foreground="{DynamicResource CloudSyncWarnBrush}" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                        <Button Classes="secondary" Content="{Binding CancelText}" Command="{Binding CancelCommand}" />
+                        <Button Classes="primary" Content="{Binding ConfirmText}" Command="{Binding ConfirmCommand}" />
+                    </StackPanel>
+                </StackPanel>
+                <TextBlock Text="{Binding ResultText}" TextWrapping="Wrap" IsVisible="{Binding IsShowingResult}" />
+            </StackPanel>
+        </Border>
     </StackPanel>
 </UserControl>

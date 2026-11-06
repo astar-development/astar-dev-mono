@@ -17,7 +17,7 @@
             ToolTip.Tip="{Binding Title}"
             AutomationProperties.Name="{Binding Title}">
         <Button.Flyout>
-            <Flyout Placement="BottomEdgeAlignedRight">
+            <Flyout Placement="BottomEdgeAlignedRight" Opening="OnSettingsOpening">
                 <displaySettings:DisplaySettingsView />
             </Flyout>
         </Button.Flyout>

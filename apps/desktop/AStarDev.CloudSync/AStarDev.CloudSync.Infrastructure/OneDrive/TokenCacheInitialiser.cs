@@ -30,10 +30,17 @@ public sealed class TokenCacheInitialiser(IMsalTokenCacheStorage storage, IToken
     }
 
     /// <inheritdoc />
-    public PlaintextCacheConsent Current() => throw new NotImplementedException();
+    public PlaintextCacheConsent Current() => consentStore.Load().Match(remembered => remembered, PlaintextCacheConsentFactory.CreateDeclined);
 
     /// <inheritdoc />
-    public Task<Result<Unit, ErrorResponse>> WithdrawAsync() => throw new NotImplementedException();
+    public Task<Result<Unit, ErrorResponse>> WithdrawAsync()
+    {
+        lock (gate)
+            attachment = Option.None<Task<Result<Unit, AccountAddFailure>>>();
+
+        return Try.RunAsync(() => Task.Run(() => UnitTask.RunAsync(storage.DetachPlaintextFileAsync)), CancellationToken.None)
+            .MatchAsync(_ => ForgetConsent(), PlaintextFileNotDetached);
+    }
 
     private Task<Result<Unit, AccountAddFailure>> Reuse(Task<Result<Unit, AccountAddFailure>> attached)
     {
@@ -48,7 +55,28 @@ public sealed class TokenCacheInitialiser(IMsalTokenCacheStorage storage, IToken
     private Task<Result<Unit, AccountAddFailure>> AttachAsync(CancellationToken cancellationToken) =>
         Try.RunAsync(() => Task.Run(() => UnitTask.RunAsync(storage.AttachSecureStoreAsync), cancellationToken), cancellationToken)
             .ToResultAsync(exception => exception)
-            .MatchAsync(_ => Task.FromResult(Attached("SecureStore")), exception => UsePlaintextFileIfAllowedAsync(exception, cancellationToken));
+            .MatchAsync(_ => MoveOldPlaintextTokensAsync(), exception => UsePlaintextFileIfAllowedAsync(exception, cancellationToken));
+
+    private Task<Result<Unit, AccountAddFailure>> MoveOldPlaintextTokensAsync() =>
+        Try.RunAsync(() => Task.Run(storage.MovePlaintextFileToSecureStoreAsync), CancellationToken.None)
+            .MatchAsync(PlaintextFileChecked, PlaintextTokenMoveFailed);
+
+    private Result<Unit, AccountAddFailure> PlaintextFileChecked(PlaintextTokenMove move)
+    {
+        if (move is PlaintextTokenMove.Moved)
+            AccountAddLog.PlaintextTokensMoved(logger);
+
+        _ = consentStore.Save(PlaintextCacheConsentFactory.CreateDeclined());
+
+        return Attached("SecureStore");
+    }
+
+    private Result<Unit, AccountAddFailure> PlaintextTokenMoveFailed(Exception exception)
+    {
+        AccountAddLog.PlaintextTokenMoveFailed(logger, exception.GetType().Name);
+
+        return Attached("SecureStore");
+    }
 
     private Task<Result<Unit, AccountAddFailure>> UsePlaintextFileIfAllowedAsync(Exception exception, CancellationToken cancellationToken)
     {
@@ -115,5 +143,29 @@ public sealed class TokenCacheInitialiser(IMsalTokenCacheStorage storage, IToken
         AccountAddLog.TokenCacheUnavailable(logger, "the plaintext token file could not be used", exception.GetType().Name);
 
         return Result.Failure<Unit, AccountAddFailure>(AccountAddFailureFactory.CreateTokenCacheUnavailable());
+    }
+
+    private Result<Unit, ErrorResponse> ForgetConsent() =>
+        consentStore.Save(PlaintextCacheConsentFactory.CreateDeclined()).Match(ConsentWithdrawn, ConsentNotForgotten);
+
+    private Result<Unit, ErrorResponse> ConsentWithdrawn(Unit forgotten)
+    {
+        AccountAddLog.PlaintextConsentWithdrawn(logger);
+
+        return Result.Success<Unit, ErrorResponse>(forgotten);
+    }
+
+    private Result<Unit, ErrorResponse> ConsentNotForgotten(ErrorResponse error)
+    {
+        AccountAddLog.PlaintextConsentWithdrawFailed(logger, "the consent could not be forgotten", nameof(ErrorResponse));
+
+        return Result.Failure<Unit, ErrorResponse>(error);
+    }
+
+    private Result<Unit, ErrorResponse> PlaintextFileNotDetached(Exception exception)
+    {
+        AccountAddLog.PlaintextConsentWithdrawFailed(logger, "the plaintext token file could not be deleted", exception.GetType().Name);
+
+        return Result.Failure<Unit, ErrorResponse>(new ErrorResponse("The plaintext token file could not be deleted."));
     }
 }
