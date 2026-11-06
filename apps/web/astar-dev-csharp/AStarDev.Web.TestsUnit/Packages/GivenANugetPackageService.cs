@@ -65,7 +65,7 @@ public class GivenANugetPackageService : IDisposable
         apiClient.FetchAsync("AStarDev.Utilities", TestContext.Current.CancellationToken).Returns(Option.Some(package), Option.None<PackageData>());
         var sut = CreateSut();
         await sut.GetPackageDataAsync("AStarDev.Utilities", TestContext.Current.CancellationToken);
-        cache.Remove("nuget:fresh:AStarDev.Utilities");
+        cache.Remove("nuget:fresh:astardev.utilities");
 
         var result = await sut.GetPackageDataAsync("AStarDev.Utilities", TestContext.Current.CancellationToken);
 
@@ -90,7 +90,7 @@ public class GivenANugetPackageService : IDisposable
         apiClient.FetchAsync("AStarDev.Utilities", TestContext.Current.CancellationToken).Returns(Option.Some(package), Option.None<PackageData>());
         var sut = CreateSut();
         await sut.GetPackageDataAsync("AStarDev.Utilities", TestContext.Current.CancellationToken);
-        cache.Remove("nuget:fresh:AStarDev.Utilities");
+        cache.Remove("nuget:fresh:astardev.utilities");
 
         await sut.GetPackageDataAsync("AStarDev.Utilities", TestContext.Current.CancellationToken);
 
