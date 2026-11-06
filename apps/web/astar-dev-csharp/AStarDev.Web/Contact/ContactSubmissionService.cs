@@ -1,5 +1,6 @@
+using System.Security.Cryptography;
+using System.Text;
 using AStarDev.FunctionalParadigm;
-using AStarDev.LoggingExtensions;
 
 namespace AStarDev.Web.Contact;
 
@@ -10,14 +11,14 @@ public sealed class ContactSubmissionService(IContactRateLimiter rateLimiter, IC
     {
         if (website.Length > 0)
         {
-            LogMessage.Warning(logger, "contact/honeypot-triggered", ipAddress);
+            ContactLog.HoneypotTriggered(logger, ClientHashOf(ipAddress));
 
             return ContactSubmissionOutcomeFactory.Succeeded();
         }
 
         if (!rateLimiter.TryAcquire(ipAddress))
         {
-            LogMessage.Warning(logger, "contact/rate-limit-exceeded", ipAddress);
+            ContactLog.RateLimitExceeded(logger, ClientHashOf(ipAddress));
 
             return ContactSubmissionOutcomeFactory.RateLimited();
         }
@@ -26,23 +27,26 @@ public sealed class ContactSubmissionService(IContactRateLimiter rateLimiter, IC
         if (validation.TryGetErrors(out var errors))
         {
             string invalidProperties = string.Join(",", errors.Select(e => e.Property));
-            LogMessage.Debug(logger, "contact/validation-failed", invalidProperties);
+            ContactLog.ValidationFailed(logger, invalidProperties);
 
             return ContactSubmissionOutcomeFactory.ValidationFailed(errors);
         }
 
         validation.TryGetValue(out var contactMessage);
-        LogMessage.Information(logger, "contact/send-start", contactMessage.Email);
+        ContactLog.SendStarted(logger);
 
         var sendResult = await emailSender.SendAsync(contactMessage, cancellationToken);
 
         return sendResult.Match(
             _ =>
             {
-                LogMessage.Information(logger, "contact/send-success", contactMessage.Email);
+                ContactLog.SendSucceeded(logger);
 
                 return ContactSubmissionOutcomeFactory.Succeeded();
             },
             ContactSubmissionOutcomeFactory.SendFailed);
     }
+
+    // shortcut: unsalted SHA-256 of an IPv4 address can be brute-forced; switch to an HMAC with a configured secret if the hash must resist reversal.
+    private static string ClientHashOf(string ipAddress) => Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(ipAddress)))[..16];
 }
