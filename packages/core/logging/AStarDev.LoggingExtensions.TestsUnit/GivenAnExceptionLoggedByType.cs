@@ -27,7 +27,7 @@ public sealed class GivenAnExceptionLoggedByType
 
         var log = logger.Logs.ShouldHaveSingleItem();
         log.Level.ShouldBe(LogLevel.Error);
-        log.EventId.Id.ShouldBe(5002);
+        log.EventId.Id.ShouldBe(5010);
         log.EventId.Name.ShouldBe("exception");
         log.Message.ShouldBe("ContactSender encountered System.InvalidOperationException");
         log.Exception.ShouldBeNull();

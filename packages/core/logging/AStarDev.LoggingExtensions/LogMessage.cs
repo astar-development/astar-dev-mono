@@ -72,7 +72,7 @@ public static partial class LogMessage
     /// <param name="logger">The logger used to log the event.</param>
     /// <param name="location">The location of the event.</param>
     /// <param name="errorType">The full type name of the exception, from <see cref="ExceptionExtensions.ErrorType" />.</param>
-    [LoggerMessage(EventId = 5002, EventName = "exception", Level = LogLevel.Error, Message = "{Location} encountered {ErrorType}")]
+    [LoggerMessage(EventId = 5010, EventName = "exception", Level = LogLevel.Error, Message = "{Location} encountered {ErrorType}")]
     public static partial void ExceptionCaught(ILogger logger, string location, string errorType);
 
     /// <summary>Logs a warning message for a Bad Request (400) event, including the requested path.</summary>
