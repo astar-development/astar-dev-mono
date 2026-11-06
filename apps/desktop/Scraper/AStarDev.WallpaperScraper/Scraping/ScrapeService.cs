@@ -41,7 +41,7 @@ public sealed class ScrapeService(OperationCoordinator operationCoordinator, ISc
         catch (Exception e)
         {
             progress.Report($"The scrape failed: {e.ToMessageChain()}");
-            LogMessage.Error(logger, "Scrape failed", e);
+            LogMessage.Error(logger, "Scrape failed", e.ErrorType());
         }
         finally
         {

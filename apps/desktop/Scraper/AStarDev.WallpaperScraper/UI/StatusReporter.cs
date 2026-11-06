@@ -47,7 +47,7 @@ public sealed class StatusReporter
     /// <param name="exception">Why it could not be done.</param>
     public void Error(string message, Exception exception)
     {
-        LogMessage.Error(logger, message, exception);
+        LogMessage.Error(logger, message, exception.ErrorType());
         Append($"{message} {exception.ToMessageChain()}");
     }
 }

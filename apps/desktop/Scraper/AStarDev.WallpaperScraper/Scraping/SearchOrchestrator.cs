@@ -50,7 +50,7 @@ public sealed class SearchOrchestrator(IPagesProcessor pagesProcessor, ScrapeLim
         catch (PageFetchException exception) when (!cancellationToken.IsCancellationRequested)
         {
             progress.Report($"The {request.Label.LogLabel} search failed: {exception.Failure.ToMessageChain()}");
-            LogMessage.Error(logger, $"Search {request.Label.LogLabel} failed", exception.Failure);
+            LogMessage.Error(logger, $"Search {request.Label.LogLabel} failed", exception.Failure.ErrorType());
         }
     }
 

@@ -37,5 +37,5 @@ public static class DatabaseMigrator
     }
 
     private static void LogMigrationFailure(ILogger logger, Exception exception) =>
-        LogMessage.Error(logger, "Database migration failed", exception);
+        LogMessage.Error(logger, "Database migration failed", exception.ErrorType());
 }
