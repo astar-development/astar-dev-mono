@@ -4,6 +4,23 @@
         <name>AStarDev.LoggingOTel</name>
     </assembly>
     <members>
+        <member name="T:AStarDev.LoggingOTel.ErrorTypeLogProcessor">
+            <summary>
+                Copies the PascalCase <c>ErrorType</c> or <c>ExceptionType</c> attribute of a failed operation to the semantic-convention key
+                <c>error.type</c>, which a <c>[LoggerMessage]</c> placeholder cannot produce because it cannot contain a dot. Records without
+                either attribute, such as successes, are left alone. When a record carries both, the first one in template order wins. It must be added
+                before any exporter.
+            </summary>
+        </member>
+        <member name="F:AStarDev.LoggingOTel.ErrorTypeLogProcessor.AttributeKey">
+            <summary>The semantic-convention attribute key.</summary>
+        </member>
+        <member name="F:AStarDev.LoggingOTel.ErrorTypeLogProcessor.OtherValue">
+            <summary>The semantic-convention fallback when no meaningful error type is known.</summary>
+        </member>
+        <member name="M:AStarDev.LoggingOTel.ErrorTypeLogProcessor.OnEnd(OpenTelemetry.Logs.LogRecord)">
+            <inheritdoc />
+        </member>
         <member name="T:AStarDev.LoggingOTel.LogViewer.ILogEntryProvider">
             <summary>Provides access to in-memory log entries captured by <see cref="T:AStarDev.LoggingOTel.LogViewer.InMemoryLogProcessor"/>.</summary>
         </member>

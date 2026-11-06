@@ -60,6 +60,7 @@ public static class OTelLoggingConfigurator
 
     private static void Configure(OpenTelemetryLoggerOptions options, IConfigurationRoot configuration, string connectionStringConfigurationKey, string serviceName)
     {
+        _ = options.AddProcessor(_ => new ErrorTypeLogProcessor());
         _ = options.SetResourceBuilder(CreateResourceBuilder(configuration, serviceName, Assembly.GetEntryAssembly(), Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")));
 
         options.IncludeFormattedMessage = true;
