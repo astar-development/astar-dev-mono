@@ -1,9 +1,7 @@
-using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Media;
 using Avalonia.Styling;
-using Avalonia.Threading;
 
 namespace AStarDev.CloudSync.TestsUnit.Snapshots;
 
@@ -95,37 +93,15 @@ public class GivenASnapshotProbe
     }
 
     [AvaloniaFact]
-    public void when_an_endless_animation_runs_before_the_capture_then_it_stays_on_its_first_frame()
+    public void when_an_indeterminate_progress_bar_is_captured_then_its_moving_indicator_is_stopped()
     {
         Assert.SkipUnless(OperatingSystem.IsLinux(), Snapshot.LinuxOnlyReason);
-        var fadingBorder = new Border { Width = 40, Height = 40, Background = Brushes.LightGray };
-        fadingBorder.Styles.Add(CreateEndlessFade());
-        var window = new Window { Content = fadingBorder };
-        window.Show();
-        Dispatcher.UIThread.RunJobs();
-        Thread.Sleep(300);
+        var progressBar = new ProgressBar { IsIndeterminate = true, Margin = new Avalonia.Thickness(16) };
 
-        _ = Snapshot.Compare(window, ThemeVariant.Dark, "snapshot-probe-endless-animation", 120, 120);
+        _ = Snapshot.Compare(new Window { Content = progressBar }, ThemeVariant.Dark, "snapshot-probe-indeterminate-progress", 320, 120);
 
-        fadingBorder.Opacity.ShouldBe(0);
+        progressBar.IsIndeterminate.ShouldBeFalse();
     }
-
-    private static Style CreateEndlessFade() => new(selector => selector.OfType<Border>())
-    {
-        Animations =
-        {
-            new Animation
-            {
-                Duration = TimeSpan.FromSeconds(1),
-                IterationCount = IterationCount.Infinite,
-                Children =
-                {
-                    new KeyFrame { Cue = new Cue(0), Setters = { new Setter(Avalonia.Visual.OpacityProperty, 0d) } },
-                    new KeyFrame { Cue = new Cue(1), Setters = { new Setter(Avalonia.Visual.OpacityProperty, 1d) } }
-                }
-            }
-        }
-    };
 
     private static Window CreateFullWindowProbe(string label, double barFillWidth) => new()
     {
