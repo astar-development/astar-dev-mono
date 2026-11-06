@@ -2,6 +2,7 @@ using System.Globalization;
 using AStarDev.FunctionalParadigm;
 using AStarDev.LoggingExtensions;
 using Fab4Kids.Web.Cart;
+using Fab4Kids.Web.Configuration;
 using Microsoft.Extensions.Options;
 using Stripe.Checkout;
 
@@ -22,7 +23,7 @@ public sealed class StripeCheckoutSessionService(IOptions<CheckoutOptions> optio
         var settings = options.Value;
         if (sessionService is null || string.IsNullOrWhiteSpace(settings.SiteUrl))
         {
-            LogMessage.Error(logger, "Stripe checkout is not configured (missing secret key or site URL).");
+            ConfigurationLog.FeatureNotConfigured(logger, "Checkout");
 
             return CheckoutSessionOutcomeFactory.Failed("Checkout is currently unavailable.");
         }

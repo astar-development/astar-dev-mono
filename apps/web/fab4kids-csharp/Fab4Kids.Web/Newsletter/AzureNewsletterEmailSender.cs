@@ -2,6 +2,7 @@ using AStarDev.FunctionalParadigm;
 using AStarDev.LoggingExtensions;
 using Azure;
 using Azure.Communication.Email;
+using Fab4Kids.Web.Configuration;
 using Microsoft.Extensions.Options;
 
 namespace Fab4Kids.Web.Newsletter;
@@ -14,7 +15,7 @@ public sealed class AzureNewsletterEmailSender(IOptions<NewsletterOptions> optio
         var settings = options.Value;
         if (emailClient is null || string.IsNullOrWhiteSpace(settings.FromAddress))
         {
-            LogMessage.Error(logger, "Newsletter confirmation email is not configured (missing connection string or from address).");
+            ConfigurationLog.FeatureNotConfigured(logger, "Newsletter email");
 
             return Task.FromResult<Result<Unit, string>>("Something went wrong sending your confirmation email.");
         }

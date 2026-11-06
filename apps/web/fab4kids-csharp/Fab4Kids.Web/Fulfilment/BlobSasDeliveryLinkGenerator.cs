@@ -2,6 +2,7 @@ using AStarDev.FunctionalParadigm;
 using AStarDev.LoggingExtensions;
 using Azure.Storage.Blobs;
 using Azure.Storage.Sas;
+using Fab4Kids.Web.Configuration;
 
 namespace Fab4Kids.Web.Fulfilment;
 
@@ -14,7 +15,7 @@ public sealed class BlobSasDeliveryLinkGenerator(ILogger<BlobSasDeliveryLinkGene
     {
         if (containerClient is null || !containerClient.CanGenerateSasUri)
         {
-            LogMessage.Error(logger, "Blob storage is not configured (missing connection string or container name).");
+            ConfigurationLog.FeatureNotConfigured(logger, "Fulfilment storage");
 
             return Task.FromResult(Result.Failure<string, string>("Something went wrong generating your download link."));
         }

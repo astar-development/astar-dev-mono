@@ -2,6 +2,7 @@ using AStarDev.FunctionalParadigm;
 using AStarDev.LoggingExtensions;
 using Azure;
 using Azure.Data.Tables;
+using Fab4Kids.Web.Configuration;
 
 namespace Fab4Kids.Web.Newsletter;
 
@@ -14,7 +15,7 @@ public sealed class AzureTableNewsletterSubscriberStore(ILogger<AzureTableNewsle
     {
         if (tableClient is null)
         {
-            LogMessage.Error(logger, "Newsletter subscriber storage is not configured (missing connection string or table name).");
+            ConfigurationLog.FeatureNotConfigured(logger, "Newsletter storage");
 
             return Task.FromResult<Result<bool, string>>("Something went wrong. Please try again later.");
         }
@@ -43,7 +44,7 @@ public sealed class AzureTableNewsletterSubscriberStore(ILogger<AzureTableNewsle
     {
         if (tableClient is null)
         {
-            LogMessage.Error(logger, "Newsletter subscriber storage is not configured (missing connection string or table name).");
+            ConfigurationLog.FeatureNotConfigured(logger, "Newsletter storage");
 
             return Task.FromResult<Result<Unit, string>>("Something went wrong. Please try again later.");
         }

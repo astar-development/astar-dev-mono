@@ -2,6 +2,7 @@ using AStarDev.FunctionalParadigm;
 using AStarDev.LoggingExtensions;
 using Azure;
 using Azure.Communication.Email;
+using Fab4Kids.Web.Configuration;
 using Microsoft.Extensions.Options;
 
 namespace Fab4Kids.Web.Fulfilment;
@@ -14,7 +15,7 @@ public sealed class AzureDeliveryEmailSender(IOptions<FulfilmentOptions> options
         var settings = options.Value;
         if (emailClient is null || string.IsNullOrWhiteSpace(settings.FromAddress))
         {
-            LogMessage.Error(logger, "Delivery email is not configured (missing connection string or from address).");
+            ConfigurationLog.FeatureNotConfigured(logger, "Fulfilment email");
 
             return Task.FromResult(Result.Failure<Unit, string>("Something went wrong sending your download links."));
         }
