@@ -60,7 +60,7 @@ public static class OTelLoggingConfigurator
 
     private static void Configure(OpenTelemetryLoggerOptions options, IConfigurationRoot configuration, string connectionStringConfigurationKey, string serviceName)
     {
-        _ = options.SetResourceBuilder(CreateResourceBuilder(configuration, serviceName));
+        _ = options.SetResourceBuilder(CreateResourceBuilder(configuration, serviceName, Assembly.GetEntryAssembly(), Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")));
 
         options.IncludeFormattedMessage = true;
         options.IncludeScopes = true;
@@ -77,12 +77,11 @@ public static class OTelLoggingConfigurator
     }
 
     [SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "OpenTelemetry deployment.environment.name values are lower case by convention.")]
-    private static ResourceBuilder CreateResourceBuilder(IConfigurationRoot configuration, string serviceName)
+    internal static ResourceBuilder CreateResourceBuilder(IConfiguration configuration, string serviceName, Assembly? entryAssembly, string? dotnetEnvironment)
     {
-        var entryAssembly = Assembly.GetEntryAssembly();
         string resolvedServiceName = string.IsNullOrWhiteSpace(serviceName) ? entryAssembly?.GetName().Name ?? "unknown_service" : serviceName;
         string? serviceVersion = entryAssembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion.Split('+')[0];
-        string deploymentEnvironment = (configuration[DeploymentEnvironmentConfigurationKey] ?? Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "production").ToLowerInvariant();
+        string deploymentEnvironment = (configuration[DeploymentEnvironmentConfigurationKey] ?? dotnetEnvironment ?? "production").ToLowerInvariant();
 
         return ResourceBuilder.CreateDefault()
             .AddService(resolvedServiceName, serviceVersion: serviceVersion)

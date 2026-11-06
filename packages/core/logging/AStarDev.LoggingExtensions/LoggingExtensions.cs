@@ -57,14 +57,14 @@ public static class LoggingExtensions
         string? connectionString = configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"] ?? configuration["ApplicationInsights:ConnectionString"];
 
         if (connectionString.IsNotNullOrWhiteSpace())
-            _ = services.AddOpenTelemetry().ConfigureResource(resource => ConfigureResource(resource, environment, serviceName)).UseAzureMonitor(options => options.ConnectionString = connectionString);
+            _ = services.AddOpenTelemetry().ConfigureResource(resource => ConfigureResource(resource, environment, serviceName, Assembly.GetEntryAssembly())).UseAzureMonitor(options => options.ConnectionString = connectionString);
     }
 
     [SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "OpenTelemetry deployment.environment.name values are lower case by convention.")]
-    private static void ConfigureResource(ResourceBuilder resource, IHostEnvironment environment, string serviceName)
+    internal static void ConfigureResource(ResourceBuilder resource, IHostEnvironment environment, string serviceName, Assembly? entryAssembly)
     {
         string resolvedServiceName = serviceName.IsNotNullOrWhiteSpace() ? serviceName : environment.ApplicationName;
-        string? serviceVersion = Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion.Split('+')[0];
+        string? serviceVersion = entryAssembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion.Split('+')[0];
 
         _ = resource.AddService(resolvedServiceName, serviceVersion: serviceVersion)
             .AddAttributes([new KeyValuePair<string, object>("deployment.environment.name", environment.EnvironmentName.ToLowerInvariant())]);
