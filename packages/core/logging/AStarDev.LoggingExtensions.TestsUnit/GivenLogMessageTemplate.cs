@@ -38,19 +38,18 @@ public sealed class GivenLogMessageTemplate
     }
 
     [Fact]
-    public void LogForbidden_WithValidPathAndUser_ShouldLogCorrectMessage()
+    public void LogForbidden_WithValidPath_ShouldLogCorrectMessageWithoutAUser()
     {
         var logger = new FakeLogger();
         const string path = "/forbidden-path";
-        const string user = "test-user";
 
-        LogMessage.Forbidden(logger, path, user);
+        LogMessage.Forbidden(logger, path);
 
         logger.Logs.Count.ShouldBe(1);
         var log = logger.Logs[0];
         log.Level.ShouldBe(LogLevel.Warning);
         log.EventId.Id.ShouldBe(403);
-        log.Message.ShouldBe($"Forbidden (403) for `{path}` for user `{user}`");
+        log.Message.ShouldBe($"Forbidden (403) for `{path}`");
         log.Exception.ShouldBeNull();
     }
 
