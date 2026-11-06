@@ -73,6 +73,9 @@ internal static partial class AccountAddLog
     [LoggerMessage(EventId = 5127, Level = LogLevel.Warning, Message = "The plaintext token file consent could not be withdrawn: {Reason} ({ExceptionType}).")]
     public static partial void PlaintextConsentWithdrawFailed(ILogger logger, string reason, string exceptionType);
 
+    [LoggerMessage(EventId = 5128, Level = LogLevel.Warning, Message = "The plaintext token file was deleted but the consent could not be forgotten.")]
+    public static partial void PlaintextConsentNotForgotten(ILogger logger);
+
     [LoggerMessage(EventId = 5130, Level = LogLevel.Warning, Message = "The drive could not be read: {Reason}, HTTP {StatusCode} ({ExceptionType}).")]
     public static partial void DriveLookupFailed(ILogger logger, string reason, int statusCode, string exceptionType);
 

@@ -14,15 +14,29 @@ public sealed class MsalCacheHelperStorage(IPublicClientApplication application,
 {
     private const string SecureCacheFileName = "cloudsync.msalcache";
     private const string PlaintextCacheFileName = "cloudsync.msalcache.plaintext";
+    private readonly Lock gate = new();
+    private Option<MsalCacheHelper> secureHelper = Option.None<MsalCacheHelper>();
     private Option<MsalCacheHelper> plaintextHelper = Option.None<MsalCacheHelper>();
 
     private IFileInfo PlaintextFile => cacheFolder.FileSystem.FileInfo.New(cacheFolder.FileSystem.Path.Join(cacheFolder.FullName, PlaintextCacheFileName));
 
     /// <inheritdoc />
-    public async Task AttachSecureStoreAsync() => _ = await RegisterAsync(SecureStoreProperties()).ConfigureAwait(false);
+    public async Task AttachSecureStoreAsync()
+    {
+        var helper = await CreateVerifiedAsync(SecureStoreProperties()).ConfigureAwait(false);
+
+        lock (gate)
+            secureHelper = RegisterOnce(secureHelper, helper);
+    }
 
     /// <inheritdoc />
-    public async Task AttachPlaintextFileAsync() => plaintextHelper = Option.Some(await RegisterAsync(PlaintextFileProperties()).ConfigureAwait(false));
+    public async Task AttachPlaintextFileAsync()
+    {
+        var helper = await CreateVerifiedAsync(PlaintextFileProperties()).ConfigureAwait(false);
+
+        lock (gate)
+            plaintextHelper = RegisterOnce(plaintextHelper, helper);
+    }
 
     /// <inheritdoc />
     public async Task<PlaintextTokenMove> MovePlaintextFileToSecureStoreAsync()
@@ -32,7 +46,7 @@ public sealed class MsalCacheHelperStorage(IPublicClientApplication application,
 
         var source = await MsalCacheHelper.CreateAsync(PlaintextFileProperties()).ConfigureAwait(false);
         var target = await MsalCacheHelper.CreateAsync(SecureStoreProperties()).ConfigureAwait(false);
-        target.SaveUnencryptedTokenCache(source.LoadUnencryptedTokenCache());
+        target.SaveUnencryptedTokenCache(MsalCacheBlobMerger.Merge(target.LoadUnencryptedTokenCache(), source.LoadUnencryptedTokenCache()));
         PlaintextFile.Delete();
 
         return PlaintextTokenMoveFactory.CreateMoved();
@@ -41,15 +55,36 @@ public sealed class MsalCacheHelperStorage(IPublicClientApplication application,
     /// <inheritdoc />
     public async Task DetachPlaintextFileAsync()
     {
-        await plaintextHelper.Match(ForgetPlaintextAccountsAsync, () => Task.CompletedTask).ConfigureAwait(false);
-        plaintextHelper = Option.None<MsalCacheHelper>();
+        Option<MsalCacheHelper> detached;
+
+        lock (gate)
+        {
+            detached = plaintextHelper;
+            plaintextHelper = Option.None<MsalCacheHelper>();
+            _ = detached.Match(Unregister, () => Unit.Instance);
+        }
+
+        await detached.Match(_ => ForgetInMemoryAccountsAsync(), () => Task.CompletedTask).ConfigureAwait(false);
         PlaintextFile.Delete();
     }
 
-    private async Task ForgetPlaintextAccountsAsync(MsalCacheHelper helper)
+    private Unit Unregister(MsalCacheHelper helper)
     {
         helper.UnregisterCache(application.UserTokenCache);
 
+        return Unit.Instance;
+    }
+
+    private Option<MsalCacheHelper> RegisterOnce(Option<MsalCacheHelper> registered, MsalCacheHelper helper) =>
+        registered.Match(Option.Some, () =>
+        {
+            helper.RegisterCache(application.UserTokenCache);
+
+            return Option.Some(helper);
+        });
+
+    private async Task ForgetInMemoryAccountsAsync()
+    {
         foreach (var account in await application.GetAccountsAsync().ConfigureAwait(false))
             await application.RemoveAsync(account).ConfigureAwait(false);
     }
@@ -65,12 +100,11 @@ public sealed class MsalCacheHelperStorage(IPublicClientApplication application,
             .WithUnprotectedFile()
             .Build();
 
-    private async Task<MsalCacheHelper> RegisterAsync(StorageCreationProperties properties)
+    private async Task<MsalCacheHelper> CreateVerifiedAsync(StorageCreationProperties properties)
     {
         cacheFolder.Create();
         var helper = await MsalCacheHelper.CreateAsync(properties).ConfigureAwait(false);
         helper.VerifyPersistence();
-        helper.RegisterCache(application.UserTokenCache);
 
         return helper;
     }
