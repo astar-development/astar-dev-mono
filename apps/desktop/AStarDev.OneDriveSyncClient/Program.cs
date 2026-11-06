@@ -40,7 +40,8 @@ internal static class Program
         }
         catch (Exception ex)
         {
-            OneDriveSyncClientMessages.ApplicationTerminatedUnexpectedly(logger, AStarDev.LoggingExtensions.ExceptionExtensions.ErrorType(ex));
+            string errorType = AStarDev.LoggingExtensions.ExceptionExtensions.ErrorType(ex);
+            OneDriveSyncClientMessages.ApplicationTerminatedUnexpectedly(logger, errorType);
         }
     }
 

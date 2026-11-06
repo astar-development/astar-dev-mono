@@ -122,25 +122,25 @@ public sealed class GivenAnHttpDownloaderTempFileHandling
     }
 
     [Fact]
-    public async Task when_file_move_fails_then_warning_is_logged_per_failed_retry_attempt()
+    public async Task when_file_move_fails_then_a_debug_entry_is_logged_per_failed_retry_attempt()
     {
         var logger = new TestLogger<HttpDownloader>();
         var sut = new HttpDownloader(CreateOkFactory(), CreateAlwaysFailMoveFileSystem(), logger, System.TimeProvider.System);
 
         await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, cancellationToken: TestContext.Current.CancellationToken);
 
-        logger.Entries.Count(e => e.Level == LogLevel.Warning && e.EventId.Id == 2707).ShouldBe(2);
+        logger.Entries.Count(e => e.Level == LogLevel.Debug && e.EventId.Id == 2707).ShouldBe(2);
     }
 
     [Fact]
-    public async Task when_all_move_retries_exhausted_then_error_is_logged_with_event_2708()
+    public async Task when_all_move_retries_exhausted_then_one_warning_is_logged_with_event_2708()
     {
         var logger = new TestLogger<HttpDownloader>();
         var sut = new HttpDownloader(CreateOkFactory(), CreateAlwaysFailMoveFileSystem(), logger, System.TimeProvider.System);
 
         await sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, cancellationToken: TestContext.Current.CancellationToken);
 
-        logger.Entries.ShouldContain(e => e.Level == LogLevel.Error && e.EventId.Id == 2708);
+        logger.Entries.ShouldContain(e => e.Level == LogLevel.Warning && e.EventId.Id == 2708);
     }
 
     private sealed class FakeHttpMessageHandler(Func<HttpRequestMessage, HttpResponseMessage> respond) : HttpMessageHandler

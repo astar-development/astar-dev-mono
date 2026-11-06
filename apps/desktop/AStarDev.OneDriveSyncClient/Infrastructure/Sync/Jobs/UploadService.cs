@@ -178,7 +178,10 @@ public sealed class UploadService(IHttpClientFactory httpClientFactory, IFileSys
                 if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
                 {
                     if (attempt > HttpRetryPolicy.MaxRetries)
+                    {
+                        OneDriveSyncClientMessages.UploadRetriesExhausted(logger, "rate limited", HttpRetryPolicy.MaxRetries);
                         return new Fail<string?, string>($"Upload rate limited after {HttpRetryPolicy.MaxRetries} retries.");
+                    }
 
                     var delay = HttpRetryPolicy.GetRetryDelay(response, attempt);
                     OneDriveSyncClientMessages.UploadChunkThrottled(logger, rangeStart, rangeEnd, delay.TotalSeconds, attempt, HttpRetryPolicy.MaxRetries);

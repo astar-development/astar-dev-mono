@@ -1,6 +1,7 @@
 using System.Globalization;
 using AStarDev.FunctionalParadigm;
 using AStarDev.LoggingExtensions;
+using Fab4Kids.Web.Configuration;
 using Stripe;
 using Stripe.Checkout;
 
@@ -29,7 +30,7 @@ public sealed class FulfilmentService(
 
         if (sessionService is null)
         {
-            LogMessage.Error(logger, "Stripe is not configured (missing secret key).");
+            ConfigurationLog.FeatureNotConfigured(logger, "Checkout");
 
             return FulfilmentOutcomeFactory.Failed("Checkout is currently unavailable.");
         }
@@ -57,7 +58,7 @@ public sealed class FulfilmentService(
     {
         if (sessionService is null)
         {
-            LogMessage.Error(logger, "Stripe is not configured (missing secret key).");
+            ConfigurationLog.FeatureNotConfigured(logger, "Checkout");
 
             return ResendOutcomeFactory.Failed("Unable to resend your download links.");
         }

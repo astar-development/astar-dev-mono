@@ -7,6 +7,7 @@ using Fab4Kids.Web.Cart;
 using Fab4Kids.Web.Catalogue;
 using Fab4Kids.Web.Checkout;
 using Fab4Kids.Web.Components;
+using Fab4Kids.Web.Configuration;
 using Fab4Kids.Web.Consent;
 using Fab4Kids.Web.Fulfilment;
 using Fab4Kids.Web.Newsletter;
@@ -69,6 +70,8 @@ builder.Services.AddScoped<IFulfilmentService, FulfilmentService>();
 builder.Services.AddHsts(options => options.MaxAge = TimeSpan.FromDays(60));
 
 var app = builder.Build();
+
+RequiredConfiguration.Report(app.Logger, app.Environment, RequiredConfiguration.MissingFeatures(checkoutOptions, fulfilmentOptions, newsletterOptions));
 
 app.Services.GetRequiredService<ICatalogueService>();
 

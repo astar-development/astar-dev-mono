@@ -2,6 +2,7 @@ using AStarDev.FunctionalParadigm;
 using AStarDev.LoggingExtensions;
 using Azure;
 using Azure.Data.Tables;
+using Fab4Kids.Web.Configuration;
 
 namespace Fab4Kids.Web.Fulfilment;
 
@@ -14,7 +15,7 @@ public sealed class AzureTableIdempotencyStore(ILogger<AzureTableIdempotencyStor
     {
         if (tableClient is null)
         {
-            LogMessage.Error(logger, "Idempotency storage is not configured (missing connection string or table name).");
+            ConfigurationLog.FeatureNotConfigured(logger, "Fulfilment storage");
 
             return Task.FromResult<Result<bool, string>>("Something went wrong recording this order.");
         }

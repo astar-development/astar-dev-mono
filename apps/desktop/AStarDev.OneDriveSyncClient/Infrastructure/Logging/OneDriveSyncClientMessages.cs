@@ -51,7 +51,7 @@ public static partial class OneDriveSyncClientMessages
     /// <summary>Logs when a sync worker job is cancelled and re-queued.</summary>
     public static void SyncWorkerJobCancelledRequeued(ILogger logger, int id, string path) => SyncWorkerJobCancelledRequeuedLogged(logger, id, LogHash.Of(path));
 
-    [LoggerMessage(EventName = "SyncWorkerJobCancelledRequeued", EventId = 2007, Level = LogLevel.Warning, Message = "[Worker {Id}] Job cancelled — re-queued: {PathHash}")]
+    [LoggerMessage(EventName = "SyncWorkerJobCancelledRequeued", EventId = 2007, Level = LogLevel.Debug, Message = "[Worker {Id}] Job cancelled — re-queued: {PathHash}")]
     private static partial void SyncWorkerJobCancelledRequeuedLogged(ILogger logger, int id, string pathHash);
 
     /// <summary>Logs the start of pass preparation (drive state, classifications) before enumeration begins.</summary>
@@ -324,28 +324,35 @@ public static partial class OneDriveSyncClientMessages
     private static partial void DownloadFailedLogged(ILogger logger, string pathHash, string error);
 
     /// <summary>Logs HTTP 429 throttle during download with retry details.</summary>
-    [LoggerMessage(EventId = 2704, Level = LogLevel.Warning, Message = "[HttpDownloader] 429 received, waiting {Delay:F1}s (attempt {Attempt}/{Max})")]
+    [LoggerMessage(EventId = 2704, Level = LogLevel.Debug, Message = "[HttpDownloader] 429 received, waiting {Delay:F1}s (attempt {Attempt}/{Max})")]
     public static partial void DownloadThrottled(ILogger logger, double delay, int attempt, int max);
 
     /// <summary>Logs network error during download with retry details.</summary>
-    [LoggerMessage(EventId = 2705, Level = LogLevel.Warning, Message = "[HttpDownloader] Network error, retrying in {Delay:F1}s (attempt {Attempt}/{Max})")]
+    [LoggerMessage(EventId = 2705, Level = LogLevel.Debug, Message = "[HttpDownloader] Network error, retrying in {Delay:F1}s (attempt {Attempt}/{Max})")]
     public static partial void DownloadNetworkError(ILogger logger, double delay, int attempt, int max);
 
     /// <summary>Logs download cancelled during 429 backoff wait.</summary>
-    [LoggerMessage(EventId = 2706, Level = LogLevel.Warning, Message = "[HttpDownloader] Download cancelled during 429 backoff — attempt {Attempt}/{Max}")]
+    [LoggerMessage(EventId = 2706, Level = LogLevel.Debug, Message = "[HttpDownloader] Download cancelled during 429 backoff — attempt {Attempt}/{Max}")]
     public static partial void DownloadCancelledDuringBackoff(ILogger logger, int attempt, int max);
 
     /// <summary>Logs a failed file move attempt with retry details.</summary>
     public static void DownloadMoveRetrying(ILogger logger, string path, int attempt, int max) => DownloadMoveRetryingLogged(logger, LogHash.Of(path), attempt, max);
 
-    [LoggerMessage(EventName = "DownloadMoveRetrying", EventId = 2707, Level = LogLevel.Warning, Message = "[HttpDownloader] Move to '{PathHash}' failed — retrying (attempt {Attempt}/{Max})")]
+    [LoggerMessage(EventName = "DownloadMoveRetrying", EventId = 2707, Level = LogLevel.Debug, Message = "[HttpDownloader] Move to '{PathHash}' failed — retrying (attempt {Attempt}/{Max})")]
     private static partial void DownloadMoveRetryingLogged(ILogger logger, string pathHash, int attempt, int max);
 
     /// <summary>Logs file move exhausted all retries.</summary>
     public static void DownloadMoveExhausted(ILogger logger, string path, int max, string error) => DownloadMoveExhaustedLogged(logger, LogHash.Of(path), max, error);
 
-    [LoggerMessage(EventName = "DownloadMoveExhausted", EventId = 2708, Level = LogLevel.Error, Message = "[HttpDownloader] Move to '{PathHash}' failed after {Max} attempts — {Error}")]
+    [LoggerMessage(EventName = "DownloadMoveExhausted", EventId = 2708, Level = LogLevel.Warning, Message = "[HttpDownloader] Move to '{PathHash}' failed after {Max} attempts — {Error}")]
     private static partial void DownloadMoveExhaustedLogged(ILogger logger, string pathHash, int max, string error);
+
+    /// <summary>Logs, once, that a download gave up after its retries ran out.</summary>
+    /// <param name="logger">The logger instance.</param>
+    /// <param name="reason">Why the attempts failed, for example "rate limited" or "network error".</param>
+    /// <param name="max">The number of retries that were made.</param>
+    [LoggerMessage(EventId = 2709, Level = LogLevel.Warning, Message = "[HttpDownloader] Download gave up after {Max} retries: {Reason}")]
+    public static partial void DownloadRetriesExhausted(ILogger logger, string reason, int max);
 
     // Upload Operations (2800-2899)
 
@@ -374,18 +381,25 @@ public static partial class OneDriveSyncClientMessages
     private static partial void UploadFailedLogged(ILogger logger, string pathHash, string error);
 
     /// <summary>Logs HTTP 429 throttle during chunked upload.</summary>
-    [LoggerMessage(EventId = 2804, Level = LogLevel.Warning, Message = "[UploadService] 429 on chunk {Start}-{End}, waiting {Delay:F1}s (attempt {A}/{Max})")]
+    [LoggerMessage(EventId = 2804, Level = LogLevel.Debug, Message = "[UploadService] 429 on chunk {Start}-{End}, waiting {Delay:F1}s (attempt {A}/{Max})")]
     public static partial void UploadChunkThrottled(ILogger logger, long start, long end, double delay, int a, int max);
 
     /// <summary>Logs network error during chunked upload.</summary>
-    [LoggerMessage(EventId = 2805, Level = LogLevel.Warning, Message = "[UploadService] Network error on chunk {Start}-{End}, retrying in {Delay:F1}s (attempt {A}/{Max})")]
+    [LoggerMessage(EventId = 2805, Level = LogLevel.Debug, Message = "[UploadService] Network error on chunk {Start}-{End}, retrying in {Delay:F1}s (attempt {A}/{Max})")]
     public static partial void UploadChunkNetworkError(ILogger logger, long start, long end, double delay, int a, int max);
 
     /// <summary>Logs HTTP 412 precondition failure when creating an upload session, before a retry.</summary>
     public static void UploadSessionPreconditionFailed(ILogger logger, string path, double delay, int a, int max) => UploadSessionPreconditionFailedLogged(logger, LogHash.Of(path), delay, a, max);
 
-    [LoggerMessage(EventName = "UploadSessionPreconditionFailed", EventId = 2806, Level = LogLevel.Warning, Message = "[UploadService] 412 creating upload session for {PathHash}, retrying in {Delay:F1}s (attempt {A}/{Max})")]
+    [LoggerMessage(EventName = "UploadSessionPreconditionFailed", EventId = 2806, Level = LogLevel.Debug, Message = "[UploadService] 412 creating upload session for {PathHash}, retrying in {Delay:F1}s (attempt {A}/{Max})")]
     private static partial void UploadSessionPreconditionFailedLogged(ILogger logger, string pathHash, double delay, int a, int max);
+
+    /// <summary>Logs, once, that an upload gave up after its retries ran out.</summary>
+    /// <param name="logger">The logger instance.</param>
+    /// <param name="reason">Why the attempts failed, for example "rate limited".</param>
+    /// <param name="max">The number of retries that were made.</param>
+    [LoggerMessage(EventId = 2807, Level = LogLevel.Warning, Message = "[UploadService] Upload gave up after {Max} retries: {Reason}")]
+    public static partial void UploadRetriesExhausted(ILogger logger, string reason, int max);
 
     // Sync Rules & Items (2900-2999)
 
@@ -661,7 +675,7 @@ public static partial class OneDriveSyncClientMessages
     /// </summary>
     /// <param name="logger">The logger instance.</param>
     /// <param name="errorType">The full type name of the exception.</param>
-    [LoggerMessage(EventId = 3700, Level = LogLevel.Error, Message = "Application terminated unexpectedly ({ErrorType})")]
+    [LoggerMessage(EventId = 3700, Level = LogLevel.Critical, Message = "Application terminated unexpectedly ({ErrorType})")]
     public static partial void ApplicationTerminatedUnexpectedly(ILogger logger, string errorType);
 
     /// <summary>
@@ -669,7 +683,7 @@ public static partial class OneDriveSyncClientMessages
     /// </summary>
     /// <param name="logger">The logger instance.</param>
     /// <param name="errorType">The full type name of the exception.</param>
-    [LoggerMessage(EventId = 3701, Level = LogLevel.Error, Message = "[Unhandled] application exception ({ErrorType})")]
+    [LoggerMessage(EventId = 3701, Level = LogLevel.Critical, Message = "[Unhandled] application exception ({ErrorType})")]
     public static partial void UnhandledApplicationException(ILogger logger, string errorType);
 
     /// <summary>
