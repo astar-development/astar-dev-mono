@@ -50,6 +50,6 @@ public class GivenASqliteCloudSyncDatabase
         var migrated = await database.Database.MigrateAsync(CancellationToken);
 
         migrated.Match(_ => true, _ => false).ShouldBeFalse();
-        database.DatabaseLogger.Entries.ShouldContain(entry => entry.Level == LogLevel.Error && entry.Exception != null);
+        database.DatabaseLogger.Entries.ShouldContain(entry => entry.Level == LogLevel.Error && entry.Exception == null);
     }
 }

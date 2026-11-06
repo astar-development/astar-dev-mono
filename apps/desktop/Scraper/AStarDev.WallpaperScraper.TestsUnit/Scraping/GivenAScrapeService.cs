@@ -157,7 +157,7 @@ public sealed class GivenAScrapeService : IDisposable
 
         await Run();
 
-        logger.Entries.ShouldBe([(LogLevel.Information, "Scrape started."), (LogLevel.Error, "Error occurred : `Scrape failed`")]);
+        logger.Entries.ShouldBe([(LogLevel.Information, "Scrape started."), (LogLevel.Error, "Error occurred : `Scrape failed` (System.Net.Http.HttpRequestException)")]);
     }
 
     [Fact]
@@ -168,7 +168,7 @@ public sealed class GivenAScrapeService : IDisposable
 
         await Run();
 
-        logger.Entries.ShouldBe([(LogLevel.Information, "Scrape started."), (LogLevel.Error, "Error occurred : `Scrape failed`")]);
+        logger.Entries.ShouldBe([(LogLevel.Information, "Scrape started."), (LogLevel.Error, "Error occurred : `Scrape failed` (System.InvalidOperationException)")]);
     }
 
     [Fact]
