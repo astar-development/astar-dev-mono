@@ -12,7 +12,7 @@ public sealed class GivenAnHttpDownloaderCancellationLogging
     private static readonly DateTimeOffset RemoteModified = new(2025, 6, 15, 12, 0, 0, TimeSpan.Zero);
 
     [Fact]
-    public async Task when_ct_cancelled_during_429_backoff_then_warning_logged_with_event_id_2706()
+    public async Task when_ct_cancelled_during_429_backoff_then_a_debug_entry_is_logged_with_event_id_2706()
     {
         using var cts = new CancellationTokenSource();
         var logger = new TestLogger<HttpDownloader>();
@@ -23,7 +23,7 @@ public sealed class GivenAnHttpDownloaderCancellationLogging
         await Should.ThrowAsync<OperationCanceledException>(
             () => sut.DownloadAsync(DownloadUrl, LocalPath, RemoteModified, cancellationToken: cts.Token));
 
-        logger.Entries.ShouldContain(e => e.Level == LogLevel.Warning && e.EventId.Id == 2706);
+        logger.Entries.ShouldContain(e => e.Level == LogLevel.Debug && e.EventId.Id == 2706);
     }
 
     private sealed class CancellingOn429Handler(CancellationTokenSource cts) : HttpMessageHandler

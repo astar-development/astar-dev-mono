@@ -9,7 +9,7 @@ namespace AStarDev.WallpaperScraper.TestsUnit.Startup;
 public sealed class GivenADatabaseMigrator
 {
     [Fact]
-    public async Task when_the_migration_fails_then_the_failure_is_logged_by_type_only_and_rethrown()
+    public async Task when_the_migration_fails_then_a_critical_failure_is_logged_by_type_only_and_rethrown()
     {
         var logger = new CapturingLogger<GivenADatabaseMigrator>();
         var failure = new InvalidOperationException("cannot open /home/user/.local/share/scraper.db");
@@ -17,7 +17,8 @@ public sealed class GivenADatabaseMigrator
         var thrown = await Should.ThrowAsync<InvalidOperationException>(() => DatabaseMigrator.MigrateAsync(new ThrowingDbContextFactory(failure), logger));
 
         thrown.ShouldBeSameAs(failure);
-        logger.Entries.ShouldContain((LogLevel.Error, "Error occurred : `Database migration failed` (System.InvalidOperationException)"));
+        logger.Entries.ShouldContain(entry => entry.Level == LogLevel.Critical);
+        logger.Events.ShouldContain(recorded => recorded.Name == "DatabaseMigrationFailed" && Equals(recorded.Values["ErrorType"], "System.InvalidOperationException"));
         logger.Entries.ShouldAllBe(entry => !entry.Message.Contains("/home/user"));
     }
 }

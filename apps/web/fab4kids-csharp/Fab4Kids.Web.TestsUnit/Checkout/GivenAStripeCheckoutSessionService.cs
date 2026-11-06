@@ -1,6 +1,7 @@
 using AStarDev.FunctionalParadigm;
 using Fab4Kids.Web.Cart;
 using Fab4Kids.Web.Checkout;
+using Fab4Kids.Web.TestsUnit.Helpers;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
@@ -12,7 +13,7 @@ namespace Fab4Kids.Web.TestsUnit.Checkout;
 public class GivenAStripeCheckoutSessionService
 {
     private readonly SessionService sessionService = Substitute.For<SessionService>();
-    private readonly ILogger<StripeCheckoutSessionService> logger = Substitute.For<ILogger<StripeCheckoutSessionService>>();
+    private readonly ILogger<StripeCheckoutSessionService> logger = LoggedEvents.CreateEnabledLogger<StripeCheckoutSessionService>();
 
     private static readonly IReadOnlyList<CartItem> Items = [CartItemFactory.Create(1, "Times Tables Pack", 2.50m, 2, "pdfs/times-tables.pdf")];
 
@@ -177,5 +178,16 @@ public class GivenAStripeCheckoutSessionService
         await Should.ThrowAsync<OperationCanceledException>(() => sut.GetCustomerEmailAsync("cs_test_123", cancellationTokenSource.Token));
 
         await sessionService.DidNotReceive().GetAsync(Arg.Any<string>(), Arg.Any<SessionGetOptions>(), Arg.Any<RequestOptions>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task when_stripe_is_not_configured_then_the_request_logs_only_a_debug_entry()
+    {
+        var sut = CreateSut(null, ConfiguredOptions());
+
+        await sut.CreateSessionAsync(Items, TestContext.Current.CancellationToken);
+
+        logger.LevelsOf("FeatureNotConfigured").ShouldBe([LogLevel.Debug]);
+        logger.ValuesOf("FeatureNotConfigured")["Feature"].ShouldBe("Checkout");
     }
 }
