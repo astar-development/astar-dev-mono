@@ -29,7 +29,7 @@ public sealed class GivenASyncWorkerCancellationLogging
     }
 
     [Fact]
-    public async Task when_cancellation_requested_then_warning_logged_with_event_id_2007()
+    public async Task when_cancellation_requested_then_a_debug_entry_is_logged_with_event_id_2007()
     {
         var job = MakeDownloadJob();
         using var cts = new CancellationTokenSource();
@@ -53,6 +53,6 @@ public sealed class GivenASyncWorkerCancellationLogging
         }
         catch (OperationCanceledException) { }
 
-        logger.Entries.ShouldContain(e => e.Level == LogLevel.Warning && e.EventId.Id == 2007);
+        logger.Entries.ShouldContain(e => e.Level == LogLevel.Debug && e.EventId.Id == 2007);
     }
 }

@@ -46,7 +46,10 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
                 if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
                 {
                     if (attempt > HttpRetryPolicy.MaxRetries)
+                    {
+                        OneDriveSyncClientMessages.DownloadRetriesExhausted(logger, "rate limited", HttpRetryPolicy.MaxRetries);
                         return new Fail<Unit, string>($"Rate limited after {HttpRetryPolicy.MaxRetries} retries.");
+                    }
 
                     var delay = HttpRetryPolicy.GetRetryDelay(response, attempt);
                     OneDriveSyncClientMessages.DownloadThrottled(logger, delay.TotalSeconds, attempt, HttpRetryPolicy.MaxRetries);
@@ -78,6 +81,7 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
             catch (IOException ex)
             {
                 TryDeleteTemp(tempPath);
+                OneDriveSyncClientMessages.DownloadRetriesExhausted(logger, "I/O error", HttpRetryPolicy.MaxRetries);
                 return new Fail<Unit, string>($"IO error downloading '{localPath}': {ex.Message}");
             }
             catch (HttpRequestException) when (attempt <= HttpRetryPolicy.MaxRetries)
