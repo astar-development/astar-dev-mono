@@ -66,7 +66,7 @@ public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ISyncActio
 
     private Unit Threw(Exception exception)
     {
-        LogMessage.Error(logger, $"{nameof(SyncOverviewViewModel)} could not load the sync overview ({exception.GetType().Name})");
+        SyncOverviewLog.OverviewLoadThrew(logger, exception.ErrorType());
         SetLoadState(SyncOverviewLoadStateFactory.CreateFailed());
 
         return Unit.Instance;
@@ -74,7 +74,7 @@ public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ISyncActio
 
     private Unit NotRead(ErrorResponse error)
     {
-        LogMessage.Error(logger, $"{nameof(SyncOverviewViewModel)} could not load the sync overview: the source reported a failure");
+        SyncOverviewLog.OverviewSourceReportedFailure(logger);
         SetLoadState(SyncOverviewLoadStateFactory.CreateFailed());
 
         return Unit.Instance;

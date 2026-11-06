@@ -195,6 +195,7 @@ public class GivenAnAddAccountViewModel
         logger.Messages.ShouldContain(message => message.Contains(nameof(InvalidOperationException)));
         logger.Messages.ShouldAllBe(message => !message.Contains("captain.flint@example.com"));
         logger.Entries.ShouldAllBe(entry => entry.Exception == null);
+        logger.ValuesOf("AttemptFailedUnexpectedly")["ErrorType"].ShouldBe(typeof(InvalidOperationException).FullName);
         dialog.CloseCommand.Execute(null);
         await shown.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
     }

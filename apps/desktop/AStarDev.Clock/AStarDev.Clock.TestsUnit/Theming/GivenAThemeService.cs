@@ -1,4 +1,5 @@
 using System.Text.Json;
+using AStarDev.Clock.TestsUnit.Helpers;
 using AStarDev.Clock.Theming;
 using AStarDev.Utilities;
 using Microsoft.Extensions.Logging;
@@ -90,5 +91,19 @@ public sealed class GivenAThemeService
 
         using var document = JsonDocument.Parse(fileSystem.File.ReadAllText(settingsFilePath));
         document.RootElement.GetProperty("Theme").GetString().ShouldBe("Dark");
+    }
+
+    [Fact]
+    public void when_initialized_with_a_corrupt_persisted_theme_then_a_dedicated_warning_carries_the_error_type()
+    {
+        var fileSystem = new MockFileSystem();
+        fileSystem.Directory.CreateDirectory(ApplicationDirectories.DataDirectory);
+        fileSystem.File.WriteAllText(settingsFilePath, "{ not valid json");
+        var logger = LoggedEvents.CreateEnabledLogger<ThemeService>();
+        var sut = new ThemeService(fileSystem, logger);
+
+        sut.Initialize();
+
+        logger.ValuesOf("ThemeSettingsUnreadable")["ErrorType"].ShouldBe(typeof(JsonException).FullName);
     }
 }

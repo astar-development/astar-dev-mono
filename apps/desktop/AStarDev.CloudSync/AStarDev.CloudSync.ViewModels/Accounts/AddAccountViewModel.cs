@@ -152,7 +152,7 @@ public sealed class AddAccountViewModel : LocalizedObservableObject, IAddAccount
 
     private AccountAddOutcome Unexpected(Exception exception)
     {
-        LogMessage.Error(logger, $"{nameof(AddAccountViewModel)}: the add-account attempt failed unexpectedly ({exception.GetType().Name})");
+        AddAccountDialogLog.AttemptFailedUnexpectedly(logger, exception.ErrorType());
 
         return AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreateAuthRejected());
     }

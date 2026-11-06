@@ -1,5 +1,4 @@
 using AStarDev.FunctionalParadigm;
-using AStarDev.LoggingExtensions;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace AStarDev.Web.Packages;
@@ -28,12 +27,12 @@ public sealed class NugetPackageService(INugetApiClient apiClient, IMemoryCache 
 
         if (TryGetCached(lastGoodKey, out var lastGoodValue))
         {
-            LogMessage.Warning(logger, nameof(NugetPackageService), $"NuGet API unreachable for '{packageId}' — using last known good data.");
+            NugetPackageLog.ApiUnreachableUsingLastKnownGood(logger, packageId);
 
             return lastGoodValue;
         }
 
-        LogMessage.Error(logger, $"NuGet API unreachable for '{packageId}' and no cached data is available.");
+        NugetPackageLog.ApiUnreachableWithNoCachedData(logger, packageId);
 
         return $"Package data for '{packageId}' is currently unavailable.";
     }

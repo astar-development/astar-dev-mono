@@ -208,6 +208,7 @@ public class GivenASyncOverviewViewModel
         entry.Exception.ShouldBeNull();
         logger.Messages.ShouldHaveSingleItem().ShouldContain(nameof(InvalidOperationException));
         logger.Messages.ShouldAllBe(message => !message.Contains("provider unreachable"));
+        logger.ValuesOf("OverviewLoadThrew")["ErrorType"].ShouldBe(typeof(InvalidOperationException).FullName);
     }
 
     [Fact]
@@ -243,6 +244,7 @@ public class GivenASyncOverviewViewModel
         viewModel.LoadErrorText.ShouldBe("Could not load your accounts and sync pairs. The details have been logged.");
         logger.Entries.ShouldHaveSingleItem().Level.ShouldBe(LogLevel.Error);
         logger.Messages.ShouldAllBe(message => !message.Contains("/home/user"));
+        logger.EventNames.ShouldBe(["OverviewSourceReportedFailure"]);
     }
 
     private static async Task<SyncOverviewViewModel> CreateLoadedViewModelAsync(SyncOverview overview)

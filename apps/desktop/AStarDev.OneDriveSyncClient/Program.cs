@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using AStarDev.OneDriveSyncClient.Infrastructure;
+using AStarDev.OneDriveSyncClient.Infrastructure.Logging;
 using AStarDev.LoggingOTel;
 using Avalonia;
 using Microsoft.Extensions.Configuration;
@@ -7,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Velopack;
 using ApplicationMessages = AStarDev.LoggingExtensions.ApplicationMessages;
-using LogMessage = AStarDev.LoggingExtensions.LogMessage;
 
 namespace AStarDev.OneDriveSyncClient;
 
@@ -40,7 +40,7 @@ internal static class Program
         }
         catch (Exception ex)
         {
-            LogMessage.Error(logger, $"Application terminated unexpectedly ({ex.GetType().Name})");
+            OneDriveSyncClientMessages.ApplicationTerminatedUnexpectedly(logger, AStarDev.LoggingExtensions.ExceptionExtensions.ErrorType(ex));
         }
     }
 
@@ -52,5 +52,5 @@ internal static class Program
             .LogToTrace()
             .With(new X11PlatformOptions { EnableIme = false })
             .AfterSetup(_ => AppDomain.CurrentDomain.UnhandledException += (_, e) =>
-                LogMessage.Error(logger, $"[Unhandled] application exception ({e.ExceptionObject.GetType().Name})"));
+                OneDriveSyncClientMessages.UnhandledApplicationException(logger, e.ExceptionObject.GetType().FullName ?? e.ExceptionObject.GetType().Name));
 }
