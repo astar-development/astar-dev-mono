@@ -14,6 +14,7 @@
 
   <PropertyGroup>
         <PackageReleaseNotes>
+        v1.0.1 refactor(logging): replace interpolated free-text log messages with dedicated templates (#1372)
         v1.0.0 fix(logging)!: log exception type names only, remove exception-taking templates (#1371)
         v0.1.1 fix(logging): log exception type names only, never messages or instances (#1371)
         v0.1.0 feat(velopack-publishing): expose update check outcome
