@@ -78,7 +78,7 @@ public sealed partial class ThroughputGraphViewModel : LocalizedObservableObject
         }
         catch (Exception ex)
         {
-            OneDriveSyncClientMessages.ThroughputRefreshFailed(logger, ex.Message, ex);
+            OneDriveSyncClientMessages.ThroughputRefreshFailed(logger, ex.GetType().Name);
         }
     }
 }

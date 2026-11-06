@@ -60,7 +60,7 @@ public sealed class ParallelSyncPipeline(ISyncWorkerFactory workerFactory, ISync
         catch (Exception ex)
         {
             if (enqueued > 0)
-                OneDriveSyncClientMessages.SyncPipelineWorkerException(logger, ex.GetType().Name, ex.Message, ex);
+                OneDriveSyncClientMessages.SyncPipelineWorkerException(logger, ex.GetType().Name);
         }
 
         if (enqueued == 0)

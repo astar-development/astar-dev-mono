@@ -54,7 +54,7 @@ public sealed class SyncWorker(int workerId, IReadOnlyList<IJobHandler> handlers
             catch (Exception ex)
             {
                 error = ex.Message;
-                OneDriveSyncClientMessages.SyncWorkerException(logger, workerId, ex.GetType().Name, ex.Message, job.Target.LocalPath, ex);
+                OneDriveSyncClientMessages.SyncWorkerException(logger, workerId, ex.GetType().Name, job.Target.LocalPath);
                 await syncRepository.UpdateJobStateAsync(job.Status.Id, SyncJobState.Failed, (Option<string>)ex.Message, cancellationToken).ConfigureAwait(false);
             }
             finally

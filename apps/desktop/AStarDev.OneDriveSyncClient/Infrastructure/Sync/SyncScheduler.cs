@@ -47,7 +47,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         }
         catch (Exception ex)
         {
-            OneDriveSyncClientMessages.SyncSchedulerTimerFatal(logger, ex.Message, ex);
+            OneDriveSyncClientMessages.SyncSchedulerTimerFatal(logger, ex.GetType().Name);
 
             return new Fail<Unit, string>(ex.Message);
         }
@@ -132,7 +132,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         }
         catch (Exception ex)
         {
-            OneDriveSyncClientMessages.SyncSchedulerTimerError(logger, ex.Message, ex);
+            OneDriveSyncClientMessages.SyncSchedulerTimerError(logger, ex.GetType().Name);
         }
     }
 
@@ -174,7 +174,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
                 }
                 catch (Exception ex)
                 {
-                    OneDriveSyncClientMessages.SyncSchedulerFailed(logger, account.Id.Value, ex.Message, ex);
+                    OneDriveSyncClientMessages.SyncSchedulerFailed(logger, account.Id.Value, ex.GetType().Name);
                 }
                 finally
                 {

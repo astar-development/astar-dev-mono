@@ -25,7 +25,7 @@ public sealed class ThroughputRecorder(ISyncEventAggregator syncEventAggregator,
         }
         catch (Exception ex)
         {
-            OneDriveSyncClientMessages.ThroughputRecordFailed(logger, args.Job.Remote.AccountId.Value, ex.Message, ex);
+            OneDriveSyncClientMessages.ThroughputRecordFailed(logger, args.Job.Remote.AccountId.Value, ex.GetType().Name);
         }
     }
 }

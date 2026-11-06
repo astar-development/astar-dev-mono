@@ -50,13 +50,13 @@ public sealed class AuthService(IPublicClientApplication app, ITokenCacheService
         }
         catch (MsalException ex)
         {
-            OneDriveSyncClientMessages.AuthInteractiveMsalException(logger, ex.ErrorCode, ex);
+            OneDriveSyncClientMessages.AuthInteractiveMsalException(logger, ex.ErrorCode);
 
             return AuthResultFactory.Failure("Authentication failed.");
         }
         catch (Exception ex)
         {
-            OneDriveSyncClientMessages.AuthInteractiveUnexpectedException(logger, ex);
+            OneDriveSyncClientMessages.AuthInteractiveUnexpectedException(logger, ex.GetType().Name);
 
             return AuthResultFactory.Failure("Authentication failed.");
         }
@@ -95,7 +95,7 @@ public sealed class AuthService(IPublicClientApplication app, ITokenCacheService
         }
         catch (MsalException ex)
         {
-            OneDriveSyncClientMessages.AuthSilentMsalException(logger, ex.ErrorCode, ex);
+            OneDriveSyncClientMessages.AuthSilentMsalException(logger, ex.ErrorCode);
 
             return AuthResultFactory.Failure("Token refresh failed.");
         }

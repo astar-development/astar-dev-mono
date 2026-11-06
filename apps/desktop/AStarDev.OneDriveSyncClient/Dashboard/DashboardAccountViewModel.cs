@@ -163,7 +163,7 @@ public sealed partial class DashboardAccountViewModel : LocalizedObservableObjec
         }
         catch (Exception ex)
         {
-            OneDriveSyncClientMessages.SyncNowFailed(logger, account.Id.Value, ex.Message, ex);
+            OneDriveSyncClientMessages.SyncNowFailed(logger, account.Id.Value, ex.GetType().Name);
             AddRecentActivity(activityItemViewModelFactory.CreateError(account.Id.Value, account.Profile.Email, ex.Message));
         }
     }

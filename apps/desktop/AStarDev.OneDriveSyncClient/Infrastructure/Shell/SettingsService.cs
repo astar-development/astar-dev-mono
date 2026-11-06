@@ -36,7 +36,7 @@ public sealed class SettingsService(IFileSystem fileSystem, ILogger<SettingsServ
         }
         catch (Exception ex)
         {
-            OneDriveSyncClientMessages.SettingsDeserializeFailed(logger, path, ex);
+            OneDriveSyncClientMessages.SettingsDeserializeFailed(logger, path, ex.GetType().Name);
             Current = new AppSettings();
         }
 

@@ -60,12 +60,12 @@ public sealed class ApplicationInitializer(IStartupService startupService, IQuot
             }
             catch (Exception ex)
             {
-                OneDriveSyncClientMessages.QuotaRefreshStartupFailed(logger, ex.Message, ex);
+                OneDriveSyncClientMessages.QuotaRefreshStartupFailed(logger, ex.GetType().Name);
             }
         }
         catch (Exception ex)
         {
-            OneDriveSyncClientMessages.ApplicationInitializeFatal(logger, ex.Message, ex);
+            OneDriveSyncClientMessages.ApplicationInitializeFatal(logger, ex.GetType().Name);
             throw;
         }
     }

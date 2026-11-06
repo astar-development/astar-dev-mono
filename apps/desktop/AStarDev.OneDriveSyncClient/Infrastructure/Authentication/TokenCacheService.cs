@@ -63,7 +63,7 @@ public sealed class TokenCacheService(IFileSystem fileSystem, ILogger<TokenCache
             }
             catch (Exception ex)
             {
-                OneDriveSyncClientMessages.TokenCacheFailed(logger, ex);
+                OneDriveSyncClientMessages.TokenCacheFailed(logger, ex.GetType().Name);
             }
 
             storageProperties = new StorageCreationPropertiesBuilder(

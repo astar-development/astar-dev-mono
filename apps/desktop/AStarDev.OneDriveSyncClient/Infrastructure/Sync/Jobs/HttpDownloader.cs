@@ -119,7 +119,7 @@ public sealed class HttpDownloader(IHttpClientFactory httpClientFactory, IFileSy
             }
         }
 
-        OneDriveSyncClientMessages.DownloadMoveExhausted(logger, localPath, MaxMoveRetries, lastError?.Message ?? string.Empty);
+        OneDriveSyncClientMessages.DownloadMoveExhausted(logger, localPath, MaxMoveRetries, lastError?.GetType().Name ?? string.Empty);
         return new Fail<Unit, string>($"Could not move downloaded file to '{localPath}' after {MaxMoveRetries} attempts: {lastError?.Message ?? "Unknown error"}");
     }
 

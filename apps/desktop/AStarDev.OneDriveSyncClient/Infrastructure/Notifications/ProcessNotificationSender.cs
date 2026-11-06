@@ -34,7 +34,7 @@ public sealed class ProcessNotificationSender(ILogger<ProcessNotificationSender>
         }
         catch (Win32Exception ex)
         {
-            OneDriveSyncClientMessages.NotificationFailed(logger, command.FileName, ex.Message, ex);
+            OneDriveSyncClientMessages.NotificationFailed(logger, command.FileName, ex.GetType().Name);
         }
     }
 }

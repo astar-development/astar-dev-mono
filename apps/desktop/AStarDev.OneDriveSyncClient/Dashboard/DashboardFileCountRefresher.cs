@@ -27,7 +27,7 @@ public sealed class DashboardFileCountRefresher(ISyncedItemRepository syncedItem
         }
         catch (Exception ex)
         {
-            OneDriveSyncClientMessages.DashboardFileCountRefreshFailed(logger, accountId.Value, ex.Message, ex);
+            OneDriveSyncClientMessages.DashboardFileCountRefreshFailed(logger, accountId.Value, ex.GetType().Name);
         }
     }
 }
