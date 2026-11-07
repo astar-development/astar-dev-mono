@@ -70,6 +70,12 @@ Never await `Task<Result<T,E>>` into a variable then call `.Match()` — chain `
 
 Error-branch logic belongs INSIDE the error lambda. Never use `is Result<T,E>.Ok` pattern matching.
 
+## Async
+
+- Non-UI code (services, infrastructure, background workers): every `await` uses `.ConfigureAwait(false)`.
+- View models and code-behind: never `.ConfigureAwait(false)` before touching UI-bound state or controls.
+- `ConfigureAwait(false)` does not leave the UI thread if the awaited task has already completed. Long DB or CPU loops started from a command run through `Task.Run`.
+
 ## Sync Pipelines
 
 - Code that builds sync jobs from more than one rule, folder or source MUST de-duplicate by normalised local path (ordinal ignore case) before queuing.
