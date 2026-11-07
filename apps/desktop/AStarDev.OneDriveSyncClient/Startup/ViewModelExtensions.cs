@@ -24,8 +24,12 @@ using StatusBarViewModel = AStarDev.OneDriveSyncClient.Home.StatusBarViewModel;
 
 namespace AStarDev.OneDriveSyncClient.Startup;
 
-internal static class ViewModelExtensions
+/// <summary>Composition root for the sync client's view models.</summary>
+public static class ViewModelExtensions
 {
+    /// <summary>Registers the sync client's view models.</summary>
+    /// <param name="services">The service collection to register into.</param>
+    /// <returns>The same <paramref name="services"/> instance, for chaining.</returns>
     public static IServiceCollection AddViewModels(this IServiceCollection services)
     {
         _ = services.AddTransient<IApplicationInitializer, ApplicationInitializer>();

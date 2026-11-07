@@ -13,7 +13,7 @@ namespace AStarDev.OneDriveSyncClient.Data;
 /// <summary>
 ///     Registers all persistence-layer services with the DI container.
 /// </summary>
-internal static class PersistenceServiceExtensions
+public static class PersistenceServiceExtensions
 {
     /// <summary>
     ///     Adds <see cref="IDbContextFactory{AppDbContext}" /> and all repository services. Database migration is deferred to bootstrap.
