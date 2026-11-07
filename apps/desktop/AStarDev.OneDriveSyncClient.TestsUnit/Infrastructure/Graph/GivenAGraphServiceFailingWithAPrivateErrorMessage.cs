@@ -48,8 +48,16 @@ public sealed class GivenAGraphServiceFailingWithAPrivateErrorMessage : IDisposa
         nameof(IGraphService.GetFolderIdByPathAsync),
         nameof(IGraphService.GetDownloadUrlAsync),
         nameof(IGraphService.UploadFileAsync),
+        nameof(IGraphService.CreateFolderAsync),
+        nameof(IGraphService.DeleteItemAsync),
         nameof(IGraphService.GetLatestDeltaLinkAsync),
         nameof(IGraphService.GetDeltaChangesAsync)
+    ];
+
+    public static TheoryData<string> MethodsChangingItemsAfterTheDriveLookup =>
+    [
+        nameof(IGraphService.CreateFolderAsync),
+        nameof(IGraphService.DeleteItemAsync)
     ];
 
     public static TheoryData<string> AllResultMethods =>
@@ -100,6 +108,27 @@ public sealed class GivenAGraphServiceFailingWithAPrivateErrorMessage : IDisposa
 
         error.ShouldBe("ODataError (403)");
     }
+
+    [Theory]
+    [MemberData(nameof(MethodsChangingItemsAfterTheDriveLookup))]
+    public async Task when_the_drive_lookup_returns_an_error_then_the_item_change_fails_naming_only_the_error_type_and_status(string methodName)
+    {
+        StubEveryOtherRequestAsForbidden();
+
+        string error = await InvokeAsync(methodName, AnyToken, TestContext.Current.CancellationToken);
+
+        error.ShouldBe("ODataError (403)");
+    }
+
+    [Theory]
+    [MemberData(nameof(MethodsChangingItemsAfterTheDriveLookup))]
+    public async Task when_the_drive_lookup_requires_re_authentication_then_the_exception_propagates(string methodName)
+        => await Should.ThrowAsync<SyncReAuthRequiredException>(() => InvokeAsync(methodName, _ => throw new SyncReAuthRequiredException(), TestContext.Current.CancellationToken));
+
+    [Theory]
+    [MemberData(nameof(MethodsChangingItemsAfterTheDriveLookup))]
+    public async Task when_the_drive_lookup_is_cancelled_then_the_cancellation_propagates(string methodName)
+        => await Should.ThrowAsync<OperationCanceledException>(() => InvokeAsync(methodName, _ => throw new OperationCanceledException(), TestContext.Current.CancellationToken));
 
     [Fact]
     public async Task when_graph_cannot_be_reached_then_the_failure_names_only_the_exception_type()
