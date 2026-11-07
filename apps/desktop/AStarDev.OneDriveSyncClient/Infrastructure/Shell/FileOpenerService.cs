@@ -7,7 +7,13 @@ namespace AStarDev.OneDriveSyncClient.Infrastructure.Shell;
 public sealed class FileOpenerService(IProcessLauncher processLauncher, IFileSystem fileSystem) : IFileOpenerService
 {
     /// <inheritdoc />
-    public void OpenFile(string localPath) => throw new NotImplementedException($"{localPath}{fileSystem}{processLauncher}{GetOpener()}");
+    public void OpenFile(string localPath)
+    {
+        if (!fileSystem.File.Exists(localPath))
+            return;
+
+        processLauncher.Start(new ProcessStartInfo(GetOpener()) { ArgumentList = { localPath }, UseShellExecute = false });
+    }
 
     private static string GetOpener()
         => OperatingSystem.IsWindows() ? "explorer" : SetAppropriateNonWindowsCommand();
