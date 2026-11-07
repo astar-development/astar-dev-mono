@@ -52,6 +52,7 @@ public sealed class GivenLoggingExtensions
     {
         var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings { ApplicationName = "the-host-application", EnvironmentName = Environments.Production });
         builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"] = TestConnectionString;
+
         _ = builder.AddOTelLogging(" ");
         using var host = builder.Build();
 
