@@ -667,6 +667,24 @@ public sealed class GivenAGraphService : IDisposable
     }
 
     [Fact]
+    public async Task when_create_folder_returns_no_item_id_then_the_failure_does_not_contain_the_folder_name()
+    {
+        const string privateFolderName = "Medical Records 2026";
+        SetupDriveContext(AnyDriveId, "root-001");
+        server.Given(Request.Create().WithPath($"/drives/{AnyDriveId}/items/{AnyFolderId}/children").UsingPost())
+            .RespondWith(Response.Create()
+                .WithStatusCode(201)
+                .WithHeader("Content-Type", "application/json")
+                .WithBodyAsJson(new { id = (string?)null, name = privateFolderName }));
+
+        var result = await CreateSut().CreateFolderAsync(AnyAccountId, _ => Task.FromResult(AnyAccessToken), AnyFolderId, privateFolderName, TestContext.Current.CancellationToken);
+
+        string error = result.ShouldBeAssignableTo<Fail<DriveFolder, string>>().Error;
+        error.ShouldBe("No folder was returned when creating the folder.");
+        error.ShouldNotContain(privateFolderName);
+    }
+
+    [Fact]
     public async Task when_create_folder_returns_conflict_then_result_is_error()
     {
         SetupDriveContext(AnyDriveId, "root-001");
