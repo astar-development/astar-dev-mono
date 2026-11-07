@@ -50,12 +50,10 @@ public sealed class GivenASyncPassOrchestratorKeepingTheCallerThreadFree
         yield break;
     }
 
-    private SyncPassOrchestrator CreateSut()
+    private ISyncPassOrchestrator CreateSut()
     {
         var dependencies = new SyncServiceDependencies(remoteFolderEnumerator, Substitute.For<IRemoteDeletionDetector>(), localDeletionDetector, localChangeDetector, Substitute.For<ISyncJobExecutor>(), Substitute.For<IDownloadJobBuilder>(), Substitute.For<IRemoteFolderCreator>());
-        var syncPassRepositories = new SyncPassRepositories(accountRepository, driveStateRepository, classificationRepository);
-
-        return new SyncPassOrchestrator(syncPassRepositories, dependencies, Options.Create(new SyncSettings { ProgressReportInterval = 100 }), settingsService, localizationService, new TestLogger<SyncPassOrchestrator>());
+        return SyncPassOrchestratorTestHost.Create(dependencies, accountRepository, driveStateRepository, classificationRepository, settingsService, localizationService);
     }
 
     [Fact]
