@@ -120,6 +120,18 @@ public sealed class GivenAGraphServiceFailingWithAPrivateErrorMessage : IDisposa
         error.ShouldBe("ODataError (403)");
     }
 
+    [Fact]
+    public async Task when_20_folders_are_created_concurrently_and_the_drive_lookup_fails_then_every_call_returns_the_same_safe_failure()
+    {
+        StubEveryOtherRequestAsForbidden();
+        var sut = hosts.CreateHost().GraphService;
+        var cancellationToken = TestContext.Current.CancellationToken;
+
+        string[] errors = await Task.WhenAll(Enumerable.Range(1, 20).Select(index => Task.Run(() => sut.CreateFolderAsync(AnyAccountId, AnyToken, AnyFolderId, $"Folder {index}", cancellationToken).MatchAsync(_ => OkMarker, error => error), cancellationToken)));
+
+        errors.ShouldAllBe(error => error == "ODataError (403)");
+    }
+
     [Theory]
     [MemberData(nameof(MethodsChangingItemsAfterTheDriveLookup))]
     public async Task when_the_drive_lookup_requires_re_authentication_then_the_exception_propagates(string methodName)
