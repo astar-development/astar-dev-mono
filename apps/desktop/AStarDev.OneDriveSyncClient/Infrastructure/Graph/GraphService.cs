@@ -151,13 +151,10 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
             cancellationToken);
 
     /// <inheritdoc />
-    public async Task<Result<DriveFolder, string>> CreateFolderAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, string parentFolderId, string folderName, CancellationToken cancellationToken = default)
-    {
-        var contextResult = await driveContextCache.ResolveAsync(accountId, tokenFactory, cancellationToken).ConfigureAwait(false);
-
-        return await contextResult.MatchAsync(
-            ctx => GraphFailure.CaptureAsync(
-                async () =>
+    public Task<Result<DriveFolder, string>> CreateFolderAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, string parentFolderId, string folderName, CancellationToken cancellationToken = default)
+        => GraphFailure.CaptureAsync(
+            () => driveContextCache.ResolveAsync(accountId, tokenFactory, cancellationToken).MatchAsync(
+                async ctx =>
                 {
                     var created = await ctx.Client.Drives[ctx.Ctx.DriveId.Value].Items[parentFolderId].Children
                         .PostAsync(new DriveItem { Name = folderName, Folder = new Folder(), AdditionalData = new Dictionary<string, object> { [ConflictBehaviorKey] = ConflictBehaviorFail } }, cancellationToken: cancellationToken)
@@ -167,31 +164,28 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
                         ? (Result<DriveFolder, string>)new Fail<DriveFolder, string>($"No folder was returned when creating '{folderName}'.")
                         : new Ok<DriveFolder, string>(new DriveFolder(Id: created.Id, Name: created.Name ?? folderName, ParentId: ToOptionString(created.ParentReference?.Id)));
                 },
-                cancellationToken),
-            error => Task.FromResult<Result<DriveFolder, string>>(new Fail<DriveFolder, string>(error))).ConfigureAwait(false);
-    }
+                error => Task.FromResult<Result<DriveFolder, string>>(new Fail<DriveFolder, string>(error))),
+            cancellationToken);
 
     /// <inheritdoc />
-    public async Task<Result<Unit, string>> DeleteItemAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, string itemId, CancellationToken cancellationToken = default)
-    {
-        var contextResult = await driveContextCache.ResolveAsync(accountId, tokenFactory, cancellationToken).ConfigureAwait(false);
+    public Task<Result<Unit, string>> DeleteItemAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, string itemId, CancellationToken cancellationToken = default)
+        => GraphFailure.CaptureAsync(
+            () => driveContextCache.ResolveAsync(accountId, tokenFactory, cancellationToken).MatchAsync(
+                ctx => Try.RunAsync(
+                        async () =>
+                        {
+                            await ctx.Client.Drives[ctx.Ctx.DriveId.Value].Items[itemId].DeleteAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        return await contextResult.MatchAsync(
-            ctx => Try.RunAsync(
-                    async () =>
-                    {
-                        await ctx.Client.Drives[ctx.Ctx.DriveId.Value].Items[itemId].DeleteAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
-
-                        return Unit.Default;
-                    },
-                    cancellationToken)
-                .MatchAsync(
-                    deleted => new Ok<Unit, string>(deleted),
-                    exception => exception is ODataError { ResponseStatusCode: NotFoundStatusCode }
-                        ? new Ok<Unit, string>(Unit.Default)
-                        : GraphFailure.ToFail<Unit>(exception)),
-            error => Task.FromResult<Result<Unit, string>>(new Fail<Unit, string>(error))).ConfigureAwait(false);
-    }
+                            return Unit.Default;
+                        },
+                        cancellationToken)
+                    .MatchAsync(
+                        deleted => new Ok<Unit, string>(deleted),
+                        exception => exception is ODataError { ResponseStatusCode: NotFoundStatusCode }
+                            ? new Ok<Unit, string>(Unit.Default)
+                            : GraphFailure.ToFail<Unit>(exception)),
+                error => Task.FromResult<Result<Unit, string>>(new Fail<Unit, string>(error))),
+            cancellationToken);
 
     /// <inheritdoc />
     public void EvictCachedDriveContext(string accountId) => driveContextCache.Evict(accountId);
