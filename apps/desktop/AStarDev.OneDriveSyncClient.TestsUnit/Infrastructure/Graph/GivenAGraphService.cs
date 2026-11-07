@@ -18,7 +18,7 @@ public sealed class GivenAGraphService : IDisposable
     private const string AnyLocalPath = "/home/user/file.txt";
 
     private readonly WireMockServer server = WireMockServer.Start();
-    private readonly TestLogger<GraphFolderEnumerator> folderEnumeratorLogger = new();
+    private readonly List<GraphServiceTestHost> hosts = [];
     private bool disposed;
 
     public void Dispose()
@@ -34,15 +34,23 @@ public sealed class GivenAGraphService : IDisposable
 
         disposed = true;
 
-        if (disposing)
-            server.Stop();
+        if (!disposing)
+            return;
+
+        foreach (var host in hosts)
+            host.Dispose();
+
+        server.Stop();
     }
 
-    private GraphService CreateSut()
-    {
-        var factory = new WireMockGraphClientFactory(server);
+    private IGraphService CreateSut() => CreateHost().GraphService;
 
-        return new GraphService(Substitute.For<IUploadService>(), factory, new DriveContextCache(factory), new GraphFolderEnumerator(factory, folderEnumeratorLogger), new GraphDeltaReader(factory));
+    private GraphServiceTestHost CreateHost()
+    {
+        var host = new GraphServiceTestHost(server);
+        hosts.Add(host);
+
+        return host;
     }
 
     [Fact]
@@ -54,9 +62,11 @@ public sealed class GivenAGraphService : IDisposable
                 .WithHeader("Content-Type", "application/json")
                 .WithBodyAsJson(new { value = new object[] { new { id = "file-root", name = "root-file.txt", file = new { }, size = 100L, parentReference = new { id = AnyFolderId, driveId = AnyDriveId } } } }));
 
-        await foreach (var _ in CreateSut().EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, AnyRemotePath, cancellationToken: TestContext.Current.CancellationToken)) { }
+        var host = CreateHost();
 
-        folderEnumeratorLogger.Entries.ShouldContain((LogLevel.Information, new EventId(2617)));
+        await foreach (var _ in host.GraphService.EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, AnyRemotePath, cancellationToken: TestContext.Current.CancellationToken)) { }
+
+        host.LoggerProvider.Entries.ShouldContain(entry => entry.Level == LogLevel.Information && entry.EventId.Id == 2617);
     }
 
     [Fact]
