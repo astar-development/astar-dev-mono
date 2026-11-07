@@ -1,14 +1,15 @@
 using System.Diagnostics;
+using System.IO.Abstractions;
 
 namespace AStarDev.OneDriveSyncClient.Infrastructure.Shell;
 
 /// <inheritdoc />
-public sealed class FileOpenerService(IProcessLauncher processLauncher) : IFileOpenerService
+public sealed class FileOpenerService(IProcessLauncher processLauncher, IFileSystem fileSystem) : IFileOpenerService
 {
     /// <inheritdoc />
     public void OpenFile(string localPath)
     {
-        if (!File.Exists(localPath))
+        if (!fileSystem.File.Exists(localPath))
             return;
 
         processLauncher.Start(new ProcessStartInfo(GetOpener()) { ArgumentList = { localPath }, UseShellExecute = false });
