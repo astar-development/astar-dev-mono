@@ -5,33 +5,20 @@ using AStarDev.OneDriveSyncClient.Infrastructure.Graph;
 
 namespace AStarDev.OneDriveSyncClient.TestsUnit.Infrastructure.Graph;
 
-public sealed class GivenAGraphDeltaReader : IDisposable
+public sealed class GivenAGraphServiceReadingDeltas : IDisposable
 {
     private const string DeltaPath = "/drives/drive-001/items/root/delta";
     private const string GraphDeltaBase = "https://graph.microsoft.com/v1.0/drives/drive-001/items/root/delta";
 
-    private readonly WireMockServer server = WireMockServer.Start();
+    private readonly GraphServiceTestHosts hosts = new();
+    private readonly WireMockServer server;
     private readonly DriveId driveId = new("drive-001");
-    private bool disposed;
 
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
+    public GivenAGraphServiceReadingDeltas() => server = hosts.Server;
 
-    private void Dispose(bool disposing)
-    {
-        if (disposed)
-            return;
+    public void Dispose() => hosts.Dispose();
 
-        disposed = true;
-
-        if (disposing)
-            server.Stop();
-    }
-
-    private GraphDeltaReader CreateSut() => new(new WireMockGraphClientFactory(server));
+    private IGraphService CreateSut() => hosts.CreateHost().GraphService;
 
     private static Task<string> Token(CancellationToken cancellationToken) => Task.FromResult("any-access-token");
 
@@ -70,7 +57,7 @@ public sealed class GivenAGraphDeltaReader : IDisposable
         StubDelta("old", new JsonObject { ["@odata.deltaLink"] = $"{GraphDeltaBase}?token=new", ["value"] = new JsonArray() });
         var sut = CreateSut();
 
-        var result = await sut.GetChangesAsync(Token, driveId, $"{GraphDeltaBase}?token=old", TestContext.Current.CancellationToken);
+        var result = await sut.GetDeltaChangesAsync(Token, driveId, $"{GraphDeltaBase}?token=old", TestContext.Current.CancellationToken);
 
         var found = result.ShouldBeOfType<Ok<DeltaQueryResult, string>>().Value.ShouldBeOfType<DeltaChangesFound>();
         found.Changes.ShouldBeEmpty();
@@ -87,7 +74,7 @@ public sealed class GivenAGraphDeltaReader : IDisposable
         });
         var sut = CreateSut();
 
-        var result = await sut.GetChangesAsync(Token, driveId, $"{GraphDeltaBase}?token=old", TestContext.Current.CancellationToken);
+        var result = await sut.GetDeltaChangesAsync(Token, driveId, $"{GraphDeltaBase}?token=old", TestContext.Current.CancellationToken);
 
         var found = result.ShouldBeOfType<Ok<DeltaQueryResult, string>>().Value.ShouldBeOfType<DeltaChangesFound>();
         found.Changes.Count.ShouldBe(2);
@@ -105,7 +92,7 @@ public sealed class GivenAGraphDeltaReader : IDisposable
         });
         var sut = CreateSut();
 
-        var result = await sut.GetChangesAsync(Token, driveId, $"{GraphDeltaBase}?token=old", TestContext.Current.CancellationToken);
+        var result = await sut.GetDeltaChangesAsync(Token, driveId, $"{GraphDeltaBase}?token=old", TestContext.Current.CancellationToken);
 
         var found = result.ShouldBeOfType<Ok<DeltaQueryResult, string>>().Value.ShouldBeOfType<DeltaChangesFound>();
         found.Changes.Select(change => change.ItemId).ShouldBe(["file-1"]);
@@ -118,7 +105,7 @@ public sealed class GivenAGraphDeltaReader : IDisposable
         StubDelta("page2", new JsonObject { ["@odata.deltaLink"] = $"{GraphDeltaBase}?token=new", ["value"] = new JsonArray(FileNode("file-2", "folder-1")) });
         var sut = CreateSut();
 
-        var result = await sut.GetChangesAsync(Token, driveId, $"{GraphDeltaBase}?token=old", TestContext.Current.CancellationToken);
+        var result = await sut.GetDeltaChangesAsync(Token, driveId, $"{GraphDeltaBase}?token=old", TestContext.Current.CancellationToken);
 
         var found = result.ShouldBeOfType<Ok<DeltaQueryResult, string>>().Value.ShouldBeOfType<DeltaChangesFound>();
         found.Changes.Select(change => change.ItemId).ShouldBe(["file-1", "file-2"]);
@@ -131,7 +118,7 @@ public sealed class GivenAGraphDeltaReader : IDisposable
         StubDelta("old", new JsonObject { ["error"] = new JsonObject { ["code"] = "resyncRequired", ["message"] = "gone" } }, 410);
         var sut = CreateSut();
 
-        var result = await sut.GetChangesAsync(Token, driveId, $"{GraphDeltaBase}?token=old", TestContext.Current.CancellationToken);
+        var result = await sut.GetDeltaChangesAsync(Token, driveId, $"{GraphDeltaBase}?token=old", TestContext.Current.CancellationToken);
 
         _ = result.ShouldBeOfType<Ok<DeltaQueryResult, string>>().Value.ShouldBeOfType<DeltaResyncRequired>();
     }
@@ -141,7 +128,7 @@ public sealed class GivenAGraphDeltaReader : IDisposable
     {
         var sut = CreateSut();
 
-        var result = await sut.GetChangesAsync(Token, driveId, GraphDeltaBase, TestContext.Current.CancellationToken);
+        var result = await sut.GetDeltaChangesAsync(Token, driveId, GraphDeltaBase, TestContext.Current.CancellationToken);
 
         _ = result.ShouldBeOfType<Ok<DeltaQueryResult, string>>().Value.ShouldBeOfType<DeltaResyncRequired>();
     }
@@ -152,7 +139,7 @@ public sealed class GivenAGraphDeltaReader : IDisposable
         StubDelta("old", new JsonObject { ["@odata.deltaLink"] = $"{GraphDeltaBase}(token='new')", ["value"] = new JsonArray(FileNode("file-1", "folder-1")) });
         var sut = CreateSut();
 
-        var result = await sut.GetChangesAsync(Token, driveId, $"{GraphDeltaBase}(token='old')", TestContext.Current.CancellationToken);
+        var result = await sut.GetDeltaChangesAsync(Token, driveId, $"{GraphDeltaBase}(token='old')", TestContext.Current.CancellationToken);
 
         var found = result.ShouldBeOfType<Ok<DeltaQueryResult, string>>().Value.ShouldBeOfType<DeltaChangesFound>();
         found.Changes.Count.ShouldBe(1);
@@ -164,7 +151,7 @@ public sealed class GivenAGraphDeltaReader : IDisposable
         StubDelta("old", new JsonObject { ["@odata.deltaLink"] = $"{GraphDeltaBase}?token=new", ["value"] = new JsonArray() });
         var sut = CreateSut();
 
-        _ = await sut.GetChangesAsync(Token, driveId, $"{GraphDeltaBase}?token=old", TestContext.Current.CancellationToken);
+        _ = await sut.GetDeltaChangesAsync(Token, driveId, $"{GraphDeltaBase}?token=old", TestContext.Current.CancellationToken);
 
         var requestUrls = server.LogEntries.Select(entry => entry.RequestMessage?.Url ?? string.Empty).ToList();
 
@@ -178,7 +165,7 @@ public sealed class GivenAGraphDeltaReader : IDisposable
         StubDelta("old", new JsonObject { ["error"] = new JsonObject { ["code"] = "invalidRequest", ["message"] = "bad token" } }, 400);
         var sut = CreateSut();
 
-        var result = await sut.GetChangesAsync(Token, driveId, $"{GraphDeltaBase}?token=old", TestContext.Current.CancellationToken);
+        var result = await sut.GetDeltaChangesAsync(Token, driveId, $"{GraphDeltaBase}?token=old", TestContext.Current.CancellationToken);
 
         string message = result.ShouldBeOfType<Fail<DeltaQueryResult, string>>().Error;
         message.ShouldContain("400");
@@ -204,7 +191,7 @@ public sealed class GivenAGraphDeltaReader : IDisposable
         StubDelta("old", [], 500);
         var sut = CreateSut();
 
-        var result = await sut.GetChangesAsync(Token, driveId, $"{GraphDeltaBase}?token=old", TestContext.Current.CancellationToken);
+        var result = await sut.GetDeltaChangesAsync(Token, driveId, $"{GraphDeltaBase}?token=old", TestContext.Current.CancellationToken);
 
         _ = result.ShouldBeOfType<Fail<DeltaQueryResult, string>>();
     }

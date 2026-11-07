@@ -17,33 +17,14 @@ public sealed class GivenAGraphService : IDisposable
     private const string AnyRemotePath = "/Documents";
     private const string AnyLocalPath = "/home/user/file.txt";
 
-    private readonly WireMockServer server = WireMockServer.Start();
-    private readonly TestLogger<GraphFolderEnumerator> folderEnumeratorLogger = new();
-    private bool disposed;
+    private readonly GraphServiceTestHosts hosts = new();
+    private readonly WireMockServer server;
 
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
+    public GivenAGraphService() => server = hosts.Server;
 
-    private void Dispose(bool disposing)
-    {
-        if (disposed)
-            return;
+    public void Dispose() => hosts.Dispose();
 
-        disposed = true;
-
-        if (disposing)
-            server.Stop();
-    }
-
-    private GraphService CreateSut()
-    {
-        var factory = new WireMockGraphClientFactory(server);
-
-        return new GraphService(Substitute.For<IUploadService>(), factory, new DriveContextCache(factory), new GraphFolderEnumerator(factory, folderEnumeratorLogger), new GraphDeltaReader(factory));
-    }
+    private IGraphService CreateSut() => hosts.CreateHost().GraphService;
 
     [Fact]
     public async Task when_enumerate_folder_completes_then_the_walk_summary_is_logged()
@@ -54,9 +35,11 @@ public sealed class GivenAGraphService : IDisposable
                 .WithHeader("Content-Type", "application/json")
                 .WithBodyAsJson(new { value = new object[] { new { id = "file-root", name = "root-file.txt", file = new { }, size = 100L, parentReference = new { id = AnyFolderId, driveId = AnyDriveId } } } }));
 
-        await foreach (var _ in CreateSut().EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, AnyRemotePath, cancellationToken: TestContext.Current.CancellationToken)) { }
+        var host = hosts.CreateHost();
 
-        folderEnumeratorLogger.Entries.ShouldContain((LogLevel.Information, new EventId(2617)));
+        await foreach (var _ in host.GraphService.EnumerateFolderAsync(_ => Task.FromResult(AnyAccessToken), new DriveId(AnyDriveId), AnyFolderId, AnyRemotePath, cancellationToken: TestContext.Current.CancellationToken)) { }
+
+        host.LoggerProvider.Entries.ShouldContain(entry => entry.Category == "AStarDev.OneDriveSyncClient.Infrastructure.Graph.GraphFolderEnumerator" && entry.Level == LogLevel.Information && entry.EventId.Id == 2617);
     }
 
     [Fact]
