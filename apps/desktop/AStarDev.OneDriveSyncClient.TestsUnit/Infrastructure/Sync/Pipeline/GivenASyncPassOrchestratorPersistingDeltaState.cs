@@ -9,7 +9,6 @@ using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Detection;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Jobs;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Pipeline;
 using AStarDev.Localization;
-using Microsoft.Extensions.Logging.Abstractions;
 using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 
 namespace AStarDev.OneDriveSyncClient.TestsUnit.Infrastructure.Sync.Pipeline;

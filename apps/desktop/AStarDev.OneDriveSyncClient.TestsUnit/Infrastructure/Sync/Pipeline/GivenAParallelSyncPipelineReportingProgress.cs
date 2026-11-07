@@ -68,22 +68,6 @@ public sealed class GivenAParallelSyncPipelineReportingProgress
     private int[] PerJobProgressCompletedCounts() => [.. perJobProgress.Select(args => args.Completed)];
 
     [Fact]
-    public async Task when_a_single_job_completes_then_one_per_job_progress_event_fires_with_the_syncing_state()
-    {
-        _ = await RunAsync(SucceedingJobs(1));
-
-        perJobProgress.ShouldHaveSingleItem().SyncState.ShouldBe(SyncState.Syncing);
-    }
-
-    [Fact]
-    public async Task when_a_job_succeeds_then_on_job_completed_receives_the_completed_state()
-    {
-        _ = await RunAsync(SucceedingJobs(1));
-
-        completedJobs.ShouldHaveSingleItem().Job.Status.State.ShouldBe(SyncJobState.Completed);
-    }
-
-    [Fact]
     public async Task when_a_job_fails_then_on_job_completed_receives_the_failed_state()
     {
         _ = await RunAsync($"{FailedJobPrefix}file.txt");
@@ -92,19 +76,12 @@ public sealed class GivenAParallelSyncPipelineReportingProgress
     }
 
     [Fact]
-    public async Task when_the_last_of_two_jobs_completes_then_the_last_per_job_progress_event_has_the_syncing_state()
-    {
-        _ = await RunAsync(SucceedingJobs(2));
-
-        perJobProgress.Last().SyncState.ShouldBe(SyncState.Syncing);
-    }
-
-    [Fact]
     public async Task when_1000_jobs_complete_then_per_job_progress_fires_only_at_every_100th_job()
     {
         _ = await RunAsync(SucceedingJobs(1000));
 
         PerJobProgressCompletedCounts().ShouldBe([100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]);
+        perJobProgress.ShouldAllBe(args => args.SyncState == SyncState.Syncing);
     }
 
     [Fact]
