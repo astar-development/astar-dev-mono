@@ -1,5 +1,4 @@
 using System.Reflection;
-using System.Reflection.Emit;
 using AStarDev.OneDriveSyncClient.Infrastructure.Versioning;
 
 namespace AStarDev.OneDriveSyncClient.TestsUnit.Infrastructure.Versioning;
@@ -7,24 +6,12 @@ namespace AStarDev.OneDriveSyncClient.TestsUnit.Infrastructure.Versioning;
 public sealed class GivenAnApplicationVersionProvider
 {
     [Fact]
-    public void when_assembly_has_informational_version_then_current_version_is_that_value()
+    public void when_the_sync_client_assembly_has_an_informational_version_then_current_version_is_that_value()
     {
-        var assembly = typeof(GivenAnApplicationVersionProvider).Assembly;
-        string expected = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
+        string expected = typeof(ApplicationVersionProvider).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
 
-        var provider = new ApplicationVersionProvider(assembly);
+        var provider = new ApplicationVersionProvider();
 
         provider.CurrentVersion.ShouldBe(expected);
-    }
-
-    [Fact]
-    public void when_assembly_has_no_informational_version_then_current_version_falls_back_to_assembly_version()
-    {
-        var assemblyName = new AssemblyName("TestAssemblyWithoutInformationalVersion") { Version = new Version(1, 2, 3, 0) };
-        var assemblyWithoutInformationalVersion = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
-
-        var provider = new ApplicationVersionProvider(assemblyWithoutInformationalVersion);
-
-        provider.CurrentVersion.ShouldBe("1.2.3.0");
     }
 }

@@ -1,6 +1,6 @@
 namespace AStarDev.OneDriveSyncClient.Classifications;
 
-internal class ClassificationCategoryNodeComparer : IEqualityComparer<ClassificationCategoryNode>
+internal sealed class ClassificationCategoryNodeComparer : IEqualityComparer<ClassificationCategoryNode>
 {
     public bool Equals(ClassificationCategoryNode? x, ClassificationCategoryNode? y) => x?.Id == y?.Id;
 

@@ -8,12 +8,24 @@ internal sealed class WireMockGraphClientFactory(WireMockServer server) : IGraph
     public GraphServiceClient CreateClient(Func<CancellationToken, Task<string>> tokenFactory)
     {
         var authProvider = new BaseBearerTokenAuthenticationProvider(new DelegatingTokenProvider(tokenFactory));
-        var adapter = new HttpClientRequestAdapter(authProvider)
+        var httpClient = KiotaClientFactory.Create(new GraphHostRedirectingHandler(new Uri(server.Url!)) { InnerHandler = new HttpClientHandler() });
+        var adapter = new HttpClientRequestAdapter(authProvider, httpClient: httpClient)
         {
             BaseUrl = server.Url
         };
 
         return new GraphServiceClient(adapter);
+    }
+
+    private sealed class GraphHostRedirectingHandler(Uri wireMockUrl) : DelegatingHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            if (request.RequestUri is { } requestUri && string.Equals(requestUri.Host, "graph.microsoft.com", StringComparison.OrdinalIgnoreCase))
+                request.RequestUri = new UriBuilder(requestUri) { Scheme = wireMockUrl.Scheme, Host = wireMockUrl.Host, Port = wireMockUrl.Port }.Uri;
+
+            return base.SendAsync(request, cancellationToken);
+        }
     }
 
     private sealed class DelegatingTokenProvider(Func<CancellationToken, Task<string>> tokenFactory) : IAccessTokenProvider
