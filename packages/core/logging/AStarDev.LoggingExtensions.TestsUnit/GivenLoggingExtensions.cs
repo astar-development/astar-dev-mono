@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenTelemetry;
+using OpenTelemetry.Logs;
 using OpenTelemetry.Trace;
 using System.Reflection;
 
@@ -44,6 +45,18 @@ public sealed class GivenLoggingExtensions
         using var app = BuildWebApplicationWithConnectionString(Environments.Staging);
 
         ResourceAttribute(app.Services, "deployment.environment.name").ShouldBe("staging");
+    }
+
+    [Fact]
+    public void when_add_o_tel_logging_is_called_with_a_blank_service_name_then_the_resource_carries_the_host_application_name()
+    {
+        var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings { ApplicationName = "the-host-application", EnvironmentName = Environments.Production });
+        builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"] = TestConnectionString;
+
+        _ = builder.AddOTelLogging(" ");
+        using var host = builder.Build();
+
+        ResourceAttribute(host.Services, "service.name").ShouldBe("the-host-application");
     }
 
     [Fact]
@@ -192,4 +205,26 @@ public sealed class GivenLoggingExtensions
     private static string ResourceAttribute(IServiceProvider services, string key)
         => services.GetRequiredService<TracerProvider>().GetResource().Attributes
             .Single(attribute => attribute.Key == key).Value.ToString()!;
+
+    [Fact]
+    public void when_a_failure_is_logged_with_azure_monitor_configured_then_error_type_reaches_later_processors()
+    {
+        using var capture = new ErrorTypeCapturingProcessor();
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = "Production" });
+        builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"] = TestConnectionString;
+        _ = builder.AddOTelLogging(TestServiceName);
+        _ = builder.Services.ConfigureOpenTelemetryLoggerProvider(provider => provider.AddProcessor(capture));
+        using var app = builder.Build();
+
+        LogMessage.ExceptionCaught(app.Services.GetRequiredService<ILogger<GivenLoggingExtensions>>(), "the-location", "System.InvalidOperationException");
+
+        capture.ErrorTypes.ShouldBe(["System.InvalidOperationException"]);
+    }
+
+    private sealed class ErrorTypeCapturingProcessor : BaseProcessor<LogRecord>
+    {
+        public List<string?> ErrorTypes { get; } = [];
+
+        public override void OnEnd(LogRecord data) => ErrorTypes.Add(data.Attributes?.LastOrDefault(attribute => attribute.Key == "error.type").Value?.ToString());
+    }
 }

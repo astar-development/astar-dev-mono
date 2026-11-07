@@ -7,6 +7,7 @@ paths:
 
 - Private fields: camelCase, no underscore prefix (`fieldName` not `_fieldName`)
 - `nameof()` for parameter names in exceptions and logging
+- `[LoggerMessage]` placeholders: PascalCase (`{AccountIdHash}`, never `{message}`). The placeholder is the App Insights key, case-sensitive. Deliberately not semconv dotted names (#1375).
 - No single-letter variables except loop indices. Name for meaning: `customerId` not `id`.
 
 ## Structure

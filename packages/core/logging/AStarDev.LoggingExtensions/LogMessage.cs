@@ -15,26 +15,26 @@ public static partial class LogMessage
     /// <param name="logger">The logger to be used for logging the event.</param>
     /// <param name="location">The location of the event.</param>
     /// <param name="message">The debug message to log.</param>
-    [LoggerMessage(EventId = 100, Level = LogLevel.Debug, Message = "{Location} has raised: `{message}`.")]
+    [LoggerMessage(EventId = 100, Level = LogLevel.Debug, Message = "{Location} has raised: `{Message}`.")]
 
     public static partial void Debug(ILogger logger, string location, string message);
     /// <summary>Logs a debug message for the specified location.</summary>
     /// <param name="logger">The logger to be used for logging the event.</param>
     /// <param name="message">The debug message to log.</param>
-    [LoggerMessage(EventId = 101, Level = LogLevel.Debug, Message = "Message: {message}")]
+    [LoggerMessage(EventId = 101, Level = LogLevel.Debug, Message = "Message: {Message}")]
     public static partial void Debug(ILogger logger, string message);
 
     /// <summary>Logs an informational message for the specified location.</summary>
     /// <param name="logger">The logger to be used for logging the event.</param>
     /// <param name="message">The message to log.</param>
-    [LoggerMessage(EventId = 203, Level = LogLevel.Information, Message = "{message}.")]
+    [LoggerMessage(EventId = 203, Level = LogLevel.Information, Message = "{Message}.")]
     public static partial void Information(ILogger logger, string message);
 
     /// <summary>Logs an informational message for the specified location.</summary>
     /// <param name="logger">The logger to be used for logging the event.</param>
     /// <param name="location">The location of the event.</param>
     /// <param name="message">The information message to log.</param>
-    [LoggerMessage(EventId = 201, Level = LogLevel.Information, Message = "{Location} has raised: `{message}`.")]
+    [LoggerMessage(EventId = 201, Level = LogLevel.Information, Message = "{Location} has raised: `{Message}`.")]
     public static partial void Information(ILogger logger, string location, string message);
 
     /// <summary>Logs an informational message for the specified location.</summary>
@@ -42,14 +42,14 @@ public static partial class LogMessage
     /// <param name="location">The location of the event.</param>
     /// <param name="message">The information message to log.</param>
     /// <param name="additionalInformation">The additional Information to log.</param>
-    [LoggerMessage(EventId = 202, Level = LogLevel.Information, Message = "{Location} has raised: `{message}` with additional info: `{AdditionalInformation}`.")]
+    [LoggerMessage(EventId = 202, Level = LogLevel.Information, Message = "{Location} has raised: `{Message}` with additional info: `{AdditionalInformation}`.")]
     public static partial void Information(ILogger logger, string location, string message, string additionalInformation);
 
     /// <summary>Logs a warning message for the specified location.</summary>
     /// <param name="logger">The logger to be used for logging the event.</param>
     /// <param name="location">The location of the event.</param>
     /// <param name="message">The warning message to log.</param>
-    [LoggerMessage(EventId = 400, Level = LogLevel.Warning, Message = "{Location} has raised: `{message}`.")]
+    [LoggerMessage(EventId = 400, Level = LogLevel.Warning, Message = "{Location} has raised: `{Message}`.")]
     public static partial void Warning(ILogger logger, string location, string message);
 
     /// <summary>Logs that an exception was caught, recording only the exception type name; the message, stack trace and instance are never logged (LG-02).</summary>
