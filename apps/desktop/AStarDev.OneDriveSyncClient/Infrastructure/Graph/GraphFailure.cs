@@ -24,7 +24,6 @@ internal static class GraphFailure
     private static string Describe(Exception exception) => exception switch
     {
         ApiException apiException => $"{apiException.GetType().Name} ({apiException.ResponseStatusCode})",
-        HttpRequestException { StatusCode: { } statusCode } => $"{nameof(HttpRequestException)} ({(int)statusCode})",
         _ => exception.GetType().Name
     };
 }
