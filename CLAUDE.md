@@ -66,7 +66,8 @@ Plan approved → one GitHub issue per phase before code.
 
 ## Code Exploration
 
-- Prefer `mcp__serena__find_symbol` / `find_referencing_symbols` over whole-file reads.
+- Session start: call Serena `activate_project` with the repo root path (worktree: its own root) before any Serena tool.
+- Prefer `mcp__plugin_serena_serena__find_symbol` / `find_referencing_symbols` over whole-file reads.
 - Cap 5 file reads before stating plan.
 - Find ALL call sites + test files before touching production code.
 - `graphify-out/graph.json` exists → `graphify query|path|explain` first; `GRAPH_REPORT.md` only for broad architecture. After code changes: `graphify update .`.
