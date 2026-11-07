@@ -160,7 +160,7 @@ public sealed class GivenAGraphServiceReadingDeltas : IDisposable
     }
 
     [Fact]
-    public async Task when_graph_fails_then_the_status_code_and_error_code_are_in_the_failure_message()
+    public async Task when_graph_fails_then_the_failure_names_only_the_error_type_and_status_code()
     {
         StubDelta("old", new JsonObject { ["error"] = new JsonObject { ["code"] = "invalidRequest", ["message"] = "bad token" } }, 400);
         var sut = CreateSut();
@@ -168,12 +168,11 @@ public sealed class GivenAGraphServiceReadingDeltas : IDisposable
         var result = await sut.GetDeltaChangesAsync(Token, driveId, $"{GraphDeltaBase}?token=old", TestContext.Current.CancellationToken);
 
         string message = result.ShouldBeOfType<Fail<DeltaQueryResult, string>>().Error;
-        message.ShouldContain("400");
-        message.ShouldContain("invalidRequest");
+        message.ShouldBe("ODataError (400)");
     }
 
     [Fact]
-    public async Task when_latest_delta_link_fails_then_the_status_code_and_error_code_are_in_the_failure_message()
+    public async Task when_latest_delta_link_fails_then_the_failure_names_only_the_error_type_and_status_code()
     {
         StubDelta("latest", new JsonObject { ["error"] = new JsonObject { ["code"] = "accessDenied", ["message"] = "no" } }, 403);
         var sut = CreateSut();
@@ -181,8 +180,7 @@ public sealed class GivenAGraphServiceReadingDeltas : IDisposable
         var result = await sut.GetLatestDeltaLinkAsync(Token, driveId, TestContext.Current.CancellationToken);
 
         string message = result.ShouldBeOfType<Fail<string, string>>().Error;
-        message.ShouldContain("403");
-        message.ShouldContain("accessDenied");
+        message.ShouldBe("ODataError (403)");
     }
 
     [Fact]
