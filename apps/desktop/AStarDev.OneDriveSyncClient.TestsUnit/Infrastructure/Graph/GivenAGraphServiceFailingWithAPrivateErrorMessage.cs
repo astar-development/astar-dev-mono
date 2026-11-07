@@ -101,6 +101,16 @@ public sealed class GivenAGraphServiceFailingWithAPrivateErrorMessage : IDisposa
         error.ShouldBe("ODataError (403)");
     }
 
+    [Fact]
+    public async Task when_graph_cannot_be_reached_then_the_failure_names_only_the_exception_type()
+    {
+        server.Stop();
+
+        string error = await InvokeAsync(nameof(IGraphService.GetChildFoldersAsync), AnyToken, TestContext.Current.CancellationToken);
+
+        error.ShouldBe(nameof(HttpRequestException));
+    }
+
     [Theory]
     [MemberData(nameof(MethodsCatchingTokenFailures))]
     public async Task when_the_token_factory_throws_then_the_failure_names_only_the_exception_type(string methodName)
