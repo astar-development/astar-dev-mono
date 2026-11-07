@@ -6,12 +6,12 @@ namespace AStarDev.OneDriveSyncClient.Infrastructure.Shell;
 public sealed class FileManagerService(IProcessLauncher processLauncher) : IFileManagerService
 {
     /// <inheritdoc />
-    public void OpenFolder(string path) => throw new NotImplementedException($"{processLauncher} {CreateStartInfo(path).FileName}");
+    public void OpenFolder(string path) => processLauncher.Start(CreateStartInfo(path));
 
-    internal static ProcessStartInfo CreateStartInfo(string path)
+    private static ProcessStartInfo CreateStartInfo(string path)
         => new(GetOpener()) { ArgumentList = { path }, UseShellExecute = false };
 
-    internal static string GetOpener()
+    private static string GetOpener()
         => OperatingSystem.IsWindows() ? "explorer" : SetAppropriateNonWindowsCommand();
 
     private static string SetAppropriateNonWindowsCommand() => OperatingSystem.IsMacOS() ? "open" : "xdg-open";

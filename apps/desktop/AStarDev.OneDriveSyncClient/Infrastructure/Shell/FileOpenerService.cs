@@ -11,10 +11,10 @@ public sealed class FileOpenerService(IProcessLauncher processLauncher) : IFileO
         if (!File.Exists(localPath))
             return;
 
-        throw new NotImplementedException($"{processLauncher} {GetOpener()}");
+        processLauncher.Start(new ProcessStartInfo(GetOpener()) { ArgumentList = { localPath }, UseShellExecute = false });
     }
 
-    internal static string GetOpener()
+    private static string GetOpener()
         => OperatingSystem.IsWindows() ? "explorer" : SetAppropriateNonWindowsCommand();
 
     private static string SetAppropriateNonWindowsCommand() => OperatingSystem.IsMacOS() ? "open" : "xdg-open";

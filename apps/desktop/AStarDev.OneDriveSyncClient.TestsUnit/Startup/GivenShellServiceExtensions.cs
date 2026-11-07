@@ -1,5 +1,6 @@
 using AStarDev.OneDriveSyncClient.Data;
 using AStarDev.OneDriveSyncClient.Infrastructure.ApplicationConfiguration;
+using AStarDev.OneDriveSyncClient.Infrastructure.Shell;
 using AStarDev.OneDriveSyncClient.Startup;
 using AStarDev.LoggingOTel.LogViewer;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,6 +42,16 @@ public sealed class GivenShellServiceExtensions
         var fileSystemDescriptors = services.Where(descriptor => descriptor.ServiceType == typeof(IFileSystem)).ToList();
 
         fileSystemDescriptors.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public void when_add_shell_is_called_then_the_file_manager_and_file_opener_resolve_with_the_process_launcher()
+    {
+        using var serviceProvider = BuildServicesWithShell().BuildServiceProvider();
+
+        _ = serviceProvider.GetRequiredService<IProcessLauncher>().ShouldBeOfType<ProcessLauncher>();
+        _ = serviceProvider.GetRequiredService<IFileManagerService>().ShouldBeOfType<FileManagerService>();
+        _ = serviceProvider.GetRequiredService<IFileOpenerService>().ShouldBeOfType<FileOpenerService>();
     }
 
     [Fact]
