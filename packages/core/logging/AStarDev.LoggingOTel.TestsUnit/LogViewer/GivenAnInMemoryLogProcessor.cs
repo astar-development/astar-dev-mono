@@ -118,5 +118,60 @@ public sealed class GivenAnInMemoryLogProcessor
     }
 
     [Fact]
+    public void when_a_message_contains_no_email_then_the_rendered_message_is_unchanged()
+    {
+        using var sut = new InMemoryLogProcessor();
+        var logger = CreateLogger(sut);
+
+        logger.LogInformation("SyncAccountAsync for account-123");
+
+        sut.GetSnapshot()[0].RenderedMessage.ShouldBe("SyncAccountAsync for account-123");
+    }
+
+    [Fact]
+    public void when_a_message_contains_one_email_then_the_email_is_redacted()
+    {
+        using var sut = new InMemoryLogProcessor();
+        var logger = CreateLogger(sut);
+
+        logger.LogInformation("[SyncService] SyncAccountAsync for user@outlook.com");
+
+        sut.GetSnapshot()[0].RenderedMessage.ShouldBe("[SyncService] SyncAccountAsync for [email redacted]");
+    }
+
+    [Fact]
+    public void when_a_message_contains_multiple_emails_then_all_are_redacted()
+    {
+        using var sut = new InMemoryLogProcessor();
+        var logger = CreateLogger(sut);
+
+        logger.LogInformation("Syncing alice@outlook.com and bob@example.com");
+
+        sut.GetSnapshot()[0].RenderedMessage.ShouldBe("Syncing [email redacted] and [email redacted]");
+    }
+
+    [Fact]
+    public void when_an_email_is_passed_as_a_template_argument_then_it_is_redacted()
+    {
+        using var sut = new InMemoryLogProcessor();
+        var logger = CreateLogger(sut);
+
+        logger.LogInformation("Authenticated as {Account}", "user@mail.subdomain.example.co.uk");
+
+        sut.GetSnapshot()[0].RenderedMessage.ShouldBe("Authenticated as [email redacted]");
+    }
+
+    [Fact]
+    public void when_a_message_is_empty_then_the_rendered_message_is_empty()
+    {
+        using var sut = new InMemoryLogProcessor();
+        var logger = CreateLogger(sut);
+
+        logger.LogInformation("");
+
+        sut.GetSnapshot()[0].RenderedMessage.ShouldBe(string.Empty);
+    }
+
+    [Fact]
     public void when_default_capacity_is_inspected_then_value_is_500() => InMemoryLogProcessor.DefaultCapacity.ShouldBe(500);
 }
