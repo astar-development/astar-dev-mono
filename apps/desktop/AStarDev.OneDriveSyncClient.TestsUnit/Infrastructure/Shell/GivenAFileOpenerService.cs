@@ -1,59 +1,59 @@
 using AStarDev.OneDriveSyncClient.Infrastructure.Shell;
+using AStarDev.OneDriveSyncClient.TestsUnit.TestHelpers;
 
 namespace AStarDev.OneDriveSyncClient.TestsUnit.Infrastructure.Shell;
 
 public sealed class GivenAFileOpenerService
 {
-    private readonly FileOpenerService sut = new();
+    private static readonly string ExistingFilePath = typeof(GivenAFileOpenerService).Assembly.Location;
 
-    [Fact]
-    public void when_file_does_not_exist_then_open_file_does_not_throw()
+    private readonly RecordingProcessLauncher processLauncher = new();
+
+    private FileOpenerService CreateSut() => new(processLauncher);
+
+    [Theory]
+    [InlineData("/nonexistent/path/to/file.txt")]
+    [InlineData("/nonexistent/path with spaces/to file.txt")]
+    [InlineData("")]
+    public void when_the_file_does_not_exist_then_no_process_is_started(string localPath)
     {
-        Should.NotThrow(() => sut.OpenFile("/nonexistent/path/to/file.txt"));
+        CreateSut().OpenFile(localPath);
+
+        processLauncher.Started.ShouldBeEmpty();
     }
 
     [Fact]
-    public void when_file_does_not_exist_and_path_contains_spaces_then_open_file_does_not_throw()
+    public void when_the_file_exists_then_the_platform_opener_is_started()
     {
-        Should.NotThrow(() => sut.OpenFile("/nonexistent/path with spaces/to file.txt"));
+        CreateSut().OpenFile(ExistingFilePath);
+
+        processLauncher.Started.ShouldHaveSingleItem().FileName.ShouldBe(RecordingProcessLauncher.ExpectedPlatformOpener());
     }
 
     [Fact]
-    public void when_path_is_empty_string_then_open_file_does_not_throw()
+    public void when_the_file_exists_then_its_path_is_passed_as_a_single_argument()
     {
-        Should.NotThrow(() => sut.OpenFile(string.Empty));
+        CreateSut().OpenFile(ExistingFilePath);
+
+        processLauncher.Started.ShouldHaveSingleItem().ArgumentList.ShouldBe([ExistingFilePath]);
     }
 
     [Fact]
-    public void when_on_linux_then_opener_is_xdg_open()
+    public void when_the_file_exists_then_the_shell_is_not_used()
+    {
+        CreateSut().OpenFile(ExistingFilePath);
+
+        processLauncher.Started.ShouldHaveSingleItem().UseShellExecute.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void when_on_linux_then_the_opener_is_xdg_open()
     {
         if (!OperatingSystem.IsLinux())
             return;
 
-        FileOpenerService.GetOpener().ShouldBe("xdg-open");
-    }
+        CreateSut().OpenFile(ExistingFilePath);
 
-    [Fact]
-    public void when_on_macos_then_opener_is_open()
-    {
-        if (!OperatingSystem.IsMacOS())
-            return;
-
-        FileOpenerService.GetOpener().ShouldBe("open");
-    }
-
-    [Fact]
-    public void when_on_windows_then_opener_is_explorer()
-    {
-        if (!OperatingSystem.IsWindows())
-            return;
-
-        FileOpenerService.GetOpener().ShouldBe("explorer");
-    }
-
-    [Fact]
-    public void when_getting_opener_then_a_non_empty_string_is_returned()
-    {
-        FileOpenerService.GetOpener().ShouldNotBeNullOrEmpty();
+        processLauncher.Started.ShouldHaveSingleItem().FileName.ShouldBe("xdg-open");
     }
 }

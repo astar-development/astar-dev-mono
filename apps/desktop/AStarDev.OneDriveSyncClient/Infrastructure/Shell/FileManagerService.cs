@@ -3,10 +3,10 @@ using System.Diagnostics;
 namespace AStarDev.OneDriveSyncClient.Infrastructure.Shell;
 
 /// <inheritdoc />
-public sealed class FileManagerService : IFileManagerService
+public sealed class FileManagerService(IProcessLauncher processLauncher) : IFileManagerService
 {
     /// <inheritdoc />
-    public void OpenFolder(string path) => _ = Process.Start(CreateStartInfo(path));
+    public void OpenFolder(string path) => throw new NotImplementedException($"{processLauncher} {CreateStartInfo(path).FileName}");
 
     internal static ProcessStartInfo CreateStartInfo(string path)
         => new(GetOpener()) { ArgumentList = { path }, UseShellExecute = false };
