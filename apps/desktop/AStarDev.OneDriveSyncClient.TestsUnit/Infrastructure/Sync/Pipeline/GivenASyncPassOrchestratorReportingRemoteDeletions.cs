@@ -56,9 +56,7 @@ public sealed class GivenASyncPassOrchestratorReportingRemoteDeletions
     private ISyncPassOrchestrator CreateSut()
     {
         var dependencies = new SyncServiceDependencies(_remoteFolderEnumerator, _remoteDeletionDetector, Substitute.For<ILocalDeletionDetector>(), _localChangeDetector, Substitute.For<ISyncJobExecutor>(), Substitute.For<IDownloadJobBuilder>(), Substitute.For<IRemoteFolderCreator>());
-        var syncPassRepositories = new SyncPassRepositories(_accountRepository, _driveStateRepository, _classificationRepository);
-
-        return new SyncPassOrchestrator(syncPassRepositories, dependencies, Options.Create(new SyncSettings { ProgressReportInterval = 100 }), _settingsService, _localizationService, NullLogger<SyncPassOrchestrator>.Instance);
+        return SyncPassOrchestratorTestHost.Create(dependencies, _accountRepository, _driveStateRepository, _classificationRepository, _settingsService, _localizationService);
     }
 
     private static OneDriveAccount CreateAccount() => new()

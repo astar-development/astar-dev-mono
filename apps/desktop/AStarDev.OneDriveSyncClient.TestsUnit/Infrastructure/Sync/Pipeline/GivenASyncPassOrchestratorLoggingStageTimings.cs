@@ -27,7 +27,6 @@ public sealed class GivenASyncPassOrchestratorLoggingStageTimings
     private readonly ILocalizationService _localizationService = Substitute.For<ILocalizationService>();
     private readonly ISettingsService _settingsService = Substitute.For<ISettingsService>();
     private readonly IFileClassificationRepository _classificationRepository = Substitute.For<IFileClassificationRepository>();
-    private readonly TestLogger<SyncPassOrchestrator> _logger = new();
 
     public GivenASyncPassOrchestratorLoggingStageTimings()
     {
@@ -47,12 +46,10 @@ public sealed class GivenASyncPassOrchestratorLoggingStageTimings
         yield break;
     }
 
-    private SyncPassOrchestrator CreateSut()
+    private ISyncPassOrchestrator CreateSut(RecordingLoggerProvider loggerProvider)
     {
         var dependencies = new SyncServiceDependencies(_remoteFolderEnumerator, Substitute.For<IRemoteDeletionDetector>(), Substitute.For<ILocalDeletionDetector>(), _localChangeDetector, Substitute.For<ISyncJobExecutor>(), _downloadJobBuilder, Substitute.For<IRemoteFolderCreator>());
-        var syncPassRepositories = new SyncPassRepositories(_accountRepository, _driveStateRepository, _classificationRepository);
-
-        return new SyncPassOrchestrator(syncPassRepositories, dependencies, Options.Create(new SyncSettings { ProgressReportInterval = 100 }), _settingsService, _localizationService, _logger);
+        return SyncPassOrchestratorTestHost.Create(dependencies, _accountRepository, _driveStateRepository, _classificationRepository, _settingsService, _localizationService, loggerProvider);
     }
 
     private static OneDriveAccount CreateAccount() => new()
@@ -66,10 +63,11 @@ public sealed class GivenASyncPassOrchestratorLoggingStageTimings
     [Fact]
     public async Task when_a_pass_with_no_jobs_completes_then_a_timing_is_logged_for_every_stage()
     {
-        var sut = CreateSut();
+        using var loggerProvider = new RecordingLoggerProvider();
+        var sut = CreateSut(loggerProvider);
 
         await sut.OrchestrateAsync(CreateAccount(), AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, LocalSyncPath.Restore("/path/to/sync")), _ => Task.FromResult("token"), _ => Task.CompletedTask, cancellationToken: TestContext.Current.CancellationToken);
 
-        _logger.Entries.Count(entry => entry.EventId.Id == StageTimingEventId).ShouldBe(ExpectedStageCount);
+        loggerProvider.Entries.Count(entry => entry.EventId.Id == StageTimingEventId).ShouldBe(ExpectedStageCount);
     }
 }

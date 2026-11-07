@@ -38,9 +38,6 @@ public sealed class GivenASyncPassOrchestrator
         _classificationRepository.GetAllCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<FileClassificationCategory>>([]));
     }
 
-    private static IOptions<SyncSettings> SyncSettingsOptions
-        => Options.Create(new SyncSettings { ProgressReportInterval = 100 });
-
     private ISyncPassOrchestrator CreateSut()
     {
         var dependencies = new SyncServiceDependencies(
@@ -52,12 +49,7 @@ public sealed class GivenASyncPassOrchestrator
             _downloadJobBuilder,
             _remoteFolderCreator);
 
-        var syncPassRepositories = new SyncPassRepositories(
-            _accountRepository,
-            _driveStateRepository,
-            _classificationRepository);
-
-        return new SyncPassOrchestrator(syncPassRepositories, dependencies, SyncSettingsOptions, _settingsService, _localizationService, NullLogger<SyncPassOrchestrator>.Instance);
+        return SyncPassOrchestratorTestHost.Create(dependencies, _accountRepository, _driveStateRepository, _classificationRepository, _settingsService, _localizationService);
     }
 
     private static OneDriveAccount CreateAccount(string localSyncPath = "/path/to/sync") => new()

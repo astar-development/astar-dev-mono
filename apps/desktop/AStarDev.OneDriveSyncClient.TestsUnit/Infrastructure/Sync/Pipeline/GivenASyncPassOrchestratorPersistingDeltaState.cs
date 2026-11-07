@@ -72,8 +72,7 @@ public sealed class GivenASyncPassOrchestratorPersistingDeltaState
         _ = syncJobExecutor.ExecuteAsync(Arg.Any<OneDriveAccount>(), Arg.Any<Func<CancellationToken, Task<string>>>(), Arg.Any<IAsyncEnumerable<SyncJob>>(), Arg.Any<System.Collections.Concurrent.ConcurrentDictionary<string, SyncedItemEntity>>(), Arg.Any<IReadOnlyList<FileClassificationCategory>>(), Arg.Any<Action<SyncProgressEventArgs>>(), Arg.Any<Func<JobCompletedEventArgs, Task>>(), Arg.Any<CancellationToken>()).Returns(failedJobs);
 
         var dependencies = new SyncServiceDependencies(_remoteFolderEnumerator, _remoteDeletionDetector, Substitute.For<ILocalDeletionDetector>(), _localChangeDetector, _syncJobExecutor, Substitute.For<IDownloadJobBuilder>(), Substitute.For<IRemoteFolderCreator>());
-        var repositories = new SyncPassRepositories(_accountRepository, _driveStateRepository, _classificationRepository);
-        var sut = new SyncPassOrchestrator(repositories, dependencies, Options.Create(new SyncSettings { ProgressReportInterval = 100 }), _settingsService, _localizationService, NullLogger<SyncPassOrchestrator>.Instance);
+        var sut = SyncPassOrchestratorTestHost.Create(dependencies, _accountRepository, _driveStateRepository, _classificationRepository, _settingsService, _localizationService);
         var syncConfig = AccountSyncConfigFactory.Create(ConflictPolicy.Ignore, LocalSyncPath.Restore("/sync-root"));
         var account = new OneDriveAccount
         {
