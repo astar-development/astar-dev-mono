@@ -50,6 +50,7 @@ paths:
 - AAA pattern, blank lines between sections, no section comments.
 - Shouldly assertions. NSubstitute mocks (prefer real instances).
 - No comments anywhere in test files — no XML docs, no inline comments, no block comments. Name the test and the variables clearly enough that no comment is needed.
+- Never use `InternalsVisibleTo`. Test through the public API; internal types are covered by those tests. A case the public API cannot reach is deleted, not exposed — never make a type or member `public` for a test.
 
 ## Error Handling
 
