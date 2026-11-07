@@ -161,7 +161,7 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
                         .ConfigureAwait(false);
 
                     return created?.Id is null
-                        ? (Result<DriveFolder, string>)new Fail<DriveFolder, string>($"No folder was returned when creating '{folderName}'.")
+                        ? (Result<DriveFolder, string>)new Fail<DriveFolder, string>("No folder was returned when creating the folder.")
                         : new Ok<DriveFolder, string>(new DriveFolder(Id: created.Id, Name: created.Name ?? folderName, ParentId: ToOptionString(created.ParentReference?.Id)));
                 },
                 error => Task.FromResult<Result<DriveFolder, string>>(new Fail<DriveFolder, string>(error))),
