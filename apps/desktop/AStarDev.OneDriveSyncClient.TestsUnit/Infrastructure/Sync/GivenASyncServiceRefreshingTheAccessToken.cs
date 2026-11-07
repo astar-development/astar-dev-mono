@@ -85,6 +85,7 @@ public sealed class GivenASyncServiceRefreshingTheAccessToken
 
         await SyncInvokingTheTokenFactoryAsync(1);
 
+        tokensSeenDuringThePass.ShouldBe([InitialToken]);
         await authService.Received(1).AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
@@ -95,6 +96,7 @@ public sealed class GivenASyncServiceRefreshingTheAccessToken
 
         await SyncInvokingTheTokenFactoryAsync(3);
 
+        tokensSeenDuringThePass.ShouldBe([InitialToken, InitialToken, InitialToken]);
         await authService.Received(1).AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
@@ -136,6 +138,7 @@ public sealed class GivenASyncServiceRefreshingTheAccessToken
         await SyncInvokingTheTokenFactoryAsync(1);
 
         exceptionDuringThePass.ShouldBeNull();
+        tokensSeenDuringThePass.ShouldBe([InitialToken]);
     }
 
     [Fact]
