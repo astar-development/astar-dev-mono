@@ -48,6 +48,17 @@ public sealed class GivenLoggingExtensions
     }
 
     [Fact]
+    public void when_add_o_tel_logging_is_called_with_a_blank_service_name_then_the_resource_carries_the_host_application_name()
+    {
+        var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings { ApplicationName = "the-host-application", EnvironmentName = Environments.Production });
+        builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"] = TestConnectionString;
+        _ = builder.AddOTelLogging(" ");
+        using var host = builder.Build();
+
+        ResourceAttribute(host.Services, "service.name").ShouldBe("the-host-application");
+    }
+
+    [Fact]
     public void when_add_o_tel_logging_is_called_on_a_web_application_builder_then_it_returns_the_same_builder_for_chaining()
     {
         var builder = WebApplication.CreateBuilder();
