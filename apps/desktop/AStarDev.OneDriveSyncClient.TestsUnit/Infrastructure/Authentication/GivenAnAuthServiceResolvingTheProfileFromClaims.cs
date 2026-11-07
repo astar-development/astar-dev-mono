@@ -18,7 +18,7 @@ public sealed class GivenAnAuthServiceResolvingTheProfileFromClaims
     private static async Task<(AccountProfile Profile, string Username)> SignInWithClaimsAsync(params (string Type, string Value)[] claims)
     {
         var cancellationToken = TestContext.Current.CancellationToken;
-        var app = PublicClientApplicationBuilder.Create(FakeMsalTokenEndpoint.ClientId)
+        IPublicClientApplication app = PublicClientApplicationBuilder.Create(FakeMsalTokenEndpoint.ClientId)
             .WithAuthority(Authority)
             .WithInstanceDiscovery(false)
             .WithHttpClientFactory(new FakeMsalTokenEndpoint(claims.ToDictionary(claim => claim.Type, claim => claim.Value)))

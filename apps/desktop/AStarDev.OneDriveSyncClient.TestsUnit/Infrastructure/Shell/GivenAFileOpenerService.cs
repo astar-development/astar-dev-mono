@@ -49,11 +49,30 @@ public sealed class GivenAFileOpenerService
     [Fact]
     public void when_on_linux_then_the_opener_is_xdg_open()
     {
-        if (!OperatingSystem.IsLinux())
-            return;
+        Assert.SkipUnless(OperatingSystem.IsLinux(), "Linux only");
 
         CreateSut().OpenFile(ExistingFilePath);
 
         processLauncher.Started.ShouldHaveSingleItem().FileName.ShouldBe("xdg-open");
+    }
+
+    [Fact]
+    public void when_on_macos_then_the_opener_is_open()
+    {
+        Assert.SkipUnless(OperatingSystem.IsMacOS(), "macOS only");
+
+        CreateSut().OpenFile(ExistingFilePath);
+
+        processLauncher.Started.ShouldHaveSingleItem().FileName.ShouldBe("open");
+    }
+
+    [Fact]
+    public void when_on_windows_then_the_opener_is_explorer()
+    {
+        Assert.SkipUnless(OperatingSystem.IsWindows(), "Windows only");
+
+        CreateSut().OpenFile(ExistingFilePath);
+
+        processLauncher.Started.ShouldHaveSingleItem().FileName.ShouldBe("explorer");
     }
 }

@@ -18,6 +18,8 @@ public static class PersistenceServiceExtensions
     /// <summary>
     ///     Adds <see cref="IDbContextFactory{AppDbContext}" /> and all repository services. Database migration is deferred to bootstrap.
     /// </summary>
+    /// <param name="services">The service collection to register into.</param>
+    /// <returns>The same <paramref name="services"/> instance, for chaining.</returns>
     public static IServiceCollection AddPersistence(this IServiceCollection services)
     {
         _ = services.AddDbContextFactory<AppDbContext>(ConfigureDbContext, ServiceLifetime.Singleton);
