@@ -11,45 +11,20 @@ public sealed class GivenAGraphServiceCachingTheDriveContext : IDisposable
     private const string AnyRootId = "root-001";
     private const string MeDrivePath = "/me/drive";
 
-    private readonly WireMockServer server = WireMockServer.Start();
-    private readonly List<GraphServiceTestHost> hosts = [];
-    private bool disposed;
+    private readonly GraphServiceTestHosts hosts = new();
+    private readonly WireMockServer server;
 
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
+    public GivenAGraphServiceCachingTheDriveContext() => server = hosts.Server;
 
-    private void Dispose(bool disposing)
-    {
-        if (disposed)
-            return;
+    public void Dispose() => hosts.Dispose();
 
-        disposed = true;
-
-        if (!disposing)
-            return;
-
-        foreach (var host in hosts)
-            host.Dispose();
-
-        server.Stop();
-    }
-
-    private IGraphService CreateSut()
-    {
-        var host = new GraphServiceTestHost(server);
-        hosts.Add(host);
-
-        return host.GraphService;
-    }
+    private IGraphService CreateSut() => hosts.CreateHost().GraphService;
 
     private static Task<string> Token(CancellationToken cancellationToken) => Task.FromResult(AnyAccessToken);
 
     private int MeDriveCallCount() => server.LogEntries?.Count(entry => entry.RequestMessage?.Url?.Contains(MeDrivePath, StringComparison.OrdinalIgnoreCase) == true) ?? 0;
 
-    private void SetupDriveContext(string driveId, string rootId)
+    private void SetupDriveContext(string driveId, string? rootId)
     {
         server.Given(Request.Create().WithPath(MeDrivePath).UsingGet())
             .RespondWith(Response.Create()
@@ -138,17 +113,17 @@ public sealed class GivenAGraphServiceCachingTheDriveContext : IDisposable
 
         var result = await CreateSut().GetDriveIdAsync(AnyAccountId, Token, TestContext.Current.CancellationToken);
 
-        _ = result.ShouldBeAssignableTo<Fail<DriveId, string>>();
+        result.ShouldBeAssignableTo<Fail<DriveId, string>>().Error.ShouldBe("Could not retrieve drive ID.");
     }
 
     [Fact]
     public async Task when_graph_returns_a_null_root_item_id_then_the_result_is_a_failure()
     {
-        SetupDriveContext(AnyDriveId, rootId: null!);
+        SetupDriveContext(AnyDriveId, rootId: null);
 
         var result = await CreateSut().GetDriveIdAsync(AnyAccountId, Token, TestContext.Current.CancellationToken);
 
-        _ = result.ShouldBeAssignableTo<Fail<DriveId, string>>();
+        result.ShouldBeAssignableTo<Fail<DriveId, string>>().Error.ShouldBe("Could not retrieve root item ID.");
     }
 
     [Fact]

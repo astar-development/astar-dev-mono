@@ -10,40 +10,15 @@ public sealed class GivenAGraphServiceReadingDeltas : IDisposable
     private const string DeltaPath = "/drives/drive-001/items/root/delta";
     private const string GraphDeltaBase = "https://graph.microsoft.com/v1.0/drives/drive-001/items/root/delta";
 
-    private readonly WireMockServer server = WireMockServer.Start();
+    private readonly GraphServiceTestHosts hosts = new();
+    private readonly WireMockServer server;
     private readonly DriveId driveId = new("drive-001");
-    private readonly List<GraphServiceTestHost> hosts = [];
-    private bool disposed;
 
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
+    public GivenAGraphServiceReadingDeltas() => server = hosts.Server;
 
-    private void Dispose(bool disposing)
-    {
-        if (disposed)
-            return;
+    public void Dispose() => hosts.Dispose();
 
-        disposed = true;
-
-        if (!disposing)
-            return;
-
-        foreach (var host in hosts)
-            host.Dispose();
-
-        server.Stop();
-    }
-
-    private IGraphService CreateSut()
-    {
-        var host = new GraphServiceTestHost(server);
-        hosts.Add(host);
-
-        return host.GraphService;
-    }
+    private IGraphService CreateSut() => hosts.CreateHost().GraphService;
 
     private static Task<string> Token(CancellationToken cancellationToken) => Task.FromResult("any-access-token");
 
