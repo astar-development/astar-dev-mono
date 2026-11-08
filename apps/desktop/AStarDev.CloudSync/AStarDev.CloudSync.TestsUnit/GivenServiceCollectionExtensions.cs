@@ -95,6 +95,14 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
+    public void when_application_services_are_added_then_one_sync_lock_and_one_throttle_gate_are_shared()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        (provider.GetRequiredService<IAccountSyncLock>() == provider.GetRequiredService<IAccountSyncLock>(), provider.GetRequiredService<IAccountThrottleGate>() == provider.GetRequiredService<IAccountThrottleGate>(), provider.GetRequiredService<IAccountSyncLock>().GetType().Assembly).ShouldBe((true, true, typeof(SyncServiceCollectionExtensions).Assembly));
+    }
+
+    [Fact]
     public void when_application_services_are_added_then_the_single_instance_guard_uses_the_cloudsync_lock_in_the_data_folder()
     {
         using var provider = CreateServices().BuildServiceProvider();
