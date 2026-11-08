@@ -1,4 +1,4 @@
-using AStarDev.CloudSync.Core.Common;
+using AStarDev.CloudSync.ViewModels.Common;
 using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.TestHelpers.Common;

@@ -1,4 +1,4 @@
-using AStarDev.CloudSync.Core.Persistence;
+using AStarDev.CloudSync.Accounts;
 using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.Overview.TestsUnit;

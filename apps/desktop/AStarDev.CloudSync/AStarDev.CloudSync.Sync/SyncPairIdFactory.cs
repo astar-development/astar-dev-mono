@@ -1,6 +1,5 @@
-using AStarDev.CloudSync.Core.SyncPairs;
 
-namespace AStarDev.CloudSync.Domain.SyncPairs;
+namespace AStarDev.CloudSync.Sync;
 
 /// <summary>Creates <see cref="SyncPairId"/> values.</summary>
 public static class SyncPairIdFactory

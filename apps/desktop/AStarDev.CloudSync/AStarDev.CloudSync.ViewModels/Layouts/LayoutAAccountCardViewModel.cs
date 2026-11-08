@@ -1,5 +1,5 @@
 using System.Windows.Input;
-using AStarDev.CloudSync.Core.Common;
+using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.ViewModels.Accounts;
 using AStarDev.CloudSync.ViewModels.Common;
 using AStarDev.Localization;

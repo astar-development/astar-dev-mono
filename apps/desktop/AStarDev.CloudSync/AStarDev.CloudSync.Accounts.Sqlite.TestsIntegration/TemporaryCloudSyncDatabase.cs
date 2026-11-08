@@ -1,7 +1,6 @@
 using System.IO.Abstractions;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Accounts.Sqlite;
-using AStarDev.CloudSync.Core.Persistence;
 using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.FunctionalParadigm;
 using AStarDev.Utilities;

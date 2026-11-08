@@ -1,9 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <!--
-    Immutable domain types and the interfaces other layers implement.
-    No factories, extensions or implementations: those live in Domain
-    and Infrastructure.
+    Sync module: sync pairs, activity, conflicts, their factories and the
+    ISyncActions seam the UI's action buttons call. Pure and deterministic.
     Must not reference Avalonia.
   -->
 

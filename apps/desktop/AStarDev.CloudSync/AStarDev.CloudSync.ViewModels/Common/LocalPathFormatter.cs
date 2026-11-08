@@ -1,4 +1,3 @@
-using AStarDev.CloudSync.Core.Common;
 using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.ViewModels.Common;

@@ -1,6 +1,5 @@
-using AStarDev.CloudSync.Core.SyncPairs;
 
-namespace AStarDev.CloudSync.Core.Conflicts;
+namespace AStarDev.CloudSync.Sync;
 
 /// <summary>A file that changed both locally and in the cloud.</summary>
 /// <param name="SyncPairId">The sync pair holding the file.</param>

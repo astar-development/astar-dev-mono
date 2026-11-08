@@ -1,4 +1,4 @@
-namespace AStarDev.CloudSync.Core.SyncPairs;
+namespace AStarDev.CloudSync.Sync;
 
 /// <summary>Which way changes flow for a sync pair.</summary>
 public abstract record SyncDirection

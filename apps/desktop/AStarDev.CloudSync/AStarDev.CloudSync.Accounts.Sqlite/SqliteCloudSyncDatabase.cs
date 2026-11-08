@@ -1,5 +1,5 @@
 using System.IO.Abstractions;
-using AStarDev.CloudSync.Core.Persistence;
+using AStarDev.CloudSync.Accounts;
 using AStarDev.FunctionalParadigm;
 using AStarDev.LoggingExtensions;
 using Microsoft.EntityFrameworkCore;

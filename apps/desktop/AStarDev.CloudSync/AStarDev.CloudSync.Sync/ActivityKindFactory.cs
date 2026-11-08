@@ -1,6 +1,5 @@
-using AStarDev.CloudSync.Core.Activity;
 
-namespace AStarDev.CloudSync.Domain.Activity;
+namespace AStarDev.CloudSync.Sync;
 
 /// <summary>Creates <see cref="ActivityKind"/> cases.</summary>
 public static class ActivityKindFactory

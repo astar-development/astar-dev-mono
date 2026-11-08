@@ -1,9 +1,7 @@
 using AStarDev.CloudSync.Accounts;
-using AStarDev.CloudSync.Core.Activity;
-using AStarDev.CloudSync.Core.SyncPairs;
 using AStarDev.FunctionalParadigm;
 
-namespace AStarDev.CloudSync.Domain.Activity;
+namespace AStarDev.CloudSync.Sync;
 
 /// <summary>Creates <see cref="ActivityEntry"/> values.</summary>
 public static class ActivityEntryFactory

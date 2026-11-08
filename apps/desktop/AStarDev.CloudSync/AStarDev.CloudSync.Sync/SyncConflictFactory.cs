@@ -1,7 +1,5 @@
-using AStarDev.CloudSync.Core.Conflicts;
-using AStarDev.CloudSync.Core.SyncPairs;
 
-namespace AStarDev.CloudSync.Domain.Conflicts;
+namespace AStarDev.CloudSync.Sync;
 
 /// <summary>Creates <see cref="SyncConflict"/> values.</summary>
 public static class SyncConflictFactory

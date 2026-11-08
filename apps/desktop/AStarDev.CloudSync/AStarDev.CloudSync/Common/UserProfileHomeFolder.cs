@@ -1,8 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
-using AStarDev.CloudSync.Core.Common;
+using AStarDev.CloudSync.ViewModels.Common;
 using AStarDev.FunctionalParadigm;
 
-namespace AStarDev.CloudSync.Infrastructure.Common;
+namespace AStarDev.CloudSync.Common;
 
 /// <summary>The home folder reported by the platform for <see cref="Environment.SpecialFolder.UserProfile"/>.</summary>
 [ExcludeFromCodeCoverage]

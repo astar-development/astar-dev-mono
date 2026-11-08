@@ -1,6 +1,5 @@
-using AStarDev.CloudSync.Core.SyncPairs;
 
-namespace AStarDev.CloudSync.Domain.SyncPairs;
+namespace AStarDev.CloudSync.Sync;
 
 /// <summary>Creates <see cref="SyncDirection"/> cases.</summary>
 public static class SyncDirectionFactory

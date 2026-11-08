@@ -1,4 +1,4 @@
-namespace AStarDev.CloudSync.Core.Activity;
+namespace AStarDev.CloudSync.Sync;
 
 /// <summary>What happened in an activity entry.</summary>
 public abstract record ActivityKind

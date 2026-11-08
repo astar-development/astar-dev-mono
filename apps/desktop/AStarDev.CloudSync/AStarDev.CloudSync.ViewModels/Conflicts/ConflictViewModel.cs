@@ -1,5 +1,4 @@
-using AStarDev.CloudSync.Core.Common;
-using AStarDev.CloudSync.Core.Conflicts;
+using AStarDev.CloudSync.Sync;
 using AStarDev.Localization;
 using CommunityToolkit.Mvvm.Input;
 
