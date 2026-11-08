@@ -5,9 +5,45 @@ namespace AStarDev.CloudSync.TestHelpers.Accounts;
 
 public sealed class InMemoryAccountStore : IAccountStore
 {
-    public Task<AccountAddOutcome> AddAsync(AccountRegistration registration, CancellationToken cancellationToken) => throw new NotImplementedException($"{registration}{cancellationToken}");
+    private readonly Lock gate = new();
+    private readonly List<StoredAccount> accounts = [];
 
-    public Task<Result<Option<StoredAccount>, ErrorResponse>> GetByKeyAsync(CloudProvider provider, ProviderAccountKey key, CancellationToken cancellationToken) => throw new NotImplementedException($"{provider}{key}{cancellationToken}");
+    public Task<AccountAddOutcome> AddAsync(AccountRegistration registration, CancellationToken cancellationToken)
+    {
+        lock (gate)
+            return Task.FromResult(Find(registration.Provider, registration.Key).Match(existing => Refresh(existing, registration), () => Add(registration)));
+    }
 
-    public Task<Result<IReadOnlyList<StoredAccount>, ErrorResponse>> GetAllAsync(CancellationToken cancellationToken) => throw new NotImplementedException($"{cancellationToken}");
+    public Task<Result<Option<StoredAccount>, ErrorResponse>> GetByKeyAsync(CloudProvider provider, ProviderAccountKey key, CancellationToken cancellationToken)
+    {
+        lock (gate)
+            return Task.FromResult(Result.Success<Option<StoredAccount>, ErrorResponse>(Find(provider, key)));
+    }
+
+    public Task<Result<IReadOnlyList<StoredAccount>, ErrorResponse>> GetAllAsync(CancellationToken cancellationToken)
+    {
+        lock (gate)
+            return Task.FromResult(Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([.. accounts]));
+    }
+
+    private Option<StoredAccount> Find(CloudProvider provider, ProviderAccountKey key) => accounts
+        .Where(account => account.Registration.Provider == provider && string.Equals(account.Registration.Key.Value, key.Value, StringComparison.OrdinalIgnoreCase))
+        .Select(Option.Some)
+        .DefaultIfEmpty(Option.None<StoredAccount>())
+        .First();
+
+    private AccountAddOutcome Refresh(StoredAccount existing, AccountRegistration registration)
+    {
+        accounts[accounts.IndexOf(existing)] = StoredAccountFactory.Create(existing.Id, registration);
+
+        return AccountAddOutcomeFactory.CreateReAuthenticated(existing.Id);
+    }
+
+    private AccountAddOutcome Add(AccountRegistration registration)
+    {
+        var added = StoredAccountFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), registration);
+        accounts.Add(added);
+
+        return AccountAddOutcomeFactory.CreateAdded(added.Id);
+    }
 }
