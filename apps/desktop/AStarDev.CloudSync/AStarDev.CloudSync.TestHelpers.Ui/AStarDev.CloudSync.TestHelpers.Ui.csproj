@@ -9,6 +9,7 @@
     <OutputType>Library</OutputType>
     <IsPackable>false</IsPackable>
     <IsPublishable>false</IsPublishable>
+    <SonarQubeTestProject>true</SonarQubeTestProject>
     <NoWarn>$(NoWarn);CS1591;CA1707;CA2007;</NoWarn>
   </PropertyGroup>
 
