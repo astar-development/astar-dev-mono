@@ -18,8 +18,8 @@ internal sealed class MsalAccessTokenSource(TokenCacheInitialiser tokenCache, IA
 
     /// <inheritdoc />
     public Task<AccessTokenOutcome> GetAccessTokenAsync(AccountId accountId, CancellationToken cancellationToken) =>
-        tokenCache.EnsureAsync(cancellationToken)
-            .MatchAsync(_ => FindAndAcquireAsync(accountId, cancellationToken), _ => Task.FromResult(Unavailable("The token cache could not be connected.", nameof(AccountAddFailure.TokenCacheUnavailable))));
+        tokenCache.EnsureAsync(ConsentPromptFactory.CreateNever(), cancellationToken)
+            .MatchAsync(_ => FindAndAcquireAsync(accountId, cancellationToken), _ => Task.FromResult(TokenCacheUnavailable()));
 
     private Task<AccessTokenOutcome> FindAndAcquireAsync(AccountId accountId, CancellationToken cancellationToken) =>
         accountStore.GetAllAsync(cancellationToken)
@@ -32,12 +32,10 @@ internal sealed class MsalAccessTokenSource(TokenCacheInitialiser tokenCache, IA
         var request = RequestAsync(key, cancellationToken);
         await ((Task)request).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
 
-        if (request.IsCanceled)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
+        cancellationToken.ThrowIfCancellationRequested();
 
+        if (request.IsCanceled)
             return Unavailable("The token request timed out.", TimeoutErrorType);
-        }
 
         return request.Exception is { InnerException: { } exception } ? ToOutcome(exception) : request.Result.Match(AccessTokenOutcomeFactory.CreateAcquired, AccessTokenOutcomeFactory.CreateSignInRequired);
     }
@@ -54,6 +52,13 @@ internal sealed class MsalAccessTokenSource(TokenCacheInitialiser tokenCache, IA
         }
 
         return Unavailable("Could not get an access token.", exception.ErrorType());
+    }
+
+    private AccessTokenOutcome TokenCacheUnavailable()
+    {
+        LogMessage.Warning(logger, Location, "The token cache cannot be connected without asking the user.");
+
+        return AccessTokenOutcomeFactory.CreateTokenCacheUnavailable();
     }
 
     private AccessTokenOutcome Unavailable(string message, string errorType)
