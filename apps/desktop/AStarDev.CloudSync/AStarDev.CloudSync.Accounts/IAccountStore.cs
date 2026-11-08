@@ -18,6 +18,7 @@ public interface IAccountStore
     Task<Result<Option<StoredAccount>, ErrorResponse>> GetByKeyAsync(CloudProvider provider, ProviderAccountKey key, CancellationToken cancellationToken);
 
     /// <summary>Reads every saved account.</summary>
+    /// <remarks>The order of the accounts is not specified.</remarks>
     /// <param name="cancellationToken">Cancels the read.</param>
     Task<Result<IReadOnlyList<StoredAccount>, ErrorResponse>> GetAllAsync(CancellationToken cancellationToken);
 }
