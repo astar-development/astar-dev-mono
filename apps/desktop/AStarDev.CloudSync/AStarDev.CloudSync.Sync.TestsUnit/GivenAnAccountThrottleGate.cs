@@ -134,6 +134,16 @@ public sealed class GivenAnAccountThrottleGate : IDisposable
     }
 
     [Fact]
+    public void when_a_longer_retry_after_is_reported_during_a_pause_then_the_pause_is_extended()
+    {
+        Gate.ReportThrottled(Personal, Option.Some(TimeSpan.FromSeconds(5)));
+
+        var pause = PauseAfterThrottle(Option.Some(TimeSpan.FromSeconds(30)));
+
+        pause.ShouldBe(30);
+    }
+
+    [Fact]
     public async Task when_the_caller_cancels_while_paused_then_the_wait_is_cancelled()
     {
         Gate.ReportThrottled(Personal, Option.Some(TimeSpan.FromMinutes(1)));

@@ -29,10 +29,16 @@ internal sealed class AccountThrottleGate(TimeProvider timeProvider) : IAccountT
     {
         lock (gate)
         {
+            var now = timeProvider.GetUtcNow();
             var (pausedUntil, consecutive) = accounts.GetValueOrDefault(accountId, (DateTimeOffset.MinValue, 0));
-            var pause = retryAfter.Match(Clamp, () => Backoff(consecutive));
-            var candidate = timeProvider.GetUtcNow() + pause;
-            accounts[accountId] = (candidate > pausedUntil ? candidate : pausedUntil, consecutive + 1);
+            if (now < pausedUntil)
+            {
+                accounts[accountId] = (Later(pausedUntil, now + retryAfter.Match(Clamp, () => TimeSpan.Zero)), consecutive);
+
+                return;
+            }
+
+            accounts[accountId] = (now + retryAfter.Match(Clamp, () => Backoff(consecutive)), consecutive + 1);
         }
     }
 
@@ -41,10 +47,12 @@ internal sealed class AccountThrottleGate(TimeProvider timeProvider) : IAccountT
     {
         lock (gate)
         {
-            if (accounts.TryGetValue(accountId, out var state))
+            if (accounts.TryGetValue(accountId, out var state) && timeProvider.GetUtcNow() >= state.PausedUntil)
                 accounts[accountId] = (state.PausedUntil, 0);
         }
     }
+
+    private static DateTimeOffset Later(DateTimeOffset first, DateTimeOffset second) => first > second ? first : second;
 
     private static TimeSpan Clamp(TimeSpan retryAfter)
     {

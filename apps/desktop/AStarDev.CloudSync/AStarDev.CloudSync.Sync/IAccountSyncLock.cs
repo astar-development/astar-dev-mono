@@ -9,7 +9,7 @@ public interface IAccountSyncLock
     /// <param name="accountId">The account to sync.</param>
     SyncLockAttempt TryAcquire(AccountId accountId);
 
-    /// <summary>Stops new passes from starting and waits until every running pass has released its lease.</summary>
+    /// <summary>Stops new passes from starting and waits until every running pass has released its lease. A pass that never disposes its lease makes this wait forever, so callers pass a token with a timeout.</summary>
     /// <param name="cancellationToken">Cancels the wait; the lock reopens and the call throws <see cref="OperationCanceledException"/>.</param>
     /// <returns>The drain; dispose it to let passes start again.</returns>
     Task<SyncDrain> DrainAsync(CancellationToken cancellationToken);

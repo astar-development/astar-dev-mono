@@ -33,6 +33,7 @@ internal sealed class InMemoryAccountSyncLock : IAccountSyncLock
     /// <inheritdoc />
     public async Task<SyncDrain> DrainAsync(CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         Task allReleased;
         lock (gate)
         {
