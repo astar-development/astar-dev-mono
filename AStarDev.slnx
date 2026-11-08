@@ -87,6 +87,8 @@
         <Project Path="packages/core/utilities/AStarDev.GuardClauses/AStarDev.GuardClauses.csproj" />
         <Project Path="packages/core/utilities/AStarDev.Localization.TestsUnit/AStarDev.Localization.TestsUnit.csproj" />
         <Project Path="packages/core/utilities/AStarDev.Localization/AStarDev.Localization.csproj" />
+        <Project Path="packages/core/utilities/AStarDev.SingleInstance.TestsUnit/AStarDev.SingleInstance.TestsUnit.csproj" />
+        <Project Path="packages/core/utilities/AStarDev.SingleInstance/AStarDev.SingleInstance.csproj" />
         <Project Path="packages/core/utilities/AStarDev.TechnicalDebtReporting.TestsUnit/AStarDev.TechnicalDebtReporting.TestsUnit.csproj" />
         <Project Path="packages/core/utilities/AStarDev.TechnicalDebtReporting/AStarDev.TechnicalDebtReporting.csproj" />
         <Project Path="packages/core/utilities/AStarDev.Utilities.TestsUnit/AStarDev.Utilities.TestsUnit.csproj" />

@@ -1,0 +1,108 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>AStarDev.SingleInstance</name>
+    </assembly>
+    <members>
+        <member name="T:AStarDev.SingleInstance.InstanceClaim">
+            <summary>What happened when the app tried to become the running instance.</summary>
+        </member>
+        <member name="T:AStarDev.SingleInstance.InstanceClaim.Primary">
+            <summary>This process is the running instance and holds the lock until <see cref="P:AStarDev.SingleInstance.InstanceClaim.Primary.Instance"/> is disposed.</summary>
+        </member>
+        <member name="P:AStarDev.SingleInstance.InstanceClaim.Primary.Instance">
+            <summary>The held lock and hand-off listener.</summary>
+        </member>
+        <member name="T:AStarDev.SingleInstance.InstanceClaim.HandedOff">
+            <summary>Another instance is running and agreed to show its window; this process should exit.</summary>
+        </member>
+        <member name="T:AStarDev.SingleInstance.InstanceClaim.NotAnswered">
+            <summary>Another instance holds the lock but did not answer in time; this process should still exit.</summary>
+        </member>
+        <member name="T:AStarDev.SingleInstance.InstanceClaim.LockUnavailable">
+            <summary>The lock could not be created at all (for example the data folder cannot be written), so single instance cannot be enforced.</summary>
+        </member>
+        <member name="T:AStarDev.SingleInstance.InstanceClaimFactory">
+            <summary>Creates <see cref="T:AStarDev.SingleInstance.InstanceClaim"/> cases.</summary>
+        </member>
+        <member name="M:AStarDev.SingleInstance.InstanceClaimFactory.CreatePrimary(AStarDev.SingleInstance.PrimaryInstance)">
+            <summary>Creates the primary case.</summary>
+        </member>
+        <member name="M:AStarDev.SingleInstance.InstanceClaimFactory.CreateHandedOff">
+            <summary>Creates the handed-off case.</summary>
+        </member>
+        <member name="M:AStarDev.SingleInstance.InstanceClaimFactory.CreateNotAnswered">
+            <summary>Creates the not-answered case.</summary>
+        </member>
+        <member name="M:AStarDev.SingleInstance.InstanceClaimFactory.CreateLockUnavailable">
+            <summary>Creates the lock-unavailable case.</summary>
+        </member>
+        <member name="T:AStarDev.SingleInstance.ISingleInstanceGuard">
+            <summary>Makes sure only one instance of an app runs per user.</summary>
+        </member>
+        <member name="M:AStarDev.SingleInstance.ISingleInstanceGuard.ClaimAsync(AStarDev.SingleInstance.SingleInstanceOptions,System.Threading.CancellationToken)">
+            <summary>Tries to become the running instance; if another instance holds the lock, asks it to show its window.</summary>
+            <param name="options">Where the lock and socket live.</param>
+            <param name="cancellationToken">Cancels the claim.</param>
+            <returns>The claim. Only <see cref="T:AStarDev.SingleInstance.InstanceClaim.Primary"/> and <see cref="T:AStarDev.SingleInstance.InstanceClaim.LockUnavailable"/> mean the app should keep starting.</returns>
+        </member>
+        <member name="T:AStarDev.SingleInstance.PrimaryInstance">
+            <summary>The running instance: holds the lock and listens for second launches until disposed.</summary>
+        </member>
+        <member name="E:AStarDev.SingleInstance.PrimaryInstance.ActivationRequested">
+            <summary>Raised on a thread-pool thread when a second launch asks this instance to show its window.</summary>
+        </member>
+        <member name="M:AStarDev.SingleInstance.PrimaryInstance.DisposeAsync">
+            <summary>Stops listening, removes the socket file and releases the lock.</summary>
+        </member>
+        <member name="T:AStarDev.SingleInstance.SingleInstanceGuard">
+            <summary>Claims the lock file and hands off to the running instance over a Unix domain socket.</summary>
+            <param name="logger">Reports hand-off results and lock failures, without paths.</param>
+        </member>
+        <member name="M:AStarDev.SingleInstance.SingleInstanceGuard.#ctor(Microsoft.Extensions.Logging.ILogger{AStarDev.SingleInstance.SingleInstanceGuard})">
+            <summary>Claims the lock file and hands off to the running instance over a Unix domain socket.</summary>
+            <param name="logger">Reports hand-off results and lock failures, without paths.</param>
+        </member>
+        <member name="M:AStarDev.SingleInstance.SingleInstanceGuard.ClaimAsync(AStarDev.SingleInstance.SingleInstanceOptions,System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:AStarDev.SingleInstance.SingleInstanceOptions">
+            <summary>Where the lock and hand-off socket live and how long a second launch waits for an answer.</summary>
+        </member>
+        <member name="P:AStarDev.SingleInstance.SingleInstanceOptions.DataFolder">
+            <summary>The per-user folder that holds <c>{Name}.lock</c> and <c>{Name}.sock</c>.</summary>
+        </member>
+        <member name="P:AStarDev.SingleInstance.SingleInstanceOptions.Name">
+            <summary>The file name stem for the lock and the socket.</summary>
+        </member>
+        <member name="P:AStarDev.SingleInstance.SingleInstanceOptions.HandOffTimeout">
+            <summary>How long a second launch waits for the running instance to answer.</summary>
+        </member>
+        <member name="M:AStarDev.SingleInstance.SingleInstanceOptions.ToString">
+            <summary>Returns a redacted form, so the folder path never reaches logs by accident.</summary>
+        </member>
+        <member name="T:AStarDev.SingleInstance.SingleInstanceOptionsFactory">
+            <summary>Creates <see cref="T:AStarDev.SingleInstance.SingleInstanceOptions"/> values.</summary>
+        </member>
+        <member name="F:AStarDev.SingleInstance.SingleInstanceOptionsFactory.DefaultName">
+            <summary>The name used when none is given.</summary>
+        </member>
+        <member name="F:AStarDev.SingleInstance.SingleInstanceOptionsFactory.DefaultHandOffTimeout">
+            <summary>The hand-off timeout used when none, or a non-positive one, is given.</summary>
+        </member>
+        <member name="M:AStarDev.SingleInstance.SingleInstanceOptionsFactory.Create(System.IO.Abstractions.IDirectoryInfo,System.String,System.Nullable{System.TimeSpan})">
+            <summary>Creates options. A blank name becomes <see cref="F:AStarDev.SingleInstance.SingleInstanceOptionsFactory.DefaultName"/> and a missing or non-positive timeout becomes <see cref="F:AStarDev.SingleInstance.SingleInstanceOptionsFactory.DefaultHandOffTimeout"/>.</summary>
+            <param name="dataFolder">The per-user data folder.</param>
+            <param name="name">The file name stem for the lock and the socket.</param>
+            <param name="handOffTimeout">How long a second launch waits for an answer.</param>
+        </member>
+        <member name="T:AStarDev.SingleInstance.SingleInstanceServiceCollectionExtensions">
+            <summary>Registers the single-instance guard.</summary>
+        </member>
+        <member name="M:AStarDev.SingleInstance.SingleInstanceServiceCollectionExtensions.AddSingleInstance(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>Registers <see cref="T:AStarDev.SingleInstance.ISingleInstanceGuard"/> as a singleton. Needs logging.</summary>
+            <param name="services">The service collection.</param>
+            <returns>The <paramref name="services"/> collection to allow further chaining.</returns>
+        </member>
+    </members>
+</doc>
