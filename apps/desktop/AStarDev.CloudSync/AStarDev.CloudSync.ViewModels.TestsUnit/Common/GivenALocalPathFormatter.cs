@@ -1,7 +1,9 @@
+using System.IO.Abstractions;
 using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.CloudSync.TestHelpers.Ui;
 using AStarDev.CloudSync.ViewModels.Common;
 using AStarDev.FunctionalParadigm;
+using Testably.Abstractions;
 
 namespace AStarDev.CloudSync.ViewModels.TestsUnit.Common;
 
@@ -55,7 +57,7 @@ public class GivenALocalPathFormatter
     [Fact]
     public void when_there_is_no_home_folder_then_the_path_is_unchanged()
     {
-        var formatter = new LocalPathFormatter(new FixedHomeFolder(Option.None<DirectoryInfo>()));
+        var formatter = new LocalPathFormatter(new FixedHomeFolder(Option.None<IDirectoryInfo>()));
 
         formatter.Format(TestPaths.Full("/home/user/Documents")).ShouldBe(TestPaths.Full("/home/user/Documents"));
     }
@@ -69,5 +71,5 @@ public class GivenALocalPathFormatter
         formatter.Format(TestPaths.Full("/HOME/USER/Documents")).ShouldBe(expected);
     }
 
-    private static LocalPathFormatter CreateFormatter(string homeFolder) => new(new FixedHomeFolder(Option.Some(new DirectoryInfo(homeFolder))));
+    private static LocalPathFormatter CreateFormatter(string homeFolder) => new(new FixedHomeFolder(Option.Some(new RealFileSystem().DirectoryInfo.New(homeFolder))));
 }

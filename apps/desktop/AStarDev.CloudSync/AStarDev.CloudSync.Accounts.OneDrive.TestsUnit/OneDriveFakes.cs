@@ -1,3 +1,4 @@
+using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.TestHelpers.Accounts;
 using AStarDev.CloudSync.TestHelpers.Common;
 using Microsoft.Extensions.Time.Testing;
@@ -16,7 +17,7 @@ public sealed class OneDriveFakes
 
     public FakeGraphHandler Graph { get; init; } = new();
 
-    public FakeAccountStore AccountStore { get; init; } = new();
+    public IAccountStore AccountStore { get; init; } = new FakeAccountStore();
 
     public ConsentFile ConsentFile { get; init; } = new();
 

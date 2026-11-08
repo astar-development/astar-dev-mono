@@ -94,6 +94,14 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
+    public void when_application_services_are_added_then_the_onedrive_access_token_source_resolves_against_the_real_account_store()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<IAccessTokenSource>().GetType().Assembly.ShouldBe(typeof(OneDriveServiceCollectionExtensions).Assembly);
+    }
+
+    [Fact]
     public void when_application_services_are_added_then_the_add_account_dialog_and_the_token_cache_consent_are_the_shared_view_models()
     {
         using var provider = CreateServices().BuildServiceProvider();

@@ -73,7 +73,7 @@ internal sealed class MicrosoftAccountAdder(TokenCacheInitialiser tokenCache, IM
     private double ElapsedMilliseconds(long started) => timeProvider.GetElapsedTime(started).TotalMilliseconds;
 
     private Task<Result<Unit, AccountAddOutcome>> PrepareTokenCacheAsync(CancellationToken cancellationToken) =>
-        tokenCache.EnsureAsync(cancellationToken)
+        tokenCache.EnsureAsync(ConsentPromptFactory.CreateAllowed(), cancellationToken)
             .MatchAsync(Result.Success<Unit, AccountAddOutcome>, failure => Result.Failure<Unit, AccountAddOutcome>(AccountAddOutcomeFactory.CreateFailed(failure)))
             .OrCancelledAsync(() => AccountAddLog.StepTimedOut(logger, "token cache"), cancellationToken);
 

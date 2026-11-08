@@ -1,5 +1,6 @@
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Overview;
+using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.TestHelpers.Accounts;
 using AStarDev.FunctionalParadigm;
 using Microsoft.Extensions.DependencyInjection;

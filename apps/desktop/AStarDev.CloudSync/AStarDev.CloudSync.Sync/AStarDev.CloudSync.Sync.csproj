@@ -12,6 +12,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Testably.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="../AStarDev.CloudSync.Accounts/AStarDev.CloudSync.Accounts.csproj" />
     <ProjectReference Include="../../../../packages/core/functional/AStarDev.FunctionalParadigm/AStarDev.FunctionalParadigm.csproj" />
     <ProjectReference Include="../../../../packages/source-generators/AStarDev.SourceGeneratorAttributes/AStarDev.SourceGeneratorAttributes.csproj" />

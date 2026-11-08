@@ -1,14 +1,15 @@
 using System.Diagnostics.CodeAnalysis;
 using AStarDev.CloudSync.Accounts;
+using AStarDev.FunctionalParadigm;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Client;
 
 namespace AStarDev.CloudSync.Accounts.OneDrive;
 
-/// <summary>Calls MSAL to sign in through the system browser and manage cached accounts.</summary>
+/// <summary>Calls MSAL to sign in through the system browser, read tokens from the cache and manage cached accounts.</summary>
 /// <param name="application">The app's one MSAL public client application.</param>
 /// <param name="options">The scopes to request.</param>
-[ExcludeFromCodeCoverage(Justification = "Thin wrapper over MSAL's interactive system-browser sign-in, which cannot run in automated tests.")]
+[ExcludeFromCodeCoverage(Justification = "Thin wrapper over MSAL's interactive system-browser sign-in and its persisted token cache, which cannot run in automated tests.")]
 internal sealed class MsalClient(IPublicClientApplication application, IOptions<MicrosoftAccountOptions> options) : IMsalClient
 {
     /// <inheritdoc />
@@ -33,5 +34,17 @@ internal sealed class MsalClient(IPublicClientApplication application, IOptions<
 
         foreach (var account in accounts.Where(account => string.Equals(account.HomeAccountId?.Identifier, key.Value, StringComparison.OrdinalIgnoreCase)))
             await application.RemoveAsync(account).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<Option<string>> AcquireTokenSilentAsync(ProviderAccountKey key, CancellationToken cancellationToken)
+    {
+        var accounts = await application.GetAccountsAsync().ConfigureAwait(false);
+        var cached = accounts.FirstOrNone(account => string.Equals(account.HomeAccountId?.Identifier, key.Value, StringComparison.OrdinalIgnoreCase));
+
+        return await cached.MatchAsync(
+                async account => Option.Some((await application.AcquireTokenSilent(options.Value.Scopes, account).ExecuteAsync(cancellationToken).ConfigureAwait(false)).AccessToken),
+                Option.None<string>)
+            .ConfigureAwait(false);
     }
 }

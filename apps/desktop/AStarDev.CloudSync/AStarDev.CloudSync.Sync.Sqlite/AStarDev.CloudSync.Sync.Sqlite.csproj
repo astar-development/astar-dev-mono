@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    SQLite sync module: its own DbContext and migration history for the sync
+    tables (remote index, baseline, selection rules, attention queue, runs,
+    activity) and per-account sync settings. Everything is internal except
+    AddSyncPersistence. Must not reference Avalonia.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <IsPublishable>false</IsPublishable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../AStarDev.CloudSync.Sync/AStarDev.CloudSync.Sync.csproj" />
+  </ItemGroup>
+
+</Project>

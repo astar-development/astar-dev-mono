@@ -33,6 +33,8 @@ public sealed class OneDriveModule
 
     public IPlaintextCacheConsentSettings ConsentSettings => provider.GetRequiredService<IPlaintextCacheConsentSettings>();
 
+    public IAccessTokenSource TokenSource => provider.GetRequiredService<IAccessTokenSource>();
+
     public Task<AccountAddOutcome> AddAsync(CancellationToken cancellationToken) => Adder.AddAsync(cancellationToken);
 
     public async Task<Result<Unit, AccountAddFailure>> EnsureTokenCacheAsync(CancellationToken cancellationToken) =>
