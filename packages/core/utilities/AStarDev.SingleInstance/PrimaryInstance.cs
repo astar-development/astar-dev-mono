@@ -39,14 +39,14 @@ public sealed class PrimaryInstance : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         await stopping.CancelAsync().ConfigureAwait(false);
-        listener.Match(socket => Dispose(socket), () => Unit.Instance);
+        listener.Match(CloseListener, () => Unit.Instance);
         await listening.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
         _ = Try.Run(() => DeleteSocketFile(socketFile));
         await heldLock.DisposeAsync().ConfigureAwait(false);
         stopping.Dispose();
     }
 
-    private static Unit Dispose(Socket socket)
+    private static Unit CloseListener(Socket socket)
     {
         socket.Dispose();
 
