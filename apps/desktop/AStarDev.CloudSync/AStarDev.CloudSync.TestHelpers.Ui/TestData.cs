@@ -3,6 +3,7 @@ using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Overview;
 using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.TestHelpers.Accounts;
+using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.CloudSync.TestHelpers.DisplaySettings;
 using AStarDev.CloudSync.TestHelpers.Overview;
 using AStarDev.CloudSync.ViewModels;
@@ -17,11 +18,11 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Time.Testing;
 using Xunit;
 
-namespace AStarDev.CloudSync.TestHelpers.Common;
+namespace AStarDev.CloudSync.TestHelpers.Ui;
 
 public static class TestData
 {
-    public static readonly DateTimeOffset Now = new(2026, 11, 4, 12, 0, 0, TimeSpan.Zero);
+    public static readonly DateTimeOffset Now = TestClock.Now;
 
     public static ILocalizationService CreateLocalization()
     {
@@ -31,7 +32,7 @@ public static class TestData
         return localization;
     }
 
-    public static FakeTimeProvider CreateTime() => new(Now);
+    public static FakeTimeProvider CreateTime() => TestClock.CreateTime();
 
     public static LocalPathFormatter CreateLocalPathFormatter() => new(new FixedHomeFolder(Option.Some(new DirectoryInfo("/home/user"))));
 

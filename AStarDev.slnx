@@ -24,6 +24,7 @@
         <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.Overview/AStarDev.CloudSync.Overview.csproj" />
         <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.Sync/AStarDev.CloudSync.Sync.csproj" />
         <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.TestHelpers/AStarDev.CloudSync.TestHelpers.csproj" />
+        <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.TestHelpers.Ui/AStarDev.CloudSync.TestHelpers.Ui.csproj" />
         <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.TestsUnit/AStarDev.CloudSync.TestsUnit.csproj" />
         <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.ViewModels.TestsUnit/AStarDev.CloudSync.ViewModels.TestsUnit.csproj" />
         <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.ViewModels/AStarDev.CloudSync.ViewModels.csproj" />

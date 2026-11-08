@@ -1,7 +1,7 @@
 using AStarDev.CloudSync.ViewModels.Common;
 using AStarDev.FunctionalParadigm;
 
-namespace AStarDev.CloudSync.TestHelpers.Common;
+namespace AStarDev.CloudSync.TestHelpers.Ui;
 
 public sealed class FixedHomeFolder(Option<DirectoryInfo> folder) : IHomeFolder
 {

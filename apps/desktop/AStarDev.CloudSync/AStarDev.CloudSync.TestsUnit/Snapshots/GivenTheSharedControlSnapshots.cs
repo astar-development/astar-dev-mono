@@ -3,7 +3,7 @@ using AStarDev.CloudSync.Activity;
 using AStarDev.CloudSync.Common;
 using AStarDev.CloudSync.Conflicts;
 using AStarDev.CloudSync.Overview;
-using AStarDev.CloudSync.TestHelpers.Common;
+using AStarDev.CloudSync.TestHelpers.Ui;
 using AStarDev.CloudSync.ViewModels.Overview;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;

@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../AStarDev.CloudSync.TestHelpers/AStarDev.CloudSync.TestHelpers.csproj" />
+    <ProjectReference Include="../AStarDev.CloudSync.TestHelpers.Ui/AStarDev.CloudSync.TestHelpers.Ui.csproj" />
     <ProjectReference Include="../AStarDev.CloudSync.ViewModels/AStarDev.CloudSync.ViewModels.csproj" />
   </ItemGroup>
 

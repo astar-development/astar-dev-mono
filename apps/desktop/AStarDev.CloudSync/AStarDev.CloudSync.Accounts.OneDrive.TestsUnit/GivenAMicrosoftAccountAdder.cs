@@ -243,5 +243,5 @@ public class GivenAMicrosoftAccountAdder
         logger.Messages.ShouldAllBe(message => !message.Contains(TestSignIns.AccountKey, StringComparison.OrdinalIgnoreCase));
     }
 
-    private MicrosoftAccountAdder CreateAdder() => new(new TokenCacheInitialiser(storage, consent, consentStore, new RecordingLogger<TokenCacheInitialiser>()), msal, driveLookup, accountStore, TestData.CreateTime(), logger);
+    private MicrosoftAccountAdder CreateAdder() => new(new TokenCacheInitialiser(storage, consent, consentStore, new RecordingLogger<TokenCacheInitialiser>()), msal, driveLookup, accountStore, TestClock.CreateTime(), logger);
 }
