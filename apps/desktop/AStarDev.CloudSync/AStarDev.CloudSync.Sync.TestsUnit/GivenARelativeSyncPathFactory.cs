@@ -40,6 +40,32 @@ public class GivenARelativeSyncPathFactory
     }
 
     [Fact]
+    public void when_two_paths_differ_only_in_case_then_they_are_equal()
+    {
+        var upper = SyncPaths.Of("Documents/Report.docx");
+        var lower = SyncPaths.Of("documents/REPORT.docx");
+
+        (upper == lower, upper.GetHashCode() == lower.GetHashCode(), new HashSet<RelativeSyncPath> { upper, lower }.Count).ShouldBe((true, true, 1));
+    }
+
+    [Fact]
+    public void when_a_name_is_decomposed_then_it_equals_the_composed_name()
+    {
+        var decomposed = SyncPaths.Of("Café/menu.txt");
+        var composed = SyncPaths.Of("Café/menu.txt");
+
+        (decomposed == composed, decomposed.Value).ShouldBe((true, "Café/menu.txt"));
+    }
+
+    [Fact]
+    public void when_the_default_path_is_hashed_then_it_does_not_throw()
+    {
+        var comparer = RelativeSyncPathComparer.Instance;
+
+        (comparer.GetHashCode(default) == comparer.GetHashCode(default), default(RelativeSyncPath) == default(RelativeSyncPath)).ShouldBe((true, true));
+    }
+
+    [Fact]
     public void when_two_paths_differ_only_in_case_then_the_comparer_treats_them_as_equal()
     {
         var comparer = RelativeSyncPathComparer.Instance;

@@ -19,19 +19,78 @@ public class GivenAQuarantineSnapshot
     }
 
     [Fact]
-    public void when_two_entries_differ_only_in_case_then_the_first_is_kept()
+    public void when_two_entries_differ_only_in_case_then_the_first_non_clear_one_is_kept()
     {
         var snapshot = Snapshot(("Photos/Beach.jpg", PathQuarantineStateFactory.CreateHeldByGuard()), ("photos/beach.JPG", PathQuarantineStateFactory.CreateConflicted()));
 
         (snapshot.Entries.Count, snapshot.StateOf(SyncPaths.Of("Photos/Beach.jpg"))).ShouldBe((1, PathQuarantineStateFactory.CreateHeldByGuard()));
     }
 
+    [Fact]
+    public void when_a_clear_entry_comes_before_a_held_casing_variant_then_the_held_state_wins()
+    {
+        var snapshot = Snapshot(("Docs/A.txt", PathQuarantineStateFactory.CreateClear()), ("docs/a.txt", PathQuarantineStateFactory.CreateHeldByGuard()));
+
+        snapshot.StateOf(SyncPaths.Of("Docs/A.txt")).ShouldBe(PathQuarantineStateFactory.CreateHeldByGuard());
+    }
+
+    [Fact]
+    public void when_a_held_entry_comes_before_a_clear_casing_variant_then_the_held_state_wins()
+    {
+        var snapshot = Snapshot(("Docs/A.txt", PathQuarantineStateFactory.CreateHeldByGuard()), ("docs/a.txt", PathQuarantineStateFactory.CreateClear()));
+
+        snapshot.StateOf(SyncPaths.Of("docs/A.TXT")).ShouldBe(PathQuarantineStateFactory.CreateHeldByGuard());
+    }
+
+    [Theory]
+    [InlineData("Photos/2024/Beach.jpg")]
+    [InlineData("photos/2024/beach.jpg")]
+    [InlineData("Photos")]
+    public void when_a_folder_is_held_then_everything_under_it_is_held(string value)
+    {
+        var snapshot = Snapshot(("Photos", PathQuarantineStateFactory.CreateHeldByGuard()));
+
+        snapshot.StateOf(SyncPaths.Of(value)).ShouldBe(PathQuarantineStateFactory.CreateHeldByGuard());
+    }
+
+    [Fact]
+    public void when_a_folder_is_held_then_a_sibling_sharing_its_name_prefix_is_clear()
+    {
+        var snapshot = Snapshot(("Photos", PathQuarantineStateFactory.CreateHeldByGuard()));
+
+        snapshot.StateOf(SyncPaths.Of("Photoshop/Banner.psd")).ShouldBe(PathQuarantineStateFactory.CreateClear());
+    }
+
+    [Fact]
+    public void when_a_file_is_conflicted_inside_a_resyncing_folder_then_the_files_own_state_wins()
+    {
+        var snapshot = Snapshot(("Photos", PathQuarantineStateFactory.CreateResyncInProgress()), ("Photos/Beach.jpg", PathQuarantineStateFactory.CreateConflicted()));
+
+        snapshot.StateOf(SyncPaths.Of("Photos/Beach.jpg")).ShouldBe(PathQuarantineStateFactory.CreateConflicted());
+    }
+
+    [Fact]
+    public void when_the_path_is_the_default_value_then_it_is_skipped()
+    {
+        var snapshot = QuarantineSnapshotFactory.CreateEmpty();
+
+        snapshot.StateOf(default).ShouldBe(PathQuarantineStateFactory.CreateSkipped());
+    }
+
+    [Fact]
+    public void when_no_entries_are_given_then_the_snapshot_is_empty()
+    {
+        var snapshot = QuarantineSnapshotFactory.Create(null!);
+
+        snapshot.Entries.ShouldBeEmpty();
+    }
+
     [Theory]
     [InlineData(".obsidian/workspace.json")]
     [InlineData("Notes/.obsidian/workspace.json")]
-    [InlineData("Documents/.hidden-notes.txt")]
     [InlineData("Documents/Report.docx.3f2b8c1e-5d43-4a7e-9e61-0c8a7b6d5e4f.download")]
     [InlineData("Documents/Report.docx.3F2B8C1E-5D43-4A7E-9E61-0C8A7B6D5E4F.DOWNLOAD")]
+    [InlineData("Documents/Report.docx.3f2b8c1e5d434a7e9e610c8a7b6d5e4f.download")]
     public void when_the_skip_filter_matches_a_path_then_it_is_skipped(string value)
     {
         var snapshot = QuarantineSnapshotFactory.CreateEmpty();
@@ -45,7 +104,10 @@ public class GivenAQuarantineSnapshot
     [InlineData("Documents/movie.partial")]
     [InlineData("Documents/Report.docx.not-a-guid.download")]
     [InlineData("Documents/v1.2/Release notes.txt")]
-    public void when_a_user_file_only_looks_temporary_then_it_is_not_skipped(string value)
+    [InlineData(".gitignore")]
+    [InlineData("Projects/App/.env")]
+    [InlineData("Documents/.hidden-notes.txt")]
+    public void when_a_user_file_only_looks_temporary_or_is_a_dot_file_then_it_is_not_skipped(string value)
     {
         var snapshot = QuarantineSnapshotFactory.CreateEmpty();
 
