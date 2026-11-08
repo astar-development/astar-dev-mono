@@ -4,7 +4,7 @@ using AStarDev.FunctionalParadigm;
 namespace AStarDev.CloudSync.Accounts.OneDrive;
 
 /// <summary>Reads the signed-in account's OneDrive drive.</summary>
-public interface IDriveLookup
+internal interface IDriveLookup
 {
     /// <summary>Reads the drive id and quota through <c>GET /me/drive</c>.</summary>
     /// <param name="accessToken">The access token from the sign-in.</param>

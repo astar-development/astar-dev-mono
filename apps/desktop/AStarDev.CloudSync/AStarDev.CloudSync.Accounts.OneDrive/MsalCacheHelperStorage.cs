@@ -10,7 +10,7 @@ namespace AStarDev.CloudSync.Accounts.OneDrive;
 /// <param name="application">The app's one MSAL public client application.</param>
 /// <param name="cacheFolder">The folder holding the cache files.</param>
 [ExcludeFromCodeCoverage(Justification = "Thin wrapper over MsalCacheHelper; the secure store depends on the machine's keyring, so it cannot be tested reliably.")]
-public sealed class MsalCacheHelperStorage(IPublicClientApplication application, IDirectoryInfo cacheFolder) : IMsalTokenCacheStorage
+internal sealed class MsalCacheHelperStorage(IPublicClientApplication application, IDirectoryInfo cacheFolder) : IMsalTokenCacheStorage
 {
     private const string SecureCacheFileName = "cloudsync.msalcache";
     private const string PlaintextCacheFileName = "cloudsync.msalcache.plaintext";

@@ -108,7 +108,7 @@ public class GivenServiceCollectionExtensions
     {
         using var provider = CreateServices().BuildServiceProvider();
 
-        provider.GetRequiredService<IAccountAdder>().ShouldBeOfType<MicrosoftAccountAdder>();
+        provider.GetRequiredService<IAccountAdder>().GetType().Assembly.ShouldBe(typeof(OneDriveServiceCollectionExtensions).Assembly);
     }
 
     [Fact]
@@ -220,19 +220,19 @@ public class GivenServiceCollectionExtensions
     {
         var services = CreateServices();
 
-        services.ShouldContain(descriptor => descriptor.ServiceType == typeof(IAccountAdder) && descriptor.ImplementationType == typeof(MicrosoftAccountAdder) && descriptor.Lifetime == ServiceLifetime.Singleton);
+        services.ShouldContain(descriptor => descriptor.ServiceType == typeof(IAccountAdder) && descriptor.ImplementationType!.Assembly == typeof(OneDriveServiceCollectionExtensions).Assembly && descriptor.Lifetime == ServiceLifetime.Singleton);
     }
 
     [Fact]
-    public void when_application_services_are_added_then_the_msal_client_drive_lookup_and_public_client_application_are_registered()
+    public void when_application_services_are_added_then_the_msal_client_token_cache_storage_and_public_client_application_are_registered()
     {
         using var provider = CreateServices().BuildServiceProvider();
+        var oneDriveModule = typeof(OneDriveServiceCollectionExtensions).Assembly;
 
-        (provider.GetRequiredService<IMsalClient>(), provider.GetRequiredService<IDriveLookup>(), provider.GetRequiredService<IMsalTokenCacheStorage>(), provider.GetRequiredService<IPublicClientApplication>()).ShouldSatisfyAllConditions(
-            services => services.Item1.ShouldBeOfType<MsalClient>(),
-            services => services.Item2.ShouldBeOfType<GraphDriveLookup>(),
-            services => services.Item3.ShouldBeOfType<MsalCacheHelperStorage>(),
-            services => services.Item4.ShouldBeSameAs(provider.GetRequiredService<IPublicClientApplication>()));
+        (provider.GetRequiredService<IMsalClient>(), provider.GetRequiredService<IMsalTokenCacheStorage>(), provider.GetRequiredService<IPublicClientApplication>()).ShouldSatisfyAllConditions(
+            services => services.Item1.GetType().Assembly.ShouldBe(oneDriveModule),
+            services => services.Item2.GetType().Assembly.ShouldBe(oneDriveModule),
+            services => services.Item3.ShouldBeSameAs(provider.GetRequiredService<IPublicClientApplication>()));
     }
 
     [Fact]
@@ -248,19 +248,13 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
-    public void when_application_services_are_added_then_the_plaintext_cache_consent_store_is_registered()
+    public void when_application_services_are_added_then_one_plaintext_cache_consent_setting_comes_from_the_onedrive_module()
     {
         using var provider = CreateServices().BuildServiceProvider();
 
-        provider.GetRequiredService<IPlaintextCacheConsentStore>().ShouldBeOfType<JsonPlaintextCacheConsentStore>();
-    }
-
-    [Fact]
-    public void when_application_services_are_added_then_the_plaintext_cache_consent_settings_are_the_token_cache_initialiser()
-    {
-        using var provider = CreateServices().BuildServiceProvider();
-
-        provider.GetRequiredService<IPlaintextCacheConsentSettings>().ShouldBeSameAs(provider.GetRequiredService<TokenCacheInitialiser>());
+        provider.GetRequiredService<IPlaintextCacheConsentSettings>().ShouldSatisfyAllConditions(
+            settings => settings.GetType().Assembly.ShouldBe(typeof(OneDriveServiceCollectionExtensions).Assembly),
+            settings => settings.ShouldBeSameAs(provider.GetRequiredService<IPlaintextCacheConsentSettings>()));
     }
 
     [Fact]
@@ -276,7 +270,7 @@ public class GivenServiceCollectionExtensions
     {
         using var provider = CreateServices().BuildServiceProvider();
 
-        var handlerTypes = HandlerChain(provider.GetRequiredService<IHttpMessageHandlerFactory>().CreateHandler(GraphDriveLookup.HttpClientName)).Select(handler => handler.GetType().Name).ToList();
+        var handlerTypes = HandlerChain(provider.GetRequiredService<IHttpMessageHandlerFactory>().CreateHandler("MicrosoftGraph")).Select(handler => handler.GetType().Name).ToList();
 
         handlerTypes.ShouldContain("RetryHandler");
         handlerTypes.ShouldContain("RedirectHandler");

@@ -6,7 +6,7 @@ namespace AStarDev.CloudSync.Accounts.OneDrive;
 
 /// <summary>Forwards MSAL's own warnings and errors to the app log. MSAL's PII logging stays off, and email addresses and GUIDs in the text are replaced with [redacted], because server error text can still name the account.</summary>
 /// <param name="logger">The app log MSAL messages go to.</param>
-public sealed partial class MsalIdentityLogger(ILogger<MsalIdentityLogger> logger) : IIdentityLogger
+internal sealed partial class MsalIdentityLogger(ILogger<MsalIdentityLogger> logger) : IIdentityLogger
 {
     private const string Redacted = "[redacted]";
 

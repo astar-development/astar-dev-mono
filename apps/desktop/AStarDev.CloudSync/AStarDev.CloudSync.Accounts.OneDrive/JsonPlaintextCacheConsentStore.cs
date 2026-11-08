@@ -10,7 +10,7 @@ namespace AStarDev.CloudSync.Accounts.OneDrive;
 /// <summary>Keeps the plaintext token file consent in a small JSON file. The file exists only while consent is granted.</summary>
 /// <param name="consentFile">The JSON file holding the consent.</param>
 /// <param name="logger">Reports a consent file that cannot be read or saved, without its path.</param>
-public sealed class JsonPlaintextCacheConsentStore(IFileInfo consentFile, ILogger<JsonPlaintextCacheConsentStore> logger) : IPlaintextCacheConsentStore
+internal sealed class JsonPlaintextCacheConsentStore(IFileInfo consentFile, ILogger<JsonPlaintextCacheConsentStore> logger) : IPlaintextCacheConsentStore
 {
     private const string GrantedValue = "Granted";
 

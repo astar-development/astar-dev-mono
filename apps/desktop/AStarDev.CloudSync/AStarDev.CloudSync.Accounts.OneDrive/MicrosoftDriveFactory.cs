@@ -3,7 +3,7 @@ using AStarDev.CloudSync.Accounts;
 namespace AStarDev.CloudSync.Accounts.OneDrive;
 
 /// <summary>Creates <see cref="MicrosoftDrive"/> values.</summary>
-public static class MicrosoftDriveFactory
+internal static class MicrosoftDriveFactory
 {
     /// <summary>Creates a drive from its id and storage.</summary>
     /// <param name="driveId">The drive's id.</param>

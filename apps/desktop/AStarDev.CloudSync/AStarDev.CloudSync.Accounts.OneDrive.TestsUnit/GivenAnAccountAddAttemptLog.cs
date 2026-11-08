@@ -1,3 +1,4 @@
+using System.Net;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.TestHelpers.Accounts;
 using AStarDev.CloudSync.TestHelpers.Common;
@@ -7,37 +8,36 @@ using Microsoft.Identity.Client;
 
 namespace AStarDev.CloudSync.Accounts.OneDrive.TestsUnit;
 
-public class GivenAnAccountAddAttemptLog
+public sealed class GivenAnAccountAddAttemptLog : IDisposable
 {
-    private readonly RecordingLogger<MicrosoftAccountAdder> logger = new();
-    private readonly RecordingLogger<TokenCacheInitialiser> cacheLogger = new();
+    private readonly RecordingLoggerProvider logs = new();
     private readonly FakeTimeProvider time = TestClock.CreateTime();
     private FakeMsalTokenCacheStorage storage = new();
     private FakeTokenCacheConsent consent = new();
-    private readonly InMemoryPlaintextCacheConsentStore consentStore = new();
+    private readonly ConsentFile consentFile = new();
     private FakeMsalClient msal = new();
-    private FakeDriveLookup driveLookup = new();
+    private FakeGraphHandler graph = new();
     private FakeAccountStore accountStore = new();
 
     [Fact]
     public async Task when_a_new_account_is_added_then_every_step_is_logged_in_order()
     {
-        _ = await CreateAdder().AddAsync(TestContext.Current.CancellationToken);
+        _ = await CreateModule().AddAsync(TestContext.Current.CancellationToken);
 
-        logger.EventNames.ShouldBe(["AttemptStarted", "BrowserLaunched", "AuthSucceeded", "DriveFetched", "Persisted", "AttemptCompleted"]);
+        logs.Logger.EventNames.ShouldBe(["AttemptStarted", "TokenCacheInitialised", "BrowserLaunched", "AuthSucceeded", "DriveFetched", "Persisted", "AttemptCompleted"]);
     }
 
     [Fact]
     public async Task when_an_attempt_runs_then_its_events_share_a_scope_with_the_attempt_id_and_provider()
     {
-        var adder = CreateAdder();
+        var adder = CreateModule();
 
         _ = await adder.AddAsync(TestContext.Current.CancellationToken);
         _ = await adder.AddAsync(TestContext.Current.CancellationToken);
 
-        logger.Scopes.Count.ShouldBe(2);
-        logger.Scopes.ShouldAllBe(scope => (string?)scope["Provider"] == "OneDrive" && scope["AccountAddAttemptId"] is Guid && (Guid)scope["AccountAddAttemptId"]! != Guid.Empty);
-        logger.Scopes[0]["AccountAddAttemptId"].ShouldNotBe(logger.Scopes[1]["AccountAddAttemptId"]);
+        logs.Logger.Scopes.Count.ShouldBe(2);
+        logs.Logger.Scopes.ShouldAllBe(scope => (string?)scope["Provider"] == "OneDrive" && scope["AccountAddAttemptId"] is Guid && (Guid)scope["AccountAddAttemptId"]! != Guid.Empty);
+        logs.Logger.Scopes[0]["AccountAddAttemptId"].ShouldNotBe(logs.Logger.Scopes[1]["AccountAddAttemptId"]);
     }
 
     [Fact]
@@ -45,9 +45,9 @@ public class GivenAnAccountAddAttemptLog
     {
         msal = new FakeMsalClient { SignIn = _ => { time.Advance(TimeSpan.FromSeconds(2)); return Task.FromResult(TestSignIns.NewAccount); } };
 
-        _ = await CreateAdder().AddAsync(TestContext.Current.CancellationToken);
+        _ = await CreateModule().AddAsync(TestContext.Current.CancellationToken);
 
-        var values = logger.ValuesOf("AuthSucceeded");
+        var values = logs.Logger.ValuesOf("AuthSucceeded");
         values["DurationMs"].ShouldBe(2000d);
         values["Scopes"].ShouldBe("User.Read Files.ReadWrite.All");
         var keyHash = values["AccountKeyHash"].ShouldBeOfType<string>();
@@ -59,22 +59,22 @@ public class GivenAnAccountAddAttemptLog
     [Fact]
     public async Task when_the_same_account_signs_in_with_different_key_casing_then_the_key_hash_is_the_same()
     {
-        _ = await CreateAdder().AddAsync(TestContext.Current.CancellationToken);
+        _ = await CreateModule().AddAsync(TestContext.Current.CancellationToken);
         msal = new FakeMsalClient { SignIn = _ => Task.FromResult(MicrosoftSignInFactory.Create(TestSignIns.AccountKey.ToUpperInvariant(), TestSignIns.Email, TestSignIns.DisplayName, TestSignIns.AccessToken, TestSignIns.GrantedScopes)) };
-        _ = await CreateAdder().AddAsync(TestContext.Current.CancellationToken);
+        _ = await CreateModule().AddAsync(TestContext.Current.CancellationToken);
 
-        logger.Events.Where(recorded => recorded.Name == "AuthSucceeded").Select(recorded => recorded.Values["AccountKeyHash"]).Distinct().Count().ShouldBe(1);
+        logs.Logger.Events.Where(recorded => recorded.Name == "AuthSucceeded").Select(recorded => recorded.Values["AccountKeyHash"]).Distinct().Count().ShouldBe(1);
     }
 
     [Fact]
     public async Task when_the_drive_is_read_and_the_account_saved_then_both_durations_are_logged()
     {
-        driveLookup = new FakeDriveLookup { Lookup = _ => { time.Advance(TimeSpan.FromMilliseconds(300)); return Task.FromResult(Result.Success<MicrosoftDrive, AccountAddFailure>(TestSignIns.Drive)); } };
+        graph = new FakeGraphHandler { Respond = (_, _) => { time.Advance(TimeSpan.FromMilliseconds(300)); return Task.FromResult(FakeGraphHandler.Json(HttpStatusCode.OK, FakeGraphHandler.DriveJson)); } };
         accountStore = new FakeAccountStore { Save = (_, _) => { time.Advance(TimeSpan.FromMilliseconds(40)); return Task.FromResult(AccountAddOutcomeFactory.CreateAdded(TestSignIns.AccountId)); } };
 
-        _ = await CreateAdder().AddAsync(TestContext.Current.CancellationToken);
+        _ = await CreateModule().AddAsync(TestContext.Current.CancellationToken);
 
-        (logger.ValuesOf("DriveFetched")["DurationMs"], logger.ValuesOf("Persisted")["DurationMs"]).ShouldBe((300d, 40d));
+        (logs.Logger.ValuesOf("DriveFetched")["DurationMs"], logs.Logger.ValuesOf("Persisted")["DurationMs"]).ShouldBe((300d, 40d));
     }
 
     [Fact]
@@ -82,9 +82,9 @@ public class GivenAnAccountAddAttemptLog
     {
         msal = new FakeMsalClient { SignIn = _ => { time.Advance(TimeSpan.FromSeconds(5)); return Task.FromResult(TestSignIns.NewAccount); } };
 
-        _ = await CreateAdder().AddAsync(TestContext.Current.CancellationToken);
+        _ = await CreateModule().AddAsync(TestContext.Current.CancellationToken);
 
-        var values = logger.ValuesOf("AttemptCompleted");
+        var values = logs.Logger.ValuesOf("AttemptCompleted");
         (values["Outcome"], values["DurationMs"]).ShouldBe(("Added", 5000d));
     }
 
@@ -93,10 +93,10 @@ public class GivenAnAccountAddAttemptLog
     {
         accountStore = new FakeAccountStore { Save = (_, _) => Task.FromResult(AccountAddOutcomeFactory.CreateReAuthenticated(TestSignIns.AccountId)) };
 
-        _ = await CreateAdder().AddAsync(TestContext.Current.CancellationToken);
+        _ = await CreateModule().AddAsync(TestContext.Current.CancellationToken);
 
-        logger.EventNames.ShouldContain("DuplicateDetected");
-        logger.ValuesOf("AttemptCompleted")["Outcome"].ShouldBe("ReAuthenticated");
+        logs.Logger.EventNames.ShouldContain("DuplicateDetected");
+        logs.Logger.ValuesOf("AttemptCompleted")["Outcome"].ShouldBe("ReAuthenticated");
     }
 
     [Fact]
@@ -104,10 +104,10 @@ public class GivenAnAccountAddAttemptLog
     {
         msal = new FakeMsalClient { SignIn = _ => Task.FromException<MicrosoftSignIn>(new MsalClientException(MsalError.AuthenticationCanceledError, "The user closed the browser.")) };
 
-        _ = await CreateAdder().AddAsync(TestContext.Current.CancellationToken);
+        _ = await CreateModule().AddAsync(TestContext.Current.CancellationToken);
 
-        logger.EventNames.ShouldContain("AuthCancelled");
-        logger.ValuesOf("AttemptCompleted")["Outcome"].ShouldBe("Cancelled");
+        logs.Logger.EventNames.ShouldContain("AuthCancelled");
+        logs.Logger.ValuesOf("AttemptCompleted")["Outcome"].ShouldBe("Cancelled");
     }
 
     [Fact]
@@ -116,22 +116,22 @@ public class GivenAnAccountAddAttemptLog
         var rejection = new MsalServiceException("invalid_grant", $"AADSTS50126: {TestSignIns.Email} could not sign in.") { CorrelationId = "6f1c2b3a-0d9e-4f8a-b7c6-5d4e3f2a1b0c" };
         msal = new FakeMsalClient { SignIn = _ => Task.FromException<MicrosoftSignIn>(rejection) };
 
-        _ = await CreateAdder().AddAsync(TestContext.Current.CancellationToken);
+        _ = await CreateModule().AddAsync(TestContext.Current.CancellationToken);
 
-        var values = logger.ValuesOf("AuthFailed");
+        var values = logs.Logger.ValuesOf("AuthFailed");
         (values["ErrorCode"], values["CorrelationId"], values["ExceptionType"]).ShouldBe(("invalid_grant", "6f1c2b3a-0d9e-4f8a-b7c6-5d4e3f2a1b0c", nameof(MsalServiceException)));
-        logger.ValuesOf("AttemptCompleted")["Outcome"].ShouldBe("Failed:AuthRejected");
+        logs.Logger.ValuesOf("AttemptCompleted")["Outcome"].ShouldBe("Failed:AuthRejected");
     }
 
     [Fact]
     public async Task when_a_new_account_is_rolled_back_then_rollback_performed_is_logged()
     {
-        driveLookup = new FakeDriveLookup { Lookup = _ => Task.FromResult(Result.Failure<MicrosoftDrive, AccountAddFailure>(AccountAddFailureFactory.CreateDriveUnavailable())) };
+        graph = new FakeGraphHandler { Respond = (_, _) => Task.FromResult(FakeGraphHandler.Json(HttpStatusCode.InternalServerError, """{ "error": { "code": "generalException", "message": "The drive is unavailable." } }""")) };
 
-        _ = await CreateAdder().AddAsync(TestContext.Current.CancellationToken);
+        _ = await CreateModule().AddAsync(TestContext.Current.CancellationToken);
 
-        logger.EventNames.ShouldContain("RollbackPerformed");
-        logger.ValuesOf("AttemptCompleted")["Outcome"].ShouldBe("Failed:DriveUnavailable");
+        logs.Logger.EventNames.ShouldContain("RollbackPerformed");
+        logs.Logger.ValuesOf("AttemptCompleted")["Outcome"].ShouldBe("Failed:DriveUnavailable");
     }
 
     [Fact]
@@ -140,18 +140,18 @@ public class GivenAnAccountAddAttemptLog
         msal = new FakeMsalClient { CachedAccountKeys = [TestSignIns.AccountKey] };
         accountStore = new FakeAccountStore { Save = (_, _) => Task.FromResult(AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreatePersistFailed())) };
 
-        _ = await CreateAdder().AddAsync(TestContext.Current.CancellationToken);
+        _ = await CreateModule().AddAsync(TestContext.Current.CancellationToken);
 
-        logger.EventNames.ShouldContain("RollbackSkipped");
-        logger.EventNames.ShouldNotContain("RollbackPerformed");
+        logs.Logger.EventNames.ShouldContain("RollbackSkipped");
+        logs.Logger.EventNames.ShouldNotContain("RollbackPerformed");
     }
 
     [Fact]
     public async Task when_the_secure_store_is_used_then_the_token_cache_mode_is_logged()
     {
-        _ = await CreateAdder().AddAsync(TestContext.Current.CancellationToken);
+        _ = await CreateModule().AddAsync(TestContext.Current.CancellationToken);
 
-        cacheLogger.ValuesOf("TokenCacheInitialised")["Mode"].ShouldBe("SecureStore");
+        logs.Logger.ValuesOf("TokenCacheInitialised")["Mode"].ShouldBe("SecureStore");
     }
 
     [Theory]
@@ -162,34 +162,34 @@ public class GivenAnAccountAddAttemptLog
         storage = new FakeMsalTokenCacheStorage { SecureStoreFails = true };
         consent = new FakeTokenCacheConsent { Answer = agrees ? PlaintextCacheConsentFactory.CreateGranted() : PlaintextCacheConsentFactory.CreateDeclined() };
 
-        _ = await CreateAdder().AddAsync(TestContext.Current.CancellationToken);
+        _ = await CreateModule().AddAsync(TestContext.Current.CancellationToken);
 
-        cacheLogger.ValuesOf("TokenCacheConsent")["Answer"].ShouldBe(answer);
-        cacheLogger.Events.Where(recorded => recorded.Name == "TokenCacheInitialised").Select(recorded => (string?)recorded.Values["Mode"]).SingleOrDefault().ShouldBe(mode);
+        logs.Logger.ValuesOf("TokenCacheConsent")["Answer"].ShouldBe(answer);
+        logs.Logger.Events.Where(recorded => recorded.Name == "TokenCacheInitialised").Select(recorded => (string?)recorded.Values["Mode"]).SingleOrDefault().ShouldBe(mode);
     }
 
     [Fact]
     public async Task when_consent_was_given_on_an_earlier_run_then_the_remembered_answer_is_logged()
     {
         storage = new FakeMsalTokenCacheStorage { SecureStoreFails = true };
-        consentStore.Remembered = Option.Some(PlaintextCacheConsentFactory.CreateGranted());
+        consentFile.Remembered = Option.Some(PlaintextCacheConsentFactory.CreateGranted());
 
-        _ = await CreateAdder().AddAsync(TestContext.Current.CancellationToken);
+        _ = await CreateModule().AddAsync(TestContext.Current.CancellationToken);
 
-        cacheLogger.ValuesOf("TokenCacheConsent")["Answer"].ShouldBe("Remembered");
+        logs.Logger.ValuesOf("TokenCacheConsent")["Answer"].ShouldBe("Remembered");
     }
 
     [Fact]
     public async Task when_attempts_succeed_and_fail_then_no_email_name_token_or_account_key_is_logged()
     {
-        _ = await CreateAdder().AddAsync(TestContext.Current.CancellationToken);
+        _ = await CreateModule().AddAsync(TestContext.Current.CancellationToken);
         msal = new FakeMsalClient { SignIn = _ => Task.FromException<MicrosoftSignIn>(new MsalServiceException("invalid_grant", $"AADSTS50126: {TestSignIns.Email} / {TestSignIns.DisplayName}")) };
-        _ = await CreateAdder().AddAsync(TestContext.Current.CancellationToken);
+        _ = await CreateModule().AddAsync(TestContext.Current.CancellationToken);
 
         string[] secrets = [TestSignIns.Email, TestSignIns.DisplayName, TestSignIns.AccessToken, TestSignIns.AccountKey];
-        logger.Messages.Concat(cacheLogger.Messages).ShouldAllBe(message => secrets.All(secret => !message.Contains(secret, StringComparison.OrdinalIgnoreCase)));
-        logger.Events.SelectMany(recorded => recorded.Values.Values).Concat(logger.Scopes.SelectMany(scope => scope.Values)).Select(value => $"{value}").ShouldAllBe(value => secrets.All(secret => !value.Contains(secret, StringComparison.OrdinalIgnoreCase)));
-        logger.Entries.ShouldAllBe(entry => entry.Exception == null);
+        logs.Logger.Messages.ShouldAllBe(message => secrets.All(secret => !message.Contains(secret, StringComparison.OrdinalIgnoreCase)));
+        logs.Logger.Events.SelectMany(recorded => recorded.Values.Values).Concat(logs.Logger.Scopes.SelectMany(scope => scope.Values)).Select(value => $"{value}").ShouldAllBe(value => secrets.All(secret => !value.Contains(secret, StringComparison.OrdinalIgnoreCase)));
+        logs.Logger.Entries.ShouldAllBe(entry => entry.Exception == null);
     }
 
     [Fact]
@@ -197,20 +197,20 @@ public class GivenAnAccountAddAttemptLog
     {
         msal = new FakeMsalClient { SignIn = async _ => { await Task.Yield(); throw new TaskCanceledException("The request timed out."); } };
 
-        _ = await CreateAdder().AddAsync(TestContext.Current.CancellationToken);
+        _ = await CreateModule().AddAsync(TestContext.Current.CancellationToken);
 
-        logger.ValuesOf("StepTimedOut")["Step"].ShouldBe("sign-in");
-        logger.ValuesOf("AttemptCompleted")["Outcome"].ShouldBe("Failed:Network");
+        logs.Logger.ValuesOf("StepTimedOut")["Step"].ShouldBe("sign-in");
+        logs.Logger.ValuesOf("AttemptCompleted")["Outcome"].ShouldBe("Failed:Network");
     }
 
     [Fact]
     public async Task when_the_drive_lookup_times_out_then_the_timed_out_step_is_logged()
     {
-        driveLookup = new FakeDriveLookup { Lookup = async _ => { await Task.Yield(); throw new TaskCanceledException("The request timed out."); } };
+        graph = new FakeGraphHandler { Respond = async (_, _) => { await Task.Yield(); throw new TaskCanceledException("The request timed out."); } };
 
-        _ = await CreateAdder().AddAsync(TestContext.Current.CancellationToken);
+        _ = await CreateModule().AddAsync(TestContext.Current.CancellationToken);
 
-        logger.ValuesOf("StepTimedOut")["Step"].ShouldBe("drive lookup and save");
+        logs.Logger.ValuesOf("StepTimedOut")["Step"].ShouldBe("drive lookup and save");
     }
 
     [Fact]
@@ -219,11 +219,11 @@ public class GivenAnAccountAddAttemptLog
         using var cancellation = new CancellationTokenSource();
         msal = new FakeMsalClient { SignIn = async token => { await cancellation.CancelAsync(); token.ThrowIfCancellationRequested(); return TestSignIns.NewAccount; } };
 
-        _ = await CreateAdder().AddAsync(cancellation.Token);
+        _ = await CreateModule().AddAsync(cancellation.Token);
 
-        logger.ValuesOf("AttemptCompleted")["Outcome"].ShouldBe("Cancelled");
-        logger.EventNames.ShouldNotContain("AuthFailed");
-        logger.EventNames.ShouldNotContain("StepTimedOut");
+        logs.Logger.ValuesOf("AttemptCompleted")["Outcome"].ShouldBe("Cancelled");
+        logs.Logger.EventNames.ShouldNotContain("AuthFailed");
+        logs.Logger.EventNames.ShouldNotContain("StepTimedOut");
     }
 
     [Fact]
@@ -231,24 +231,30 @@ public class GivenAnAccountAddAttemptLog
     {
         accountStore = new FakeAccountStore { Save = (_, _) => throw new InvalidOperationException($"{TestSignIns.Email} could not be saved") };
 
-        var outcome = await CreateAdder().AddAsync(TestContext.Current.CancellationToken);
+        var outcome = await CreateModule().AddAsync(TestContext.Current.CancellationToken);
 
         outcome.ShouldBe(AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreateAuthRejected()));
-        logger.ValuesOf("AttemptFaulted")["ExceptionType"].ShouldBe(nameof(InvalidOperationException));
-        logger.ValuesOf("AttemptCompleted")["Outcome"].ShouldBe("Failed:AuthRejected");
-        logger.Messages.ShouldAllBe(message => !message.Contains(TestSignIns.Email));
+        logs.Logger.ValuesOf("AttemptFaulted")["ExceptionType"].ShouldBe(nameof(InvalidOperationException));
+        logs.Logger.ValuesOf("AttemptCompleted")["Outcome"].ShouldBe("Failed:AuthRejected");
+        logs.Logger.Messages.ShouldAllBe(message => !message.Contains(TestSignIns.Email));
     }
 
     [Fact]
     public async Task when_a_later_attempt_finds_the_token_cache_attached_then_it_logs_already_attached()
     {
-        var adder = CreateAdder();
+        var adder = CreateModule();
 
         _ = await adder.AddAsync(TestContext.Current.CancellationToken);
         _ = await adder.AddAsync(TestContext.Current.CancellationToken);
 
-        cacheLogger.Events.Where(recorded => recorded.Name == "TokenCacheInitialised").Select(recorded => recorded.Values["Mode"]).ShouldBe(["SecureStore", "AlreadyAttached"]);
+        logs.Logger.Events.Where(recorded => recorded.Name == "TokenCacheInitialised").Select(recorded => recorded.Values["Mode"]).ShouldBe(["SecureStore", "AlreadyAttached"]);
     }
 
-    private MicrosoftAccountAdder CreateAdder() => new(new TokenCacheInitialiser(storage, consent, consentStore, cacheLogger), msal, driveLookup, accountStore, time, logger);
+    private OneDriveModule CreateModule() => new(new OneDriveFakes { Storage = storage, Consent = consent, Msal = msal, Graph = graph, AccountStore = accountStore, ConsentFile = consentFile, Time = time, Logs = logs });
+
+    public void Dispose()
+    {
+        logs.Dispose();
+        graph.Dispose();
+    }
 }

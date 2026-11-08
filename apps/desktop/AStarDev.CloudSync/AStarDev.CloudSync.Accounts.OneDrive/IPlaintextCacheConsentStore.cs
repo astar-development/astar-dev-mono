@@ -4,7 +4,7 @@ using AStarDev.FunctionalParadigm;
 namespace AStarDev.CloudSync.Accounts.OneDrive;
 
 /// <summary>Remembers between runs that the user agreed to a plaintext token file.</summary>
-public interface IPlaintextCacheConsentStore
+internal interface IPlaintextCacheConsentStore
 {
     /// <summary>Reads the remembered answer.</summary>
     /// <returns><see cref="PlaintextCacheConsent.Granted"/> if the user agreed on an earlier run; otherwise none.</returns>

@@ -4,7 +4,7 @@ using System.Text.Json.Nodes;
 namespace AStarDev.CloudSync.Accounts.OneDrive;
 
 /// <summary>Merges two serialised MSAL token caches (MSAL v3 JSON) so moving plaintext tokens into the keyring keeps the accounts already there.</summary>
-public static class MsalCacheBlobMerger
+internal static class MsalCacheBlobMerger
 {
     /// <summary>Merges <paramref name="incoming"/> into <paramref name="existing"/>. For an entry in both, the incoming entry wins.</summary>
     /// <param name="existing">The cache already in the keyring; may be empty.</param>

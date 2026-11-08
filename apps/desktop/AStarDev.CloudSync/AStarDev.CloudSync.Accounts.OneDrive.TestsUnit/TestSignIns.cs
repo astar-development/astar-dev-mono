@@ -20,5 +20,7 @@ public static class TestSignIns
 
     public static MicrosoftSignIn NewAccount => MicrosoftSignInFactory.Create(AccountKey, Email, DisplayName, AccessToken, GrantedScopes);
 
-    public static MicrosoftDrive Drive => MicrosoftDriveFactory.Create(DriveIdFactory.Create("8f2a1b3c4d5e6f70").Match(driveId => driveId, error => throw new InvalidOperationException(error.Message)), StorageUsageFactory.Create(1_500, 5_000));
+    public static DriveId DriveId => DriveIdFactory.Create("8f2a1b3c4d5e6f70").Match(driveId => driveId, error => throw new InvalidOperationException(error.Message));
+
+    public static StorageUsage Storage => StorageUsageFactory.Create(1_500, 5_000);
 }
