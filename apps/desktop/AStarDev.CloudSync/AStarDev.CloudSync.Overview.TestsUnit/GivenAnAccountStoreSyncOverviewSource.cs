@@ -1,7 +1,9 @@
 using AStarDev.CloudSync.Accounts;
+using AStarDev.CloudSync.Core.Persistence;
 using AStarDev.CloudSync.Overview;
 using AStarDev.CloudSync.TestHelpers.Accounts;
 using AStarDev.FunctionalParadigm;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AStarDev.CloudSync.Overview.TestsUnit;
 
@@ -59,7 +61,7 @@ public class GivenAnAccountStoreSyncOverviewSource
     {
         var store = new FakeAccountStore { All = () => Result.Failure<IReadOnlyList<StoredAccount>, ErrorResponse>(new ErrorResponse("The accounts could not be read.")) };
 
-        var error = await new AccountStoreSyncOverviewSource(new FakeCloudSyncDatabase(), store).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(_ => "loaded", failure => failure.Message);
+        var error = await CreateSource(new FakeCloudSyncDatabase(), store).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(_ => "loaded", failure => failure.Message);
 
         error.ShouldBe("The accounts could not be read.");
     }
@@ -71,7 +73,7 @@ public class GivenAnAccountStoreSyncOverviewSource
         var store = new FakeAccountStore { All = () => { reads++; return Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]); } };
         var database = new FakeCloudSyncDatabase { Outcome = Result.Failure<Unit, ErrorResponse>(new ErrorResponse("The CloudSync database could not be created or migrated.")) };
 
-        var error = await new AccountStoreSyncOverviewSource(database, store).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(_ => "loaded", failure => failure.Message);
+        var error = await CreateSource(database, store).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(_ => "loaded", failure => failure.Message);
 
         (error, reads).ShouldBe(("The CloudSync database could not be created or migrated.", 0));
     }
@@ -81,12 +83,20 @@ public class GivenAnAccountStoreSyncOverviewSource
     {
         var database = new FakeCloudSyncDatabase();
 
-        _ = await new AccountStoreSyncOverviewSource(database, new FakeAccountStore()).GetOverviewAsync(TestContext.Current.CancellationToken);
+        _ = await CreateSource(database, new FakeAccountStore()).GetOverviewAsync(TestContext.Current.CancellationToken);
 
         database.Migrations.ShouldBe(1);
     }
 
-    private static Task<SyncOverview> LoadAsync(FakeAccountStore store) => new AccountStoreSyncOverviewSource(new FakeCloudSyncDatabase(), store).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(overview => overview, failure => throw new InvalidOperationException(failure.Message));
+    private static Task<SyncOverview> LoadAsync(FakeAccountStore store) => CreateSource(new FakeCloudSyncDatabase(), store).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(overview => overview, failure => throw new InvalidOperationException(failure.Message));
+
+    private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store) =>
+        new ServiceCollection()
+            .AddSingleton(database)
+            .AddSingleton(store)
+            .AddSyncOverview()
+            .BuildServiceProvider()
+            .GetRequiredService<ISyncOverviewSource>();
 
     private static StoredAccount StoredFlint() =>
         StoredAccountFactory.Create(FlintId, AccountRegistrationFactory.Create(ProviderAccountKeyFactory.Create(FlintAccountKey).Match(key => key, error => throw new InvalidOperationException(error.Message)), CloudProviderFactory.CreateOneDrive(), FlintDisplayName, FlintEmail, DriveIdFactory.Create("8f2a1b3c4d5e6f70").Match(driveId => driveId, error => throw new InvalidOperationException(error.Message)), FlintStorage));

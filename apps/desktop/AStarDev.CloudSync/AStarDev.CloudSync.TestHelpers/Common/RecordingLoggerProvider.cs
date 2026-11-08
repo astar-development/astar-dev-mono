@@ -1,7 +1,6 @@
-using AStarDev.CloudSync.TestHelpers.Common;
 using Microsoft.Extensions.Logging;
 
-namespace AStarDev.CloudSync.Accounts.Sqlite.TestsIntegration;
+namespace AStarDev.CloudSync.TestHelpers.Common;
 
 public sealed class RecordingLoggerProvider : ILoggerProvider
 {

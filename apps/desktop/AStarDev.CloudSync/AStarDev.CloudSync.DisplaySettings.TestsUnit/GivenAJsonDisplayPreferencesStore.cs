@@ -1,7 +1,7 @@
 using AStarDev.CloudSync.DisplaySettings;
 using AStarDev.CloudSync.TestHelpers.Common;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Testably.Abstractions.Testing;
 
 namespace AStarDev.CloudSync.DisplaySettings.TestsUnit;
@@ -62,9 +62,10 @@ public class GivenAJsonDisplayPreferencesStore
     {
         var fileSystem = new MockFileSystem();
         fileSystem.Directory.CreateDirectory(SettingsPath);
-        var logger = new RecordingLogger<JsonDisplayPreferencesStore>();
+        var loggerProvider = new RecordingLoggerProvider();
+        var logger = loggerProvider.Logger;
 
-        new JsonDisplayPreferencesStore(fileSystem.FileInfo.New(SettingsPath), logger).Save(DisplayPreferencesFactory.CreateDefault());
+        CreateStore(fileSystem, loggerProvider).Save(DisplayPreferencesFactory.CreateDefault());
 
         string warning = logger.Messages.ShouldHaveSingleItem();
         logger.Entries[0].Level.ShouldBe(LogLevel.Warning);
@@ -78,12 +79,20 @@ public class GivenAJsonDisplayPreferencesStore
         var fileSystem = new MockFileSystem();
         fileSystem.Directory.CreateDirectory("/home/user/.config/AStarDev.CloudSync");
         fileSystem.File.WriteAllText(SettingsPath, "not json");
-        var logger = new RecordingLogger<JsonDisplayPreferencesStore>();
+        var loggerProvider = new RecordingLoggerProvider();
+        var logger = loggerProvider.Logger;
 
-        _ = new JsonDisplayPreferencesStore(fileSystem.FileInfo.New(SettingsPath), logger).Load();
+        _ = CreateStore(fileSystem, loggerProvider).Load();
 
         logger.ValuesOf("PreferencesUnreadable")["ErrorType"].ShouldBe(typeof(System.Text.Json.JsonException).FullName);
     }
 
-    private static JsonDisplayPreferencesStore CreateStore(MockFileSystem fileSystem) => new(fileSystem.FileInfo.New(SettingsPath), NullLogger<JsonDisplayPreferencesStore>.Instance);
+    private static IDisplayPreferencesStore CreateStore(MockFileSystem fileSystem) => CreateStore(fileSystem, new RecordingLoggerProvider());
+
+    private static IDisplayPreferencesStore CreateStore(MockFileSystem fileSystem, RecordingLoggerProvider loggerProvider) =>
+        new ServiceCollection()
+            .AddLogging(logging => logging.ClearProviders().AddProvider(loggerProvider))
+            .AddDisplayPreferences(_ => fileSystem.FileInfo.New(SettingsPath))
+            .BuildServiceProvider()
+            .GetRequiredService<IDisplayPreferencesStore>();
 }

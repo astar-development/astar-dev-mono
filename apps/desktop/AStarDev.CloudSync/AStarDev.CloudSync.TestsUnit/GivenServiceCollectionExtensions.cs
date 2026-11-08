@@ -92,7 +92,7 @@ public class GivenServiceCollectionExtensions
     {
         using var provider = CreateServices().BuildServiceProvider();
 
-        provider.GetRequiredService<ISyncOverviewSource>().ShouldBeOfType<AccountStoreSyncOverviewSource>();
+        provider.GetRequiredService<ISyncOverviewSource>().GetType().Assembly.ShouldBe(typeof(OverviewServiceCollectionExtensions).Assembly);
     }
 
     [Fact]
