@@ -7,7 +7,7 @@ namespace AStarDev.CloudSync.Overview;
 /// <summary>Builds the overview from the saved accounts, after making sure the database is migrated. There is no sync engine yet, so sync pairs, activity, conflicts and throughput are empty, and every account shows no folders or files, up to date and never synced.</summary>
 /// <param name="database">Is migrated before the accounts are read, so a failed migration shows as a failed overview.</param>
 /// <param name="accountStore">Reads the saved accounts.</param>
-public sealed class AccountStoreSyncOverviewSource(ICloudSyncDatabase database, IAccountStore accountStore) : ISyncOverviewSource
+internal sealed class AccountStoreSyncOverviewSource(ICloudSyncDatabase database, IAccountStore accountStore) : ISyncOverviewSource
 {
     /// <inheritdoc />
     public Task<Result<SyncOverview, ErrorResponse>> GetOverviewAsync(CancellationToken cancellationToken) =>

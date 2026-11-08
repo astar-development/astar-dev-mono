@@ -21,7 +21,6 @@ using AStarDev.Localization;
 using AStarDev.Utilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Testably.Abstractions;
 
 namespace AStarDev.CloudSync;
@@ -50,7 +49,7 @@ public static class ServiceCollectionExtensions
             .AddVelopackUpdateNotifications()
             .AddSingleton<IUpdateDialogTextProvider, LocalizedUpdateDialogTextProvider>()
             .AddSingleton(TimeProvider.System)
-            .AddSingleton<ISyncOverviewSource, AccountStoreSyncOverviewSource>()
+            .AddSyncOverview()
             .AddSingleton<ISyncActions, PlaceholderSyncActions>()
             .AddSingleton<IUiDispatcher, AvaloniaUiDispatcher>()
             .AddSingleton<TokenCacheConsentViewModel>()
@@ -60,7 +59,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IFileSystem, RealFileSystem>()
             .AddCloudSyncPersistence(provider => provider.GetRequiredService<IFileSystem>().FileInfo.New(DatabaseFilePath))
             .AddOneDriveAccounts(configuration, provider => provider.GetRequiredService<IFileSystem>().DirectoryInfo.New(TokenCacheFolderPath), provider => provider.GetRequiredService<IFileSystem>().FileInfo.New(TokenCacheConsentFilePath))
-            .AddSingleton<IDisplayPreferencesStore>(provider => new JsonDisplayPreferencesStore(provider.GetRequiredService<IFileSystem>().FileInfo.New(SettingsFilePath), provider.GetRequiredService<ILogger<JsonDisplayPreferencesStore>>()))
+            .AddDisplayPreferences(provider => provider.GetRequiredService<IFileSystem>().FileInfo.New(SettingsFilePath))
             .AddSingleton<IThemeApplier, AvaloniaThemeApplier>()
             .AddSingleton<IHomeFolder, UserProfileHomeFolder>()
             .AddSingleton<LocalPathFormatter>()

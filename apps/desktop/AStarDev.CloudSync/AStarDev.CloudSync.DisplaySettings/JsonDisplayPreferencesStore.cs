@@ -8,7 +8,7 @@ namespace AStarDev.CloudSync.DisplaySettings;
 /// <summary>Keeps the <see cref="DisplayPreferences"/> in a small JSON file.</summary>
 /// <param name="settingsFile">The JSON file holding the preferences.</param>
 /// <param name="logger">Reports preferences that cannot be read or saved.</param>
-public sealed class JsonDisplayPreferencesStore(IFileInfo settingsFile, ILogger<JsonDisplayPreferencesStore> logger) : IDisplayPreferencesStore
+internal sealed class JsonDisplayPreferencesStore(IFileInfo settingsFile, ILogger<JsonDisplayPreferencesStore> logger) : IDisplayPreferencesStore
 {
     /// <inheritdoc />
     public DisplayPreferences Load()
