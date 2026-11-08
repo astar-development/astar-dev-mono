@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../AStarDev.CloudSync.Accounts/AStarDev.CloudSync.Accounts.csproj" />
+    <ProjectReference Include="../AStarDev.CloudSync.TestHelpers/AStarDev.CloudSync.TestHelpers.csproj" />
   </ItemGroup>
 
   <ItemGroup>
