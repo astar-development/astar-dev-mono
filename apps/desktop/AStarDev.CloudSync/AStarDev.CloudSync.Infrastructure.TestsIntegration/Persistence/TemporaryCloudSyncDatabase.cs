@@ -1,5 +1,5 @@
 using System.IO.Abstractions;
-using AStarDev.CloudSync.Core.Accounts;
+using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Core.Persistence;
 using AStarDev.CloudSync.Infrastructure.Persistence;
 using AStarDev.CloudSync.TestHelpers.Common;

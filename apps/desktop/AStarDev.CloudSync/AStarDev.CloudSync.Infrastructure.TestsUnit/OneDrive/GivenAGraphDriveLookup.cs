@@ -1,6 +1,5 @@
 using System.Net;
-using AStarDev.CloudSync.Core.Accounts;
-using AStarDev.CloudSync.Domain.Accounts;
+using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Infrastructure.OneDrive;
 using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.FunctionalParadigm;

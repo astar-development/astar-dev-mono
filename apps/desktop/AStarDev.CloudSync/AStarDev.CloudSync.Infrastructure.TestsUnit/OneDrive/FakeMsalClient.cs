@@ -1,4 +1,4 @@
-using AStarDev.CloudSync.Core.Accounts;
+using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Infrastructure.OneDrive;
 
 namespace AStarDev.CloudSync.Infrastructure.TestsUnit.OneDrive;

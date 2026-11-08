@@ -1,6 +1,5 @@
+using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Core.Overview;
-using AStarDev.CloudSync.Domain.Accounts;
-using AStarDev.CloudSync.Domain.Common;
 using AStarDev.CloudSync.Domain.Conflicts;
 using AStarDev.CloudSync.Domain.Overview;
 using AStarDev.CloudSync.Domain.SyncPairs;

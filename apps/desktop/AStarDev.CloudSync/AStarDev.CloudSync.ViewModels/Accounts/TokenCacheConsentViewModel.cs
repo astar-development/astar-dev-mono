@@ -1,5 +1,4 @@
-using AStarDev.CloudSync.Core.Accounts;
-using AStarDev.CloudSync.Domain.Accounts;
+using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.ViewModels.Common;
 using AStarDev.FunctionalParadigm;
 using AStarDev.Localization;

@@ -1,8 +1,7 @@
 using System.Globalization;
-using AStarDev.CloudSync.Core.Accounts;
+using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Core.Common;
 using AStarDev.CloudSync.Core.Overview;
-using AStarDev.CloudSync.Domain.Accounts;
 using AStarDev.CloudSync.TestHelpers.Accounts;
 using AStarDev.CloudSync.TestHelpers.DisplaySettings;
 using AStarDev.CloudSync.TestHelpers.Overview;

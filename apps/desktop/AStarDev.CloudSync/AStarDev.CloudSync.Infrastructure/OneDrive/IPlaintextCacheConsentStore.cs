@@ -1,4 +1,4 @@
-using AStarDev.CloudSync.Core.Accounts;
+using AStarDev.CloudSync.Accounts;
 using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.Infrastructure.OneDrive;
