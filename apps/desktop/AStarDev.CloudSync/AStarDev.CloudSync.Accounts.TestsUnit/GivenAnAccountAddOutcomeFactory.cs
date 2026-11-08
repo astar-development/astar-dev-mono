@@ -11,7 +11,7 @@ public class GivenAnAccountAddOutcomeFactory
     {
         var outcome = AccountAddOutcomeFactory.CreateAdded(NewAccountId);
 
-        outcome.ShouldBe(new AccountAddOutcome.Added(NewAccountId));
+        outcome.ShouldBeOfType<AccountAddOutcome.Added>().AccountId.ShouldBe(NewAccountId);
     }
 
     [Fact]
@@ -19,7 +19,7 @@ public class GivenAnAccountAddOutcomeFactory
     {
         var outcome = AccountAddOutcomeFactory.CreateReAuthenticated(NewAccountId);
 
-        outcome.ShouldBe(new AccountAddOutcome.ReAuthenticated(NewAccountId));
+        outcome.ShouldBeOfType<AccountAddOutcome.ReAuthenticated>().AccountId.ShouldBe(NewAccountId);
     }
 
     [Fact]
@@ -35,6 +35,6 @@ public class GivenAnAccountAddOutcomeFactory
     {
         var outcome = AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreateNetwork());
 
-        outcome.ShouldBe(new AccountAddOutcome.Failed(new AccountAddFailure.Network()));
+        outcome.ShouldBeOfType<AccountAddOutcome.Failed>().Failure.ShouldBeOfType<AccountAddFailure.Network>();
     }
 }

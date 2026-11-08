@@ -14,7 +14,7 @@ public class GivenAnAccountRegistrationFactory
 
         var registration = AccountRegistrationFactory.Create(AccountKey, CloudProviderFactory.CreateOneDrive(), "Personal", "personal@example.com", PersonalDriveId, storage);
 
-        registration.ShouldBe(new AccountRegistration(AccountKey, new CloudProvider.OneDrive(), "Personal", "personal@example.com", PersonalDriveId, storage));
+        (registration.Key, registration.Provider, registration.DisplayName, registration.Email, registration.DriveId, registration.Storage).ShouldBe((AccountKey, CloudProviderFactory.CreateOneDrive(), "Personal", "personal@example.com", PersonalDriveId, storage));
     }
 
     [Fact]
