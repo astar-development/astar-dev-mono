@@ -12,6 +12,8 @@
     <Folder Name="/apps/desktop/AStarDev.Clock/" />
     <Folder Name="/apps/desktop/AStarDev.ClockControls/" />
     <Folder Name="/apps/desktop/AStarDev.CloudSync/">
+        <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.Accounts.TestsUnit/AStarDev.CloudSync.Accounts.TestsUnit.csproj" />
+        <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.Accounts/AStarDev.CloudSync.Accounts.csproj" />
         <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.Core.TestsUnit/AStarDev.CloudSync.Core.TestsUnit.csproj" />
         <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.Core/AStarDev.CloudSync.Core.csproj" />
         <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.Domain.TestsUnit/AStarDev.CloudSync.Domain.TestsUnit.csproj" />

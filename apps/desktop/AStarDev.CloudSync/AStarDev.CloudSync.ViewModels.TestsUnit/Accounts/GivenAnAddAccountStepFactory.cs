@@ -1,4 +1,4 @@
-using AStarDev.CloudSync.Domain.Accounts;
+using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.ViewModels.Accounts;
 
 namespace AStarDev.CloudSync.ViewModels.TestsUnit.Accounts;

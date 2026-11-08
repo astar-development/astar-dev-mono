@@ -1,7 +1,7 @@
 using AStar.Dev.Velopack.Publishing;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
+using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Common;
-using AStarDev.CloudSync.Core.Accounts;
 using AStarDev.CloudSync.Core.Common;
 using AStarDev.CloudSync.Core.DisplaySettings;
 using AStarDev.CloudSync.Core.Overview;

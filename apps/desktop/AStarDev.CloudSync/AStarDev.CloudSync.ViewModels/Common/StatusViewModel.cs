@@ -1,4 +1,4 @@
-using AStarDev.CloudSync.Core.Common;
+using AStarDev.CloudSync.Accounts;
 using AStarDev.Localization;
 
 namespace AStarDev.CloudSync.ViewModels.Common;

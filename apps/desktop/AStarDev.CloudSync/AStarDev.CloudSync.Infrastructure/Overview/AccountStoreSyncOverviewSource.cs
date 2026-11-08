@@ -1,8 +1,6 @@
-using AStarDev.CloudSync.Core.Accounts;
+using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Core.Overview;
 using AStarDev.CloudSync.Core.Persistence;
-using AStarDev.CloudSync.Domain.Accounts;
-using AStarDev.CloudSync.Domain.Common;
 using AStarDev.CloudSync.Domain.Overview;
 using AStarDev.FunctionalParadigm;
 

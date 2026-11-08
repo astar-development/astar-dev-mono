@@ -1,11 +1,10 @@
 using System.Security.Cryptography;
 using System.Text;
-using AStarDev.CloudSync.Core.Accounts;
-using AStarDev.CloudSync.Domain.Accounts;
+using AStarDev.CloudSync.Accounts;
 using AStarDev.FunctionalParadigm;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
-using SignInAttempt = (AStarDev.CloudSync.Core.Accounts.ProviderAccountKey Key, AStarDev.CloudSync.Infrastructure.OneDrive.MicrosoftSignIn SignIn, System.Collections.Generic.IReadOnlyList<string> CachedAccountKeys);
+using SignInAttempt = (AStarDev.CloudSync.Accounts.ProviderAccountKey Key, AStarDev.CloudSync.Infrastructure.OneDrive.MicrosoftSignIn SignIn, System.Collections.Generic.IReadOnlyList<string> CachedAccountKeys);
 
 namespace AStarDev.CloudSync.Infrastructure.OneDrive;
 

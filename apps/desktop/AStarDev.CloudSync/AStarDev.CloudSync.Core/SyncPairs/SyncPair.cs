@@ -1,5 +1,4 @@
-using AStarDev.CloudSync.Core.Accounts;
-using AStarDev.CloudSync.Core.Common;
+using AStarDev.CloudSync.Accounts;
 using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.Core.SyncPairs;

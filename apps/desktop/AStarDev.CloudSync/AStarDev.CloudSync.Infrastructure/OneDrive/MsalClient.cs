@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using AStarDev.CloudSync.Core.Accounts;
+using AStarDev.CloudSync.Accounts;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Client;
 

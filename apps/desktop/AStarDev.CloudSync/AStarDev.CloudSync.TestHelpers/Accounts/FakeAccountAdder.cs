@@ -1,5 +1,4 @@
-using AStarDev.CloudSync.Core.Accounts;
-using AStarDev.CloudSync.Domain.Accounts;
+using AStarDev.CloudSync.Accounts;
 
 namespace AStarDev.CloudSync.TestHelpers.Accounts;
 
