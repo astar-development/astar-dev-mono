@@ -3,13 +3,54 @@ using AStarDev.FunctionalParadigm;
 namespace AStarDev.CloudSync.Accounts;
 
 /// <summary>A connected cloud storage account.</summary>
-/// <param name="Id">The account id.</param>
-/// <param name="DisplayName">The account's display name.</param>
-/// <param name="Email">The account's sign-in email.</param>
-/// <param name="Provider">The provider the account belongs to.</param>
-/// <param name="Storage">Cloud storage used and available.</param>
-/// <param name="FolderCount">Folders being synced.</param>
-/// <param name="FileCount">Files being synced.</param>
-/// <param name="Status">The account's sync status.</param>
-/// <param name="LastSync">When the account last finished a sync, if ever.</param>
-public sealed record CloudAccount(AccountId Id, string DisplayName, string Email, CloudProvider Provider, StorageUsage Storage, int FolderCount, int FileCount, SyncStatus Status, Option<DateTimeOffset> LastSync);
+public sealed record CloudAccount
+{
+    internal CloudAccount(
+        AccountId id,
+        string displayName,
+        string email,
+        CloudProvider provider,
+        StorageUsage storage,
+        int folderCount,
+        int fileCount,
+        SyncStatus status,
+        Option<DateTimeOffset> lastSync)
+    {
+        Id = id;
+        DisplayName = displayName;
+        Email = email;
+        Provider = provider;
+        Storage = storage;
+        FolderCount = folderCount;
+        FileCount = fileCount;
+        Status = status;
+        LastSync = lastSync;
+    }
+
+    /// <summary>The account id.</summary>
+    public AccountId Id { get; }
+
+    /// <summary>The account's display name.</summary>
+    public string DisplayName { get; }
+
+    /// <summary>The account's sign-in email.</summary>
+    public string Email { get; }
+
+    /// <summary>The provider the account belongs to.</summary>
+    public CloudProvider Provider { get; }
+
+    /// <summary>Cloud storage used and available.</summary>
+    public StorageUsage Storage { get; }
+
+    /// <summary>Folders being synced.</summary>
+    public int FolderCount { get; }
+
+    /// <summary>Files being synced.</summary>
+    public int FileCount { get; }
+
+    /// <summary>The account's sync status.</summary>
+    public SyncStatus Status { get; }
+
+    /// <summary>When the account last finished a sync, if ever.</summary>
+    public Option<DateTimeOffset> LastSync { get; }
+}

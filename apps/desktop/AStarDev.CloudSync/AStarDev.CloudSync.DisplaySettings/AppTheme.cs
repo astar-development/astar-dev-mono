@@ -8,8 +8,18 @@ public abstract record AppTheme
     }
 
     /// <summary>The dark theme, the default.</summary>
-    public sealed record Dark : AppTheme;
+    public sealed record Dark : AppTheme
+    {
+        internal Dark()
+        {
+        }
+    }
 
     /// <summary>The light theme.</summary>
-    public sealed record Light : AppTheme;
+    public sealed record Light : AppTheme
+    {
+        internal Light()
+        {
+        }
+    }
 }

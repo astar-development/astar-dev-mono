@@ -8,5 +8,10 @@ public abstract record CloudProvider
     }
 
     /// <summary>Microsoft OneDrive.</summary>
-    public sealed record OneDrive : CloudProvider;
+    public sealed record OneDrive : CloudProvider
+    {
+        internal OneDrive()
+        {
+        }
+    }
 }
