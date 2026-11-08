@@ -29,8 +29,10 @@
     <!--
       CA1034: InstanceClaim is a discriminated union; its cases are nested sealed records by repo convention.
       CA1812: SingleInstanceGuard is internal and only created by the DI container (AddSingleInstance).
+      CA2000: the held lock stream and the listening socket are handed to PrimaryInstance, which the caller
+      disposes through InstanceClaim.Primary; SocketOwner disposes a socket that fails to bind.
     -->
-    <NoWarn>$(NoWarn);CA1034;CA1812</NoWarn>
+    <NoWarn>$(NoWarn);CA1034;CA1812;CA2000</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

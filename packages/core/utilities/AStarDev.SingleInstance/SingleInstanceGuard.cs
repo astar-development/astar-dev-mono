@@ -1,3 +1,7 @@
+using System.IO.Abstractions;
+using System.Net.Sockets;
+using AStarDev.FunctionalParadigm;
+using AStarDev.LoggingExtensions;
 using Microsoft.Extensions.Logging;
 
 namespace AStarDev.SingleInstance;
@@ -6,6 +10,97 @@ namespace AStarDev.SingleInstance;
 /// <param name="logger">Reports hand-off results and lock failures, without paths.</param>
 internal sealed class SingleInstanceGuard(ILogger<SingleInstanceGuard> logger) : ISingleInstanceGuard
 {
+    private const string Location = nameof(SingleInstanceGuard);
+
     /// <inheritdoc />
-    public Task<InstanceClaim> ClaimAsync(SingleInstanceOptions options, CancellationToken cancellationToken) => throw new NotImplementedException($"{logger}{options}{cancellationToken}");
+    public Task<InstanceClaim> ClaimAsync(SingleInstanceOptions options, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var fileSystem = options.DataFolder.FileSystem;
+        var lockPath = fileSystem.Path.Join(options.DataFolder.FullName, options.Name + ".lock");
+        var socketFile = fileSystem.FileInfo.New(fileSystem.Path.Join(options.DataFolder.FullName, options.Name + ".sock"));
+
+        return Try.Run(() => CreateFolder(options.DataFolder))
+            .Match(
+                _ => Try.Run(() => (Stream)fileSystem.FileStream.New(lockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
+                    .Match(heldLock => Task.FromResult(BecomePrimary(heldLock, socketFile)), exception => HandOffOrFailAsync(exception, socketFile, options.HandOffTimeout, cancellationToken)),
+                exception => Task.FromResult(LockUnavailable(exception)));
+    }
+
+    private static Unit CreateFolder(IDirectoryInfo folder)
+    {
+        folder.Create();
+
+        return Unit.Instance;
+    }
+
+    private InstanceClaim BecomePrimary(Stream heldLock, IFileInfo socketFile)
+    {
+        _ = Try.Run(() => DeleteStaleSocketFile(socketFile));
+        var listener = Listen(socketFile.FullName);
+        _ = listener.Match(_ => Unit.Instance, HandOffUnavailable);
+
+        return InstanceClaimFactory.CreatePrimary(PrimaryInstance.Start(heldLock, listener, socketFile, logger));
+    }
+
+    private static Unit DeleteStaleSocketFile(IFileInfo socketFile)
+    {
+        socketFile.Delete();
+
+        return Unit.Instance;
+    }
+
+    private static Option<Socket> Listen(string socketPath) => Try.Run(() => HandOffProtocol.CreateListener(socketPath)).Match(Option.Some, _ => Option.None<Socket>());
+
+    private Unit HandOffUnavailable()
+    {
+        LogMessage.Warning(logger, Location, "The hand-off socket could not be opened; second launches will not be answered.");
+
+        return Unit.Instance;
+    }
+
+    private Task<InstanceClaim> HandOffOrFailAsync(Exception exception, IFileInfo socketFile, TimeSpan timeout, CancellationToken cancellationToken) =>
+        exception is UnauthorizedAccessException
+            ? Task.FromResult(LockUnavailable(exception))
+            : HandOffAsync(socketFile.FullName, timeout, cancellationToken);
+
+    private async Task<InstanceClaim> HandOffAsync(string socketPath, TimeSpan timeout, CancellationToken cancellationToken)
+    {
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        deadline.CancelAfter(timeout);
+        var answer = await Attempt.RunAsync(() => AskToShowAsync(socketPath, deadline.Token), deadline.Token).ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        return answer.Filter(reply => reply == HandOffProtocol.Acknowledgement).Match(_ => HandedOff(), NotAnswered);
+    }
+
+    private static async Task<string> AskToShowAsync(string socketPath, CancellationToken cancellationToken)
+    {
+        using var socket = HandOffProtocol.CreateSocket();
+        await socket.ConnectAsync(new UnixDomainSocketEndPoint(socketPath), cancellationToken).ConfigureAwait(false);
+        await HandOffProtocol.SendAsync(socket, HandOffProtocol.ShowRequest, cancellationToken).ConfigureAwait(false);
+
+        return await HandOffProtocol.ReceiveAsync(socket, cancellationToken).ConfigureAwait(false);
+    }
+
+    private InstanceClaim HandedOff()
+    {
+        LogMessage.Information(logger, Location, "Another instance is running and was asked to show its window.");
+
+        return InstanceClaimFactory.CreateHandedOff();
+    }
+
+    private InstanceClaim NotAnswered()
+    {
+        LogMessage.Warning(logger, Location, "Another instance holds the lock but did not answer the hand-off.");
+
+        return InstanceClaimFactory.CreateNotAnswered();
+    }
+
+    private InstanceClaim LockUnavailable(Exception exception)
+    {
+        LogMessage.Error(logger, "The single-instance lock could not be created.", exception.ErrorType());
+
+        return InstanceClaimFactory.CreateLockUnavailable();
+    }
 }

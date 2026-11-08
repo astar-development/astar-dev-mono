@@ -39,6 +39,7 @@
     <ProjectReference Include="../../../../packages/core/logging/AStarDev.LoggingExtensions/AStarDev.LoggingExtensions.csproj" />
     <ProjectReference Include="../../../../packages/core/logging/AStarDev.LoggingOTel/AStarDev.LoggingOTel.csproj" />
     <ProjectReference Include="../../../../packages/core/utilities/AStarDev.Localization/AStarDev.Localization.csproj" />
+    <ProjectReference Include="../../../../packages/core/utilities/AStarDev.SingleInstance/AStarDev.SingleInstance.csproj" />
     <ProjectReference Include="../../../../packages/core/utilities/AStarDev.Utilities/AStarDev.Utilities.csproj" />
     <ProjectReference Include="../../../../packages/core/utilities/AStarDev.VelopackPublishing/AStarDev.VelopackPublishing.csproj" />
     <ProjectReference Include="../../../../packages/core/utilities/AStarDev.VelopackPublishingAvalonia/AStarDev.VelopackPublishingAvalonia.csproj" />

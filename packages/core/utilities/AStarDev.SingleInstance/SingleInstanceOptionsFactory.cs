@@ -15,5 +15,6 @@ public static class SingleInstanceOptionsFactory
     /// <param name="dataFolder">The per-user data folder.</param>
     /// <param name="name">The file name stem for the lock and the socket.</param>
     /// <param name="handOffTimeout">How long a second launch waits for an answer.</param>
-    public static SingleInstanceOptions Create(IDirectoryInfo dataFolder, string? name, TimeSpan? handOffTimeout) => throw new NotImplementedException($"{dataFolder}{name}{handOffTimeout}");
+    public static SingleInstanceOptions Create(IDirectoryInfo dataFolder, string? name, TimeSpan? handOffTimeout) =>
+        new(dataFolder, string.IsNullOrWhiteSpace(name) ? DefaultName : name.Trim(), handOffTimeout is { } timeout && timeout > TimeSpan.Zero ? timeout : DefaultHandOffTimeout);
 }

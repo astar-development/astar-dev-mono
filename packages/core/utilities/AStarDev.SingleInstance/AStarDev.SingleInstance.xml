@@ -4,6 +4,41 @@
         <name>AStarDev.SingleInstance</name>
     </assembly>
     <members>
+        <member name="T:AStarDev.SingleInstance.Attempt">
+            <summary>Runs socket work that may fail or be cancelled and turns any outcome into an option, so a timeout never escapes as an exception.</summary>
+        </member>
+        <member name="M:AStarDev.SingleInstance.Attempt.RunAsync``1(System.Func{System.Threading.Tasks.Task{``0}},System.Threading.CancellationToken)">
+            <summary>Runs the operation and returns its value, or none when it threw or was cancelled. The caller checks its own token to tell a user cancel from a timeout.</summary>
+            <param name="operation">The work to run.</param>
+            <param name="cancellationToken">Cancels the work.</param>
+        </member>
+        <member name="T:AStarDev.SingleInstance.HandOffProtocol">
+            <summary>The one-line messages a second launch and the running instance exchange.</summary>
+        </member>
+        <member name="F:AStarDev.SingleInstance.HandOffProtocol.ShowRequest">
+            <summary>The request a second launch sends.</summary>
+        </member>
+        <member name="F:AStarDev.SingleInstance.HandOffProtocol.Acknowledgement">
+            <summary>The answer the running instance sends.</summary>
+        </member>
+        <member name="M:AStarDev.SingleInstance.HandOffProtocol.CreateSocket">
+            <summary>Creates an unbound Unix domain stream socket.</summary>
+        </member>
+        <member name="M:AStarDev.SingleInstance.HandOffProtocol.CreateListener(System.String)">
+            <summary>Creates a socket listening on the path; the socket is disposed again if it cannot bind.</summary>
+            <param name="socketPath">The socket file path.</param>
+        </member>
+        <member name="M:AStarDev.SingleInstance.HandOffProtocol.SendAsync(System.Net.Sockets.Socket,System.String,System.Threading.CancellationToken)">
+            <summary>Sends one message.</summary>
+            <param name="socket">The connected socket.</param>
+            <param name="message">The message.</param>
+            <param name="cancellationToken">Cancels the send.</param>
+        </member>
+        <member name="M:AStarDev.SingleInstance.HandOffProtocol.ReceiveAsync(System.Net.Sockets.Socket,System.Threading.CancellationToken)">
+            <summary>Receives one message.</summary>
+            <param name="socket">The connected socket.</param>
+            <param name="cancellationToken">Cancels the receive.</param>
+        </member>
         <member name="T:AStarDev.SingleInstance.InstanceClaim">
             <summary>What happened when the app tried to become the running instance.</summary>
         </member>
@@ -48,6 +83,9 @@
         </member>
         <member name="T:AStarDev.SingleInstance.PrimaryInstance">
             <summary>The running instance: holds the lock and listens for second launches until disposed.</summary>
+        </member>
+        <member name="M:AStarDev.SingleInstance.PrimaryInstance.Start(System.IO.Stream,AStarDev.FunctionalParadigm.Option{System.Net.Sockets.Socket},System.IO.Abstractions.IFileInfo,Microsoft.Extensions.Logging.ILogger)">
+            <summary>Starts listening on <paramref name="listener"/>; the instance owns the lock, the listener and the socket file from now on.</summary>
         </member>
         <member name="E:AStarDev.SingleInstance.PrimaryInstance.ActivationRequested">
             <summary>Raised on a thread-pool thread when a second launch asks this instance to show its window.</summary>
@@ -103,6 +141,23 @@
             <summary>Registers <see cref="T:AStarDev.SingleInstance.ISingleInstanceGuard"/> as a singleton. Needs logging.</summary>
             <param name="services">The service collection.</param>
             <returns>The <paramref name="services"/> collection to allow further chaining.</returns>
+        </member>
+        <member name="T:AStarDev.SingleInstance.SocketOwner">
+            <summary>Disposes a socket unless ownership is released, so a failed bind never leaks it.</summary>
+            <param name="socket">The socket being set up.</param>
+        </member>
+        <member name="M:AStarDev.SingleInstance.SocketOwner.#ctor(System.Net.Sockets.Socket)">
+            <summary>Disposes a socket unless ownership is released, so a failed bind never leaks it.</summary>
+            <param name="socket">The socket being set up.</param>
+        </member>
+        <member name="P:AStarDev.SingleInstance.SocketOwner.Socket">
+            <summary>The socket being set up.</summary>
+        </member>
+        <member name="M:AStarDev.SingleInstance.SocketOwner.Release">
+            <summary>Hands the socket to the caller; it is no longer disposed here.</summary>
+        </member>
+        <member name="M:AStarDev.SingleInstance.SocketOwner.Dispose">
+            <inheritdoc />
         </member>
     </members>
 </doc>
