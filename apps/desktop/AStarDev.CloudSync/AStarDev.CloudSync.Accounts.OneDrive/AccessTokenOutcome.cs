@@ -35,7 +35,15 @@ public abstract record AccessTokenOutcome
         }
     }
 
-    /// <summary>The token could not be obtained now, for example because the network or the token cache is unavailable.</summary>
+    /// <summary>The token cache cannot be connected without asking the user, for example because there is no secure store and plaintext storage was never agreed to. The user must give consent through the add-account flow.</summary>
+    public sealed record TokenCacheUnavailable : AccessTokenOutcome
+    {
+        internal TokenCacheUnavailable()
+        {
+        }
+    }
+
+    /// <summary>The token could not be obtained now, for example because the network is unavailable or the request timed out.</summary>
     public sealed record Unavailable : AccessTokenOutcome
     {
         internal Unavailable()

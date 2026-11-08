@@ -134,7 +134,7 @@ public sealed class GivenAnAccessTokenSource : IDisposable
     }
 
     [Fact]
-    public async Task when_the_token_cache_cannot_be_connected_then_the_token_is_unavailable_and_msal_is_not_asked()
+    public async Task when_the_token_cache_cannot_be_connected_then_the_token_cache_is_unavailable_and_msal_is_not_asked()
     {
         var accountId = await AddStoredAccountAsync();
         var msal = new FakeMsalClient();
@@ -142,8 +142,54 @@ public sealed class GivenAnAccessTokenSource : IDisposable
 
         var outcome = await new OneDriveModule(new OneDriveFakes { Msal = msal, Storage = storage, AccountStore = accountStore, Logs = logs }).TokenSource.GetAccessTokenAsync(accountId, CancellationToken);
 
-        outcome.ShouldBe(AccessTokenOutcomeFactory.CreateUnavailable());
+        outcome.ShouldBe(AccessTokenOutcomeFactory.CreateTokenCacheUnavailable());
         msal.SilentTokenKeys.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_the_token_cache_needs_plaintext_consent_then_the_user_is_not_asked_and_the_token_cache_is_unavailable()
+    {
+        var accountId = await AddStoredAccountAsync();
+        var consent = new FakeTokenCacheConsent { Answer = PlaintextCacheConsentFactory.CreateGranted() };
+        var storage = new FakeMsalTokenCacheStorage { SecureStoreFails = true };
+
+        var outcome = await new OneDriveModule(new OneDriveFakes { Msal = new FakeMsalClient(), Storage = storage, Consent = consent, AccountStore = accountStore, Logs = logs }).TokenSource.GetAccessTokenAsync(accountId, CancellationToken);
+
+        outcome.ShouldBe(AccessTokenOutcomeFactory.CreateTokenCacheUnavailable());
+        consent.QuestionsAsked.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task when_an_account_is_added_while_a_token_request_is_connecting_the_cache_then_the_user_is_still_asked_for_consent()
+    {
+        var consent = new FakeTokenCacheConsent { Answer = PlaintextCacheConsentFactory.CreateGranted() };
+        var storage = new FakeMsalTokenCacheStorage { SecureStoreFails = true, AttachDelay = TimeSpan.FromMilliseconds(200) };
+        var module = new OneDriveModule(new OneDriveFakes { Msal = new FakeMsalClient(), Storage = storage, Consent = consent, Logs = logs });
+
+        var tokenRequest = module.TokenSource.GetAccessTokenAsync(AccountIdFactory.Create(Guid.NewGuid()), CancellationToken);
+        var added = await module.AddAsync(CancellationToken);
+        await tokenRequest;
+
+        added.ShouldBeOfType<AccountAddOutcome.Added>();
+        consent.QuestionsAsked.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_the_caller_cancels_and_msal_reports_it_as_a_failure_then_the_request_is_cancelled()
+    {
+        var accountId = await AddStoredAccountAsync();
+        using var cancellation = new CancellationTokenSource();
+        var msal = new FakeMsalClient
+        {
+            SilentToken = async (_, _) =>
+            {
+                await cancellation.CancelAsync();
+
+                throw new MsalClientException(MsalError.AuthenticationCanceledError, "The request was cancelled.");
+            },
+        };
+
+        await Should.ThrowAsync<OperationCanceledException>(() => CreateModule(msal).TokenSource.GetAccessTokenAsync(accountId, cancellation.Token));
     }
 
     [Fact]

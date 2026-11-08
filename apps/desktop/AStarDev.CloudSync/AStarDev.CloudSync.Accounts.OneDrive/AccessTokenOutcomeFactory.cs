@@ -12,6 +12,9 @@ public static class AccessTokenOutcomeFactory
     /// <summary>Creates an unknown-account outcome.</summary>
     public static AccessTokenOutcome CreateUnknownAccount() => new AccessTokenOutcome.UnknownAccount();
 
+    /// <summary>Creates a token-cache-unavailable outcome.</summary>
+    public static AccessTokenOutcome CreateTokenCacheUnavailable() => new AccessTokenOutcome.TokenCacheUnavailable();
+
     /// <summary>Creates an unavailable outcome.</summary>
     public static AccessTokenOutcome CreateUnavailable() => new AccessTokenOutcome.Unavailable();
 }
