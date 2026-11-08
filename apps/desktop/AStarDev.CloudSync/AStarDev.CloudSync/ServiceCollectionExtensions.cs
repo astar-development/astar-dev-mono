@@ -19,6 +19,7 @@ using AStarDev.CloudSync.ViewModels.DisplaySettings;
 using AStarDev.CloudSync.ViewModels.Layouts;
 using AStarDev.CloudSync.ViewModels.Overview;
 using AStarDev.Localization;
+using AStarDev.SingleInstance;
 using AStarDev.Utilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,6 +37,8 @@ public static class ServiceCollectionExtensions
     private static string DatabaseFilePath => ApplicationName.ApplicationDirectory().CombinePath("cloudsync.db");
 
     private static string TokenCacheFolderPath => ApplicationName.ApplicationDirectory();
+
+    private const string SingleInstanceName = "cloudsync";
 
     private static string TokenCacheConsentFilePath => ApplicationName.ApplicationDirectory().CombinePath("token-cache-consent.json");
 
@@ -58,6 +61,8 @@ public static class ServiceCollectionExtensions
             .AddSingleton<AddAccountViewModel>()
             .AddSingleton<IAddAccountDialog>(provider => provider.GetRequiredService<AddAccountViewModel>())
             .AddSingleton<IFileSystem, RealFileSystem>()
+            .AddSingleInstance()
+            .AddSingleton(provider => SingleInstanceOptionsFactory.Create(provider.GetRequiredService<IFileSystem>().DirectoryInfo.New(ApplicationName.ApplicationDirectory()), SingleInstanceName, null))
             .AddCloudSyncPersistence(provider => provider.GetRequiredService<IFileSystem>().FileInfo.New(DatabaseFilePath))
             .AddOneDriveAccounts(configuration, provider => provider.GetRequiredService<IFileSystem>().DirectoryInfo.New(TokenCacheFolderPath), provider => provider.GetRequiredService<IFileSystem>().FileInfo.New(TokenCacheConsentFilePath))
             .AddOneDriveSync()

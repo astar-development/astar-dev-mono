@@ -17,6 +17,7 @@ using AStarDev.CloudSync.ViewModels.DisplaySettings;
 using AStarDev.CloudSync.ViewModels.Layouts;
 using AStarDev.CloudSync.ViewModels.Overview;
 using AStarDev.Localization;
+using AStarDev.SingleInstance;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -91,6 +92,14 @@ public class GivenServiceCollectionExtensions
         using var provider = CreateServices().BuildServiceProvider();
 
         provider.GetRequiredService<ISyncOverviewSource>().GetType().Assembly.ShouldBe(typeof(OverviewServiceCollectionExtensions).Assembly);
+    }
+
+    [Fact]
+    public void when_application_services_are_added_then_the_single_instance_guard_uses_the_cloudsync_lock_in_the_data_folder()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        (provider.GetRequiredService<ISingleInstanceGuard>().GetType().Assembly, provider.GetRequiredService<SingleInstanceOptions>().Name).ShouldBe((typeof(SingleInstanceServiceCollectionExtensions).Assembly, "cloudsync"));
     }
 
     [Fact]
