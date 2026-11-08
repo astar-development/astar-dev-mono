@@ -124,6 +124,82 @@ public sealed class GivenASingleInstanceGuard : IDisposable
     }
 
     [Fact]
+    public async Task when_the_lock_file_name_is_too_long_for_the_file_system_then_the_lock_is_unavailable()
+    {
+        var options = SingleInstanceOptionsFactory.Create(data.Folder, new string('n', 300), TimeSpan.FromMilliseconds(300));
+
+        var claim = await Guard.ClaimAsync(options, CancellationToken);
+
+        claim.ShouldBe(InstanceClaimFactory.CreateLockUnavailable());
+    }
+
+    [Fact]
+    [System.Runtime.Versioning.UnsupportedOSPlatform("windows")]
+    public async Task when_the_data_folder_is_read_only_then_the_lock_is_unavailable()
+    {
+        Assert.SkipWhen(OperatingSystem.IsWindows() || Environment.UserName == "root", "Unix permissions only, and root ignores them.");
+        data.Folder.Create();
+        File.SetUnixFileMode(data.Folder.FullName, UnixFileMode.UserRead | UnixFileMode.UserExecute);
+
+        var claim = await Guard.ClaimAsync(data.Options(), CancellationToken);
+
+        File.SetUnixFileMode(data.Folder.FullName, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        claim.ShouldBe(InstanceClaimFactory.CreateLockUnavailable());
+    }
+
+    [Fact]
+    public async Task when_the_socket_path_is_too_long_then_the_instance_is_still_primary_and_a_warning_is_logged()
+    {
+        var options = SingleInstanceOptionsFactory.Create(data.Folder, new string('s', 120), TimeSpan.FromMilliseconds(300));
+
+        var claim = await Guard.ClaimAsync(options, CancellationToken);
+
+        await using var primary = claim.ShouldBeOfType<InstanceClaim.Primary>().Instance;
+        logger.Entries.ShouldContain(entry => entry.Level == LogLevel.Warning);
+    }
+
+    [Fact]
+    public async Task when_a_client_sends_something_other_than_show_then_the_running_instance_is_not_activated_and_keeps_answering()
+    {
+        await using var primary = (await Guard.ClaimAsync(data.Options(), CancellationToken)).ShouldBeOfType<InstanceClaim.Primary>().Instance;
+        var activations = 0;
+        primary.ActivationRequested += (_, _) => Interlocked.Increment(ref activations);
+        using (var stranger = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified))
+        {
+            await stranger.ConnectAsync(new UnixDomainSocketEndPoint(data.SocketPath), CancellationToken);
+            _ = await stranger.SendAsync("hello\n"u8.ToArray(), SocketFlags.None, CancellationToken);
+        }
+
+        var second = await Guard.ClaimAsync(data.Options(), CancellationToken);
+
+        (second, activations).ShouldBe((InstanceClaimFactory.CreateHandedOff(), 1));
+    }
+
+    [Fact]
+    public async Task when_an_activation_handler_throws_then_the_second_launch_is_still_handed_off()
+    {
+        await using var primary = (await Guard.ClaimAsync(data.Options(), CancellationToken)).ShouldBeOfType<InstanceClaim.Primary>().Instance;
+        primary.ActivationRequested += (_, _) => throw new InvalidOperationException("The window is gone.");
+
+        var second = await Guard.ClaimAsync(data.Options(), CancellationToken);
+
+        second.ShouldBe(InstanceClaimFactory.CreateHandedOff());
+    }
+
+    [Fact]
+    public async Task when_the_caller_cancels_during_the_hand_off_then_the_claim_is_cancelled()
+    {
+        data.Folder.Create();
+        await using var heldLock = new FileStream(data.LockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+        using var silentListener = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified);
+        silentListener.Bind(new UnixDomainSocketEndPoint(data.SocketPath));
+        silentListener.Listen();
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
+
+        await Should.ThrowAsync<OperationCanceledException>(() => Guard.ClaimAsync(data.Options(TimeSpan.FromSeconds(5)), cancellation.Token));
+    }
+
+    [Fact]
     public async Task when_the_caller_cancels_then_the_claim_is_cancelled()
     {
         using var cancellation = new CancellationTokenSource();
