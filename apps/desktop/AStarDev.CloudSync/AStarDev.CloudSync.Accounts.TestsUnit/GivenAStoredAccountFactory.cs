@@ -12,6 +12,6 @@ public class GivenAStoredAccountFactory
 
         var storedAccount = StoredAccountFactory.Create(accountId, registration);
 
-        storedAccount.ShouldBe(new StoredAccount(accountId, registration));
+        (storedAccount.Id, storedAccount.Registration).ShouldBe((accountId, registration));
     }
 }

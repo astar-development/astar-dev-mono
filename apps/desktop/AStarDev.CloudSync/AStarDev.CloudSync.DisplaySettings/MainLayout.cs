@@ -8,11 +8,26 @@ public abstract record MainLayout
     }
 
     /// <summary>Layout A, the default: one list of every account.</summary>
-    public sealed record UnifiedAccounts : MainLayout;
+    public sealed record UnifiedAccounts : MainLayout
+    {
+        internal UnifiedAccounts()
+        {
+        }
+    }
 
     /// <summary>Layout B: accounts grouped under their provider.</summary>
-    public sealed record GroupedByProvider : MainLayout;
+    public sealed record GroupedByProvider : MainLayout
+    {
+        internal GroupedByProvider()
+        {
+        }
+    }
 
     /// <summary>Layout C: the window is organised around sync pairs.</summary>
-    public sealed record SyncPairsFirst : MainLayout;
+    public sealed record SyncPairsFirst : MainLayout
+    {
+        internal SyncPairsFirst()
+        {
+        }
+    }
 }

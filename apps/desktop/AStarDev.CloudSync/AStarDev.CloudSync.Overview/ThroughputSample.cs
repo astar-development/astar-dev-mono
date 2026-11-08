@@ -1,6 +1,17 @@
 namespace AStarDev.CloudSync.Overview;
 
 /// <summary>The sync transfer rate at a point in time.</summary>
-/// <param name="At">When the rate was measured.</param>
-/// <param name="BytesPerSecond">The transfer rate.</param>
-public sealed record ThroughputSample(DateTimeOffset At, long BytesPerSecond);
+public sealed record ThroughputSample
+{
+    internal ThroughputSample(DateTimeOffset at, long bytesPerSecond)
+    {
+        At = at;
+        BytesPerSecond = bytesPerSecond;
+    }
+
+    /// <summary>When the rate was measured.</summary>
+    public DateTimeOffset At { get; }
+
+    /// <summary>The transfer rate.</summary>
+    public long BytesPerSecond { get; }
+}

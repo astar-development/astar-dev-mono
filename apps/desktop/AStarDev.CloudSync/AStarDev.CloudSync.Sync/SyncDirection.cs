@@ -8,11 +8,26 @@ public abstract record SyncDirection
     }
 
     /// <summary>Changes flow both ways.</summary>
-    public sealed record TwoWay : SyncDirection;
+    public sealed record TwoWay : SyncDirection
+    {
+        internal TwoWay()
+        {
+        }
+    }
 
     /// <summary>Local changes are uploaded; cloud changes are not downloaded.</summary>
-    public sealed record UploadOnly : SyncDirection;
+    public sealed record UploadOnly : SyncDirection
+    {
+        internal UploadOnly()
+        {
+        }
+    }
 
     /// <summary>Cloud changes are downloaded; local changes are not uploaded.</summary>
-    public sealed record DownloadOnly : SyncDirection;
+    public sealed record DownloadOnly : SyncDirection
+    {
+        internal DownloadOnly()
+        {
+        }
+    }
 }

@@ -8,8 +8,18 @@ public abstract record PlaintextCacheConsent
     }
 
     /// <summary>The user agreed to keep the tokens in a plaintext file.</summary>
-    public sealed record Granted : PlaintextCacheConsent;
+    public sealed record Granted : PlaintextCacheConsent
+    {
+        internal Granted()
+        {
+        }
+    }
 
     /// <summary>The user did not agree; the account is not added.</summary>
-    public sealed record Declined : PlaintextCacheConsent;
+    public sealed record Declined : PlaintextCacheConsent
+    {
+        internal Declined()
+        {
+        }
+    }
 }

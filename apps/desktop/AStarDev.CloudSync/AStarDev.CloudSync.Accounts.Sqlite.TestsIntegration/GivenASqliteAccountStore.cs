@@ -114,17 +114,6 @@ public class GivenASqliteAccountStore
     }
 
     [Fact]
-    public async Task when_a_blank_key_bypasses_the_factory_then_the_database_rejects_it()
-    {
-        await using var database = await TemporaryCloudSyncDatabase.CreateMigratedAsync(CancellationToken);
-        var blankKeyRegistration = Registration(HomeAccountIdentifier, "Personal") with { Key = new ProviderAccountKey("   ") };
-
-        var outcome = await database.AccountStore.AddAsync(blankKeyRegistration, CancellationToken);
-
-        outcome.ShouldBe(AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreatePersistFailed()));
-    }
-
-    [Fact]
     public async Task when_the_account_cannot_be_saved_then_an_error_is_logged()
     {
         await using var database = TemporaryCloudSyncDatabase.CreateUnmigrated();

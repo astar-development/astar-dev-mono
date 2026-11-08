@@ -4,13 +4,54 @@ using AStarDev.FunctionalParadigm;
 namespace AStarDev.CloudSync.Sync;
 
 /// <summary>One local folder linked to one cloud folder.</summary>
-/// <param name="Id">The sync pair id.</param>
-/// <param name="AccountId">The account holding the cloud folder.</param>
-/// <param name="Name">The sync pair's display name.</param>
-/// <param name="LocalFolder">The local folder, under its provider's local root.</param>
-/// <param name="RemotePath">The cloud folder's path.</param>
-/// <param name="Direction">Which way changes flow.</param>
-/// <param name="Status">The sync pair's sync status.</param>
-/// <param name="FileCount">Files in the pair.</param>
-/// <param name="LastSync">When the pair last finished a sync, if ever.</param>
-public sealed record SyncPair(SyncPairId Id, AccountId AccountId, string Name, DirectoryInfo LocalFolder, string RemotePath, SyncDirection Direction, SyncStatus Status, int FileCount, Option<DateTimeOffset> LastSync);
+public sealed record SyncPair
+{
+    internal SyncPair(
+        SyncPairId id,
+        AccountId accountId,
+        string name,
+        DirectoryInfo localFolder,
+        string remotePath,
+        SyncDirection direction,
+        SyncStatus status,
+        int fileCount,
+        Option<DateTimeOffset> lastSync)
+    {
+        Id = id;
+        AccountId = accountId;
+        Name = name;
+        LocalFolder = localFolder;
+        RemotePath = remotePath;
+        Direction = direction;
+        Status = status;
+        FileCount = fileCount;
+        LastSync = lastSync;
+    }
+
+    /// <summary>The sync pair id.</summary>
+    public SyncPairId Id { get; }
+
+    /// <summary>The account holding the cloud folder.</summary>
+    public AccountId AccountId { get; }
+
+    /// <summary>The sync pair's display name.</summary>
+    public string Name { get; }
+
+    /// <summary>The local folder, under its provider's local root.</summary>
+    public DirectoryInfo LocalFolder { get; }
+
+    /// <summary>The cloud folder's path.</summary>
+    public string RemotePath { get; }
+
+    /// <summary>Which way changes flow.</summary>
+    public SyncDirection Direction { get; }
+
+    /// <summary>The sync pair's sync status.</summary>
+    public SyncStatus Status { get; }
+
+    /// <summary>Files in the pair.</summary>
+    public int FileCount { get; }
+
+    /// <summary>When the pair last finished a sync, if ever.</summary>
+    public Option<DateTimeOffset> LastSync { get; }
+}
