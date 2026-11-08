@@ -1,21 +1,23 @@
 using System.Diagnostics.CodeAnalysis;
-using AStarDev.CloudSync.ViewModels.Common;
+using System.IO.Abstractions;
+using AStarDev.CloudSync.Sync;
 using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.Common;
 
 /// <summary>The home folder reported by the platform for <see cref="Environment.SpecialFolder.UserProfile"/>.</summary>
+/// <param name="fileSystem">Creates the folder abstraction for the reported path.</param>
 [ExcludeFromCodeCoverage]
-public sealed class UserProfileHomeFolder : IHomeFolder
+public sealed class UserProfileHomeFolder(IFileSystem fileSystem) : IHomeFolder
 {
     /// <inheritdoc />
-    public Option<DirectoryInfo> Folder
+    public Option<IDirectoryInfo> Folder
     {
         get
         {
             string path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
-            return string.IsNullOrWhiteSpace(path) ? Option.None<DirectoryInfo>() : Option.Some(new DirectoryInfo(path));
+            return string.IsNullOrWhiteSpace(path) ? Option.None<IDirectoryInfo>() : Option.Some(fileSystem.DirectoryInfo.New(path));
         }
     }
 }

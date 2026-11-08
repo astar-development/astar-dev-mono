@@ -1,6 +1,7 @@
+using AStarDev.CloudSync.Accounts;
 using AStarDev.FunctionalParadigm;
 
-namespace AStarDev.CloudSync.Accounts;
+namespace AStarDev.CloudSync.Sync;
 
 /// <summary>Creates <see cref="CloudAccount"/> values.</summary>
 public static class CloudAccountFactory

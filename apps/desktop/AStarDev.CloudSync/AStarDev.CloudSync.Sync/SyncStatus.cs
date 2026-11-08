@@ -1,4 +1,4 @@
-namespace AStarDev.CloudSync.Accounts;
+namespace AStarDev.CloudSync.Sync;
 
 /// <summary>The sync state of an account or sync pair.</summary>
 public abstract record SyncStatus

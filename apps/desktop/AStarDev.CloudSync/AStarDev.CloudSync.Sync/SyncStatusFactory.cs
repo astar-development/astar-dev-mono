@@ -1,5 +1,4 @@
-
-namespace AStarDev.CloudSync.Accounts;
+namespace AStarDev.CloudSync.Sync;
 
 /// <summary>Creates <see cref="SyncStatus"/> cases.</summary>
 public static class SyncStatusFactory

@@ -6,16 +6,17 @@ using AStarDev.CloudSync.TestHelpers.Accounts;
 using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.CloudSync.TestHelpers.DisplaySettings;
 using AStarDev.CloudSync.TestHelpers.Overview;
-using AStarDev.CloudSync.ViewModels;
 using AStarDev.CloudSync.ViewModels.Accounts;
 using AStarDev.CloudSync.ViewModels.Common;
 using AStarDev.CloudSync.ViewModels.DisplaySettings;
 using AStarDev.CloudSync.ViewModels.Layouts;
 using AStarDev.CloudSync.ViewModels.Overview;
+using AStarDev.CloudSync.ViewModels;
 using AStarDev.FunctionalParadigm;
 using AStarDev.Localization;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Time.Testing;
+using Testably.Abstractions;
 using Xunit;
 
 namespace AStarDev.CloudSync.TestHelpers.Ui;
@@ -34,7 +35,7 @@ public static class TestData
 
     public static FakeTimeProvider CreateTime() => TestClock.CreateTime();
 
-    public static LocalPathFormatter CreateLocalPathFormatter() => new(new FixedHomeFolder(Option.Some(new DirectoryInfo("/home/user"))));
+    public static LocalPathFormatter CreateLocalPathFormatter() => new(new FixedHomeFolder(Option.Some(new RealFileSystem().DirectoryInfo.New("/home/user"))));
 
     public static Task<SyncOverview> CreateOverviewAsync() => new PlaceholderSyncOverviewSource(CreateTime()).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(overview => overview, error => throw new InvalidOperationException(error.Message));
 

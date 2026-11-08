@@ -1,6 +1,7 @@
+using AStarDev.CloudSync.Accounts;
 using AStarDev.FunctionalParadigm;
 
-namespace AStarDev.CloudSync.Accounts;
+namespace AStarDev.CloudSync.Sync;
 
 /// <summary>A connected cloud storage account.</summary>
 public sealed record CloudAccount
