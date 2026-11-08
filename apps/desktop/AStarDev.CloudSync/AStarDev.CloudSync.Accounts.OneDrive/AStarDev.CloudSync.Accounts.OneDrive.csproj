@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    OneDrive accounts module: adds a personal Microsoft account through MSAL
+    sign-in, the token cache and a Microsoft Graph drive lookup. The only
+    project that references Microsoft.Graph and MSAL. Must not reference Avalonia.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <IsPublishable>false</IsPublishable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+    <PackageReference Include="Microsoft.Graph" />
+    <PackageReference Include="Microsoft.Identity.Client" />
+    <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" />
+    <PackageReference Include="Testably.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../AStarDev.CloudSync.Accounts/AStarDev.CloudSync.Accounts.csproj" />
+    <ProjectReference Include="../../../../packages/core/logging/AStarDev.LoggingExtensions/AStarDev.LoggingExtensions.csproj" />
+  </ItemGroup>
+
+</Project>

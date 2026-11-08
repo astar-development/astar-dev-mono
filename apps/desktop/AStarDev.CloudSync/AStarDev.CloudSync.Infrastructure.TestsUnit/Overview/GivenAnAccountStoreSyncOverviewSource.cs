@@ -1,14 +1,22 @@
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Core.Overview;
 using AStarDev.CloudSync.Infrastructure.Overview;
-using AStarDev.CloudSync.Infrastructure.TestsUnit.OneDrive;
+using AStarDev.CloudSync.TestHelpers.Accounts;
 using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.Infrastructure.TestsUnit.Overview;
 
 public class GivenAnAccountStoreSyncOverviewSource
 {
+    private const string FlintAccountKey = "00000000-0000-0000-4a1b-2c3d4e5f6a7b.9188040d-6c67-4c5b-b112-36a304b66dad";
+
+    private const string FlintEmail = "captain.flint@example.com";
+
+    private const string FlintDisplayName = "Captain Flint";
+
     private static readonly AccountId FlintId = AccountIdFactory.Create(Guid.Parse("0b1c2d3e-4f50-4617-8293-a4b5c6d7e8f9"));
+
+    private static readonly StorageUsage FlintStorage = StorageUsageFactory.Create(1_500, 5_000);
 
     [Fact]
     public async Task when_accounts_are_saved_then_each_becomes_an_up_to_date_never_synced_account_with_its_profile_and_storage()
@@ -19,10 +27,10 @@ public class GivenAnAccountStoreSyncOverviewSource
 
         overview.Accounts.ShouldHaveSingleItem().ShouldSatisfyAllConditions(
             account => account.Id.ShouldBe(FlintId),
-            account => account.DisplayName.ShouldBe(TestSignIns.DisplayName),
-            account => account.Email.ShouldBe(TestSignIns.Email),
+            account => account.DisplayName.ShouldBe(FlintDisplayName),
+            account => account.Email.ShouldBe(FlintEmail),
             account => account.Provider.ShouldBe(CloudProviderFactory.CreateOneDrive()),
-            account => account.Storage.ShouldBe(TestSignIns.Drive.Storage),
+            account => account.Storage.ShouldBe(FlintStorage),
             account => (account.FolderCount, account.FileCount).ShouldBe((0, 0)),
             account => account.Status.ShouldBeOfType<SyncStatus.UpToDate>(),
             account => account.LastSync.Match(_ => "synced", () => "never").ShouldBe("never"));
@@ -82,5 +90,5 @@ public class GivenAnAccountStoreSyncOverviewSource
     private static Task<SyncOverview> LoadAsync(FakeAccountStore store) => new AccountStoreSyncOverviewSource(new FakeCloudSyncDatabase(), store).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(overview => overview, failure => throw new InvalidOperationException(failure.Message));
 
     private static StoredAccount StoredFlint() =>
-        StoredAccountFactory.Create(FlintId, AccountRegistrationFactory.Create(ProviderAccountKeyFactory.Create(TestSignIns.AccountKey).Match(key => key, error => throw new InvalidOperationException(error.Message)), CloudProviderFactory.CreateOneDrive(), TestSignIns.DisplayName, TestSignIns.Email, TestSignIns.Drive.DriveId, TestSignIns.Drive.Storage));
+        StoredAccountFactory.Create(FlintId, AccountRegistrationFactory.Create(ProviderAccountKeyFactory.Create(FlintAccountKey).Match(key => key, error => throw new InvalidOperationException(error.Message)), CloudProviderFactory.CreateOneDrive(), FlintDisplayName, FlintEmail, DriveIdFactory.Create("8f2a1b3c4d5e6f70").Match(driveId => driveId, error => throw new InvalidOperationException(error.Message)), FlintStorage));
 }
