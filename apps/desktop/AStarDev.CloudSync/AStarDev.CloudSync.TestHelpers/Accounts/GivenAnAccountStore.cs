@@ -41,7 +41,7 @@ public abstract class GivenAnAccountStore : IAsyncLifetime
     public async Task when_a_new_account_is_added_then_it_can_be_read_back_by_its_key()
     {
         var registration = Registration(HomeAccountIdentifier, PersonalDisplayName);
-        var added = (AccountAddOutcome.Added)await Store.AddAsync(registration, CancellationToken);
+        var added = (await Store.AddAsync(registration, CancellationToken)).ShouldBeOfType<AccountAddOutcome.Added>();
 
         var found = await Store.GetByKeyAsync(CloudProviderFactory.CreateOneDrive(), registration.Key, CancellationToken);
 
@@ -52,7 +52,7 @@ public abstract class GivenAnAccountStore : IAsyncLifetime
     public async Task when_an_account_is_looked_up_with_a_casing_variant_of_its_key_then_it_is_found()
     {
         var registration = Registration(HomeAccountIdentifier, PersonalDisplayName);
-        var added = (AccountAddOutcome.Added)await Store.AddAsync(registration, CancellationToken);
+        var added = (await Store.AddAsync(registration, CancellationToken)).ShouldBeOfType<AccountAddOutcome.Added>();
 
         var found = await Store.GetByKeyAsync(CloudProviderFactory.CreateOneDrive(), Key(HomeAccountIdentifier.ToUpperInvariant()), CancellationToken);
 
@@ -72,7 +72,7 @@ public abstract class GivenAnAccountStore : IAsyncLifetime
     [Fact]
     public async Task when_the_same_account_is_added_again_then_it_is_reauthenticated_with_its_original_id()
     {
-        var added = (AccountAddOutcome.Added)await Store.AddAsync(Registration(HomeAccountIdentifier, PersonalDisplayName), CancellationToken);
+        var added = (await Store.AddAsync(Registration(HomeAccountIdentifier, PersonalDisplayName), CancellationToken)).ShouldBeOfType<AccountAddOutcome.Added>();
 
         var outcome = await Store.AddAsync(Registration(HomeAccountIdentifier, PersonalDisplayName), CancellationToken);
 
@@ -82,7 +82,7 @@ public abstract class GivenAnAccountStore : IAsyncLifetime
     [Fact]
     public async Task when_the_same_account_is_added_again_with_different_casing_then_it_is_the_same_account()
     {
-        var added = (AccountAddOutcome.Added)await Store.AddAsync(Registration(HomeAccountIdentifier, PersonalDisplayName), CancellationToken);
+        var added = (await Store.AddAsync(Registration(HomeAccountIdentifier, PersonalDisplayName), CancellationToken)).ShouldBeOfType<AccountAddOutcome.Added>();
 
         var outcome = await Store.AddAsync(Registration(HomeAccountIdentifier.ToUpperInvariant(), PersonalDisplayName), CancellationToken);
 
@@ -92,7 +92,7 @@ public abstract class GivenAnAccountStore : IAsyncLifetime
     [Fact]
     public async Task when_the_same_account_is_added_again_then_its_profile_storage_and_key_casing_come_from_the_latest_sign_in()
     {
-        var added = (AccountAddOutcome.Added)await Store.AddAsync(Registration(HomeAccountIdentifier, PersonalDisplayName), CancellationToken);
+        var added = (await Store.AddAsync(Registration(HomeAccountIdentifier, PersonalDisplayName), CancellationToken)).ShouldBeOfType<AccountAddOutcome.Added>();
         var refreshed = AccountRegistrationFactory.Create(Key(HomeAccountIdentifier.ToUpperInvariant()), CloudProviderFactory.CreateOneDrive(), "Renamed", "renamed@example.com", new DriveId("NEWDRIVE01"), StorageUsageFactory.Create(2_048, 1_099_511_627_776));
         await Store.AddAsync(refreshed, CancellationToken);
 
@@ -112,9 +112,9 @@ public abstract class GivenAnAccountStore : IAsyncLifetime
     [Fact]
     public async Task when_different_accounts_are_added_then_each_is_listed_once_in_any_order()
     {
-        var personal = (AccountAddOutcome.Added)await Store.AddAsync(Registration(HomeAccountIdentifier, PersonalDisplayName), CancellationToken);
-        var photos = (AccountAddOutcome.Added)await Store.AddAsync(Registration(OtherHomeAccountIdentifier, "Photos"), CancellationToken);
-        var archive = (AccountAddOutcome.Added)await Store.AddAsync(Registration(ThirdHomeAccountIdentifier, "Archive"), CancellationToken);
+        var personal = (await Store.AddAsync(Registration(HomeAccountIdentifier, PersonalDisplayName), CancellationToken)).ShouldBeOfType<AccountAddOutcome.Added>();
+        var photos = (await Store.AddAsync(Registration(OtherHomeAccountIdentifier, "Photos"), CancellationToken)).ShouldBeOfType<AccountAddOutcome.Added>();
+        var archive = (await Store.AddAsync(Registration(ThirdHomeAccountIdentifier, "Archive"), CancellationToken)).ShouldBeOfType<AccountAddOutcome.Added>();
 
         var all = await Store.GetAllAsync(CancellationToken);
 
