@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace AStarDev.CloudSync.Infrastructure.Persistence;
+namespace AStarDev.CloudSync.Accounts.Sqlite;
 
 /// <summary>Registers the CloudSync database and the stores built on it.</summary>
 public static class PersistenceServiceCollectionExtensions

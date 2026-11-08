@@ -6,12 +6,12 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace AStarDev.CloudSync.Infrastructure.Persistence;
+namespace AStarDev.CloudSync.Accounts.Sqlite;
 
 /// <summary>Keeps accounts in the CloudSync SQLite database.</summary>
 /// <param name="dbContextFactory">Creates a database context per operation.</param>
 /// <param name="logger">Reports saves and reads that fail.</param>
-public sealed class SqliteAccountStore(IDbContextFactory<CloudSyncDbContext> dbContextFactory, ILogger<SqliteAccountStore> logger) : IAccountStore
+internal sealed class SqliteAccountStore(IDbContextFactory<CloudSyncDbContext> dbContextFactory, ILogger<SqliteAccountStore> logger) : IAccountStore
 {
     private const string OneDriveProviderKey = "OneDrive";
     private const int SqliteUniqueConstraintErrorCode = 2067;

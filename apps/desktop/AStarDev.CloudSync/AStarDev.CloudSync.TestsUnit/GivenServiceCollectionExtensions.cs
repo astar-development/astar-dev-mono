@@ -2,6 +2,7 @@ using AStar.Dev.Velopack.Publishing;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Accounts.OneDrive;
+using AStarDev.CloudSync.Accounts.Sqlite;
 using AStarDev.CloudSync.Common;
 using AStarDev.CloudSync.Core.Common;
 using AStarDev.CloudSync.Core.DisplaySettings;
@@ -9,7 +10,6 @@ using AStarDev.CloudSync.Core.Overview;
 using AStarDev.CloudSync.Core.Persistence;
 using AStarDev.CloudSync.Infrastructure.Common;
 using AStarDev.CloudSync.Infrastructure.Overview;
-using AStarDev.CloudSync.Infrastructure.Persistence;
 using AStarDev.CloudSync.TestHelpers.DisplaySettings;
 using AStarDev.CloudSync.TestHelpers.Overview;
 using AStarDev.CloudSync.Theming;
@@ -208,13 +208,14 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
-    public void when_application_services_are_added_then_the_account_store_and_database_are_registered()
+    public void when_application_services_are_added_then_the_account_store_and_database_come_from_the_sqlite_module()
     {
         using var provider = CreateServices().BuildServiceProvider();
+        var sqliteModule = typeof(PersistenceServiceCollectionExtensions).Assembly;
 
         (provider.GetRequiredService<IAccountStore>(), provider.GetRequiredService<ICloudSyncDatabase>()).ShouldSatisfyAllConditions(
-            services => services.Item1.ShouldBeOfType<SqliteAccountStore>(),
-            services => services.Item2.ShouldBeOfType<SqliteCloudSyncDatabase>());
+            services => services.Item1.GetType().Assembly.ShouldBe(sqliteModule),
+            services => services.Item2.GetType().Assembly.ShouldBe(sqliteModule));
     }
 
     [Fact]

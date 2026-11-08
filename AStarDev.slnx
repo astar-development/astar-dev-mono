@@ -14,13 +14,14 @@
     <Folder Name="/apps/desktop/AStarDev.CloudSync/">
         <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.Accounts.OneDrive.TestsUnit/AStarDev.CloudSync.Accounts.OneDrive.TestsUnit.csproj" />
         <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.Accounts.OneDrive/AStarDev.CloudSync.Accounts.OneDrive.csproj" />
+        <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.Accounts.Sqlite.TestsIntegration/AStarDev.CloudSync.Accounts.Sqlite.TestsIntegration.csproj" />
+        <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.Accounts.Sqlite/AStarDev.CloudSync.Accounts.Sqlite.csproj" />
         <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.Accounts.TestsUnit/AStarDev.CloudSync.Accounts.TestsUnit.csproj" />
         <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.Accounts/AStarDev.CloudSync.Accounts.csproj" />
         <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.Core.TestsUnit/AStarDev.CloudSync.Core.TestsUnit.csproj" />
         <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.Core/AStarDev.CloudSync.Core.csproj" />
         <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.Domain.TestsUnit/AStarDev.CloudSync.Domain.TestsUnit.csproj" />
         <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.Domain/AStarDev.CloudSync.Domain.csproj" />
-        <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.Infrastructure.TestsIntegration/AStarDev.CloudSync.Infrastructure.TestsIntegration.csproj" />
         <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.Infrastructure.TestsUnit/AStarDev.CloudSync.Infrastructure.TestsUnit.csproj" />
         <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.Infrastructure/AStarDev.CloudSync.Infrastructure.csproj" />
         <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.TestHelpers/AStarDev.CloudSync.TestHelpers.csproj" />

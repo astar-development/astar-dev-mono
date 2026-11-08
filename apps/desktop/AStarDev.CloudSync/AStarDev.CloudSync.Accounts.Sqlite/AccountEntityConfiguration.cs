@@ -2,11 +2,11 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace AStarDev.CloudSync.Infrastructure.Persistence;
+namespace AStarDev.CloudSync.Accounts.Sqlite;
 
 /// <summary>Maps <see cref="AccountEntity"/> to the <c>Accounts</c> table. One row per provider and key, ignoring the key's case; keys and drive ids must not be blank.</summary>
 [ExcludeFromCodeCoverage]
-public sealed class AccountEntityConfiguration : IEntityTypeConfiguration<AccountEntity>
+internal sealed class AccountEntityConfiguration : IEntityTypeConfiguration<AccountEntity>
 {
     /// <inheritdoc />
     public void Configure(EntityTypeBuilder<AccountEntity> builder)

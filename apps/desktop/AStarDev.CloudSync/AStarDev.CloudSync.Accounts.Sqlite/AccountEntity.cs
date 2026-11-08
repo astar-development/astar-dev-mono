@@ -1,7 +1,7 @@
-namespace AStarDev.CloudSync.Infrastructure.Persistence;
+namespace AStarDev.CloudSync.Accounts.Sqlite;
 
 /// <summary>The database row for a saved account.</summary>
-public sealed class AccountEntity
+internal sealed class AccountEntity
 {
     /// <summary>CloudSync's id for the account.</summary>
     public Guid Id { get; set; }
