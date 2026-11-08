@@ -26,6 +26,7 @@
         <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.Sync.OneDrive/AStarDev.CloudSync.Sync.OneDrive.csproj" />
         <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.Sync.Sqlite.TestsIntegration/AStarDev.CloudSync.Sync.Sqlite.TestsIntegration.csproj" />
         <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.Sync.Sqlite/AStarDev.CloudSync.Sync.Sqlite.csproj" />
+        <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.Sync.TestsUnit/AStarDev.CloudSync.Sync.TestsUnit.csproj" />
         <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.Sync/AStarDev.CloudSync.Sync.csproj" />
         <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.TestHelpers/AStarDev.CloudSync.TestHelpers.csproj" />
         <Project Path="apps/desktop/AStarDev.CloudSync/AStarDev.CloudSync.TestHelpers.Ui/AStarDev.CloudSync.TestHelpers.Ui.csproj" />
