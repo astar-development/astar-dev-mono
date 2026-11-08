@@ -74,6 +74,40 @@ public sealed class GivenAnAccountThrottleGate : IDisposable
     }
 
     [Fact]
+    public void when_parallel_requests_are_throttled_at_the_same_moment_then_the_pause_does_not_double()
+    {
+        foreach (var _ in Enumerable.Range(0, 7))
+            Gate.ReportThrottled(Personal, Option.None<TimeSpan>());
+
+        var pause = PauseAfterThrottle(Option.None<TimeSpan>());
+
+        pause.ShouldBe(5);
+    }
+
+    [Fact]
+    public void when_a_success_arrives_during_a_pause_then_the_back_off_is_not_reset()
+    {
+        _ = PauseAfterThrottle(Option.None<TimeSpan>());
+        Gate.ReportThrottled(Personal, Option.None<TimeSpan>());
+
+        Gate.ReportSucceeded(Personal);
+        _ = PausedSeconds();
+
+        PauseAfterThrottle(Option.None<TimeSpan>()).ShouldBe(20);
+    }
+
+    [Fact]
+    public async Task when_an_account_that_was_never_throttled_succeeds_then_it_is_still_not_paused()
+    {
+        Gate.ReportSucceeded(Work);
+
+        var waiting = Gate.WaitAsync(Work, CancellationToken);
+        await waiting.WaitAsync(TimeSpan.FromSeconds(5), CancellationToken);
+
+        waiting.IsCompletedSuccessfully.ShouldBeTrue();
+    }
+
+    [Fact]
     public void when_retry_after_is_longer_than_ten_minutes_then_the_pause_is_capped_at_ten_minutes()
     {
         var pause = PauseAfterThrottle(Option.Some(TimeSpan.FromHours(1)));
@@ -130,8 +164,14 @@ public sealed class GivenAnAccountThrottleGate : IDisposable
     private int PauseAfterThrottle(Option<TimeSpan> retryAfter)
     {
         Gate.ReportThrottled(Personal, retryAfter);
+
+        return PausedSeconds();
+    }
+
+    private int PausedSeconds()
+    {
         var seconds = 0;
-        while (!Gate.WaitAsync(Personal, CancellationToken).IsCompleted)
+        while (!Gate.WaitAsync(Personal, CancellationToken).IsCompleted && seconds < 1000)
         {
             time.Advance(TimeSpan.FromSeconds(1));
             seconds++;

@@ -123,6 +123,17 @@ public sealed class GivenAnAccountSyncLock : IDisposable
     }
 
     [Fact]
+    public async Task when_a_drain_is_requested_with_a_cancelled_token_then_it_throws_and_the_lock_stays_open()
+    {
+        using var cancellation = new CancellationTokenSource();
+        await cancellation.CancelAsync();
+
+        await Should.ThrowAsync<OperationCanceledException>(() => SyncLock.DrainAsync(cancellation.Token));
+
+        using var lease = SyncLock.TryAcquire(Personal).ShouldBeOfType<SyncLockAttempt.Acquired>().Lease;
+    }
+
+    [Fact]
     public async Task when_two_drains_are_held_then_disposing_one_keeps_the_lock_closed()
     {
         var first = await SyncLock.DrainAsync(CancellationToken);

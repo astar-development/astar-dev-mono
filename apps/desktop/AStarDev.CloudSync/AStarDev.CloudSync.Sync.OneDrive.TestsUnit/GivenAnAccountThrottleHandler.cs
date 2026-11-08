@@ -85,6 +85,41 @@ public sealed class GivenAnAccountThrottleHandler : IDisposable
     }
 
     [Fact]
+    public async Task when_the_retry_after_date_is_already_past_then_the_account_is_not_paused()
+    {
+        graph.Next = () => ThrottledUntil(HttpStatusCode.TooManyRequests, time.GetUtcNow().AddSeconds(-30));
+
+        using var response = await SendAsync(Option.Some(Personal));
+
+        PausedSeconds().ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task when_graph_answers_a_client_error_then_the_back_off_is_not_reset()
+    {
+        Gate.ReportThrottled(Personal, Option.None<TimeSpan>());
+        time.Advance(TimeSpan.FromSeconds(5));
+        Gate.ReportThrottled(Personal, Option.None<TimeSpan>());
+        time.Advance(TimeSpan.FromSeconds(10));
+        graph.Next = () => new HttpResponseMessage(HttpStatusCode.NotFound);
+
+        using var response = await SendAsync(Option.Some(Personal));
+        Gate.ReportThrottled(Personal, Option.None<TimeSpan>());
+
+        PausedSeconds().ShouldBe(20);
+    }
+
+    [Fact]
+    public async Task when_the_network_fails_then_the_error_reaches_the_caller_and_nothing_is_paused()
+    {
+        graph.Next = () => throw new HttpRequestException("The network is down.");
+
+        await Should.ThrowAsync<HttpRequestException>(() => SendAsync(Option.Some(Personal)));
+
+        PausedSeconds().ShouldBe(0);
+    }
+
+    [Fact]
     public async Task when_a_request_names_no_account_then_it_is_sent_and_nothing_is_paused()
     {
         Gate.ReportThrottled(Personal, Option.Some(TimeSpan.FromMinutes(1)));
@@ -135,7 +170,7 @@ public sealed class GivenAnAccountThrottleHandler : IDisposable
     private int PausedSeconds()
     {
         var seconds = 0;
-        while (!Gate.WaitAsync(Personal, CancellationToken).IsCompleted)
+        while (!Gate.WaitAsync(Personal, CancellationToken).IsCompleted && seconds < 1000)
         {
             time.Advance(TimeSpan.FromSeconds(1));
             seconds++;
