@@ -17,7 +17,7 @@ New reusable code → add to relevant package + raise GitHub issue.
 
 ## Logging
 
-All logging → Azure Application Insights. Reuse existing `LogMessage` templates; add one only when none fit.
+Warning and above → Azure Application Insights. Debug and Information → local log files only. Reuse existing `LogMessage` templates; add one only when none fit.
 
 ## DI
 
