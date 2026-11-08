@@ -1,8 +1,9 @@
 using AStarDev.CloudSync.Accounts;
+using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.Accounts.OneDrive;
 
-/// <summary>The MSAL calls the add-account flow needs.</summary>
+/// <summary>The MSAL calls the add-account flow and the access token source need.</summary>
 public interface IMsalClient
 {
     /// <summary>Lists the home account identifiers already in the token cache.</summary>
@@ -15,4 +16,10 @@ public interface IMsalClient
     /// <summary>Removes the account from the token cache.</summary>
     /// <param name="key">The home account identifier, matched ignoring case.</param>
     Task RemoveAccountAsync(ProviderAccountKey key);
+
+    /// <summary>Gets an access token for the account from the token cache without user interaction, refreshing it when needed.</summary>
+    /// <param name="key">The home account identifier, matched ignoring case.</param>
+    /// <param name="cancellationToken">Cancels the request.</param>
+    /// <returns>The token, or none when the token cache has no such account. Throws MSAL's <c>MsalUiRequiredException</c> when the user must sign in again.</returns>
+    Task<Option<string>> AcquireTokenSilentAsync(ProviderAccountKey key, CancellationToken cancellationToken);
 }

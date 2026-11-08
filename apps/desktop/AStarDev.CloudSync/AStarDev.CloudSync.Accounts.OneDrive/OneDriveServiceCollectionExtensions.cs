@@ -35,7 +35,8 @@ public static class OneDriveServiceCollectionExtensions
             .AddSingleton<TokenCacheInitialiser>()
             .AddSingleton<IPlaintextCacheConsentSettings>(provider => provider.GetRequiredService<TokenCacheInitialiser>())
             .AddSingleton<IDriveLookup, GraphDriveLookup>()
-            .AddSingleton<IAccountAdder, MicrosoftAccountAdder>();
+            .AddSingleton<IAccountAdder, MicrosoftAccountAdder>()
+            .AddSingleton<IAccessTokenSource, MsalAccessTokenSource>();
     }
 
     private static IPublicClientApplication CreatePublicClientApplication(IServiceProvider provider)

@@ -1,21 +1,23 @@
 using System.Globalization;
 using System.IO.Abstractions;
-using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using AStar.Dev.Velopack.Publishing;
+using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
+using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Accounts.OneDrive;
 using AStarDev.CloudSync.Accounts.Sqlite;
-using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Common;
 using AStarDev.CloudSync.DisplaySettings;
 using AStarDev.CloudSync.Overview;
 using AStarDev.CloudSync.Sync;
+using AStarDev.CloudSync.Sync.OneDrive;
+using AStarDev.CloudSync.Sync.Sqlite;
 using AStarDev.CloudSync.Theming;
+using AStarDev.CloudSync.ViewModels;
 using AStarDev.CloudSync.ViewModels.Accounts;
 using AStarDev.CloudSync.ViewModels.Common;
 using AStarDev.CloudSync.ViewModels.DisplaySettings;
 using AStarDev.CloudSync.ViewModels.Layouts;
 using AStarDev.CloudSync.ViewModels.Overview;
-using AStarDev.CloudSync.ViewModels;
 using AStarDev.Localization;
 using AStarDev.Utilities;
 using Microsoft.Extensions.Configuration;
@@ -58,6 +60,8 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IFileSystem, RealFileSystem>()
             .AddCloudSyncPersistence(provider => provider.GetRequiredService<IFileSystem>().FileInfo.New(DatabaseFilePath))
             .AddOneDriveAccounts(configuration, provider => provider.GetRequiredService<IFileSystem>().DirectoryInfo.New(TokenCacheFolderPath), provider => provider.GetRequiredService<IFileSystem>().FileInfo.New(TokenCacheConsentFilePath))
+            .AddOneDriveSync()
+            .AddSyncPersistence()
             .AddDisplayPreferences(provider => provider.GetRequiredService<IFileSystem>().FileInfo.New(SettingsFilePath))
             .AddSingleton<IThemeApplier, AvaloniaThemeApplier>()
             .AddSingleton<IHomeFolder, UserProfileHomeFolder>()

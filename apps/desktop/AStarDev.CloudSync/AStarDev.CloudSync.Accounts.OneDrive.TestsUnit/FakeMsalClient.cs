@@ -1,4 +1,5 @@
 using AStarDev.CloudSync.Accounts;
+using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.Accounts.OneDrive.TestsUnit;
 
@@ -6,6 +7,7 @@ public sealed class FakeMsalClient : IMsalClient
 {
     private readonly Lock gate = new();
     private readonly List<ProviderAccountKey> removedKeys = [];
+    private readonly List<ProviderAccountKey> silentTokenKeys = [];
     private int signInAttempts;
 
     public IReadOnlyList<string> CachedAccountKeys { get; init; } = [];
@@ -38,5 +40,24 @@ public sealed class FakeMsalClient : IMsalClient
             removedKeys.Add(key);
 
         return Task.CompletedTask;
+    }
+
+    public Func<ProviderAccountKey, CancellationToken, Task<Option<string>>> SilentToken { get; init; } = (_, _) => Task.FromResult(Option.Some(TestSignIns.AccessToken));
+
+    public IReadOnlyList<ProviderAccountKey> SilentTokenKeys
+    {
+        get
+        {
+            lock (gate)
+                return [.. silentTokenKeys];
+        }
+    }
+
+    public Task<Option<string>> AcquireTokenSilentAsync(ProviderAccountKey key, CancellationToken cancellationToken)
+    {
+        lock (gate)
+            silentTokenKeys.Add(key);
+
+        return SilentToken(key, cancellationToken);
     }
 }
