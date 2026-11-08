@@ -28,8 +28,8 @@ public sealed class GivenAMicrosoftAccountAdder : IDisposable
             registration => registration.Provider.ShouldBe(CloudProviderFactory.CreateOneDrive()),
             registration => registration.Email.ShouldBe(TestSignIns.Email),
             registration => registration.DisplayName.ShouldBe(TestSignIns.DisplayName),
-            registration => registration.DriveId.ShouldBe(TestSignIns.Drive.DriveId),
-            registration => registration.Storage.ShouldBe(TestSignIns.Drive.Storage));
+            registration => registration.DriveId.ShouldBe(TestSignIns.DriveId),
+            registration => registration.Storage.ShouldBe(TestSignIns.Storage));
     }
 
     [Fact]

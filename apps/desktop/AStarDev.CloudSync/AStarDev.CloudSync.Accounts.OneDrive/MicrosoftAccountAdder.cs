@@ -15,7 +15,7 @@ namespace AStarDev.CloudSync.Accounts.OneDrive;
 /// <param name="accountStore">Saves the account.</param>
 /// <param name="timeProvider">Times each step for the attempt log.</param>
 /// <param name="logger">Logs every step of the attempt under one attempt id, without tokens, error messages or account details.</param>
-public sealed class MicrosoftAccountAdder(TokenCacheInitialiser tokenCache, IMsalClient msal, IDriveLookup driveLookup, IAccountStore accountStore, TimeProvider timeProvider, ILogger<MicrosoftAccountAdder> logger) : IAccountAdder
+internal sealed class MicrosoftAccountAdder(TokenCacheInitialiser tokenCache, IMsalClient msal, IDriveLookup driveLookup, IAccountStore accountStore, TimeProvider timeProvider, ILogger<MicrosoftAccountAdder> logger) : IAccountAdder
 {
     private const string ProviderName = "OneDrive";
 

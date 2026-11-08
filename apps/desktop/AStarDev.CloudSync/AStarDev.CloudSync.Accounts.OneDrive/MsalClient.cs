@@ -9,7 +9,7 @@ namespace AStarDev.CloudSync.Accounts.OneDrive;
 /// <param name="application">The app's one MSAL public client application.</param>
 /// <param name="options">The scopes to request.</param>
 [ExcludeFromCodeCoverage(Justification = "Thin wrapper over MSAL's interactive system-browser sign-in, which cannot run in automated tests.")]
-public sealed class MsalClient(IPublicClientApplication application, IOptions<MicrosoftAccountOptions> options) : IMsalClient
+internal sealed class MsalClient(IPublicClientApplication application, IOptions<MicrosoftAccountOptions> options) : IMsalClient
 {
     /// <inheritdoc />
     public async Task<IReadOnlyList<string>> GetAccountKeysAsync() => [.. (await application.GetAccountsAsync().ConfigureAwait(false)).Select(account => account.HomeAccountId?.Identifier ?? string.Empty)];

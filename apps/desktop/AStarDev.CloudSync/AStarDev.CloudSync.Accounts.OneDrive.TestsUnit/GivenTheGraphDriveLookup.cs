@@ -17,8 +17,8 @@ public sealed class GivenTheGraphDriveLookup : IDisposable
         _ = await AddAsync(new FakeGraphHandler(), TestContext.Current.CancellationToken);
 
         accountStore.SavedRegistrations.ShouldHaveSingleItem().ShouldSatisfyAllConditions(
-            registration => registration.DriveId.ShouldBe(TestSignIns.Drive.DriveId),
-            registration => registration.Storage.ShouldBe(TestSignIns.Drive.Storage));
+            registration => registration.DriveId.ShouldBe(TestSignIns.DriveId),
+            registration => registration.Storage.ShouldBe(TestSignIns.Storage));
     }
 
     [Fact]
