@@ -1,7 +1,5 @@
 using AStarDev.CloudSync.Accounts;
-using AStarDev.CloudSync.Core.Common;
-using AStarDev.CloudSync.Core.Conflicts;
-using AStarDev.CloudSync.Core.SyncPairs;
+using AStarDev.CloudSync.Sync;
 using AStarDev.FunctionalParadigm;
 using AStarDev.LoggingExtensions;
 using Microsoft.Extensions.Logging;

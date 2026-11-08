@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../AStarDev.CloudSync.Core/AStarDev.CloudSync.Core.csproj" />
+    <ProjectReference Include="../AStarDev.CloudSync.Sync/AStarDev.CloudSync.Sync.csproj" />
   </ItemGroup>
 
 </Project>

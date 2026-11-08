@@ -1,8 +1,7 @@
 using AStarDev.CloudSync.Accounts;
-using AStarDev.CloudSync.Core.SyncPairs;
 using AStarDev.FunctionalParadigm;
 
-namespace AStarDev.CloudSync.Core.Activity;
+namespace AStarDev.CloudSync.Sync;
 
 /// <summary>Something that happened during syncing.</summary>
 /// <param name="AccountId">The account it happened on.</param>

@@ -1,6 +1,6 @@
-using AStarDev.CloudSync.Domain.Conflicts;
-using AStarDev.CloudSync.Domain.SyncPairs;
+using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.TestHelpers.Common;
+using AStarDev.CloudSync.TestHelpers.Ui;
 using AStarDev.CloudSync.ViewModels.Conflicts;
 
 namespace AStarDev.CloudSync.ViewModels.TestsUnit.Conflicts;

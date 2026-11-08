@@ -1,7 +1,6 @@
 using AStarDev.CloudSync.Accounts;
-using AStarDev.CloudSync.Core.SyncPairs;
-using AStarDev.CloudSync.Domain.SyncPairs;
-using AStarDev.CloudSync.TestHelpers.Common;
+using AStarDev.CloudSync.Sync;
+using AStarDev.CloudSync.TestHelpers.Ui;
 using AStarDev.CloudSync.ViewModels.SyncPairs;
 using AStarDev.FunctionalParadigm;
 using Avalonia.Headless.XUnit;

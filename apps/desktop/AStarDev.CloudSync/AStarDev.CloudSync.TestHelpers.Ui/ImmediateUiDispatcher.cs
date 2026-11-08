@@ -1,6 +1,6 @@
 using AStarDev.CloudSync.ViewModels.Common;
 
-namespace AStarDev.CloudSync.TestHelpers.Common;
+namespace AStarDev.CloudSync.TestHelpers.Ui;
 
 public sealed class ImmediateUiDispatcher : IUiDispatcher
 {

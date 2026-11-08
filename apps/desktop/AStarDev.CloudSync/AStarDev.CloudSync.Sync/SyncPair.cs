@@ -1,7 +1,7 @@
 using AStarDev.CloudSync.Accounts;
 using AStarDev.FunctionalParadigm;
 
-namespace AStarDev.CloudSync.Core.SyncPairs;
+namespace AStarDev.CloudSync.Sync;
 
 /// <summary>One local folder linked to one cloud folder.</summary>
 /// <param name="Id">The sync pair id.</param>

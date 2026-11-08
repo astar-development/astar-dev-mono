@@ -1,6 +1,6 @@
 using AStarDev.FunctionalParadigm;
 
-namespace AStarDev.CloudSync.Core.Persistence;
+namespace AStarDev.CloudSync.Accounts;
 
 /// <summary>The CloudSync database as a whole.</summary>
 public interface ICloudSyncDatabase

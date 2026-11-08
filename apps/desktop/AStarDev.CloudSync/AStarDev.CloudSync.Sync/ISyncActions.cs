@@ -1,8 +1,7 @@
 using AStarDev.CloudSync.Accounts;
-using AStarDev.CloudSync.Core.Conflicts;
 using AStarDev.FunctionalParadigm;
 
-namespace AStarDev.CloudSync.Core.Common;
+namespace AStarDev.CloudSync.Sync;
 
 /// <summary>The actions the user can start from the main window. The single seam the view model commands call.</summary>
 public interface ISyncActions

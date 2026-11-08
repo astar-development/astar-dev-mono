@@ -11,7 +11,7 @@ public class GivenAnAccountAddAttemptLog
 {
     private readonly RecordingLogger<MicrosoftAccountAdder> logger = new();
     private readonly RecordingLogger<TokenCacheInitialiser> cacheLogger = new();
-    private readonly FakeTimeProvider time = TestData.CreateTime();
+    private readonly FakeTimeProvider time = TestClock.CreateTime();
     private FakeMsalTokenCacheStorage storage = new();
     private FakeTokenCacheConsent consent = new();
     private readonly InMemoryPlaintextCacheConsentStore consentStore = new();

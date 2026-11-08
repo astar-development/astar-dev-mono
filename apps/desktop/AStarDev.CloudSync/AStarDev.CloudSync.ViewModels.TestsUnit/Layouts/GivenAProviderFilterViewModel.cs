@@ -1,5 +1,5 @@
 using AStarDev.CloudSync.Accounts;
-using AStarDev.CloudSync.TestHelpers.Common;
+using AStarDev.CloudSync.TestHelpers.Ui;
 using AStarDev.CloudSync.ViewModels.Accounts;
 using AStarDev.CloudSync.ViewModels.Layouts;
 

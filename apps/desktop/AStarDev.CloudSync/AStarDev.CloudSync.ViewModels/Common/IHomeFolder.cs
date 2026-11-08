@@ -1,6 +1,6 @@
 using AStarDev.FunctionalParadigm;
 
-namespace AStarDev.CloudSync.Core.Common;
+namespace AStarDev.CloudSync.ViewModels.Common;
 
 /// <summary>Supplies the current user's home folder.</summary>
 public interface IHomeFolder

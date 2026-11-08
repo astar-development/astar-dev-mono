@@ -25,8 +25,8 @@ public class GivenASyncOverviewFactory
     [Fact]
     public void when_created_with_a_last_checked_time_then_the_overview_keeps_it()
     {
-        var overview = SyncOverviewFactory.Create([], [], [], [], [], 0, Option.Some(TestData.Now));
+        var overview = SyncOverviewFactory.Create([], [], [], [], [], 0, Option.Some(TestClock.Now));
 
-        overview.LastChecked.ShouldBe(Option.Some(TestData.Now));
+        overview.LastChecked.ShouldBe(Option.Some(TestClock.Now));
     }
 }

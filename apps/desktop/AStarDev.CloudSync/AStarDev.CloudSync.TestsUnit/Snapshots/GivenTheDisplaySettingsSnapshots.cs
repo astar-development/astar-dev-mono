@@ -1,7 +1,7 @@
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.DisplaySettings;
 using AStarDev.CloudSync.TestHelpers.Accounts;
-using AStarDev.CloudSync.TestHelpers.Common;
+using AStarDev.CloudSync.TestHelpers.Ui;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Styling;
