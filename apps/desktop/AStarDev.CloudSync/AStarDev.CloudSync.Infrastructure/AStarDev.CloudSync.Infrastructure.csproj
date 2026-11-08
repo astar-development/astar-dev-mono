@@ -1,8 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <!--
-    Implementations of the Core interfaces: file system, settings and the SQLite database.
-    Cloud providers live in their own modules (AStarDev.CloudSync.Accounts.OneDrive).
+    Implementations of the Core interfaces: file system and settings.
+    Cloud providers and storage live in their own modules
+    (AStarDev.CloudSync.Accounts.OneDrive, AStarDev.CloudSync.Accounts.Sqlite).
     Must not reference Avalonia.
   -->
 
@@ -12,11 +13,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="Testably.Abstractions" />
   </ItemGroup>
 

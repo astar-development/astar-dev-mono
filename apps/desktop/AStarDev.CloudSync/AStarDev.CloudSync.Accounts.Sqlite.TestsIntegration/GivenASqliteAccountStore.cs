@@ -2,7 +2,7 @@ using AStarDev.CloudSync.Accounts;
 using AStarDev.FunctionalParadigm;
 using Microsoft.Extensions.Logging;
 
-namespace AStarDev.CloudSync.Infrastructure.TestsIntegration.Persistence;
+namespace AStarDev.CloudSync.Accounts.Sqlite.TestsIntegration;
 
 public class GivenASqliteAccountStore
 {
@@ -131,7 +131,7 @@ public class GivenASqliteAccountStore
 
         await database.AccountStore.AddAsync(Registration(HomeAccountIdentifier, "Personal"), CancellationToken);
 
-        database.StoreLogger.Entries.ShouldContain(entry => entry.Level == LogLevel.Error && entry.Exception == null);
+        database.Logger.Entries.ShouldContain(entry => entry.Level == LogLevel.Error && entry.Exception == null);
     }
 
     [Fact]

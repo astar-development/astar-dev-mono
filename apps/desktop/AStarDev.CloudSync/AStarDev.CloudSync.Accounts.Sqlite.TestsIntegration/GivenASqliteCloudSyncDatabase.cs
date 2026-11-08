@@ -2,7 +2,7 @@ using AStarDev.CloudSync.Accounts;
 using AStarDev.FunctionalParadigm;
 using Microsoft.Extensions.Logging;
 
-namespace AStarDev.CloudSync.Infrastructure.TestsIntegration.Persistence;
+namespace AStarDev.CloudSync.Accounts.Sqlite.TestsIntegration;
 
 public class GivenASqliteCloudSyncDatabase
 {
@@ -49,6 +49,6 @@ public class GivenASqliteCloudSyncDatabase
         var migrated = await database.Database.MigrateAsync(CancellationToken);
 
         migrated.Match(_ => true, _ => false).ShouldBeFalse();
-        database.DatabaseLogger.Entries.ShouldContain(entry => entry.Level == LogLevel.Error && entry.Exception == null);
+        database.Logger.Entries.ShouldContain(entry => entry.Level == LogLevel.Error && entry.Exception == null);
     }
 }

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace AStarDev.CloudSync.Infrastructure.Persistence.Migrations
+namespace AStarDev.CloudSync.Accounts.Sqlite.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration

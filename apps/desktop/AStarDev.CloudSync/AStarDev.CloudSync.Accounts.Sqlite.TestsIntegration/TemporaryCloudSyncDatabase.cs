@@ -1,7 +1,7 @@
 using System.IO.Abstractions;
 using AStarDev.CloudSync.Accounts;
+using AStarDev.CloudSync.Accounts.Sqlite;
 using AStarDev.CloudSync.Core.Persistence;
-using AStarDev.CloudSync.Infrastructure.Persistence;
 using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.FunctionalParadigm;
 using AStarDev.Utilities;
@@ -10,10 +10,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Testably.Abstractions;
 
-namespace AStarDev.CloudSync.Infrastructure.TestsIntegration.Persistence;
+namespace AStarDev.CloudSync.Accounts.Sqlite.TestsIntegration;
 
 public sealed class TemporaryCloudSyncDatabase : IAsyncDisposable
 {
+    private const string CloudSyncCategoryPrefix = "AStarDev.CloudSync.";
+
     private readonly ServiceProvider serviceProvider;
     private readonly IDirectoryInfo testFolder;
 
@@ -27,9 +29,7 @@ public sealed class TemporaryCloudSyncDatabase : IAsyncDisposable
 
     public ICloudSyncDatabase Database => serviceProvider.GetRequiredService<ICloudSyncDatabase>();
 
-    public RecordingLogger<SqliteAccountStore> StoreLogger => serviceProvider.GetRequiredService<RecordingLogger<SqliteAccountStore>>();
-
-    public RecordingLogger<SqliteCloudSyncDatabase> DatabaseLogger => serviceProvider.GetRequiredService<RecordingLogger<SqliteCloudSyncDatabase>>();
+    public RecordingLogger<RecordingLoggerProvider> Logger => serviceProvider.GetRequiredService<RecordingLoggerProvider>().Logger;
 
     public static TemporaryCloudSyncDatabase CreateUnmigrated() => Create(testFolder => testFolder.FileSystem.FileInfo.New(testFolder.FullName.CombinePath("data").CombinePath("cloudsync.db")));
 
@@ -60,13 +60,10 @@ public sealed class TemporaryCloudSyncDatabase : IAsyncDisposable
     {
         var testFolder = new RealFileSystem().Directory.CreateDirectory(Path.GetTempPath().CombinePath($"cloudsync-tests-{Guid.NewGuid():N}"));
         var databaseFile = databaseFileIn(testFolder);
-        var storeLogger = new RecordingLogger<SqliteAccountStore>();
-        var databaseLogger = new RecordingLogger<SqliteCloudSyncDatabase>();
+        var loggerProvider = new RecordingLoggerProvider();
         var serviceProvider = new ServiceCollection()
-            .AddSingleton(storeLogger)
-            .AddSingleton<ILogger<SqliteAccountStore>>(storeLogger)
-            .AddSingleton(databaseLogger)
-            .AddSingleton<ILogger<SqliteCloudSyncDatabase>>(databaseLogger)
+            .AddSingleton(loggerProvider)
+            .AddLogging(logging => logging.ClearProviders().AddProvider(loggerProvider).AddFilter((category, _) => category?.StartsWith(CloudSyncCategoryPrefix, StringComparison.Ordinal) == true))
             .AddCloudSyncPersistence(_ => databaseFile)
             .BuildServiceProvider();
 
