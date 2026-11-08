@@ -1,4 +1,8 @@
+using System.Net;
+using System.Net.Http.Headers;
+using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Sync;
+using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.Sync.OneDrive;
 
@@ -8,5 +12,30 @@ namespace AStarDev.CloudSync.Sync.OneDrive;
 internal sealed class AccountThrottleHandler(IAccountThrottleGate gate, TimeProvider timeProvider) : DelegatingHandler
 {
     /// <inheritdoc />
-    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) => throw new NotImplementedException($"{gate}{timeProvider}{request}{cancellationToken}");
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        if (!request.Options.TryGetValue(OneDriveSyncHttp.AccountOption, out var accountId))
+            return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+
+        await gate.WaitAsync(accountId, cancellationToken).ConfigureAwait(false);
+        var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        Report(accountId, response);
+
+        return response;
+    }
+
+    private void Report(AccountId accountId, HttpResponseMessage response)
+    {
+        if (response.StatusCode is HttpStatusCode.TooManyRequests or HttpStatusCode.ServiceUnavailable)
+            gate.ReportThrottled(accountId, RetryAfter(response.Headers.RetryAfter));
+        else if (response.IsSuccessStatusCode)
+            gate.ReportSucceeded(accountId);
+    }
+
+    private Option<TimeSpan> RetryAfter(RetryConditionHeaderValue? header) => header switch
+    {
+        { Delta: { } delta } => Option.Some(delta),
+        { Date: { } date } => Option.Some(date - timeProvider.GetUtcNow()),
+        _ => Option.None<TimeSpan>(),
+    };
 }

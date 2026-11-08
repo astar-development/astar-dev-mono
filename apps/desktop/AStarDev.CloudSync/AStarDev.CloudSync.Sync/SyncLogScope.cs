@@ -1,4 +1,5 @@
 using AStarDev.CloudSync.Accounts;
+using AStarDev.LoggingExtensions;
 using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync.Sync;
@@ -13,5 +14,6 @@ public static class SyncLogScope
     /// <param name="logger">The engine's logger.</param>
     /// <param name="accountId">The account the work is for.</param>
     /// <returns>The scope to dispose when the work ends.</returns>
-    public static IDisposable Begin(ILogger logger, AccountId accountId) => throw new NotImplementedException($"{logger}{accountId}");
+    public static IDisposable Begin(ILogger logger, AccountId accountId) =>
+        logger.BeginScope(new Dictionary<string, object?> { [AccountIdHashKey] = LogHash.Of(accountId.Value.ToString()) }) ?? NoLogScope.Instance;
 }
