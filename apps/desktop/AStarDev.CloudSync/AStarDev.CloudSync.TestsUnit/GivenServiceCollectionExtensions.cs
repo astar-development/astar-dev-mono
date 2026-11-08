@@ -1,13 +1,13 @@
 using AStar.Dev.Velopack.Publishing;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using AStarDev.CloudSync.Accounts;
+using AStarDev.CloudSync.Accounts.OneDrive;
 using AStarDev.CloudSync.Common;
 using AStarDev.CloudSync.Core.Common;
 using AStarDev.CloudSync.Core.DisplaySettings;
 using AStarDev.CloudSync.Core.Overview;
 using AStarDev.CloudSync.Core.Persistence;
 using AStarDev.CloudSync.Infrastructure.Common;
-using AStarDev.CloudSync.Infrastructure.OneDrive;
 using AStarDev.CloudSync.Infrastructure.Overview;
 using AStarDev.CloudSync.Infrastructure.Persistence;
 using AStarDev.CloudSync.TestHelpers.DisplaySettings;
