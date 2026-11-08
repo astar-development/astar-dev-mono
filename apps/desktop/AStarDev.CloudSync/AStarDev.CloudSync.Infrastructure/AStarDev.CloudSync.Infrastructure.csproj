@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <!--
-    Implementations of the Core interfaces: file system and settings.
-    Cloud providers and storage live in their own modules
-    (AStarDev.CloudSync.Accounts.OneDrive, AStarDev.CloudSync.Accounts.Sqlite).
+    Implementations of the remaining Core interfaces (the user's home folder).
+    Everything else lives in its own module (Accounts.OneDrive, Accounts.Sqlite,
+    DisplaySettings, Overview).
     Must not reference Avalonia.
   -->
 

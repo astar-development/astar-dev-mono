@@ -1,7 +1,7 @@
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Domain.Conflicts;
-using AStarDev.CloudSync.Domain.Overview;
 using AStarDev.CloudSync.Domain.SyncPairs;
+using AStarDev.CloudSync.Overview;
 using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.CloudSync.TestHelpers.Overview;
 using AStarDev.CloudSync.ViewModels.Layouts;

@@ -1,4 +1,4 @@
-using AStarDev.CloudSync.Core.Overview;
+using AStarDev.CloudSync.Overview;
 using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.TestHelpers.Overview;

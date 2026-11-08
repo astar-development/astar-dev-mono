@@ -29,6 +29,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../AStarDev.CloudSync.DisplaySettings/AStarDev.CloudSync.DisplaySettings.csproj" />
+    <ProjectReference Include="../AStarDev.CloudSync.Overview/AStarDev.CloudSync.Overview.csproj" />
     <ProjectReference Include="../AStarDev.CloudSync.Accounts.OneDrive/AStarDev.CloudSync.Accounts.OneDrive.csproj" />
     <ProjectReference Include="../AStarDev.CloudSync.Accounts.Sqlite/AStarDev.CloudSync.Accounts.Sqlite.csproj" />
     <ProjectReference Include="../AStarDev.CloudSync.Infrastructure/AStarDev.CloudSync.Infrastructure.csproj" />
