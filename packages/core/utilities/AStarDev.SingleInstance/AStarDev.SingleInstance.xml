@@ -5,10 +5,10 @@
     </assembly>
     <members>
         <member name="T:AStarDev.SingleInstance.Attempt">
-            <summary>Runs socket work that may fail or be cancelled and turns any outcome into an option, so a timeout never escapes as an exception.</summary>
+            <summary>Runs socket work that may fail or be cancelled and turns any outcome into a result, so a timeout never escapes as an exception.</summary>
         </member>
         <member name="M:AStarDev.SingleInstance.Attempt.RunAsync``1(System.Func{System.Threading.Tasks.Task{``0}},System.Threading.CancellationToken)">
-            <summary>Runs the operation and returns its value, or none when it threw or was cancelled. The caller checks its own token to tell a user cancel from a timeout.</summary>
+            <summary>Runs the operation and returns its value, or the exception that stopped it (a <see cref="T:System.Threading.Tasks.TaskCanceledException"/> when it was cancelled). The caller checks its own token to tell a user cancel from a timeout.</summary>
             <param name="operation">The work to run.</param>
             <param name="cancellationToken">Cancels the work.</param>
         </member>

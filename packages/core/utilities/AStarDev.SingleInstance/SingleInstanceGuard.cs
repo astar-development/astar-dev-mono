@@ -11,6 +11,15 @@ namespace AStarDev.SingleInstance;
 internal sealed class SingleInstanceGuard(ILogger<SingleInstanceGuard> logger) : ISingleInstanceGuard
 {
     private const string Location = nameof(SingleInstanceGuard);
+    private const string UnexpectedReply = "UnexpectedReply";
+
+    private static readonly HashSet<int> SharingViolationCodes =
+    [
+        unchecked((int)0x80070020),
+        unchecked((int)0x80070021),
+        11,
+        35,
+    ];
 
     /// <inheritdoc />
     public Task<InstanceClaim> ClaimAsync(SingleInstanceOptions options, CancellationToken cancellationToken)
@@ -60,9 +69,11 @@ internal sealed class SingleInstanceGuard(ILogger<SingleInstanceGuard> logger) :
     }
 
     private Task<InstanceClaim> HandOffOrFailAsync(Exception exception, IFileInfo socketFile, TimeSpan timeout, CancellationToken cancellationToken) =>
-        exception is UnauthorizedAccessException
-            ? Task.FromResult(LockUnavailable(exception))
-            : HandOffAsync(socketFile.FullName, timeout, cancellationToken);
+        IsHeldByAnotherInstance(exception)
+            ? HandOffAsync(socketFile.FullName, timeout, cancellationToken)
+            : Task.FromResult(LockUnavailable(exception));
+
+    private static bool IsHeldByAnotherInstance(Exception exception) => exception.GetType() == typeof(IOException) && SharingViolationCodes.Contains(exception.HResult);
 
     private async Task<InstanceClaim> HandOffAsync(string socketPath, TimeSpan timeout, CancellationToken cancellationToken)
     {
@@ -71,7 +82,7 @@ internal sealed class SingleInstanceGuard(ILogger<SingleInstanceGuard> logger) :
         var answer = await Attempt.RunAsync(() => AskToShowAsync(socketPath, deadline.Token), deadline.Token).ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
 
-        return answer.Filter(reply => reply == HandOffProtocol.Acknowledgement).Match(_ => HandedOff(), NotAnswered);
+        return answer.Match(reply => reply == HandOffProtocol.Acknowledgement ? HandedOff() : NotAnswered(UnexpectedReply), exception => NotAnswered(exception.ErrorType()));
     }
 
     private static async Task<string> AskToShowAsync(string socketPath, CancellationToken cancellationToken)
@@ -90,9 +101,9 @@ internal sealed class SingleInstanceGuard(ILogger<SingleInstanceGuard> logger) :
         return InstanceClaimFactory.CreateHandedOff();
     }
 
-    private InstanceClaim NotAnswered()
+    private InstanceClaim NotAnswered(string errorType)
     {
-        LogMessage.Warning(logger, Location, "Another instance holds the lock but did not answer the hand-off.");
+        LogMessage.Warning(logger, Location, $"Another instance holds the lock but did not answer the hand-off ({errorType}).");
 
         return InstanceClaimFactory.CreateNotAnswered();
     }

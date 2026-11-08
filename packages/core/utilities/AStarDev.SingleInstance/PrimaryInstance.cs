@@ -11,6 +11,7 @@ public sealed class PrimaryInstance : IAsyncDisposable
 {
     private const string Location = nameof(PrimaryInstance);
     private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(2);
+    private static readonly TimeSpan RetryDelay = TimeSpan.FromMilliseconds(100);
 
     private readonly Stream heldLock;
     private readonly Option<Socket> listener;
@@ -65,17 +66,20 @@ public sealed class PrimaryInstance : IAsyncDisposable
         while (keepListening && !cancellationToken.IsCancellationRequested)
         {
             keepListening = await Attempt.RunAsync(() => socket.AcceptAsync(cancellationToken).AsTask(), cancellationToken)
-                .MatchAsync(client => AnswerAsync(client, cancellationToken), () => ListenerStopped(cancellationToken))
+                .MatchAsync(client => AnswerAsync(client, cancellationToken), exception => AcceptFailedAsync(exception, cancellationToken))
                 .ConfigureAwait(false);
         }
     }
 
-    private bool ListenerStopped(CancellationToken cancellationToken)
+    private async Task<bool> AcceptFailedAsync(Exception exception, CancellationToken cancellationToken)
     {
-        if (!cancellationToken.IsCancellationRequested)
-            LogMessage.Warning(logger, Location, "The hand-off listener stopped.");
+        if (cancellationToken.IsCancellationRequested)
+            return false;
 
-        return false;
+        LogMessage.ExceptionCaught(logger, Location, exception.ErrorType());
+        await Task.Delay(RetryDelay, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+
+        return true;
     }
 
     private async Task<bool> AnswerAsync(Socket client, CancellationToken cancellationToken)
@@ -86,14 +90,21 @@ public sealed class PrimaryInstance : IAsyncDisposable
             timeout.CancelAfter(RequestTimeout);
             var request = await Attempt.RunAsync(() => HandOffProtocol.ReceiveAsync(client, timeout.Token), timeout.Token).ConfigureAwait(false);
 
-            if (request.Filter(message => message == HandOffProtocol.ShowRequest).Match(_ => true, () => false))
+            if (request.Match(message => message == HandOffProtocol.ShowRequest, _ => false))
             {
-                _ = Try.Run(RaiseActivationRequested);
+                _ = Try.Run(RaiseActivationRequested).Match(_ => Unit.Instance, ActivationHandlerFailed);
                 _ = await Attempt.RunAsync(() => SendAcknowledgementAsync(client, timeout.Token), timeout.Token).ConfigureAwait(false);
             }
         }
 
         return true;
+    }
+
+    private Unit ActivationHandlerFailed(Exception exception)
+    {
+        LogMessage.ExceptionCaught(logger, Location, exception.ErrorType());
+
+        return Unit.Instance;
     }
 
     private Unit RaiseActivationRequested()

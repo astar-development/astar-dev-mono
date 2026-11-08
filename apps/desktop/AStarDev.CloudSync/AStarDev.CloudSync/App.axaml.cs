@@ -18,7 +18,6 @@ namespace AStarDev.CloudSync;
 public partial class App : Application, IDisposable
 {
     private ServiceProvider? services;
-    private PrimaryInstance? primaryInstance;
     private bool disposed;
 
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
@@ -29,7 +28,9 @@ public partial class App : Application, IDisposable
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            var claim = services.GetRequiredService<ISingleInstanceGuard>().ClaimAsync(services.GetRequiredService<SingleInstanceOptions>(), CancellationToken.None).GetAwaiter().GetResult();
+            var guard = services.GetRequiredService<ISingleInstanceGuard>();
+            var options = services.GetRequiredService<SingleInstanceOptions>();
+            var claim = Task.Run(() => guard.ClaimAsync(options, CancellationToken.None)).GetAwaiter().GetResult();
             if (claim is InstanceClaim.HandedOff or InstanceClaim.NotAnswered)
                 ExitAsSecondInstance();
 
@@ -55,9 +56,15 @@ public partial class App : Application, IDisposable
         if (claim is not InstanceClaim.Primary primary)
             return;
 
-        primaryInstance = primary.Instance;
-        primaryInstance.ActivationRequested += (_, _) => Dispatcher.UIThread.Post(() => BringForward(window));
-        desktop.Exit += (_, _) => primaryInstance.DisposeAsync().AsTask().GetAwaiter().GetResult();
+        var instance = primary.Instance;
+        instance.ActivationRequested += (_, _) => Dispatcher.UIThread.Post(() => BringForward(window));
+        desktop.Exit += (_, _) => ReleaseAfterServices(instance);
+    }
+
+    private void ReleaseAfterServices(PrimaryInstance instance)
+    {
+        services?.Dispose();
+        Task.Run(() => instance.DisposeAsync().AsTask()).GetAwaiter().GetResult();
     }
 
     private static void BringForward(Window window)
