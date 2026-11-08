@@ -11,6 +11,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../AStarDev.CloudSync.DisplaySettings/AStarDev.CloudSync.DisplaySettings.csproj" />
+    <ProjectReference Include="../AStarDev.CloudSync.Overview/AStarDev.CloudSync.Overview.csproj" />
     <ProjectReference Include="../AStarDev.CloudSync.Domain/AStarDev.CloudSync.Domain.csproj" />
     <ProjectReference Include="../../../../packages/core/logging/AStarDev.LoggingExtensions/AStarDev.LoggingExtensions.csproj" />
     <ProjectReference Include="../../../../packages/core/utilities/AStarDev.Localization/AStarDev.Localization.csproj" />

@@ -1,4 +1,4 @@
-using AStarDev.CloudSync.Domain.DisplaySettings;
+using AStarDev.CloudSync.DisplaySettings;
 using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.CloudSync.TestHelpers.DisplaySettings;
 using AStarDev.CloudSync.ViewModels.DisplaySettings;

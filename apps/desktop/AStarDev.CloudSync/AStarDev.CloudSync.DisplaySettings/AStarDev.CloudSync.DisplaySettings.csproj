@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Display settings module: the layout and theme preferences, their factories
+    and the JSON file that stores them.
+    Must not reference Avalonia.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <IsPublishable>false</IsPublishable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Testably.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../packages/core/logging/AStarDev.LoggingExtensions/AStarDev.LoggingExtensions.csproj" />
+  </ItemGroup>
+
+</Project>

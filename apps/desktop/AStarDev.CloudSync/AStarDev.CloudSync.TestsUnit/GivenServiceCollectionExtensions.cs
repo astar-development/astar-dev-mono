@@ -5,11 +5,10 @@ using AStarDev.CloudSync.Accounts.OneDrive;
 using AStarDev.CloudSync.Accounts.Sqlite;
 using AStarDev.CloudSync.Common;
 using AStarDev.CloudSync.Core.Common;
-using AStarDev.CloudSync.Core.DisplaySettings;
-using AStarDev.CloudSync.Core.Overview;
 using AStarDev.CloudSync.Core.Persistence;
+using AStarDev.CloudSync.DisplaySettings;
 using AStarDev.CloudSync.Infrastructure.Common;
-using AStarDev.CloudSync.Infrastructure.Overview;
+using AStarDev.CloudSync.Overview;
 using AStarDev.CloudSync.TestHelpers.DisplaySettings;
 using AStarDev.CloudSync.TestHelpers.Overview;
 using AStarDev.CloudSync.Theming;
@@ -93,7 +92,7 @@ public class GivenServiceCollectionExtensions
     {
         using var provider = CreateServices().BuildServiceProvider();
 
-        provider.GetRequiredService<ISyncOverviewSource>().ShouldBeOfType<AccountStoreSyncOverviewSource>();
+        provider.GetRequiredService<ISyncOverviewSource>().GetType().Assembly.ShouldBe(typeof(OverviewServiceCollectionExtensions).Assembly);
     }
 
     [Fact]

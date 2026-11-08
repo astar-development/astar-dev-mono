@@ -1,5 +1,4 @@
-using AStarDev.CloudSync.Core.Overview;
-using AStarDev.CloudSync.Domain.Overview;
+using AStarDev.CloudSync.Overview;
 using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.CloudSync.ViewModels.Overview;
 
