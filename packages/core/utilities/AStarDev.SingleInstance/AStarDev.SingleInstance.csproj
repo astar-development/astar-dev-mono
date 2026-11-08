@@ -13,7 +13,7 @@
 
   <PropertyGroup>
     <PackageReleaseNotes>
-        v0.1.0 feat(single-instance): per-user lock file and socket hand-off (#1470)
+        v0.1.0 feat(cloudsync): single instance via new AStarDev.SingleInstance package (#1461)
     </PackageReleaseNotes>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
