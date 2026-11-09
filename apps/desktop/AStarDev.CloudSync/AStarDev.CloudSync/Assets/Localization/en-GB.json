@@ -46,6 +46,8 @@
   "Direction.UploadOnly.Glyph": "→",
   "Direction.DownloadOnly": "Download only",
   "Direction.DownloadOnly.Glyph": "←",
+  "SyncPair.ChangeDirection": "Change direction",
+  "SyncPair.ChangeDirectionFailed": "Could not change the direction. Try again.",
   "SyncPair.Summary.One": "{0} file · {1}",
   "SyncPair.Summary.Many": "{0} files · {1}",
   "Overview.LoadFailed": "Could not load your accounts and sync pairs. The details have been logged.",

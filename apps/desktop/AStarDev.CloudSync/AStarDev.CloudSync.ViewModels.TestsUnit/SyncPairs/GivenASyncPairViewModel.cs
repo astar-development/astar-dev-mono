@@ -1,5 +1,6 @@
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Sync;
+using AStarDev.CloudSync.TestHelpers.Accounts;
 using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.CloudSync.TestHelpers.Ui;
 using AStarDev.CloudSync.ViewModels.SyncPairs;
@@ -65,6 +66,65 @@ public class GivenASyncPairViewModel
 
         pair.LastSyncText.ShouldBe("4 min ago");
         pair.AccountId.ShouldBe(account.Id);
+    }
+
+    [Theory]
+    [InlineData("TwoWay", "UploadOnly")]
+    [InlineData("UploadOnly", "DownloadOnly")]
+    [InlineData("DownloadOnly", "TwoWay")]
+    public async Task when_the_direction_is_changed_then_the_next_direction_is_saved_and_the_overview_reloaded(string current, string expected)
+    {
+        var writer = new FakeSelectionRuleWriter();
+        var reloads = 0;
+        var pair = CreateChangeable(ParseDirection(current), writer, _ => { reloads++; return Task.CompletedTask; });
+
+        await pair.ChangeDirectionCommand.ExecuteAsync(null);
+
+        writer.Applied.Count.ShouldBe(1);
+        writer.Applied[0].Count.ShouldBe(1);
+        var change = writer.Applied[0][0].ShouldBeOfType<SelectionChange.ChangeDirection>();
+        change.Pair.ShouldBe(pair.Id);
+        change.Direction.ShouldBe(ParseDirection(expected));
+        reloads.ShouldBe(1);
+        pair.HasError.ShouldBeFalse();
+        pair.ErrorText.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_saving_the_direction_fails_then_the_error_is_shown_and_the_overview_is_not_reloaded()
+    {
+        var writer = new FakeSelectionRuleWriter { Outcome = Result.Failure<Unit, ErrorResponse>(new ErrorResponse("database is locked")) };
+        var reloads = 0;
+        var pair = CreateChangeable(SyncDirectionFactory.CreateTwoWay(), writer, _ => { reloads++; return Task.CompletedTask; });
+
+        await pair.ChangeDirectionCommand.ExecuteAsync(null);
+
+        pair.HasError.ShouldBeTrue();
+        pair.ErrorText.ShouldBe("Could not change the direction. Try again.");
+        reloads.ShouldBe(0);
+    }
+
+    [Fact]
+    public void when_created_then_the_change_direction_text_is_localised()
+    {
+        var pair = CreatePair(SyncDirectionFactory.CreateTwoWay(), SyncStatusFactory.CreateUpToDate());
+
+        pair.ChangeDirectionText.ShouldBe("Change direction");
+    }
+
+    private static SyncDirection ParseDirection(string name) => name switch
+    {
+        "UploadOnly" => SyncDirectionFactory.CreateUploadOnly(),
+        "DownloadOnly" => SyncDirectionFactory.CreateDownloadOnly(),
+        _ => SyncDirectionFactory.CreateTwoWay(),
+    };
+
+    private static SyncPairViewModel CreateChangeable(SyncDirection direction, FakeSelectionRuleWriter writer, Func<CancellationToken, Task> reload)
+    {
+        var account = TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
+        var model = SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), account.Id, "Documents", RelativePaths.Of("Documents"), Option.None<RemoteItemId>(), direction, SyncStatusFactory.CreateUpToDate(), 1_118, Option.Some(TestData.Now.AddMinutes(-4)));
+
+        return new SyncPairViewModel(model, account, writer, reload, TestData.CreateLocalization(), TestData.CreateTime());
     }
 
     private static SyncPairViewModel CreatePair(SyncDirection direction, SyncStatus status)
