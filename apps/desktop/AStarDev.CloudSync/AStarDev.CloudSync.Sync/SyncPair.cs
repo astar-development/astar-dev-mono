@@ -4,7 +4,7 @@ using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.Sync;
 
-/// <summary>One local folder linked to one cloud folder.</summary>
+/// <summary>One local folder linked to the cloud folder with the same relative path. A pair is the top-most Include rule of an account (#1397); it stores no absolute path.</summary>
 public sealed record SyncPair
 {
     [SuppressMessage("Major Code Smell", "S107:Methods should not have too many parameters", Justification = "Internal constructor called only by SyncPairFactory; records cannot have an internal primary constructor (#1453).")]
@@ -12,8 +12,8 @@ public sealed record SyncPair
         SyncPairId id,
         AccountId accountId,
         string name,
-        DirectoryInfo localFolder,
-        string remotePath,
+        LocalRelativePath localFolder,
+        Option<RemoteItemId> remoteFolder,
         SyncDirection direction,
         SyncStatus status,
         int fileCount,
@@ -23,7 +23,7 @@ public sealed record SyncPair
         AccountId = accountId;
         Name = name;
         LocalFolder = localFolder;
-        RemotePath = remotePath;
+        RemoteFolder = remoteFolder;
         Direction = direction;
         Status = status;
         FileCount = fileCount;
@@ -39,11 +39,11 @@ public sealed record SyncPair
     /// <summary>The sync pair's display name.</summary>
     public string Name { get; }
 
-    /// <summary>The local folder, under its provider's local root.</summary>
-    public DirectoryInfo LocalFolder { get; }
+    /// <summary>The local folder, relative to the account's sync root. The cloud folder mirrors the same relative path.</summary>
+    public LocalRelativePath LocalFolder { get; }
 
-    /// <summary>The cloud folder's path.</summary>
-    public string RemotePath { get; }
+    /// <summary>The cloud folder's id, when it is known.</summary>
+    public Option<RemoteItemId> RemoteFolder { get; }
 
     /// <summary>Which way changes flow.</summary>
     public SyncDirection Direction { get; }

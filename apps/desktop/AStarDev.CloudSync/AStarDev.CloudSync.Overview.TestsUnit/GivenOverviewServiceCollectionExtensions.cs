@@ -15,6 +15,7 @@ public class GivenOverviewServiceCollectionExtensions
             .AddSingleton<ICloudSyncDatabase>(new FakeCloudSyncDatabase())
             .AddSingleton<IAccountStore>(new FakeAccountStore())
             .AddSingleton<IAccountSignInStates>(new FakeAccountSignInStates())
+            .AddSingleton<ISyncPairReader>(new FakeSyncPairReader())
             .AddSyncOverview()
             .BuildServiceProvider();
 

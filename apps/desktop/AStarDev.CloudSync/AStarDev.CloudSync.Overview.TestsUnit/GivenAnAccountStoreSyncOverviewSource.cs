@@ -2,6 +2,7 @@ using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Overview;
 using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.TestHelpers.Accounts;
+using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.FunctionalParadigm;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -46,6 +47,31 @@ public class GivenAnAccountStoreSyncOverviewSource
 
         (overview.SyncPairs.Count, overview.Activity.Count, overview.Conflicts.Count, overview.Throughput.Count, overview.BytesMovedToday).ShouldBe((0, 0, 0, 0, 0L));
         overview.LastChecked.Match(_ => "checked", () => "never").ShouldBe("never");
+    }
+
+    [Fact]
+    public async Task when_an_account_has_sync_pairs_then_the_overview_lists_them_and_counts_them_as_the_accounts_folders()
+    {
+        var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]) };
+        var docs = SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), FlintId, "Docs", RelativePaths.Of("Docs"), Option.None<RemoteItemId>(), SyncDirectionFactory.CreateTwoWay(), SyncStatusFactory.CreateUpToDate(), 0, Option.None<DateTimeOffset>());
+        var photos = SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), FlintId, "Photos", RelativePaths.Of("Photos"), Option.None<RemoteItemId>(), SyncDirectionFactory.CreateUploadOnly(), SyncStatusFactory.CreateUpToDate(), 0, Option.None<DateTimeOffset>());
+        var reader = new FakeSyncPairReader { Pairs = accountId => Result.Success<IReadOnlyList<SyncPair>, ErrorResponse>(accountId == FlintId ? [docs, photos] : []) };
+
+        var overview = await CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), reader).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(loaded => loaded, failure => throw new InvalidOperationException(failure.Message));
+
+        overview.SyncPairs.Select(pair => pair.Name).ToList().ShouldBe(["Docs", "Photos"]);
+        overview.Accounts.Single().FolderCount.ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task when_the_sync_pairs_cannot_be_read_then_the_overview_fails_with_that_error_rather_than_showing_no_pairs()
+    {
+        var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]) };
+        var reader = new FakeSyncPairReader { Pairs = _ => Result.Failure<IReadOnlyList<SyncPair>, ErrorResponse>(new ErrorResponse("The selection rules could not be read.")) };
+
+        var error = await CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), reader).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(_ => "loaded", failure => failure.Message);
+
+        error.ShouldBe("The selection rules could not be read.");
     }
 
     [Fact]
@@ -116,11 +142,14 @@ public class GivenAnAccountStoreSyncOverviewSource
 
     private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store) => CreateSource(database, store, new FakeAccountSignInStates());
 
-    private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store, IAccountSignInStates states) =>
+    private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store, IAccountSignInStates states) => CreateSource(database, store, states, new FakeSyncPairReader());
+
+    private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store, IAccountSignInStates states, ISyncPairReader pairReader) =>
         new ServiceCollection()
             .AddSingleton(database)
             .AddSingleton(store)
             .AddSingleton(states)
+            .AddSingleton(pairReader)
             .AddSyncOverview()
             .BuildServiceProvider()
             .GetRequiredService<ISyncOverviewSource>();
