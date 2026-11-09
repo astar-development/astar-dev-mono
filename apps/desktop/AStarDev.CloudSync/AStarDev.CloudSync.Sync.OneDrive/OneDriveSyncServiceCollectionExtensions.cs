@@ -1,4 +1,7 @@
+using AStarDev.CloudSync.Accounts;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Kiota.Http.HttpClientLibrary.Middleware.Options;
 
 namespace AStarDev.CloudSync.Sync.OneDrive;
 
@@ -10,10 +13,11 @@ public static class OneDriveSyncServiceCollectionExtensions
     /// <returns>The <paramref name="services" /> collection to allow further chaining.</returns>
     public static IServiceCollection AddOneDriveSync(this IServiceCollection services)
     {
+        services.TryAddSingleton(new RetryHandlerOption());
         _ = services.AddTransient<AccountThrottleHandler>()
             .AddHttpClient(OneDriveSyncHttp.ClientName)
             .AddHttpMessageHandler<AccountThrottleHandler>();
 
-        return services;
+        return services.AddKeyedSingleton<IRemoteFolderBrowser, OneDriveFolderBrowser>(CloudProviderFactory.CreateOneDrive());
     }
 }
