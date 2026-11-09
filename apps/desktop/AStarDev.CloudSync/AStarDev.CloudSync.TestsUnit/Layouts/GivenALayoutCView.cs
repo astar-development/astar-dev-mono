@@ -65,6 +65,17 @@ public class GivenALayoutCView
     }
 
     [AvaloniaFact]
+    public async Task when_shown_then_each_pair_tile_has_a_change_direction_button_bound_to_its_command()
+    {
+        var window = await CreateShownWindowAsync();
+
+        var tiles = window.GetVisualDescendants().OfType<Border>().Where(border => border.Classes.Contains("pair-tile")).ToList();
+
+        tiles.ShouldNotBeEmpty();
+        tiles.ShouldAllBe(tile => tile.GetVisualDescendants().OfType<Button>().Any(button => Equals(button.Content, "Change direction") && button.Command == ((SyncPairViewModel)tile.DataContext!).ChangeDirectionCommand));
+    }
+
+    [AvaloniaFact]
     public async Task when_shown_then_the_new_sync_pair_add_account_and_conflict_buttons_are_bound_to_their_commands()
     {
         var window = await CreateShownWindowAsync();

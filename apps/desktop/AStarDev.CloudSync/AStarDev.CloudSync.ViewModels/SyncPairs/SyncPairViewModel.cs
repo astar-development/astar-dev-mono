@@ -2,6 +2,7 @@ using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.ViewModels.Accounts;
 using AStarDev.CloudSync.ViewModels.Common;
+using AStarDev.FunctionalParadigm;
 using AStarDev.Localization;
 using CommunityToolkit.Mvvm.Input;
 
@@ -38,7 +39,7 @@ public sealed class SyncPairViewModel : LocalizedObservableObject
         this.account = account;
         this.timeProvider = timeProvider;
         this.ruleWriter = ruleWriter;
-        ChangeDirectionCommand = new AsyncRelayCommand(async cancellationToken => { failed = false; _ = await ruleWriter.ApplyAsync(account.Id, [], cancellationToken); });
+        ChangeDirectionCommand = new AsyncRelayCommand(cancellationToken => ChangeDirectionAsync(reload, cancellationToken));
         Provider = new ProviderViewModel(account.Provider, localization);
         Status = new StatusViewModel(pair.Status, localization);
     }
@@ -93,6 +94,37 @@ public sealed class SyncPairViewModel : LocalizedObservableObject
 
     /// <summary>When the pair last synced, relative to now, or "Never".</summary>
     public string LastSyncText => RelativeTimeFormatter.Format(pair.LastSync, Localization, timeProvider);
+
+    private async Task ChangeDirectionAsync(Func<CancellationToken, Task> reload, CancellationToken cancellationToken)
+    {
+        var change = SelectionChangeFactory.CreateChangeDirection(pair.Id, NextDirection());
+        _ = await Try.RunAsync(() => ruleWriter.ApplyAsync(account.Id, [change], cancellationToken), cancellationToken)
+            .MatchAsync(applied => applied.Match(_ => ReloadAsync(reload, cancellationToken), _ => Task.FromResult(SetFailed(true))), _ => Task.FromResult(SetFailed(true)));
+    }
+
+    private async Task<Unit> ReloadAsync(Func<CancellationToken, Task> reload, CancellationToken cancellationToken)
+    {
+        SetFailed(false);
+        await reload(cancellationToken);
+
+        return Unit.Instance;
+    }
+
+    private Unit SetFailed(bool value)
+    {
+        failed = value;
+        OnPropertyChanged(nameof(HasError));
+        OnPropertyChanged(nameof(ErrorText));
+
+        return Unit.Instance;
+    }
+
+    private SyncDirection NextDirection() => pair.Direction switch
+    {
+        SyncDirection.TwoWay => SyncDirectionFactory.CreateUploadOnly(),
+        SyncDirection.UploadOnly => SyncDirectionFactory.CreateDownloadOnly(),
+        _ => SyncDirectionFactory.CreateTwoWay(),
+    };
 
     private string DirectionKey => pair.Direction switch
     {
