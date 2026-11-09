@@ -130,6 +130,24 @@ public class GivenASyncSelectionEvaluator
     }
 
     [Fact]
+    public void when_a_folder_is_inside_a_pair_then_its_enclosing_direction_is_the_pairs_even_below_an_exclude()
+    {
+        var rules = new[] { Include("Docs", SyncDirectionFactory.CreateUploadOnly()), Exclude("Docs/X"), Include("Docs/X/Y", SyncDirectionFactory.CreateTwoWay()) };
+
+        evaluator.EnclosingDirection(Path("Docs/X"), rules).Match(direction => direction, () => SyncDirectionFactory.CreateTwoWay()).ShouldBe(SyncDirectionFactory.CreateUploadOnly());
+        evaluator.EnclosingDirection(Path("Docs/X/Y/Z"), rules).Match(direction => direction, () => SyncDirectionFactory.CreateTwoWay()).ShouldBe(SyncDirectionFactory.CreateUploadOnly());
+    }
+
+    [Fact]
+    public void when_no_include_encloses_a_folder_then_there_is_no_enclosing_direction()
+    {
+        var rules = new[] { Exclude("Docs"), Include("Docs/Keep") };
+
+        evaluator.EnclosingDirection(Path("Docs"), rules).Match(_ => true, () => false).ShouldBeFalse();
+        evaluator.EnclosingDirection(Path("Other"), rules).Match(_ => true, () => false).ShouldBeFalse();
+    }
+
+    [Fact]
     public void when_the_engine_asks_whether_a_folder_syncs_then_only_the_covering_rule_decides()
     {
         var rules = new[] { Include("Docs"), Exclude("Docs/Private") };

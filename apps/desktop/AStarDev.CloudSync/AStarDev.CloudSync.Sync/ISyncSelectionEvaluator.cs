@@ -1,3 +1,5 @@
+using AStarDev.FunctionalParadigm;
+
 namespace AStarDev.CloudSync.Sync;
 
 /// <summary>Reads the selection rules (#1397). The folder tree and the sync engine both ask it, so the tree can never show a folder as included that the engine skips.</summary>
@@ -7,6 +9,11 @@ public interface ISyncSelectionEvaluator
     /// <param name="path">The folder, relative to the sync root.</param>
     /// <param name="rules">The account's stored rules.</param>
     SelectionState Evaluate(LocalRelativePath path, IReadOnlyList<SelectionRule> rules);
+
+    /// <summary>The direction of the sync pair that encloses the folder: the top-most Include rule on the folder or above it, whether or not a nearer Exclude hides it. A folder ticked inside a pair takes this direction. None when no Include rule encloses the folder.</summary>
+    /// <param name="path">The folder, relative to the sync root.</param>
+    /// <param name="rules">The account's stored rules.</param>
+    Option<SyncDirection> EnclosingDirection(LocalRelativePath path, IReadOnlyList<SelectionRule> rules);
 
     /// <summary>Whether the folder syncs: a covering Include rule decides, ignoring any rules below it. This is what the sync engine asks.</summary>
     /// <param name="path">The folder, relative to the sync root.</param>

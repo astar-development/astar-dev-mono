@@ -105,6 +105,14 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
+    public void when_application_services_are_added_then_the_folder_selection_dialog_is_the_shared_view_model()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<IFolderSelectionDialog>().ShouldBeSameAs(provider.GetRequiredService<AStarDev.CloudSync.ViewModels.FolderSelection.FolderSelectionViewModel>());
+    }
+
+    [Fact]
     public void when_application_services_are_added_then_the_account_actions_and_startup_sign_in_check_resolve()
     {
         using var provider = CreateServices().BuildServiceProvider();
