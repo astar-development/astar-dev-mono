@@ -93,6 +93,7 @@ public class GivenASyncRootPolicy
     public void when_another_accounts_root_is_a_symlink_to_the_candidate_then_it_is_rejected_as_the_same_as_that_account()
     {
         _ = fileSystem.Directory.CreateDirectory("/mnt/data/sync");
+        _ = fileSystem.Directory.CreateDirectory("/home/jbarden/CloudSync");
         _ = fileSystem.Directory.CreateSymbolicLink(OneDrive, "/mnt/data/sync");
 
         var result = Check(SecondAccount, "/mnt/data/sync", (FirstAccount, OneDrive));
