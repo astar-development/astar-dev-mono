@@ -1,4 +1,6 @@
+using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
+using Testably.Abstractions.Testing;
 
 namespace AStarDev.CloudSync.Sync.Sqlite.TestsIntegration;
 
@@ -9,7 +11,7 @@ public class GivenSyncPersistenceServiceCollectionExtensions
     {
         var services = new ServiceCollection();
 
-        var returned = services.AddSyncPersistence();
+        var returned = services.AddSyncPersistence(_ => new MockFileSystem().FileInfo.New("/data/cloudsync.db"));
 
         returned.ShouldBeSameAs(services);
     }

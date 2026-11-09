@@ -70,7 +70,7 @@ public static class ServiceCollectionExtensions
             .AddOneDriveAccounts(configuration, provider => provider.GetRequiredService<IFileSystem>().DirectoryInfo.New(TokenCacheFolderPath), provider => provider.GetRequiredService<IFileSystem>().FileInfo.New(TokenCacheConsentFilePath))
             .AddCloudSync()
             .AddOneDriveSync()
-            .AddSyncPersistence()
+            .AddSyncPersistence(provider => provider.GetRequiredService<IFileSystem>().FileInfo.New(DatabaseFilePath))
             .AddDisplayPreferences(provider => provider.GetRequiredService<IFileSystem>().FileInfo.New(SettingsFilePath))
             .AddSingleton<IThemeApplier, AvaloniaThemeApplier>()
             .AddSingleton<IHomeFolder, UserProfileHomeFolder>()
