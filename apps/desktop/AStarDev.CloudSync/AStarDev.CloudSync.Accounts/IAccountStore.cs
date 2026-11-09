@@ -2,7 +2,7 @@ using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.Accounts;
 
-/// <summary>Saves and reads the accounts CloudSync knows about.</summary>
+/// <summary>Saves and reads the accounts CloudSync knows about. Every method throws <see cref="OperationCanceledException"/> when its token is already cancelled, and changes nothing.</summary>
 public interface IAccountStore
 {
     /// <summary>Saves the account. An account with the same provider and key, ignoring case, is not added twice: its profile is refreshed from <paramref name="registration"/> and its id and settings are kept.</summary>
