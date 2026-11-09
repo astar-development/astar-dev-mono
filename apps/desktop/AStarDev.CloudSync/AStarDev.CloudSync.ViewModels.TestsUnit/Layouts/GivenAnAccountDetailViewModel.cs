@@ -93,19 +93,19 @@ public class GivenAnAccountDetailViewModel
     }
 
     [Fact]
-    public void when_the_account_has_a_sync_pair_then_its_synced_folder_shows_the_short_and_full_local_path()
+    public void when_the_account_has_a_sync_pair_then_its_synced_folder_shows_the_local_path_relative_to_the_sync_root()
     {
         var localization = TestData.CreateLocalization();
         var cloudAccount = TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
-        var model = SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), cloudAccount.Id, "Documents", new DirectoryInfo("/home/user/CloudSync/OneDrive/Work/Documents"), "/Documents", SyncDirectionFactory.CreateTwoWay(), SyncStatusFactory.CreateUpToDate(), 1, Option.None<DateTimeOffset>());
+        var model = SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), cloudAccount.Id, "Documents", RelativePaths.Of("Documents"), Option.None<RemoteItemId>(), SyncDirectionFactory.CreateTwoWay(), SyncStatusFactory.CreateUpToDate(), 1, Option.None<DateTimeOffset>());
         var pair = new SyncPairViewModel(model, cloudAccount, localization, TestData.CreateTime());
         var account = new AccountViewModel(cloudAccount, [], localization, TestData.CreateTime());
 
         var detail = new AccountDetailViewModel(account, [pair], [], TestData.CreateLocalPathFormatter(), new RecordingSyncActions(), localization);
 
         var folder = detail.SyncedFolders.ShouldHaveSingleItem();
-        folder.LocalPathText.ShouldBe(TestPaths.Native("~/CloudSync/OneDrive/Work/Documents"));
-        folder.Pair.LocalPath.ShouldBe(TestPaths.Full("/home/user/CloudSync/OneDrive/Work/Documents"));
+        folder.LocalPathText.ShouldBe("Documents");
+        folder.Pair.LocalPath.ShouldBe("Documents");
     }
 
     [Fact]

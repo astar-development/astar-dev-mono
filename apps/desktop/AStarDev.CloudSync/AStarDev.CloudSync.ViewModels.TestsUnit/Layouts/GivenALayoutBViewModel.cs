@@ -63,17 +63,17 @@ public class GivenALayoutBViewModel
 
         var detail = layout.Detail.ShouldBeOfType<AccountDetailViewModel>();
 
-        detail.SyncPairs.Select(pair => pair.LocalPath).ShouldBe([TestPaths.Full("/home/user/CloudSync/OneDrive/Work/Documents"), TestPaths.Full("/home/user/CloudSync/OneDrive/Work/Projects"), TestPaths.Full("/home/user/CloudSync/OneDrive/Work/Desktop")]);
+        detail.SyncPairs.Select(pair => pair.LocalPath).ShouldBe(["Documents", "Projects", "Desktop"]);
     }
 
     [Fact]
-    public async Task when_an_account_is_selected_then_its_synced_folders_show_local_paths_relative_to_the_home_folder()
+    public async Task when_an_account_is_selected_then_its_synced_folders_show_local_paths_relative_to_the_sync_root()
     {
         var layout = await CreateLoadedLayoutAsync();
 
         var detail = layout.Detail.ShouldBeOfType<AccountDetailViewModel>();
 
-        detail.SyncedFolders.Select(folder => folder.LocalPathText).ShouldBe([TestPaths.Native("~/CloudSync/OneDrive/Work/Documents"), TestPaths.Native("~/CloudSync/OneDrive/Work/Projects"), TestPaths.Native("~/CloudSync/OneDrive/Work/Desktop")]);
+        detail.SyncedFolders.Select(folder => folder.LocalPathText).ShouldBe(["Documents", "Projects", "Desktop"]);
     }
 
     [Fact]

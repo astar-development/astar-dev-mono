@@ -33,11 +33,11 @@ public sealed class SyncPairViewModel : LocalizedObservableObject
     /// <summary>The pair's display name.</summary>
     public string Name => pair.Name;
 
-    /// <summary>The local folder's full path.</summary>
-    public string LocalPath => pair.LocalFolder.FullName;
+    /// <summary>The local folder's path relative to the account's sync root.</summary>
+    public string LocalPath => pair.LocalFolder.Value ?? string.Empty;
 
-    /// <summary>The cloud folder's path.</summary>
-    public string RemotePath => pair.RemotePath;
+    /// <summary>The cloud folder's path. It mirrors the local folder's relative path.</summary>
+    public string RemotePath => "/" + pair.LocalFolder.Value;
 
     /// <summary>The id of the account holding the cloud folder.</summary>
     public AccountId AccountId => account.Id;

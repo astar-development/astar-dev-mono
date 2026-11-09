@@ -1,5 +1,6 @@
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Sync;
+using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.CloudSync.TestHelpers.Ui;
 using AStarDev.CloudSync.ViewModels.SyncPairs;
 using AStarDev.FunctionalParadigm;
@@ -32,7 +33,7 @@ public class GivenASyncPairDirectionGlyph
     private static SyncPairViewModel CreatePair(SyncDirection direction)
     {
         var account = TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
-        var model = SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), account.Id, "Documents", new DirectoryInfo("/home/user/CloudSync/OneDrive/Work/Documents"), "/Documents", direction, SyncStatusFactory.CreateUpToDate(), 1_118, Option.Some(TestData.Now.AddMinutes(-4)));
+        var model = SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), account.Id, "Documents", RelativePaths.Of("Documents"), Option.None<RemoteItemId>(), direction, SyncStatusFactory.CreateUpToDate(), 1_118, Option.Some(TestData.Now.AddMinutes(-4)));
 
         return new SyncPairViewModel(model, account, TestData.CreateLocalization(), TestData.CreateTime());
     }

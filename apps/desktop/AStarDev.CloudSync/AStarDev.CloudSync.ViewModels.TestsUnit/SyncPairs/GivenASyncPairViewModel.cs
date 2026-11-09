@@ -15,7 +15,7 @@ public class GivenASyncPairViewModel
         var pair = CreatePair(SyncDirectionFactory.CreateUploadOnly(), SyncStatusFactory.CreateUpToDate());
 
         pair.Name.ShouldBe("Documents");
-        pair.LocalPath.ShouldBe(TestPaths.Full("/home/user/CloudSync/OneDrive/Work/Documents"));
+        pair.LocalPath.ShouldBe("Documents");
         pair.RemotePath.ShouldBe("/Documents");
         pair.AccountName.ShouldBe("Work");
         pair.DirectionLabel.ShouldBe("Upload only");
@@ -59,7 +59,7 @@ public class GivenASyncPairViewModel
     public void when_created_then_the_last_sync_and_account_id_are_exposed()
     {
         var account = TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
-        var model = SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), account.Id, "Documents", new DirectoryInfo("/home/user/CloudSync/OneDrive/Work/Documents"), "/Documents", SyncDirectionFactory.CreateTwoWay(), SyncStatusFactory.CreateUpToDate(), 1_118, Option.Some(TestData.Now.AddMinutes(-4)));
+        var model = SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), account.Id, "Documents", RelativePaths.Of("Documents"), Option.None<RemoteItemId>(), SyncDirectionFactory.CreateTwoWay(), SyncStatusFactory.CreateUpToDate(), 1_118, Option.Some(TestData.Now.AddMinutes(-4)));
 
         var pair = new SyncPairViewModel(model, account, TestData.CreateLocalization(), TestData.CreateTime());
 
@@ -70,7 +70,7 @@ public class GivenASyncPairViewModel
     private static SyncPairViewModel CreatePair(SyncDirection direction, SyncStatus status)
     {
         var account = TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
-        var model = SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), account.Id, "Documents", new DirectoryInfo("/home/user/CloudSync/OneDrive/Work/Documents"), "/Documents", direction, status, 1_118, Option.Some(TestData.Now.AddMinutes(-4)));
+        var model = SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), account.Id, "Documents", RelativePaths.Of("Documents"), Option.None<RemoteItemId>(), direction, status, 1_118, Option.Some(TestData.Now.AddMinutes(-4)));
         var localization = TestData.CreateLocalization();
 
         return new SyncPairViewModel(model, account, localization, TestData.CreateTime());
