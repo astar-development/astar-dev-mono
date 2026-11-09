@@ -191,6 +191,36 @@ public abstract class GivenAnAccountStore : IAsyncLifetime
         (await Store.GetAllAsync(CancellationToken)).Match(accounts => accounts.Count, _ => -1).ShouldBe(0);
     }
 
+    [Fact]
+    public async Task when_an_account_is_added_with_a_cancelled_token_then_it_is_cancelled_and_nothing_is_saved()
+    {
+        var add = () => Store.AddAsync(Registration(HomeAccountIdentifier, PersonalDisplayName), new CancellationToken(true));
+
+        await Should.ThrowAsync<OperationCanceledException>(add);
+        (await Store.GetAllAsync(CancellationToken)).Match(accounts => accounts.Count, _ => -1).ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task when_accounts_are_read_with_a_cancelled_token_then_the_reads_are_cancelled()
+    {
+        var readAll = () => Store.GetAllAsync(new CancellationToken(true));
+        var readByKey = () => Store.GetByKeyAsync(CloudProviderFactory.CreateOneDrive(), Key(HomeAccountIdentifier), new CancellationToken(true));
+
+        await Should.ThrowAsync<OperationCanceledException>(readAll);
+        await Should.ThrowAsync<OperationCanceledException>(readByKey);
+    }
+
+    [Fact]
+    public async Task when_an_account_is_removed_with_a_cancelled_token_then_it_is_cancelled_and_the_account_is_kept()
+    {
+        var added = (await Store.AddAsync(Registration(HomeAccountIdentifier, PersonalDisplayName), CancellationToken)).ShouldBeOfType<AccountAddOutcome.Added>().AccountId;
+
+        var remove = () => Store.RemoveAsync(added, new CancellationToken(true));
+
+        await Should.ThrowAsync<OperationCanceledException>(remove);
+        (await Store.GetAllAsync(CancellationToken)).Match(accounts => accounts.Count, _ => -1).ShouldBe(1);
+    }
+
     private static ProviderAccountKey Key(string identifier) => ProviderAccountKeyFactory.Create(identifier).Match(key => key, _ => throw new InvalidOperationException("The test key must be valid."));
 
     private static AccountRegistration Registration(string identifier, string displayName) => AccountRegistrationFactory.Create(Key(identifier), CloudProviderFactory.CreateOneDrive(), displayName, $"{displayName.ToLowerInvariant()}@example.com", new DriveId("8A3F2C1D0E9B7A65"), StorageUsageFactory.Create(1_024, 5_368_709_120));
