@@ -28,6 +28,9 @@ public sealed class GraphScript : HttpMessageHandler
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        return Task.FromResult(Respond(request));
+        var response = Respond(request);
+        response.RequestMessage = request;
+
+        return Task.FromResult(response);
     }
 }

@@ -3,7 +3,8 @@
   <!--
     OneDrive accounts module: adds a personal Microsoft account through MSAL
     sign-in, the token cache and a Microsoft Graph drive lookup. The only
-    project that references Microsoft.Graph and MSAL. Must not reference Avalonia.
+    project that references MSAL; with Sync.OneDrive, one of two that reference
+    Microsoft.Graph. Must not reference Avalonia.
   -->
 
   <PropertyGroup>

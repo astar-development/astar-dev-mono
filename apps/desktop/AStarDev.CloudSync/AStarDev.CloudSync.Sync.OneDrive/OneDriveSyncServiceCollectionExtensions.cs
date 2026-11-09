@@ -16,6 +16,7 @@ public static class OneDriveSyncServiceCollectionExtensions
         services.TryAddSingleton(new RetryHandlerOption());
         _ = services.AddTransient<AccountThrottleHandler>()
             .AddHttpClient(OneDriveSyncHttp.ClientName)
+            .RemoveAllLoggers()
             .AddHttpMessageHandler<AccountThrottleHandler>();
 
         return services.AddKeyedSingleton<IRemoteFolderBrowser, OneDriveFolderBrowser>(CloudProviderFactory.CreateOneDrive());

@@ -92,7 +92,8 @@ public sealed class GivenAnOneDriveFolderBrowser : IDisposable
 
         var result = await Browser().GetChildFoldersAsync(account, Option.None<RemoteItemId>(), CancellationToken);
 
-        (result.Match(folders => folders.Select(folder => folder.Name), _ => []), graph.Requests.Count).ShouldBe((["five", "four", "one", "three", "two"], 3));
+        result.Match(folders => folders.Select(folder => folder.Name).ToList(), _ => []).ShouldBe(["five", "four", "one", "three", "two"]);
+        graph.Requests.Count.ShouldBe(3);
     }
 
     [Theory]
@@ -130,7 +131,7 @@ public sealed class GivenAnOneDriveFolderBrowser : IDisposable
     [InlineData(HttpStatusCode.NotFound, "itemNotFound", "NotFound")]
     [InlineData(HttpStatusCode.InternalServerError, "generalException", "Transient")]
     [InlineData(HttpStatusCode.BadGateway, "badGateway", "Transient")]
-    [InlineData(HttpStatusCode.GatewayTimeout, "timeout", "Transient")]
+    [InlineData(HttpStatusCode.GatewayTimeout, "none", "Transient")]
     [InlineData(HttpStatusCode.BadRequest, "invalidRequest", "Unexpected")]
     [InlineData(HttpStatusCode.Gone, "resyncRequired", "Unexpected")]
     public async Task when_graph_answers_with_an_error_status_then_it_maps_to_the_provider_error(HttpStatusCode status, string graphCode, string expected)

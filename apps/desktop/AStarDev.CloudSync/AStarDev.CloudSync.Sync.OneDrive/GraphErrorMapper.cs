@@ -13,6 +13,7 @@ internal static class GraphErrorMapper
 
     internal static (ProviderError Error, int StatusCode, string ErrorCode) Map(Exception exception, TimeProvider timeProvider) => exception switch
     {
+        AggregateException { InnerExceptions.Count: > 0 } aggregate => Map(aggregate.InnerExceptions[^1], timeProvider),
         ApiException api => (FromStatus(api.ResponseStatusCode, RetryAfter(api, timeProvider)), api.ResponseStatusCode, CodeOf(api)),
         HttpRequestException or IOException or TaskCanceledException => (ProviderErrorFactory.CreateTransient(), 0, NoCode),
         _ => (ProviderErrorFactory.CreateUnexpected(), 0, NoCode),
