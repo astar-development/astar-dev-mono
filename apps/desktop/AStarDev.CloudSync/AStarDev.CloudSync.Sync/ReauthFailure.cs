@@ -23,6 +23,14 @@ public abstract record ReauthFailure
         }
     }
 
+    /// <summary>A sync pass or a removal for the account did not finish in time; nothing changed.</summary>
+    public sealed record SyncStillRunning : ReauthFailure
+    {
+        internal SyncStillRunning()
+        {
+        }
+    }
+
     /// <summary>The provider failed.</summary>
     public sealed record Provider : ReauthFailure
     {

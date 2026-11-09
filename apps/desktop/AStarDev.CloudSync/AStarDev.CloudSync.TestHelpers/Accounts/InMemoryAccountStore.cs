@@ -26,6 +26,17 @@ public sealed class InMemoryAccountStore : IAccountStore
             return Task.FromResult(Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([.. accounts]));
     }
 
+    public Task<Result<Unit, ErrorResponse>> RemoveAsync(AccountId accountId, CancellationToken cancellationToken)
+    {
+        lock (gate)
+        {
+            
+            throw new NotImplementedException($"{accountId}{cancellationToken}");
+        }
+
+        
+    }
+
     private Option<StoredAccount> Find(CloudProvider provider, ProviderAccountKey key) => accounts
         .Where(account => account.Registration.Provider == provider && string.Equals(account.Registration.Key.Value, key.Value, StringComparison.OrdinalIgnoreCase))
         .Select(Option.Some)

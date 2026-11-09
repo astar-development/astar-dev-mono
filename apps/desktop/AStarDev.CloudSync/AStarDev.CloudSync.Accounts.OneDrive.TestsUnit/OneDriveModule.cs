@@ -1,3 +1,4 @@
+using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.TestHelpers.Accounts;
 using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.FunctionalParadigm;
@@ -34,6 +35,12 @@ public sealed class OneDriveModule
     public IPlaintextCacheConsentSettings ConsentSettings => provider.GetRequiredService<IPlaintextCacheConsentSettings>();
 
     public IAccessTokenSource TokenSource => provider.GetRequiredService<IAccessTokenSource>();
+
+    public IAccountReauthenticator Reauthenticator => provider.GetRequiredKeyedService<IAccountReauthenticator>(CloudProviderFactory.CreateOneDrive());
+
+    public IProviderSignOut SignOut => provider.GetRequiredKeyedService<IProviderSignOut>(CloudProviderFactory.CreateOneDrive());
+
+    public IAccountSignInProbe SignInProbe => provider.GetRequiredKeyedService<IAccountSignInProbe>(CloudProviderFactory.CreateOneDrive());
 
     public Task<AccountAddOutcome> AddAsync(CancellationToken cancellationToken) => Adder.AddAsync(cancellationToken);
 

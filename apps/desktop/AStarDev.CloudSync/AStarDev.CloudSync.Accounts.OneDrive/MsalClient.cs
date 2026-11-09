@@ -37,6 +37,17 @@ internal sealed class MsalClient(IPublicClientApplication application, IOptions<
     }
 
     /// <inheritdoc />
+    public async Task<MicrosoftSignIn> ReauthenticateAsync(ProviderAccountKey key, string loginHint, CancellationToken cancellationToken)
+    {
+        var accounts = await application.GetAccountsAsync().ConfigureAwait(false);
+        var request = accounts.FirstOrNone(account => string.Equals(account.HomeAccountId?.Identifier, key.Value, StringComparison.OrdinalIgnoreCase))
+            .Match(account => application.AcquireTokenInteractive(options.Value.Scopes).WithAccount(account), () => application.AcquireTokenInteractive(options.Value.Scopes).WithLoginHint(loginHint));
+        var result = await request.WithPrompt(Prompt.SelectAccount).WithUseEmbeddedWebView(false).ExecuteAsync(cancellationToken).ConfigureAwait(false);
+
+        return MicrosoftSignInFactory.Create(result.Account?.HomeAccountId?.Identifier, result.Account?.Username, result.ClaimsPrincipal?.FindFirst("name")?.Value, result.AccessToken, result.Scopes);
+    }
+
+    /// <inheritdoc />
     public async Task<Option<string>> AcquireTokenSilentAsync(ProviderAccountKey key, CancellationToken cancellationToken)
     {
         var accounts = await application.GetAccountsAsync().ConfigureAwait(false);
