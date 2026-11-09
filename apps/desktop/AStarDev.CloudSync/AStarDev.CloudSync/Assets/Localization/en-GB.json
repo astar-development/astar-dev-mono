@@ -221,9 +221,9 @@
   "FolderSelection.Confirm.Yes": "Stop syncing",
   "FolderSelection.Failure.Save": "Your folder choices could not be saved. Try again.",
   "FolderSelection.Failure.Accounts": "The accounts could not be read.",
-  "FolderSelection.Glyph.Expanded": "▾",
-  "FolderSelection.Glyph.Collapsed": "▸",
-  "FolderSelection.Glyph.Ticked": "☑",
-  "FolderSelection.Glyph.Unticked": "☐",
-  "FolderSelection.Glyph.Partial": "◪"
+  "FolderSelection.Glyph.Expanded": "v",
+  "FolderSelection.Glyph.Collapsed": ">",
+  "FolderSelection.Glyph.Ticked": "[x]",
+  "FolderSelection.Glyph.Unticked": "[ ]",
+  "FolderSelection.Glyph.Partial": "[-]"
 }
