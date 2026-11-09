@@ -58,7 +58,9 @@ public static class TestData
 
     public static PlaintextCacheConsentSettingsViewModel CreatePlaintextCacheConsentSettings(FakePlaintextCacheConsentSettings settings) => new(settings, CreateLocalization());
 
-    public static AddAccountViewModel CreateAddAccount(IAccountAdder accountAdder) => new(new SingleProviderCapability<IAccountAdder>(accountAdder), new TokenCacheConsentViewModel(new ImmediateUiDispatcher(), CreateLocalization()), CreateLocalization(), NullLogger<AddAccountViewModel>.Instance);
+    public static AddAccountViewModel CreateAddAccount(IAccountAdder accountAdder) => CreateAddAccount(accountAdder, new RecordingFolderSelectionDialog());
+
+    public static AddAccountViewModel CreateAddAccount(IAccountAdder accountAdder, IFolderSelectionDialog folderSelection) => new(new SingleProviderCapability<IAccountAdder>(accountAdder), new TokenCacheConsentViewModel(new ImmediateUiDispatcher(), CreateLocalization()), folderSelection, CreateLocalization(), NullLogger<AddAccountViewModel>.Instance);
 
     public static AccountDialogViewModel CreateAccountDialog(FakeAccountActions actions) => CreateAccountDialog(actions, new FakeSyncRootReader(), new InMemoryAccountStore(), new FakeFolderPicker());
 

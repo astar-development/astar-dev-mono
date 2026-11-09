@@ -51,7 +51,7 @@ public class GivenTheAddAccountSnapshots
                 _ => _ => new TaskCompletionSource<AccountAddOutcome>().Task,
             }
         };
-        var dialog = new AddAccountViewModel(new SingleProviderCapability<IAccountAdder>(adder), consent, TestData.CreateLocalization(), NullLogger<AddAccountViewModel>.Instance);
+        var dialog = new AddAccountViewModel(new SingleProviderCapability<IAccountAdder>(adder), consent, new RecordingFolderSelectionDialog(), TestData.CreateLocalization(), NullLogger<AddAccountViewModel>.Instance);
         _ = dialog.ShowAsync(TestContext.Current.CancellationToken);
 
         return dialog;

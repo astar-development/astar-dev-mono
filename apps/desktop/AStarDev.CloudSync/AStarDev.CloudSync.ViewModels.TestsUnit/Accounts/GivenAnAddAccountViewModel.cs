@@ -1,3 +1,4 @@
+using AStarDev.FunctionalParadigm;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.TestHelpers.Accounts;
 using AStarDev.CloudSync.TestHelpers.Common;
@@ -32,18 +33,73 @@ public class GivenAnAddAccountViewModel
         var shown = dialog.ShowAsync(TestContext.Current.CancellationToken);
 
         (dialog.IsOpen, dialog.IsSigningIn, dialog.IsAskingConsent, dialog.IsShowingMessage).ShouldBe((true, true, false, false));
-        signIn.SetResult(AccountAddOutcomeFactory.CreateAdded(AddedId));
+        signIn.SetResult(AccountAddOutcomeFactory.CreateCancelled());
         await shown;
     }
 
     [Fact]
-    public async Task when_a_new_account_is_added_then_the_dialog_closes_by_itself()
+    public void when_a_new_account_is_added_then_the_dialog_offers_to_choose_its_folders_and_stays_open()
     {
         var dialog = TestData.CreateAddAccount(new FakeAccountAdder { Add = _ => Task.FromResult(AccountAddOutcomeFactory.CreateAdded(AddedId)) });
 
-        await dialog.ShowAsync(TestContext.Current.CancellationToken);
+        var shown = dialog.ShowAsync(TestContext.Current.CancellationToken);
 
-        (dialog.IsOpen, dialog.Step).ShouldBe((false, AddAccountStepFactory.CreateClosed()));
+        (dialog.IsOpen, dialog.IsOfferingFolders, dialog.IsSigningIn, dialog.Step, shown.IsCompleted).ShouldBe((true, true, false, AddAccountStepFactory.CreateAdded(AddedId), false));
+        dialog.OfferText.ShouldBe(TestData.CreateLocalization().GetLocal("AddAccount.Offer"));
+    }
+
+    [Fact]
+    public async Task when_the_user_chooses_later_then_the_dialog_closes_and_no_folder_selection_opens()
+    {
+        var folders = new RecordingFolderSelectionDialog();
+        var dialog = TestData.CreateAddAccount(new FakeAccountAdder { Add = _ => Task.FromResult(AccountAddOutcomeFactory.CreateAdded(AddedId)) }, folders);
+        var shown = dialog.ShowAsync(TestContext.Current.CancellationToken);
+
+        dialog.LaterCommand.Execute(null);
+        await shown.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+
+        (dialog.IsOpen, folders.Shown.Count).ShouldBe((false, 0));
+    }
+
+    [Fact]
+    public async Task when_the_user_chooses_folders_now_then_the_dialog_closes_and_the_folder_selection_opens_for_the_new_account()
+    {
+        var folders = new RecordingFolderSelectionDialog();
+        var dialog = TestData.CreateAddAccount(new FakeAccountAdder { Add = _ => Task.FromResult(AccountAddOutcomeFactory.CreateAdded(AddedId)) }, folders);
+        using var cancellation = new CancellationTokenSource();
+        var shown = dialog.ShowAsync(cancellation.Token);
+
+        await dialog.ChooseFoldersCommand.ExecuteAsync(null);
+        await shown.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+
+        dialog.IsOpen.ShouldBeFalse();
+        folders.Shown.ShouldBe([(Option.Some(AddedId), cancellation.Token)]);
+    }
+
+    [Fact]
+    public async Task when_the_caller_cancels_while_the_offer_shows_then_the_dialog_closes_without_opening_the_folder_selection()
+    {
+        var folders = new RecordingFolderSelectionDialog();
+        var dialog = TestData.CreateAddAccount(new FakeAccountAdder { Add = _ => Task.FromResult(AccountAddOutcomeFactory.CreateAdded(AddedId)) }, folders);
+        using var cancellation = new CancellationTokenSource();
+        var shown = dialog.ShowAsync(cancellation.Token);
+
+        await cancellation.CancelAsync();
+        await shown.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+
+        (dialog.IsOpen, folders.Shown.Count).ShouldBe((false, 0));
+    }
+
+    [Fact]
+    public void when_the_account_was_already_added_or_the_attempt_fails_then_the_offer_does_not_show()
+    {
+        var already = TestData.CreateAddAccount(new FakeAccountAdder { Add = _ => Task.FromResult(AccountAddOutcomeFactory.CreateReAuthenticated(AddedId)) });
+        var failed = TestData.CreateAddAccount(new FakeAccountAdder { Add = _ => Task.FromResult(AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreateNetwork())) });
+
+        _ = already.ShowAsync(TestContext.Current.CancellationToken);
+        _ = failed.ShowAsync(TestContext.Current.CancellationToken);
+
+        (already.IsOfferingFolders, failed.IsOfferingFolders).ShouldBe((false, false));
     }
 
     [Fact]
@@ -132,9 +188,11 @@ public class GivenAnAddAccountViewModel
 
         var shown = dialog.ShowAsync(TestContext.Current.CancellationToken);
         await dialog.TryAgainCommand.ExecuteAsync(null);
+        var offered = dialog.IsOfferingFolders;
+        dialog.LaterCommand.Execute(null);
         await shown;
 
-        (adder.ReceivedTokens.Count, dialog.IsOpen).ShouldBe((2, false));
+        (adder.ReceivedTokens.Count, offered, dialog.IsOpen).ShouldBe((2, true, false));
     }
 
     [Fact]
@@ -146,7 +204,7 @@ public class GivenAnAddAccountViewModel
 
         var first = dialog.ShowAsync(TestContext.Current.CancellationToken);
         var second = dialog.ShowAsync(TestContext.Current.CancellationToken);
-        signIn.SetResult(AccountAddOutcomeFactory.CreateAdded(AddedId));
+        signIn.SetResult(AccountAddOutcomeFactory.CreateCancelled());
         await Task.WhenAll(first, second).WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
         adder.ReceivedTokens.Count.ShouldBe(1);
@@ -157,7 +215,7 @@ public class GivenAnAddAccountViewModel
     {
         var consent = new TokenCacheConsentViewModel(new ImmediateUiDispatcher(), TestData.CreateLocalization());
         var adder = new FakeAccountAdder { Add = async token => { _ = await consent.AskAsync(token); return AccountAddOutcomeFactory.CreateCancelled(); } };
-        var dialog = new AddAccountViewModel(new SingleProviderCapability<IAccountAdder>(adder), consent, TestData.CreateLocalization(), NullLogger<AddAccountViewModel>.Instance);
+        var dialog = new AddAccountViewModel(new SingleProviderCapability<IAccountAdder>(adder), consent, new RecordingFolderSelectionDialog(), TestData.CreateLocalization(), NullLogger<AddAccountViewModel>.Instance);
 
         var shown = dialog.ShowAsync(TestContext.Current.CancellationToken);
 
@@ -169,7 +227,7 @@ public class GivenAnAddAccountViewModel
     [Fact]
     public async Task when_no_adder_is_registered_for_the_provider_then_the_dialog_shows_a_failure_with_try_again()
     {
-        var dialog = new AddAccountViewModel(new NoAccountAdders(), new TokenCacheConsentViewModel(new ImmediateUiDispatcher(), TestData.CreateLocalization()), TestData.CreateLocalization(), NullLogger<AddAccountViewModel>.Instance);
+        var dialog = new AddAccountViewModel(new NoAccountAdders(), new TokenCacheConsentViewModel(new ImmediateUiDispatcher(), TestData.CreateLocalization()), new RecordingFolderSelectionDialog(), TestData.CreateLocalization(), NullLogger<AddAccountViewModel>.Instance);
 
         var shown = dialog.ShowAsync(TestContext.Current.CancellationToken);
 
@@ -198,7 +256,7 @@ public class GivenAnAddAccountViewModel
     {
         var logger = new RecordingLogger<AddAccountViewModel>();
         var adder = new FakeAccountAdder { Add = _ => Task.FromException<AccountAddOutcome>(new InvalidOperationException("captain.flint@example.com could not be saved")) };
-        var dialog = new AddAccountViewModel(new SingleProviderCapability<IAccountAdder>(adder), new TokenCacheConsentViewModel(new ImmediateUiDispatcher(), TestData.CreateLocalization()), TestData.CreateLocalization(), logger);
+        var dialog = new AddAccountViewModel(new SingleProviderCapability<IAccountAdder>(adder), new TokenCacheConsentViewModel(new ImmediateUiDispatcher(), TestData.CreateLocalization()), new RecordingFolderSelectionDialog(), TestData.CreateLocalization(), logger);
 
         var shown = dialog.ShowAsync(TestContext.Current.CancellationToken);
         await WaitUntilAsync(() => dialog.IsShowingMessage);
@@ -250,7 +308,7 @@ public class GivenAnAddAccountViewModel
                 return answer.IsCanceled ? AccountAddOutcomeFactory.CreateCancelled() : AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreateTokenCacheUnavailable());
             }
         };
-        var dialog = new AddAccountViewModel(new SingleProviderCapability<IAccountAdder>(adder), consent, TestData.CreateLocalization(), NullLogger<AddAccountViewModel>.Instance);
+        var dialog = new AddAccountViewModel(new SingleProviderCapability<IAccountAdder>(adder), consent, new RecordingFolderSelectionDialog(), TestData.CreateLocalization(), NullLogger<AddAccountViewModel>.Instance);
 
         var shown = dialog.ShowAsync(TestContext.Current.CancellationToken);
         dialog.CancelCommand.Execute(null);
