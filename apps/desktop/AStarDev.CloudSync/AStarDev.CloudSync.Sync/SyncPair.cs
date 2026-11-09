@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.FunctionalParadigm;
 
@@ -6,6 +7,7 @@ namespace AStarDev.CloudSync.Sync;
 /// <summary>One local folder linked to one cloud folder.</summary>
 public sealed record SyncPair
 {
+    [SuppressMessage("Major Code Smell", "S107:Methods should not have too many parameters", Justification = "Internal constructor called only by SyncPairFactory; records cannot have an internal primary constructor (#1453).")]
     internal SyncPair(
         SyncPairId id,
         AccountId accountId,

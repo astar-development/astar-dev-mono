@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.FunctionalParadigm;
 
@@ -6,6 +7,7 @@ namespace AStarDev.CloudSync.Sync;
 /// <summary>A connected cloud storage account.</summary>
 public sealed record CloudAccount
 {
+    [SuppressMessage("Major Code Smell", "S107:Methods should not have too many parameters", Justification = "Internal constructor called only by CloudAccountFactory; records cannot have an internal primary constructor (#1453).")]
     internal CloudAccount(
         AccountId id,
         string displayName,
