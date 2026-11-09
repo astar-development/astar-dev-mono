@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Xml.Linq;
 
 namespace AStarDev.CloudSync.TestsUnit;
 
@@ -32,6 +33,53 @@ public class GivenTheCloudSyncModules
         var modules = ModulesReferencing(EfCorePrefixes);
 
         modules.ShouldAllBe(name => name.EndsWith(".Sqlite", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void when_a_module_has_a_graph_or_msal_package_reference_then_it_is_a_onedrive_module()
+    {
+        var modules = ModulesWithPackageReference(GraphAndMsalPrefixes);
+
+        modules.ShouldAllBe(name => name.EndsWith(".OneDrive", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void when_a_module_has_an_ef_core_package_reference_then_it_is_a_sqlite_module()
+    {
+        var modules = ModulesWithPackageReference(EfCorePrefixes);
+
+        modules.ShouldAllBe(name => name.EndsWith(".Sqlite", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void when_the_project_files_are_looked_up_then_every_module_has_one()
+    {
+        var projectFiles = CloudSyncAssemblies().Select(assembly => FindProjectFile(assembly.GetName().Name ?? string.Empty));
+
+        projectFiles.ShouldAllBe(file => file.Exists);
+    }
+
+    private static List<string> ModulesWithPackageReference(string[] prefixes) =>
+        [.. CloudSyncAssemblies()
+            .Select(assembly => assembly.GetName().Name ?? string.Empty)
+            .Where(name => PackageReferences(FindProjectFile(name)).Any(package => prefixes.Any(prefix => package.StartsWith(prefix, StringComparison.Ordinal))))];
+
+    private static IEnumerable<string> PackageReferences(FileInfo projectFile) =>
+        XDocument.Load(projectFile.FullName).Descendants("PackageReference").Select(reference => (string?)reference.Attribute("Include") ?? string.Empty);
+
+    private static FileInfo FindProjectFile(string moduleName)
+    {
+        var cloudSyncRoot = ParentDirectories(new DirectoryInfo(AppContext.BaseDirectory))
+            .Select(directory => new DirectoryInfo(Path.Combine(directory.FullName, "apps", "desktop", CloudSyncPrefix)))
+            .First(directory => directory.Exists);
+
+        return new FileInfo(Path.Combine(cloudSyncRoot.FullName, moduleName, moduleName + ".csproj"));
+    }
+
+    private static IEnumerable<DirectoryInfo> ParentDirectories(DirectoryInfo start)
+    {
+        for (var directory = start; directory is not null; directory = directory.Parent)
+            yield return directory;
     }
 
     private static List<string> ModulesReferencing(string[] prefixes) =>
