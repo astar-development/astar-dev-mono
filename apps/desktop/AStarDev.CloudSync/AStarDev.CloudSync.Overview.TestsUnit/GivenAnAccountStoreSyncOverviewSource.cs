@@ -59,7 +59,8 @@ public class GivenAnAccountStoreSyncOverviewSource
 
         var overview = await CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), reader).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(loaded => loaded, failure => throw new InvalidOperationException(failure.Message));
 
-        (overview.SyncPairs.Select(pair => pair.Name).ToList(), overview.Accounts.Single().FolderCount).ShouldBe((["Docs", "Photos"], 2));
+        overview.SyncPairs.Select(pair => pair.Name).ToList().ShouldBe(["Docs", "Photos"]);
+        overview.Accounts.Single().FolderCount.ShouldBe(2);
     }
 
     [Fact]
