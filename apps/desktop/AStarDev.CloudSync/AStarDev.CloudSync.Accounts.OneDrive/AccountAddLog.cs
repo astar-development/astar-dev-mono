@@ -85,6 +85,9 @@ internal static partial class AccountAddLog
     [LoggerMessage(EventId = 5130, Level = LogLevel.Warning, Message = "The drive could not be read: {Reason}, HTTP {StatusCode} ({ExceptionType}).")]
     public static partial void DriveLookupFailed(ILogger logger, string reason, int statusCode, string exceptionType);
 
+    [LoggerMessage(EventId = 5133, Level = LogLevel.Warning, Message = "No sync folder could be assigned, so the new account was removed again.")]
+    public static partial void SyncRootNotAssigned(ILogger logger);
+
     [LoggerMessage(EventId = 5199, Message = "MSAL: {MsalMessage}")]
     public static partial void MsalMessage(ILogger logger, LogLevel level, string msalMessage);
 }
