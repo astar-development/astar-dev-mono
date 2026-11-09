@@ -19,6 +19,8 @@ public sealed class OneDriveFakes
 
     public IAccountStore AccountStore { get; init; } = new FakeAccountStore();
 
+    public FakeDefaultSyncRootAssigner SyncRoots { get; init; } = new();
+
     public ConsentFile ConsentFile { get; init; } = new();
 
     public TimeProvider Time { get; init; } = new FakeTimeProvider(TestClock.Now);
