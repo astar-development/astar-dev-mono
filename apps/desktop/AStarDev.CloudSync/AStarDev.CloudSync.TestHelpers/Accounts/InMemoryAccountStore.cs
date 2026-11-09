@@ -10,24 +10,28 @@ public sealed class InMemoryAccountStore : IAccountStore
 
     public Task<AccountAddOutcome> AddAsync(AccountRegistration registration, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         lock (gate)
             return Task.FromResult(Find(registration.Provider, registration.Key).Match(existing => Refresh(existing, registration), () => Add(registration)));
     }
 
     public Task<Result<Option<StoredAccount>, ErrorResponse>> GetByKeyAsync(CloudProvider provider, ProviderAccountKey key, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         lock (gate)
             return Task.FromResult(Result.Success<Option<StoredAccount>, ErrorResponse>(Find(provider, key)));
     }
 
     public Task<Result<IReadOnlyList<StoredAccount>, ErrorResponse>> GetAllAsync(CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         lock (gate)
             return Task.FromResult(Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([.. accounts]));
     }
 
     public Task<Result<Unit, ErrorResponse>> RemoveAsync(AccountId accountId, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         lock (gate)
         {
             _ = accounts.RemoveAll(account => account.Id == accountId);
