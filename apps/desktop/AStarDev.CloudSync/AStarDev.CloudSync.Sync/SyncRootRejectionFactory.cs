@@ -18,6 +18,9 @@ public static class SyncRootRejectionFactory
     /// <summary>Creates the <see cref="SyncRootRejection.NotAbsolute"/> case.</summary>
     public static SyncRootRejection CreateNotAbsolute() => new SyncRootRejection.NotAbsolute();
 
+    /// <summary>Creates the <see cref="SyncRootRejection.SyncStillRunning"/> case.</summary>
+    public static SyncRootRejection CreateSyncStillRunning() => new SyncRootRejection.SyncStillRunning();
+
     /// <summary>Creates the <see cref="SyncRootRejection.Reserved"/> case.</summary>
     public static SyncRootRejection CreateReserved() => new SyncRootRejection.Reserved();
 
