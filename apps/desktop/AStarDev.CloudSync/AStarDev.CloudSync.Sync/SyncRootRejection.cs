@@ -54,6 +54,14 @@ public abstract record SyncRootRejection
         }
     }
 
+    /// <summary>The folder is the user's home folder or a filesystem root, which an account must not sync into.</summary>
+    public sealed record Reserved : SyncRootRejection
+    {
+        internal Reserved()
+        {
+        }
+    }
+
     /// <summary>The folder cannot be written to.</summary>
     public sealed record NotWritable : SyncRootRejection
     {
