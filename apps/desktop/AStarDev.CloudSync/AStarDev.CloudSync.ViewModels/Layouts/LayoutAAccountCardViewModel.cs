@@ -33,12 +33,10 @@ public sealed class LayoutAAccountCardViewModel(AccountViewModel account, Action
     public string EmailAndProviderText => Localization.GetLocal("LayoutA.Card.EmailAndProvider", account.Email, account.Provider.Name);
 
     /// <summary>The card action: "Cancel" while syncing, otherwise "Sync now".</summary>
-    public string ActionText => account.NeedsSignIn ? account.SignInText : Localization.GetLocal(SyncActionKey());
+    public string ActionText => account.NeedsSignIn ? account.SignInText : Localization.GetLocal(account.Status.IsSyncing ? "LayoutA.Card.Cancel" : "LayoutA.Card.SyncNow");
 
     /// <summary>The card action: cancels the account's sync while syncing, otherwise syncs it now.</summary>
     public IAsyncRelayCommand ActionCommand => field ??= new AsyncRelayCommand(RunActionAsync);
-
-    private string SyncActionKey() => account.Status.IsSyncing ? "LayoutA.Card.Cancel" : "LayoutA.Card.SyncNow";
 
     private Task RunActionAsync(CancellationToken cancellationToken)
     {
