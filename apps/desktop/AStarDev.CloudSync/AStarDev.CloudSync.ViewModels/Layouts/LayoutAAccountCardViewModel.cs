@@ -33,10 +33,18 @@ public sealed class LayoutAAccountCardViewModel(AccountViewModel account, Action
     public string EmailAndProviderText => Localization.GetLocal("LayoutA.Card.EmailAndProvider", account.Email, account.Provider.Name);
 
     /// <summary>The card action: "Cancel" while syncing, otherwise "Sync now".</summary>
-    public string ActionText => Localization.GetLocal(account.Status.IsSyncing ? "LayoutA.Card.Cancel" : "LayoutA.Card.SyncNow");
+    public string ActionText => account.NeedsSignIn ? account.SignInText : Localization.GetLocal(account.Status.IsSyncing ? "LayoutA.Card.Cancel" : "LayoutA.Card.SyncNow");
 
     /// <summary>The card action: cancels the account's sync while syncing, otherwise syncs it now.</summary>
-    public IAsyncRelayCommand ActionCommand => field ??= new AsyncRelayCommand(cancellationToken => account.Status.IsSyncing ? syncActions.CancelSyncAsync(account.Id, cancellationToken) : syncActions.SyncNowAsync(account.Id, cancellationToken));
+    public IAsyncRelayCommand ActionCommand => field ??= new AsyncRelayCommand(RunActionAsync);
+
+    private Task RunActionAsync(CancellationToken cancellationToken)
+    {
+        if (account.NeedsSignIn)
+            return account.SignInCommand.ExecuteAsync(null);
+
+        return account.Status.IsSyncing ? syncActions.CancelSyncAsync(account.Id, cancellationToken) : syncActions.SyncNowAsync(account.Id, cancellationToken);
+    }
 
     /// <summary>The storage label.</summary>
     public string StorageLabel => Localization.GetLocal("LayoutA.Card.Storage");

@@ -86,10 +86,13 @@ public class GivenALayoutAView
         var layout = window.Content.ShouldBeOfType<LayoutAView>().DataContext.ShouldBeOfType<LayoutAViewModel>();
         var buttons = window.GetVisualDescendants().OfType<Button>().ToList();
 
-        var cardActions = buttons.Where(button => button.Classes.Contains("card-action")).ToList();
+        var cardActions = buttons.Where(button => button.Classes.Contains("card-action") && !button.Classes.Contains("card-remove")).ToList();
+        var removeActions = buttons.Where(button => button.Classes.Contains("card-remove")).ToList();
 
         cardActions.ShouldNotBeEmpty();
         cardActions.ShouldAllBe(button => button.Command == ((LayoutAAccountCardViewModel)button.DataContext!).ActionCommand);
+        removeActions.Count.ShouldBe(cardActions.Count);
+        removeActions.ShouldAllBe(button => button.Command == ((LayoutAAccountCardViewModel)button.DataContext!).Account.RemoveCommand);
         buttons.Single(button => button.Classes.Contains("add-account")).Command.ShouldBeSameAs(layout.AddAccountCommand);
     }
 

@@ -25,7 +25,7 @@
         </Border>
         <ContentControl x:Name="LayoutHost"
                         Grid.Row="1"
-                        IsEnabled="{Binding !AddAccount.IsOpen}"
+                        IsEnabled="{Binding !IsDialogOpen}"
                         Content="{Binding CurrentLayout}"
                         HorizontalContentAlignment="Stretch"
                         VerticalContentAlignment="Stretch">
@@ -46,6 +46,12 @@
                 Background="{DynamicResource CloudSyncScrimBrush}"
                 IsVisible="{Binding AddAccount.IsOpen}">
             <accounts:AddAccountView DataContext="{Binding AddAccount}" />
+        </Border>
+        <Border Grid.Row="0"
+                Grid.RowSpan="2"
+                Background="{DynamicResource CloudSyncScrimBrush}"
+                IsVisible="{Binding AccountDialog.IsOpen}">
+            <accounts:AccountDialogView DataContext="{Binding AccountDialog}" />
         </Border>
     </Grid>
 </Window>

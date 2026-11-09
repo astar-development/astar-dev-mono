@@ -105,6 +105,34 @@ public class GivenASyncOverviewViewModel
     }
 
     [Fact]
+    public async Task when_any_account_needs_sign_in_then_the_overall_status_is_sign_in_required_even_while_another_syncs()
+    {
+        var overview = SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateSyncing(40), Option.None<DateTimeOffset>()), TestData.CreateAccountNeedingSignIn()], [], [], [], [], 0, Option.None<DateTimeOffset>());
+        var viewModel = new SyncOverviewViewModel(new FixedSyncOverviewSource(overview), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+
+        await viewModel.LoadAsync(TestContext.Current.CancellationToken);
+
+        viewModel.OverallStatusText().ShouldBe(TestData.CreateLocalization().GetLocal("Status.Overall.SignInRequired"));
+    }
+
+    [Fact]
+    public async Task when_an_older_load_finishes_after_a_newer_one_then_the_newer_overview_stays()
+    {
+        var older = new TaskCompletionSource<Result<SyncOverview, ErrorResponse>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var newer = SyncOverviewFactory.Create([TestData.CreateAccountNeedingSignIn()], [], [], [], [], 0, Option.None<DateTimeOffset>());
+        var stale = SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>()), TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>())], [], [], [], [], 0, Option.None<DateTimeOffset>());
+        var source = new SequencedSyncOverviewSource([older.Task, Task.FromResult(Result.Success<SyncOverview, ErrorResponse>(newer))]);
+        var viewModel = new SyncOverviewViewModel(source, new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+
+        var firstLoad = viewModel.LoadAsync(TestContext.Current.CancellationToken);
+        await viewModel.LoadAsync(TestContext.Current.CancellationToken);
+        older.SetResult(Result.Success<SyncOverview, ErrorResponse>(stale));
+        await firstLoad;
+
+        viewModel.Accounts.ShouldHaveSingleItem().NeedsSignIn.ShouldBeTrue();
+    }
+
+    [Fact]
     public async Task when_loaded_then_the_last_checked_time_is_exposed_relative_to_now()
     {
         var viewModel = await TestData.CreateLoadedOverviewViewModelAsync();

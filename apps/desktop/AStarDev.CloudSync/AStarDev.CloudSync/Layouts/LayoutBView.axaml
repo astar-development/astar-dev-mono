@@ -168,14 +168,16 @@
 
                         <StackPanel Grid.Row="0" Margin="28,20,28,0" Spacing="14">
                             <TextBlock Classes="muted" Text="{Binding BreadcrumbText}" />
-                            <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="14">
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" ColumnSpacing="14">
                                 <accounts:ProviderBadge Grid.Column="0" DataContext="{Binding Account.Provider}" VerticalAlignment="Center" />
                                 <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
                                     <TextBlock Text="{Binding Account.Name}" FontSize="22" FontWeight="SemiBold" />
                                     <TextBlock Classes="muted" Text="{Binding SubtitleText}" FontSize="13" />
                                 </StackPanel>
-                                <Button Grid.Column="2" Classes="secondary" Content="{Binding PauseText}" Command="{Binding PauseCommand}" VerticalAlignment="Center" />
-                                <Button Grid.Column="3" Classes="primary" Content="{Binding SyncNowText}" Command="{Binding SyncNowCommand}" VerticalAlignment="Center" />
+                                <Button Grid.Column="2" Classes="secondary" Content="{Binding PauseText}" Command="{Binding PauseCommand}" IsEnabled="{Binding CanSync}" VerticalAlignment="Center" />
+                                <Button Grid.Column="3" Classes="primary" Content="{Binding SyncNowText}" Command="{Binding SyncNowCommand}" IsEnabled="{Binding CanSync}" VerticalAlignment="Center" />
+                                <Button Grid.Column="4" Classes="primary" Content="{Binding Account.SignInText}" Command="{Binding Account.SignInCommand}" IsVisible="{Binding Account.NeedsSignIn}" VerticalAlignment="Center" />
+                                <Button Grid.Column="5" Classes="secondary" Content="{Binding Account.RemoveText}" Command="{Binding Account.RemoveCommand}" VerticalAlignment="Center" />
                             </Grid>
                             <ProgressBar Classes="account-progress" Value="{Binding Progress}" AutomationProperties.Name="{Binding Account.Status.Text}" />
                         </StackPanel>

@@ -10,6 +10,7 @@
             Classes.uptodate="{Binding IsUpToDate}"
             Classes.conflicts="{Binding HasConflicts}"
             Classes.paused="{Binding IsPaused}"
+            Classes.signin="{Binding IsSignInRequired}"
             Height="24" Padding="10,0" CornerRadius="12">
         <TextBlock Text="{Binding Text}" VerticalAlignment="Center" FontSize="12" FontWeight="Medium" />
     </Border>

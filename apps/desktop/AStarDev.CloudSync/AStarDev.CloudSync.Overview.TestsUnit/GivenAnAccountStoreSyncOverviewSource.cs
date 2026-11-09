@@ -88,12 +88,39 @@ public class GivenAnAccountStoreSyncOverviewSource
         database.Migrations.ShouldBe(1);
     }
 
-    private static Task<SyncOverview> LoadAsync(FakeAccountStore store) => CreateSource(new FakeCloudSyncDatabase(), store).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(overview => overview, failure => throw new InvalidOperationException(failure.Message));
+    [Fact]
+    public async Task when_an_account_needs_sign_in_then_the_overview_account_carries_that_state()
+    {
+        var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]) };
+        var states = new FakeAccountSignInStates();
+        states.Record(FlintId, AccountSignInStateFactory.CreateSignInRequired());
 
-    private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store) =>
+        var overview = await LoadAsync(store, states);
+
+        overview.Accounts.ShouldHaveSingleItem().SignIn.ShouldBe(AccountSignInStateFactory.CreateSignInRequired());
+    }
+
+    [Fact]
+    public async Task when_an_account_was_never_checked_then_it_is_signed_in()
+    {
+        var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]) };
+
+        var overview = await LoadAsync(store);
+
+        overview.Accounts.ShouldHaveSingleItem().SignIn.ShouldBe(AccountSignInStateFactory.CreateSignedIn());
+    }
+
+    private static Task<SyncOverview> LoadAsync(FakeAccountStore store) => LoadAsync(store, new FakeAccountSignInStates());
+
+    private static Task<SyncOverview> LoadAsync(FakeAccountStore store, FakeAccountSignInStates states) => CreateSource(new FakeCloudSyncDatabase(), store, states).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(overview => overview, failure => throw new InvalidOperationException(failure.Message));
+
+    private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store) => CreateSource(database, store, new FakeAccountSignInStates());
+
+    private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store, IAccountSignInStates states) =>
         new ServiceCollection()
             .AddSingleton(database)
             .AddSingleton(store)
+            .AddSingleton(states)
             .AddSyncOverview()
             .BuildServiceProvider()
             .GetRequiredService<ISyncOverviewSource>();

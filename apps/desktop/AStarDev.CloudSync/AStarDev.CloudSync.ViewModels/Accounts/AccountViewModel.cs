@@ -3,6 +3,7 @@ using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.ViewModels.Activity;
 using AStarDev.CloudSync.ViewModels.Common;
 using AStarDev.Localization;
+using CommunityToolkit.Mvvm.Input;
 
 namespace AStarDev.CloudSync.ViewModels.Accounts;
 
@@ -19,12 +20,24 @@ public sealed class AccountViewModel : LocalizedObservableObject
     /// <param name="activity">Activity across every account; only this account's entries are kept.</param>
     /// <param name="localization">Supplies the text and culture.</param>
     /// <param name="timeProvider">Supplies the current time for relative times.</param>
-    public AccountViewModel(CloudAccount account, IEnumerable<ActivityEntry> activity, ILocalizationService localization, TimeProvider timeProvider) : base(localization)
+    public AccountViewModel(CloudAccount account, IEnumerable<ActivityEntry> activity, ILocalizationService localization, TimeProvider timeProvider) : this(account, activity, NoAccountCommands.Instance, localization, timeProvider)
+    {
+    }
+
+    /// <summary>Shows an account with its sign-in and remove actions.</summary>
+    /// <param name="account">The account.</param>
+    /// <param name="activity">The recent activity of every account.</param>
+    /// <param name="commands">Runs sign-in and removal.</param>
+    /// <param name="localization">Supplies the text.</param>
+    /// <param name="timeProvider">Formats relative times.</param>
+    public AccountViewModel(CloudAccount account, IEnumerable<ActivityEntry> activity, IAccountCommands commands, ILocalizationService localization, TimeProvider timeProvider) : base(localization)
     {
         this.account = account;
+        SignInCommand = new AsyncRelayCommand(cancellationToken => commands.SignInAsync(this, cancellationToken));
+        RemoveCommand = new AsyncRelayCommand(cancellationToken => commands.RemoveAsync(this, cancellationToken));
         this.timeProvider = timeProvider;
         Provider = new ProviderViewModel(account.Provider, localization);
-        Status = new StatusViewModel(account.Status, localization);
+        Status = new StatusViewModel(account.Status, account.SignIn, localization);
         Storage = new StorageViewModel(account.Storage, localization);
         RecentActivity = [.. activity.Where(entry => entry.AccountId == account.Id).OrderByDescending(entry => entry.OccurredAt).Take(RecentActivityLimit).Select(entry => new ActivityItemViewModel(entry, Provider, localization, timeProvider))];
     }
@@ -70,4 +83,19 @@ public sealed class AccountViewModel : LocalizedObservableObject
 
     /// <summary>The account's newest activity, newest first.</summary>
     public IReadOnlyList<ActivityItemViewModel> RecentActivity { get; }
+
+    /// <summary>Whether the account must sign in again; the layouts show the Sign in action.</summary>
+    public bool NeedsSignIn => Status.IsSignInRequired;
+
+    /// <summary>The Sign in action's text.</summary>
+    public string SignInText => Localization.GetLocal("Account.SignIn");
+
+    /// <summary>The Remove action's text.</summary>
+    public string RemoveText => Localization.GetLocal("Account.Remove");
+
+    /// <summary>Signs the account in again.</summary>
+    public IAsyncRelayCommand SignInCommand { get; }
+
+    /// <summary>Asks to remove the account.</summary>
+    public IAsyncRelayCommand RemoveCommand { get; }
 }

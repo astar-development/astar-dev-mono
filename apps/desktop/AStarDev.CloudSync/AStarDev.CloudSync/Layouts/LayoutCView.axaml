@@ -401,7 +401,10 @@
                                     <StackPanel Spacing="4" VerticalAlignment="Center">
                                         <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="Medium" />
                                         <ProgressBar Classes="storage-bar" Value="{Binding Storage.Fraction}" AutomationProperties.Name="{Binding Storage.Text}" />
+                                        <TextBlock Text="{Binding Status.Text}" FontSize="11" Foreground="{DynamicResource CloudSyncWarnBrush}" IsVisible="{Binding NeedsSignIn}" />
                                     </StackPanel>
+                                    <Button Classes="primary" Content="{Binding SignInText}" Command="{Binding SignInCommand}" IsVisible="{Binding NeedsSignIn}" VerticalAlignment="Center" />
+                                    <Button Classes="secondary" Content="{Binding RemoveText}" Command="{Binding RemoveCommand}" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Border>
                         </DataTemplate>

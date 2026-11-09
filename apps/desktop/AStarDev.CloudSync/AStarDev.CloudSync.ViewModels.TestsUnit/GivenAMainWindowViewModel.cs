@@ -64,4 +64,19 @@ public class GivenAMainWindowViewModel
 
         viewModel.CurrentLayout.ShouldBeSameAs(viewModel.LayoutC);
     }
+
+    [Fact]
+    public async Task when_the_account_dialog_opens_then_a_dialog_is_open()
+    {
+        var overview = await TestData.CreateLoadedOverviewViewModelAsync();
+        var window = TestData.CreateMainWindowViewModel(overview, TestData.CreateDisplaySettings());
+        var opened = new List<string?>();
+        window.PropertyChanged += (_, args) => opened.Add(args.PropertyName);
+
+        _ = window.AccountDialog.RemoveAsync(overview.Accounts[0], TestContext.Current.CancellationToken);
+
+        (window.IsDialogOpen, opened.Contains(nameof(window.IsDialogOpen))).ShouldBe((true, true));
+        window.AccountDialog.CloseCommand.Execute(null);
+        window.IsDialogOpen.ShouldBeFalse();
+    }
 }
