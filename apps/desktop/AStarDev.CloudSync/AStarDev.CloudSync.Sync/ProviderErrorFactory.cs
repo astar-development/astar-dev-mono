@@ -9,7 +9,7 @@ public static class ProviderErrorFactory
     public static ProviderError CreateAuthenticationRequired() => new ProviderError.AuthenticationRequired();
 
     /// <summary>Creates the <see cref="ProviderError.Throttled"/> case. A negative Retry-After becomes zero.</summary>
-    public static ProviderError CreateThrottled(Option<TimeSpan> retryAfter) => throw new NotImplementedException($"{retryAfter}");
+    public static ProviderError CreateThrottled(Option<TimeSpan> retryAfter) => new ProviderError.Throttled(retryAfter.Map(delay => delay < TimeSpan.Zero ? TimeSpan.Zero : delay));
 
     /// <summary>Creates the <see cref="ProviderError.NotFound"/> case.</summary>
     public static ProviderError CreateNotFound() => new ProviderError.NotFound();

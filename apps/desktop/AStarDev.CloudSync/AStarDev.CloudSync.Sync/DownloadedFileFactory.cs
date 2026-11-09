@@ -6,5 +6,5 @@ namespace AStarDev.CloudSync.Sync;
 public static class DownloadedFileFactory
 {
     /// <summary>Creates the result. A negative size becomes zero.</summary>
-    public static DownloadedFile Create(RemoteItemId id, ContentTag cTag, long size, Option<ContentHash> hash) => throw new NotImplementedException($"{id}{cTag}{size}{hash}");
+    public static DownloadedFile Create(RemoteItemId id, ContentTag cTag, long size, Option<ContentHash> hash) => new(id, cTag, Math.Max(size, 0), hash);
 }

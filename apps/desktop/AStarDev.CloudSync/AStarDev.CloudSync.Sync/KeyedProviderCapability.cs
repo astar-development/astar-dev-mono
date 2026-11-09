@@ -18,7 +18,7 @@ internal sealed class KeyedProviderCapability<TCapability>(IServiceProvider serv
 
     /// <inheritdoc />
     public Result<TCapability, ProviderError> ForProvider(CloudProvider provider) =>
-        services.GetKeyedService<TCapability>(provider) is { } capability
+        provider is not null && services is IKeyedServiceProvider keyed && keyed.GetKeyedService(typeof(TCapability), provider) is TCapability capability
             ? Result.Success<TCapability, ProviderError>(capability)
             : Result.Failure<TCapability, ProviderError>(ProviderErrorFactory.CreateUnsupported());
 
@@ -31,7 +31,7 @@ internal sealed class KeyedProviderCapability<TCapability>(IServiceProvider serv
 
     private Result<TCapability, ProviderError> AccountsUnreadable(ErrorResponse error)
     {
-        _ = logger;
+        LogMessage.Warning(logger, Location, "The accounts could not be read to find a provider capability.");
 
         return Result.Failure<TCapability, ProviderError>(ProviderErrorFactory.CreateTransient());
     }

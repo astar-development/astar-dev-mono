@@ -7,5 +7,7 @@ public static class RemovePreconditionFactory
 {
     /// <summary>Creates the <see cref="RemovePrecondition.MustMatch"/> case.</summary>
     /// <returns>The precondition, or an error when the tag is blank (an empty If-Match would fail every request).</returns>
-    public static Result<RemovePrecondition, ErrorResponse> CreateMustMatch(EntityTag eTag) => throw new NotImplementedException($"{eTag}");
+    public static Result<RemovePrecondition, ErrorResponse> CreateMustMatch(EntityTag eTag) => string.IsNullOrWhiteSpace(eTag.Value)
+        ? new Fail<RemovePrecondition, ErrorResponse>(new ErrorResponse("A RemovePrecondition needs the tag last seen."))
+        : new Ok<RemovePrecondition, ErrorResponse>(new RemovePrecondition.MustMatch(eTag));
 }

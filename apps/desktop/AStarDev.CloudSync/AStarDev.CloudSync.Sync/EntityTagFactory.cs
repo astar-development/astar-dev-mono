@@ -10,5 +10,7 @@ public static class EntityTagFactory
     /// <summary>Creates the value from the provider's text, trimmed.</summary>
     /// <param name="value">The provider's value.</param>
     /// <returns>The value, or an error when it is blank.</returns>
-    public static Result<EntityTag, ErrorResponse> Create(string? value) => throw new NotImplementedException($"{value}");
+    public static Result<EntityTag, ErrorResponse> Create(string? value) => string.IsNullOrWhiteSpace(value)
+        ? new Fail<EntityTag, ErrorResponse>(new ErrorResponse(MissingValueError))
+        : new Ok<EntityTag, ErrorResponse>(new EntityTag(value.Trim()));
 }
