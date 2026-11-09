@@ -12,7 +12,7 @@ public abstract record RemoteItemKind
     /// <summary>A file.</summary>
     public sealed record File : RemoteItemKind
     {
-        internal File(long size, Option<string> hash, string cTag)
+        internal File(long size, Option<ContentHash> hash, ContentTag cTag)
         {
             Size = size;
             Hash = hash;
@@ -23,10 +23,10 @@ public abstract record RemoteItemKind
         public long Size { get; }
 
         /// <summary>The provider's content hash, when it has one.</summary>
-        public Option<string> Hash { get; }
+        public Option<ContentHash> Hash { get; }
 
         /// <summary>The content tag; it changes only when the content changes.</summary>
-        public string CTag { get; }
+        public ContentTag CTag { get; }
     }
 
     /// <summary>A folder.</summary>

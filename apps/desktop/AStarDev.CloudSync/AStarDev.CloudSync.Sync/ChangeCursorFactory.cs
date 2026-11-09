@@ -10,7 +10,5 @@ public static class ChangeCursorFactory
     /// <summary>Creates the value from the provider's text, trimmed.</summary>
     /// <param name="value">The provider's value.</param>
     /// <returns>The value, or an error when it is blank.</returns>
-    public static Result<ChangeCursor, ErrorResponse> Create(string? value) => string.IsNullOrWhiteSpace(value)
-        ? new Fail<ChangeCursor, ErrorResponse>(new ErrorResponse(MissingValueError))
-        : new Ok<ChangeCursor, ErrorResponse>(new ChangeCursor(value.Trim()));
+    public static Result<ChangeCursor, ErrorResponse> Create(string? value) => throw new NotImplementedException($"{value}");
 }

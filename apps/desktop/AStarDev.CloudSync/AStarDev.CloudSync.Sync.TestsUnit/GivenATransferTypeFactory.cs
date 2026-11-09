@@ -17,28 +17,37 @@ public class GivenATransferTypeFactory
     }
 
     [Fact]
-    public void when_a_download_result_has_a_negative_size_or_no_ctag_then_they_are_normalised()
+    public void when_a_download_result_has_a_negative_size_then_the_size_is_zero()
     {
-        var downloaded = DownloadedFileFactory.Create(RemoteIds.Of("file-1"), null, -1, Option.Some("hash"));
+        var downloaded = DownloadedFileFactory.Create(RemoteIds.Of("file-1"), RemoteIds.CTag("ctag"), -1, Option.Some(RemoteIds.Hash("hash")));
 
-        (downloaded.Id, downloaded.CTag, downloaded.Size, downloaded.Hash).ShouldBe((RemoteIds.Of("file-1"), string.Empty, 0L, Option.Some("hash")));
+        (downloaded.Id, downloaded.CTag, downloaded.Size, downloaded.Hash).ShouldBe((RemoteIds.Of("file-1"), RemoteIds.CTag("ctag"), 0L, Option.Some(RemoteIds.Hash("hash"))));
     }
 
     [Fact]
-    public void when_an_upload_result_has_missing_tags_then_they_are_empty()
+    public void when_an_upload_result_is_created_then_it_keeps_both_tags()
     {
-        var uploaded = UploadedFileFactory.Create(RemoteIds.Of("file-1"), null, null, 2_048);
+        var uploaded = UploadedFileFactory.Create(RemoteIds.Of("file-1"), RemoteIds.CTag("ctag"), RemoteIds.ETag("etag"), 2_048);
 
-        (uploaded.CTag, uploaded.ETag, uploaded.Size).ShouldBe((string.Empty, string.Empty, 2_048L));
+        (uploaded.CTag, uploaded.ETag, uploaded.Size).ShouldBe((RemoteIds.CTag("ctag"), RemoteIds.ETag("etag"), 2_048L));
     }
 
     [Fact]
     public void when_preconditions_are_created_then_they_keep_their_tags()
     {
-        var replace = UploadPreconditionFactory.CreateMustMatch("ctag-1");
-        var remove = RemovePreconditionFactory.CreateMustMatch("etag-1");
+        var replace = UploadPreconditionFactory.CreateMustMatch(RemoteIds.CTag("ctag-1"));
+        var remove = RemovePreconditionFactory.CreateMustMatch(RemoteIds.ETag("etag-1"));
 
-        (UploadPreconditionFactory.CreateMustNotExist() is UploadPrecondition.MustNotExist, replace.ShouldBeOfType<UploadPrecondition.MustMatch>().CTag, remove.ShouldBeOfType<RemovePrecondition.MustMatch>().ETag).ShouldBe((true, "ctag-1", "etag-1"));
+        (UploadPreconditionFactory.CreateMustNotExist() is UploadPrecondition.MustNotExist, replace.Match(found => found.ShouldBeOfType<UploadPrecondition.MustMatch>().CTag.Value, error => error.Message), remove.Match(found => found.ShouldBeOfType<RemovePrecondition.MustMatch>().ETag.Value, error => error.Message)).ShouldBe((true, "ctag-1", "etag-1"));
+    }
+
+    [Fact]
+    public void when_a_precondition_tag_is_blank_then_the_precondition_is_rejected()
+    {
+        ContentTag blankContent = "  ";
+        EntityTag blankEntity = default;
+
+        (UploadPreconditionFactory.CreateMustMatch(blankContent).Match(_ => "created", _ => "rejected"), RemovePreconditionFactory.CreateMustMatch(blankEntity).Match(_ => "created", _ => "rejected")).ShouldBe(("rejected", "rejected"));
     }
 
     [Fact]

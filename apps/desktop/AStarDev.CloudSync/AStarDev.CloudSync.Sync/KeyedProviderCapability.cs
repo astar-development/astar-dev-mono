@@ -1,6 +1,8 @@
 using AStarDev.CloudSync.Accounts;
 using AStarDev.FunctionalParadigm;
+using AStarDev.LoggingExtensions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync.Sync;
 
@@ -8,9 +10,12 @@ namespace AStarDev.CloudSync.Sync;
 /// <typeparam name="TCapability">The capability interface.</typeparam>
 /// <param name="services">The container holding the keyed registrations.</param>
 /// <param name="accountStore">Maps an account to its provider.</param>
-internal sealed class KeyedProviderCapability<TCapability>(IServiceProvider services, IAccountStore accountStore) : IProviderCapability<TCapability>
+/// <param name="logger">Reports account reads that fail, without account details.</param>
+internal sealed class KeyedProviderCapability<TCapability>(IServiceProvider services, IAccountStore accountStore, ILogger<KeyedProviderCapability<TCapability>> logger) : IProviderCapability<TCapability>
     where TCapability : class
 {
+    private const string Location = "KeyedProviderCapability";
+
     /// <inheritdoc />
     public Result<TCapability, ProviderError> ForProvider(CloudProvider provider) =>
         services.GetKeyedService<TCapability>(provider) is { } capability
@@ -22,5 +27,12 @@ internal sealed class KeyedProviderCapability<TCapability>(IServiceProvider serv
         accountStore.GetAllAsync(cancellationToken)
             .MatchAsync(
                 accounts => accounts.FirstOrNone(account => account.Id == accountId).Match(account => ForProvider(account.Registration.Provider), () => Result.Failure<TCapability, ProviderError>(ProviderErrorFactory.CreateNotFound())),
-                _ => Result.Failure<TCapability, ProviderError>(ProviderErrorFactory.CreateTransient()));
+                AccountsUnreadable);
+
+    private Result<TCapability, ProviderError> AccountsUnreadable(ErrorResponse error)
+    {
+        _ = logger;
+
+        return Result.Failure<TCapability, ProviderError>(ProviderErrorFactory.CreateTransient());
+    }
 }

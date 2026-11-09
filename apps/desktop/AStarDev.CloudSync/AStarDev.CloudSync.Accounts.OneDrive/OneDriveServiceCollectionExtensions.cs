@@ -13,7 +13,7 @@ namespace AStarDev.CloudSync.Accounts.OneDrive;
 /// <summary>Registers the personal Microsoft account sign-in, token cache and OneDrive drive lookup.</summary>
 public static class OneDriveServiceCollectionExtensions
 {
-    /// <summary>Registers one MSAL public client application, the token cache storage, the Graph drive lookup, the <see cref="IAccountAdder"/> and the <see cref="IPlaintextCacheConsentSettings"/>. The app must also register an <see cref="ITokenCacheConsent"/>.</summary>
+    /// <summary>Registers one MSAL public client application, the token cache storage, the Graph drive lookup, the <see cref="IAccountAdder"/> (keyed by the OneDrive <c>CloudProvider</c>; resolve it through <c>IProviderCapability&lt;IAccountAdder&gt;</c>), the <see cref="IAccessTokenSource"/> and the <see cref="IPlaintextCacheConsentSettings"/>. The app must also register an <see cref="ITokenCacheConsent"/>.</summary>
     /// <param name="services">The service collection to add to.</param>
     /// <param name="configuration">The configuration holding the <see cref="MicrosoftAccountOptions.SectionName"/> section.</param>
     /// <param name="tokenCacheFolder">Gives the folder that holds the token cache files.</param>

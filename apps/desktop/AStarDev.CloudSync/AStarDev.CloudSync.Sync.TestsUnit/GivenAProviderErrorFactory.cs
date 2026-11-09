@@ -11,6 +11,7 @@ public class GivenAProviderErrorFactory
         {
             ProviderErrorFactory.CreateAuthenticationRequired(),
             ProviderErrorFactory.CreateNotFound(),
+            ProviderErrorFactory.CreateAccessDenied(),
             ProviderErrorFactory.CreateNameConflict(),
             ProviderErrorFactory.CreateTransient(),
             ProviderErrorFactory.CreateUnexpected(),
@@ -20,7 +21,7 @@ public class GivenAProviderErrorFactory
             ProviderErrorFactory.CreateFileTooLarge(),
         };
 
-        errors.Select(error => error.GetType().Name).ShouldBe(["AuthenticationRequired", "NotFound", "NameConflict", "Transient", "Unexpected", "Unsupported", "PreconditionFailed", "QuotaExceeded", "FileTooLarge"]);
+        errors.Select(error => error.GetType().Name).ShouldBe(["AuthenticationRequired", "NotFound", "AccessDenied", "NameConflict", "Transient", "Unexpected", "Unsupported", "PreconditionFailed", "QuotaExceeded", "FileTooLarge"]);
     }
 
     [Fact]
@@ -29,6 +30,14 @@ public class GivenAProviderErrorFactory
         var error = ProviderErrorFactory.CreateThrottled(Option.Some(TimeSpan.FromSeconds(30)));
 
         error.ShouldBeOfType<ProviderError.Throttled>().RetryAfter.ShouldBe(Option.Some(TimeSpan.FromSeconds(30)));
+    }
+
+    [Fact]
+    public void when_a_throttle_has_a_negative_retry_after_then_it_is_zero()
+    {
+        var error = ProviderErrorFactory.CreateThrottled(Option.Some(TimeSpan.FromSeconds(-5)));
+
+        error.ShouldBeOfType<ProviderError.Throttled>().RetryAfter.ShouldBe(Option.Some(TimeSpan.Zero));
     }
 
     [Fact]

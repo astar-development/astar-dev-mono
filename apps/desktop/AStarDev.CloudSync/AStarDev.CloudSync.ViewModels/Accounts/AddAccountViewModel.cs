@@ -153,7 +153,7 @@ public sealed class AddAccountViewModel : LocalizedObservableObject, IAddAccount
 
     private Task<AccountAddOutcome> AdderUnavailable(ProviderError error)
     {
-        AddAccountDialogLog.AttemptFailedUnexpectedly(logger, error.GetType().Name);
+        AddAccountDialogLog.AttemptFailedUnexpectedly(logger, error.GetType().FullName ?? error.GetType().Name);
 
         return Task.FromResult(AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreateAuthRejected()));
     }

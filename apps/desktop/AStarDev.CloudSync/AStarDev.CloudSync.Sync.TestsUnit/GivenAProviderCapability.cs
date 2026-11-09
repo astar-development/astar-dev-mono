@@ -1,7 +1,9 @@
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.TestHelpers.Accounts;
 using AStarDev.FunctionalParadigm;
+using AStarDev.CloudSync.TestHelpers.Common;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync.Sync.TestsUnit;
 
@@ -60,6 +62,40 @@ public sealed class GivenAProviderCapability : IDisposable
     }
 
     [Fact]
+    public void when_no_provider_is_given_then_the_capability_is_unsupported()
+    {
+        var browser = Resolver<IRemoteFolderBrowser>().ForProvider(null!);
+
+        browser.Match(found => (object)found, error => error).ShouldBe(ProviderErrorFactory.CreateUnsupported());
+    }
+
+    [Fact]
+    public void when_the_container_does_not_support_keyed_services_then_the_capability_is_unsupported()
+    {
+        var resolver = ResolverOver(new PlainServiceProvider());
+
+        var browser = resolver.ForProvider(CloudProviderFactory.CreateOneDrive());
+
+        browser.Match(found => (object)found, error => error).ShouldBe(ProviderErrorFactory.CreateUnsupported());
+    }
+
+    [Fact]
+    public async Task when_the_accounts_cannot_be_read_then_a_warning_is_logged_without_details()
+    {
+        var logger = new RecordingLoggerProvider();
+        using var failing = new ServiceCollection()
+            .AddLogging(logging => logging.ClearProviders().AddProvider(logger))
+            .AddSingleton<IAccountStore>(new FakeAccountStore { All = () => new ErrorResponse("Database locked for personal@example.com") })
+            .AddCloudSync()
+            .BuildServiceProvider();
+
+        _ = await failing.GetRequiredService<IProviderCapability<IRemoteFolderBrowser>>().ForAccountAsync(AccountIdFactory.Create(Guid.NewGuid()), CancellationToken);
+
+        logger.Logger.Entries.ShouldContain(entry => entry.Level == LogLevel.Warning);
+        logger.Logger.Messages.ShouldAllBe(message => !message.Contains("personal@example.com", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public async Task when_many_callers_resolve_at_once_then_each_gets_the_same_capability()
     {
         var accountId = await AddAccountAsync();
@@ -72,10 +108,20 @@ public sealed class GivenAProviderCapability : IDisposable
     public void Dispose() => provider.Dispose();
 
     private ServiceProvider Build(IAccountStore store) => new ServiceCollection()
+        .AddLogging()
         .AddSingleton(store)
         .AddKeyedSingleton<IRemoteFolderBrowser>(CloudProviderFactory.CreateOneDrive(), oneDriveBrowser)
         .AddCloudSync()
         .BuildServiceProvider();
+
+    private static IProviderCapability<IRemoteFolderBrowser> ResolverOver(IServiceProvider plain)
+    {
+        using var real = new ServiceCollection().AddLogging().AddSingleton<IAccountStore>(new InMemoryAccountStore()).AddCloudSync().BuildServiceProvider();
+        var descriptor = new ServiceCollection().AddLogging().AddSingleton<IAccountStore>(new InMemoryAccountStore()).AddCloudSync().Single(service => service.ServiceType == typeof(IProviderCapability<>));
+        var closed = descriptor.ImplementationType!.MakeGenericType(typeof(IRemoteFolderBrowser));
+
+        return (IProviderCapability<IRemoteFolderBrowser>)ActivatorUtilities.CreateInstance(real, closed, plain);
+    }
 
     private IProviderCapability<T> Resolver<T>()
         where T : class => provider.GetRequiredService<IProviderCapability<T>>();

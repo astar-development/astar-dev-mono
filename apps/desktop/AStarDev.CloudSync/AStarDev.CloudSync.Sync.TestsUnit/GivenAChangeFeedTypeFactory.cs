@@ -9,36 +9,36 @@ public class GivenAChangeFeedTypeFactory
     [Fact]
     public void when_a_file_snapshot_is_created_then_its_name_is_trimmed_and_tags_kept()
     {
-        var kind = RemoteItemKindFactory.CreateFile(2_048, Option.Some("hash=="), "ctag-1");
+        var kind = RemoteItemKindFactory.CreateFile(2_048, Option.Some(RemoteIds.Hash("hash==")), RemoteIds.CTag("ctag-1"));
 
-        var snapshot = RemoteItemSnapshotFactory.Create(RemoteIds.Of("file-1"), Option.Some(RemoteIds.Of("folder-1")), " Report.docx ", kind, Modified, "etag-1");
+        var snapshot = RemoteItemSnapshotFactory.Create(RemoteIds.Of("file-1"), Option.Some(RemoteIds.Of("folder-1")), " Report.docx ", kind, Modified, RemoteIds.ETag("etag-1"));
 
-        (snapshot.Name, snapshot.Kind, snapshot.ETag, snapshot.LastModified, snapshot.ParentId).ShouldBe(("Report.docx", kind, "etag-1", Modified, Option.Some(RemoteIds.Of("folder-1"))));
+        (snapshot.Name, snapshot.Kind, snapshot.ETag, snapshot.LastModified, snapshot.ParentId).ShouldBe(("Report.docx", kind, RemoteIds.ETag("etag-1"), Modified, Option.Some(RemoteIds.Of("folder-1"))));
     }
 
     [Fact]
-    public void when_a_snapshot_has_no_name_or_etag_then_they_are_empty()
+    public void when_a_snapshot_has_no_name_then_the_name_is_empty()
     {
-        var snapshot = RemoteItemSnapshotFactory.Create(RemoteIds.Of("root"), Option.None<RemoteItemId>(), null, RemoteItemKindFactory.CreateFolder(), Modified, null);
+        var snapshot = RemoteItemSnapshotFactory.Create(RemoteIds.Of("root"), Option.None<RemoteItemId>(), null, RemoteItemKindFactory.CreateFolder(), Modified, RemoteIds.ETag("etag"));
 
-        (snapshot.Name, snapshot.ETag).ShouldBe((string.Empty, string.Empty));
+        snapshot.Name.ShouldBeEmpty();
     }
 
     [Fact]
     public void when_a_snapshot_is_printed_then_its_name_is_redacted()
     {
-        var snapshot = RemoteItemSnapshotFactory.Create(RemoteIds.Of("file-1"), Option.None<RemoteItemId>(), "jane.doe@example.com.pdf", RemoteItemKindFactory.CreateDeleted(), Modified, "etag");
+        var snapshot = RemoteItemSnapshotFactory.Create(RemoteIds.Of("file-1"), Option.None<RemoteItemId>(), "jane.doe@example.com.pdf", RemoteItemKindFactory.CreateDeleted(), Modified, RemoteIds.ETag("etag"));
 
         snapshot.ToString().ShouldNotContain("jane.doe");
     }
 
     [Fact]
-    public void when_a_file_kind_has_a_negative_size_or_no_ctag_then_they_are_normalised()
+    public void when_a_file_kind_has_a_negative_size_then_the_size_is_zero()
     {
-        var kind = RemoteItemKindFactory.CreateFile(-10, Option.None<string>(), null);
+        var kind = RemoteItemKindFactory.CreateFile(-10, Option.None<ContentHash>(), RemoteIds.CTag("ctag"));
 
         var file = kind.ShouldBeOfType<RemoteItemKind.File>();
-        (file.Size, file.CTag, file.Hash).ShouldBe((0L, string.Empty, Option.None<string>()));
+        (file.Size, file.CTag, file.Hash).ShouldBe((0L, RemoteIds.CTag("ctag"), Option.None<ContentHash>()));
     }
 
     [Fact]
@@ -52,7 +52,7 @@ public class GivenAChangeFeedTypeFactory
     [Fact]
     public void when_a_page_is_created_then_it_copies_the_items()
     {
-        var items = new List<RemoteItemSnapshot> { RemoteItemSnapshotFactory.Create(RemoteIds.Of("a"), Option.None<RemoteItemId>(), "a", RemoteItemKindFactory.CreateFolder(), Modified, "e") };
+        var items = new List<RemoteItemSnapshot> { Folder("a") };
 
         var page = RemoteChangePageFactory.Create(items, PageContinuationFactory.CreateMorePages(RemoteIds.Cursor("next")));
         items.Clear();
@@ -63,11 +63,29 @@ public class GivenAChangeFeedTypeFactory
     [Fact]
     public void when_each_change_is_created_then_it_carries_its_item()
     {
-        var item = RemoteItemSnapshotFactory.Create(RemoteIds.Of("a"), Option.None<RemoteItemId>(), "a", RemoteItemKindFactory.CreateFolder(), Modified, "e");
+        var item = Folder("a");
 
-        var changes = new[] { RemoteChangeFactory.CreateAdded(item), RemoteChangeFactory.CreateModified(item), RemoteChangeFactory.CreateMoved(item), RemoteChangeFactory.CreateDeleted(RemoteIds.Of("a")) };
+        var changes = new[] { RemoteChangeFactory.CreateAdded(item), RemoteChangeFactory.CreateModified(item), RemoteChangeFactory.CreateMoved(item, Option.None<RemoteItemId>(), "old"), RemoteChangeFactory.CreateDeleted(RemoteIds.Of("a")) };
 
         changes.Select(change => change.GetType().Name).ShouldBe(["Added", "Modified", "Moved", "Deleted"]);
         changes[3].ShouldBeOfType<RemoteChange.Deleted>().Id.ShouldBe(RemoteIds.Of("a"));
     }
+
+    [Fact]
+    public void when_a_move_is_created_then_it_keeps_the_old_parent_and_trimmed_old_name()
+    {
+        var moved = RemoteChangeFactory.CreateMoved(Folder("a"), Option.Some(RemoteIds.Of("old-parent")), "  Old Name ").ShouldBeOfType<RemoteChange.Moved>();
+
+        (moved.OldParentId, moved.OldName).ShouldBe((Option.Some(RemoteIds.Of("old-parent")), "Old Name"));
+    }
+
+    [Fact]
+    public void when_a_move_has_no_old_name_then_it_is_empty_and_printing_it_reveals_no_name()
+    {
+        var moved = RemoteChangeFactory.CreateMoved(Folder("a"), Option.None<RemoteItemId>(), null);
+
+        (moved.ShouldBeOfType<RemoteChange.Moved>().OldName, RemoteChangeFactory.CreateMoved(Folder("a"), Option.None<RemoteItemId>(), "Jane Tax").ToString().Contains("Jane", StringComparison.Ordinal)).ShouldBe((string.Empty, false));
+    }
+
+    private static RemoteItemSnapshot Folder(string id) => RemoteItemSnapshotFactory.Create(RemoteIds.Of(id), Option.None<RemoteItemId>(), id, RemoteItemKindFactory.CreateFolder(), Modified, RemoteIds.ETag("e"));
 }

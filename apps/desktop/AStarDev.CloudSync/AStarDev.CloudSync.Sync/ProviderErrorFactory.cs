@@ -8,11 +8,14 @@ public static class ProviderErrorFactory
     /// <summary>Creates the <see cref="ProviderError.AuthenticationRequired"/> case.</summary>
     public static ProviderError CreateAuthenticationRequired() => new ProviderError.AuthenticationRequired();
 
-    /// <summary>Creates the <see cref="ProviderError.Throttled"/> case.</summary>
-    public static ProviderError CreateThrottled(Option<TimeSpan> retryAfter) => new ProviderError.Throttled(retryAfter);
+    /// <summary>Creates the <see cref="ProviderError.Throttled"/> case. A negative Retry-After becomes zero.</summary>
+    public static ProviderError CreateThrottled(Option<TimeSpan> retryAfter) => throw new NotImplementedException($"{retryAfter}");
 
     /// <summary>Creates the <see cref="ProviderError.NotFound"/> case.</summary>
     public static ProviderError CreateNotFound() => new ProviderError.NotFound();
+
+    /// <summary>Creates the <see cref="ProviderError.AccessDenied"/> case.</summary>
+    public static ProviderError CreateAccessDenied() => new ProviderError.AccessDenied();
 
     /// <summary>Creates the <see cref="ProviderError.NameConflict"/> case.</summary>
     public static ProviderError CreateNameConflict() => new ProviderError.NameConflict();

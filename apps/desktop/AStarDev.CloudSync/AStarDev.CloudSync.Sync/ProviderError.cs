@@ -37,6 +37,14 @@ public abstract record ProviderError
         }
     }
 
+    /// <summary>The provider refused access to the item (403).</summary>
+    public sealed record AccessDenied : ProviderError
+    {
+        internal AccessDenied()
+        {
+        }
+    }
+
     /// <summary>An item with the same name already exists.</summary>
     public sealed record NameConflict : ProviderError
     {

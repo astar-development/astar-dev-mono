@@ -10,12 +10,12 @@ public abstract record RemovePrecondition
     /// <summary>The remote item must still have this entity tag.</summary>
     public sealed record MustMatch : RemovePrecondition
     {
-        internal MustMatch(string eTag)
+        internal MustMatch(EntityTag eTag)
         {
             ETag = eTag;
         }
 
         /// <summary>The entity tag last seen.</summary>
-        public string ETag { get; }
+        public EntityTag ETag { get; }
     }
 }

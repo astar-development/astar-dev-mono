@@ -5,7 +5,7 @@ namespace AStarDev.CloudSync.Sync;
 /// <summary>What the provider reported about a downloaded file (#1400).</summary>
 public sealed record DownloadedFile
 {
-    internal DownloadedFile(RemoteItemId id, string cTag, long size, Option<string> hash)
+    internal DownloadedFile(RemoteItemId id, ContentTag cTag, long size, Option<ContentHash> hash)
     {
         Id = id;
         CTag = cTag;
@@ -17,11 +17,11 @@ public sealed record DownloadedFile
     public RemoteItemId Id { get; }
 
     /// <summary>The content tag of the downloaded version.</summary>
-    public string CTag { get; }
+    public ContentTag CTag { get; }
 
     /// <summary>The size in bytes.</summary>
     public long Size { get; }
 
     /// <summary>The provider's content hash, when it has one.</summary>
-    public Option<string> Hash { get; }
+    public Option<ContentHash> Hash { get; }
 }

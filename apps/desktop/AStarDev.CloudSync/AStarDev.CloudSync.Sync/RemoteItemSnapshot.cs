@@ -5,7 +5,7 @@ namespace AStarDev.CloudSync.Sync;
 /// <summary>One item as the change feed reported it (#1398).</summary>
 public sealed record RemoteItemSnapshot
 {
-    internal RemoteItemSnapshot(RemoteItemId id, Option<RemoteItemId> parentId, string name, RemoteItemKind kind, DateTimeOffset lastModified, string eTag)
+    internal RemoteItemSnapshot(RemoteItemId id, Option<RemoteItemId> parentId, string name, RemoteItemKind kind, DateTimeOffset lastModified, EntityTag eTag)
     {
         Id = id;
         ParentId = parentId;
@@ -31,7 +31,7 @@ public sealed record RemoteItemSnapshot
     public DateTimeOffset LastModified { get; }
 
     /// <summary>The entity tag; it changes on any change, metadata included.</summary>
-    public string ETag { get; }
+    public EntityTag ETag { get; }
 
     /// <summary>Returns a redacted form, so names never reach logs by accident.</summary>
     public override string ToString() => "RemoteItemSnapshot(redacted)";

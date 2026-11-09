@@ -18,12 +18,12 @@ public abstract record UploadPrecondition
     /// <summary>The remote file must still have this content tag (a replace).</summary>
     public sealed record MustMatch : UploadPrecondition
     {
-        internal MustMatch(string cTag)
+        internal MustMatch(ContentTag cTag)
         {
             CTag = cTag;
         }
 
         /// <summary>The content tag last seen.</summary>
-        public string CTag { get; }
+        public ContentTag CTag { get; }
     }
 }
