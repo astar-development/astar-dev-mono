@@ -215,6 +215,15 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
+    public void when_application_services_are_added_then_the_folder_picker_is_the_avalonia_one()
+    {
+        var services = CreateServices();
+
+        var descriptor = services.Single(service => service.ServiceType == typeof(AStarDev.CloudSync.ViewModels.Common.IFolderPicker));
+        descriptor.ImplementationType.ShouldBe(typeof(AvaloniaFolderPicker));
+    }
+
+    [Fact]
     public void when_application_services_are_added_then_the_sync_overview_view_model_resolves()
     {
         using var provider = CreateServices().BuildServiceProvider();

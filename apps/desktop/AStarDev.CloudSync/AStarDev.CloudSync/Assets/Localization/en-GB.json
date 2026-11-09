@@ -181,6 +181,7 @@
   "AccountDialog.SyncFolder.None": "No sync folder has been set yet.",
   "AccountDialog.SyncFolder.ReadFailed": "The sync folder could not be read.",
   "AccountDialog.SyncFolder.Change": "Change…",
+  "AccountDialog.SyncFolder.PickerTitle": "Choose a sync folder",
   "AccountDialog.SyncFolder.Syncing": "This account is syncing. You can change its sync folder when the sync has finished.",
   "AccountDialog.SyncFolder.Working": "Changing the sync folder for {0}…",
   "AccountDialog.SyncFolder.Confirm.Prompt": "{0} has already synced into its current folder. The files there are left where they are, and {0} syncs again into the new folder.",
