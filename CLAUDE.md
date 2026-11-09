@@ -103,6 +103,7 @@ Check BEFORE opening a PR (run `/preflight`):
 - `git status` before commit; include ALL related pending changes (wiki/, KB, docs).
 - Never stage file-mode-only changes — check `git diff --summary` for `mode change` (enforced by `.claude/hooks/block-mode-only-commit.sh`).
 - Always push after commit.
+- Before raising a PR, enabling auto-merge, and again before each push to an open PR: `git fetch origin main && git merge origin/main`. Resolve conflicts locally, rebuild, retest. Never rebase + force-push. After pushing, confirm `gh pr view <pr> --json mergeable` is not `CONFLICTING`.
 - Force-push is denied — fix mistakes with revert or follow-up commit.
 - GPG signing fails → check `gpg --list-secret-keys` and gpg-agent before retrying. Never disable signing.
 
