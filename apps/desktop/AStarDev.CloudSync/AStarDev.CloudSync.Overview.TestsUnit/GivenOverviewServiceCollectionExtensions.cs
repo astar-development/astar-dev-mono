@@ -1,5 +1,6 @@
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Overview;
+using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.TestHelpers.Accounts;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,6 +14,7 @@ public class GivenOverviewServiceCollectionExtensions
         using var provider = new ServiceCollection()
             .AddSingleton<ICloudSyncDatabase>(new FakeCloudSyncDatabase())
             .AddSingleton<IAccountStore>(new FakeAccountStore())
+            .AddSingleton<IAccountSignInStates>(new FakeAccountSignInStates())
             .AddSyncOverview()
             .BuildServiceProvider();
 

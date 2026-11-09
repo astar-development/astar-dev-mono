@@ -5,6 +5,9 @@ namespace AStarDev.CloudSync.Sync;
 /// <summary>The in-memory sign-in state of every account (#1393 decision 2: never persisted).</summary>
 public interface IAccountSignInStates
 {
+    /// <summary>Raised after <see cref="Record"/> or <see cref="Forget"/>, on the caller's thread, so the UI can reload.</summary>
+    event EventHandler? Changed;
+
     /// <summary>The account's state; <see cref="AccountSignInState.SignedIn"/> until something says otherwise.</summary>
     /// <param name="accountId">The account.</param>
     AccountSignInState StateOf(AccountId accountId);

@@ -156,5 +156,22 @@
   "TokenCacheConsent.Title": "Secure storage is unavailable",
   "TokenCacheConsent.Message": "Your system keyring could not be used to protect your sign-in. CloudSync can keep the sign-in in an unencrypted file in its settings folder instead. Anyone who can read your files could use it to reach your OneDrive. Keep it in that file?",
   "TokenCacheConsent.Agree": "Keep it in a file",
-  "TokenCacheConsent.Decline": "Don't add the account"
+  "TokenCacheConsent.Decline": "Don't add the account",
+  "Status.SignInRequired": "Sign-in required",
+  "Account.SignIn": "Sign in",
+  "Account.Remove": "Remove",
+  "AccountDialog.Remove.Title": "Remove account",
+  "AccountDialog.SignIn.Title": "Sign in",
+  "AccountDialog.Remove.Prompt": "Remove {0} ({1}) from CloudSync? Its sign-in is removed from this computer. Your local files are kept.",
+  "AccountDialog.Remove.Confirm": "Remove",
+  "AccountDialog.Cancel": "Cancel",
+  "AccountDialog.Close": "Close",
+  "AccountDialog.Removing": "Removing {0}…",
+  "AccountDialog.SigningIn": "Signing in to {0}. Finish in your browser.",
+  "AccountDialog.Failure.SyncStillRunning": "A sync for this account is still running. Try again in a moment.",
+  "AccountDialog.Remove.Failure.NotFound": "That account has already been removed.",
+  "AccountDialog.Remove.Failure.Provider": "The account could not be signed out. Nothing was removed. Try again.",
+  "AccountDialog.Remove.Failure.Store": "The account could not be removed from CloudSync's data. Try again.",
+  "AccountDialog.SignIn.Failure.DifferentAccount": "You signed in with a different account. Sign in as {0} to keep this account.",
+  "AccountDialog.SignIn.Failure.Provider": "Sign-in failed. Try again."
 }

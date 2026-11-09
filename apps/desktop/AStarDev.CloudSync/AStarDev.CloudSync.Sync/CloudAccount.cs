@@ -15,7 +15,8 @@ public sealed record CloudAccount
         int folderCount,
         int fileCount,
         SyncStatus status,
-        Option<DateTimeOffset> lastSync)
+        Option<DateTimeOffset> lastSync,
+        AccountSignInState signIn)
     {
         Id = id;
         DisplayName = displayName;
@@ -26,7 +27,11 @@ public sealed record CloudAccount
         FileCount = fileCount;
         Status = status;
         LastSync = lastSync;
+        SignIn = signIn;
     }
+
+    /// <summary>Whether the account can get tokens without the user (#1393); composed in by the overview.</summary>
+    public AccountSignInState SignIn { get; }
 
     /// <summary>The account id.</summary>
     public AccountId Id { get; }

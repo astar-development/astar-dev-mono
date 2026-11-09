@@ -7,10 +7,22 @@ namespace AStarDev.CloudSync.ViewModels.Common;
 /// <summary>A sync status as shown in a status pill.</summary>
 /// <param name="status">The status.</param>
 /// <param name="localization">Supplies the status text.</param>
-public sealed class StatusViewModel(SyncStatus status, ILocalizationService localization) : LocalizedObservableObject(localization)
+public sealed class StatusViewModel(SyncStatus status, AccountSignInState signIn, ILocalizationService localization) : LocalizedObservableObject(localization)
 {
+    /// <summary>Shows a sync status for something with no sign-in of its own, such as a sync pair.</summary>
+    /// <param name="status">The sync status.</param>
+    /// <param name="localization">Supplies the text.</param>
+    public StatusViewModel(SyncStatus status, ILocalizationService localization) : this(status, AccountSignInStateFactory.CreateSignedIn(), localization)
+    {
+    }
+
+    /// <summary>Whether the account must sign in again before it can sync; this wins over the sync status.</summary>
+    public bool IsSignInRequired => signIn is null;
+
     /// <summary>The status text, e.g. "Syncing 25%" or "2 conflicts".</summary>
-    public string Text => status switch
+    public string Text => IsSignInRequired ? Localization.GetLocal("Status.SignInRequired") : SyncText;
+
+    private string SyncText => status switch
     {
         SyncStatus.Syncing syncing => Localization.GetLocal("Status.Syncing", syncing.PercentComplete),
         SyncStatus.HasConflicts { Count: 1 } => Localization.GetLocal("Status.Conflicts.One", 1),
@@ -20,10 +32,10 @@ public sealed class StatusViewModel(SyncStatus status, ILocalizationService loca
     };
 
     /// <summary>Whether syncing; selects the pill colour.</summary>
-    public bool IsSyncing => status is SyncStatus.Syncing;
+    public bool IsSyncing => !IsSignInRequired && status is SyncStatus.Syncing;
 
     /// <summary>Whether up to date; selects the pill colour.</summary>
-    public bool IsUpToDate => status is SyncStatus.UpToDate;
+    public bool IsUpToDate => !IsSignInRequired && status is SyncStatus.UpToDate;
 
     /// <summary>Whether there are conflicts; selects the pill colour.</summary>
     public bool HasConflicts => status is SyncStatus.HasConflicts;
