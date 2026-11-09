@@ -9,11 +9,11 @@ internal sealed class InMemoryAccountSignInStates : IAccountSignInStates
     private readonly ConcurrentDictionary<AccountId, AccountSignInState> states = new();
 
     /// <inheritdoc />
-    public AccountSignInState StateOf(AccountId accountId) => throw new NotImplementedException($"{accountId}{states}");
+    public AccountSignInState StateOf(AccountId accountId) => states.TryGetValue(accountId, out var state) ? state : AccountSignInStateFactory.CreateSignedIn();
 
     /// <inheritdoc />
-    public void Record(AccountId accountId, AccountSignInState state) => throw new NotImplementedException($"{accountId}{state}");
+    public void Record(AccountId accountId, AccountSignInState state) => states[accountId] = state;
 
     /// <inheritdoc />
-    public void Forget(AccountId accountId) => throw new NotImplementedException($"{accountId}");
+    public void Forget(AccountId accountId) => _ = states.TryRemove(accountId, out _);
 }

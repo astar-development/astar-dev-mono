@@ -9,7 +9,7 @@ namespace AStarDev.CloudSync.Accounts.OneDrive;
 internal sealed class MicrosoftSignInProbe(IAccessTokenSource tokens) : IAccountSignInProbe
 {
     /// <inheritdoc />
-    public Task<Option<AccountSignInState>> ProbeAsync(AccountId accountId, CancellationToken cancellationToken) => throw new NotImplementedException($"{tokens}{accountId}{cancellationToken}");
+    public async Task<Option<AccountSignInState>> ProbeAsync(AccountId accountId, CancellationToken cancellationToken) => ToState(await tokens.GetAccessTokenAsync(accountId, cancellationToken).ConfigureAwait(false));
 
     private static Option<AccountSignInState> ToState(AccessTokenOutcome outcome) => outcome switch
     {

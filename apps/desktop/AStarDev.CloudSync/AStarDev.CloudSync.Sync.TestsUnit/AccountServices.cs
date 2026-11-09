@@ -60,10 +60,11 @@ public sealed class AccountServices : IDisposable
 
     public async Task<T> AdvanceUntilAsync<T>(Task<T> running)
     {
-        for (var step = 0; step < 200 && !running.IsCompleted; step++)
+        var realTime = System.Diagnostics.Stopwatch.StartNew();
+        while (!running.IsCompleted && realTime.Elapsed < TimeSpan.FromSeconds(10))
         {
             Time.Advance(TimeSpan.FromMilliseconds(200));
-            await Task.Yield();
+            await Task.Delay(1);
         }
 
         return await running.WaitAsync(TimeSpan.FromSeconds(5));

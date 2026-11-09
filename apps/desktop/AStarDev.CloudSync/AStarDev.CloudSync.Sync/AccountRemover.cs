@@ -19,7 +19,12 @@ internal sealed class AccountRemover(IAccountStore accountStore, AccountLeaseWai
     /// <inheritdoc />
     public async Task<Result<Unit, AccountRemovalFailure>> RemoveAsync(AccountId accountId, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException($"{accountStore}{leases}{signOuts}{participants}{states}{logger}{accountId}{cancellationToken}");
+        using var scope = SyncLogScope.Begin(logger, accountId);
+        var outcome = await FindAsync(accountId, cancellationToken)
+            .BindAsync(_ => RemoveWithLeaseAsync(accountId, cancellationToken))
+            .ConfigureAwait(false);
+
+        return outcome.Match(Result.Success<Unit, AccountRemovalFailure>, Logged);
     }
 
     private Task<Result<StoredAccount, AccountRemovalFailure>> FindAsync(AccountId accountId, CancellationToken cancellationToken) =>

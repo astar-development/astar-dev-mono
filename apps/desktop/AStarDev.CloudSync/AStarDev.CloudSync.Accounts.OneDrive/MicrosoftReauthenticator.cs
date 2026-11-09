@@ -18,7 +18,10 @@ internal sealed class MicrosoftReauthenticator(TokenCacheInitialiser tokenCache,
 
     /// <inheritdoc />
     public Task<Result<Unit, ReauthFailure>> ReauthenticateAsync(AccountId accountId, CancellationToken cancellationToken) =>
-        throw new NotImplementedException($"{tokenCache}{accountStore}{msal}{logger}{accountId}{cancellationToken}");
+        accountStore.GetAllAsync(cancellationToken)
+            .MatchAsync(
+                accounts => accounts.FirstOrNone(account => account.Id == accountId).MatchAsync(account => SignInAgainAsync(account, accounts, cancellationToken), () => Task.FromResult(Failure(ReauthFailureFactory.CreateProvider(ProviderErrorFactory.CreateNotFound())))),
+                _ => Task.FromResult(Failure(ReauthFailureFactory.CreateProvider(ProviderErrorFactory.CreateTransient()))));
 
     private static Result<Unit, ReauthFailure> Failure(ReauthFailure failure) => Result.Failure<Unit, ReauthFailure>(failure);
 

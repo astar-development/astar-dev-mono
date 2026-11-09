@@ -12,7 +12,8 @@ internal sealed class SignInStateRefresher(IAccountStore accountStore, IProvider
     /// <inheritdoc />
     public async Task RefreshAllAsync(CancellationToken cancellationToken)
     {
-        throw new NotImplementedException($"{accountStore}{probes}{states}{cancellationToken}");
+        var accounts = await accountStore.GetAllAsync(cancellationToken).MatchAsync(found => found, _ => (IReadOnlyList<StoredAccount>)[]).ConfigureAwait(false);
+        await Task.WhenAll(accounts.Select(account => RefreshAsync(account.Id, cancellationToken))).ConfigureAwait(false);
     }
 
     private async Task RefreshAsync(AccountId accountId, CancellationToken cancellationToken)

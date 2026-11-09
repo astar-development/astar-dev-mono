@@ -16,7 +16,9 @@ internal sealed class AccountActions(IAccountRemover remover, AccountLeaseWaiter
     /// <inheritdoc />
     public async Task<Result<Unit, ReauthFailure>> ReauthenticateAsync(AccountId accountId, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException($"{leases}{reauthenticators}{states}{accountId}{cancellationToken}");
+        var lease = await leases.AcquireAsync(accountId, cancellationToken).ConfigureAwait(false);
+
+        return await lease.MatchAsync(held => ReauthenticateHoldingAsync(held, accountId, cancellationToken), () => Result.Failure<Unit, ReauthFailure>(ReauthFailureFactory.CreateSyncStillRunning())).ConfigureAwait(false);
     }
 
     private async Task<Result<Unit, ReauthFailure>> ReauthenticateHoldingAsync(SyncLease lease, AccountId accountId, CancellationToken cancellationToken)

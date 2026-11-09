@@ -30,11 +30,11 @@ public sealed class InMemoryAccountStore : IAccountStore
     {
         lock (gate)
         {
+            _ = accounts.RemoveAll(account => account.Id == accountId);
             
-            throw new NotImplementedException($"{accountId}{cancellationToken}");
         }
 
-        
+        return Task.FromResult(Result.Success<Unit, ErrorResponse>(Unit.Instance));
     }
 
     private Option<StoredAccount> Find(CloudProvider provider, ProviderAccountKey key) => accounts

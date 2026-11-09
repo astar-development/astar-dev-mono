@@ -16,7 +16,10 @@ internal sealed class MicrosoftSignOut(IAccountStore accountStore, IMsalClient m
 
     /// <inheritdoc />
     public Task<Result<Unit, ProviderError>> SignOutAsync(AccountId accountId, CancellationToken cancellationToken) =>
-        throw new NotImplementedException($"{accountStore}{msal}{logger}{accountId}{cancellationToken}");
+        accountStore.GetAllAsync(cancellationToken)
+            .MatchAsync(
+                accounts => accounts.FirstOrNone(account => account.Id == accountId).MatchAsync(account => RemoveTokensAsync(account.Registration.Key), () => Task.FromResult(Result.Success<Unit, ProviderError>(Unit.Instance))),
+                _ => Task.FromResult(Result.Failure<Unit, ProviderError>(ProviderErrorFactory.CreateTransient())));
 
     private Task<Result<Unit, ProviderError>> RemoveTokensAsync(ProviderAccountKey key) =>
         Try.RunAsync(() => UnitTask.RunAsync(() => msal.RemoveAccountAsync(key)), CancellationToken.None)
