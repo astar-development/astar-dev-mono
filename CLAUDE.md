@@ -87,3 +87,32 @@ Sync/download bugs: confirm full flow (Graph API → persistence → sync logic)
 - `c-sharp-qa` → tests; `c-sharp-dev` → C# features; `c-sharp-reviewer` → code review.
 - After any subagent: read every claimed file, re-run `dotnet test` yourself, verify diff.
 - Subagent drifts → take over directly, don't re-prompt.
+
+## Sonar Quality Gate
+
+Check BEFORE opening a PR (run `/preflight`):
+
+- No method/constructor with >7 parameters (S107) — parameter object or builder.
+- No nested ternaries (S3358) — if/else or switch expression.
+- New-code coverage >= 80% — boundary/edge tests for every new branch.
+- Auto-merge does not enforce the Sonar gate — verify coverage locally before enabling it.
+
+## Commits
+
+- `git status` before commit; include ALL related pending changes (wiki/, KB, docs).
+- Never stage file-mode-only changes — check `git diff --summary` for `mode change` (enforced by `.claude/hooks/block-mode-only-commit.sh`).
+- Always push after commit.
+- Force-push is denied — fix mistakes with revert or follow-up commit.
+- GPG signing fails → check `gpg --list-secret-keys` and gpg-agent before retrying. Never disable signing.
+
+## Working Style
+
+- User approves a proposal (e.g. new coding rule) → implement fully: edit rule file/CLAUDE.md, raise issue and PR. Approval means "do it", not "log it".
+- Simplify/refactor → keep existing paradigm (LINQ/functional stays LINQ/functional) unless asked.
+
+## Builds & Environment
+
+- Never clean-build the whole mono-repo. Build only affected projects with `dotnet build <proj>`.
+- VM work: label every command block **[HOST: Fedora terminal]** or **[GUEST: Windows VM]**. No `!`-prefixed host instructions.
+- AppImage: persistent paths use `$APPIMAGE`, never `/tmp/.mount_*`.
+- Fresh Fedora may lack gcc. Pin uv tools to prebuilt-wheel Python: `uv tool install --python 3.13 ...`.
