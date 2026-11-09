@@ -26,6 +26,7 @@ public sealed class OneDriveModule
             .AddSingleton<IHttpClientFactory>(fakes.HttpClientFactory)
             .AddSingleton<ITokenCacheConsent>(fakes.Consent)
             .AddSingleton<IAccountStore>(fakes.AccountStore)
+            .AddSingleton<IDefaultSyncRootAssigner>(fakes.SyncRoots)
             .AddSingleton(fakes.Time)
             .BuildServiceProvider();
     }

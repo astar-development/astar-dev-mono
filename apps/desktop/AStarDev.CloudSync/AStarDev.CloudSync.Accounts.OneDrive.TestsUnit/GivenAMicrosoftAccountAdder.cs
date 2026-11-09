@@ -1,5 +1,6 @@
 using System.Net;
 using AStarDev.CloudSync.Accounts;
+using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.TestHelpers.Accounts;
 using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.FunctionalParadigm;
@@ -15,6 +16,7 @@ public sealed class GivenAMicrosoftAccountAdder : IDisposable
     private FakeMsalClient msal = new();
     private FakeGraphHandler graph = new();
     private FakeAccountStore accountStore = new();
+    private FakeDefaultSyncRootAssigner syncRoots = new();
     private readonly ConsentFile consentFile = new();
 
     [Fact]
@@ -30,6 +32,48 @@ public sealed class GivenAMicrosoftAccountAdder : IDisposable
             registration => registration.DisplayName.ShouldBe(TestSignIns.DisplayName),
             registration => registration.DriveId.ShouldBe(TestSignIns.DriveId),
             registration => registration.Storage.ShouldBe(TestSignIns.Storage));
+    }
+
+    [Fact]
+    public async Task when_a_new_account_is_added_then_its_default_sync_root_is_assigned()
+    {
+        _ = await CreateModule().AddAsync(TestContext.Current.CancellationToken);
+
+        syncRoots.AssignedAccounts.ShouldBe([TestSignIns.AccountId]);
+    }
+
+    [Fact]
+    public async Task when_no_sync_root_can_be_assigned_then_the_add_fails_and_the_account_is_removed_again()
+    {
+        var removedAccounts = new List<AccountId>();
+        accountStore = new FakeAccountStore { Remove = accountId => { removedAccounts.Add(accountId); return Result.Success<Unit, ErrorResponse>(Unit.Instance); } };
+        syncRoots = new FakeDefaultSyncRootAssigner { Assign = () => Result.Failure<SyncRoot, SyncRootRejection>(SyncRootRejectionFactory.CreateUnavailable()) };
+
+        var outcome = await CreateModule().AddAsync(TestContext.Current.CancellationToken);
+
+        outcome.ShouldBe(AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreatePersistFailed()));
+        removedAccounts.ShouldBe([TestSignIns.AccountId]);
+        msal.RemovedKeys.Select(key => key.Value).ShouldBe([TestSignIns.AccountKey]);
+    }
+
+    [Fact]
+    public async Task when_the_account_was_already_added_then_no_sync_root_is_assigned()
+    {
+        accountStore = new FakeAccountStore { Save = (_, _) => Task.FromResult(AccountAddOutcomeFactory.CreateReAuthenticated(TestSignIns.AccountId)) };
+
+        _ = await CreateModule().AddAsync(TestContext.Current.CancellationToken);
+
+        syncRoots.AssignedAccounts.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_the_account_cannot_be_saved_then_no_sync_root_is_assigned()
+    {
+        accountStore = new FakeAccountStore { Save = (_, _) => Task.FromResult(AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreatePersistFailed())) };
+
+        _ = await CreateModule().AddAsync(TestContext.Current.CancellationToken);
+
+        syncRoots.AssignedAccounts.ShouldBeEmpty();
     }
 
     [Fact]
@@ -244,7 +288,7 @@ public sealed class GivenAMicrosoftAccountAdder : IDisposable
         logs.Logger.Messages.ShouldAllBe(message => !message.Contains(TestSignIns.AccountKey, StringComparison.OrdinalIgnoreCase));
     }
 
-    private OneDriveModule CreateModule() => new(new OneDriveFakes { Storage = storage, Consent = consent, Msal = msal, Graph = graph, AccountStore = accountStore, ConsentFile = consentFile, Logs = logs });
+    private OneDriveModule CreateModule() => new(new OneDriveFakes { Storage = storage, Consent = consent, Msal = msal, Graph = graph, AccountStore = accountStore, SyncRoots = syncRoots, ConsentFile = consentFile, Logs = logs });
 
     public void Dispose()
     {

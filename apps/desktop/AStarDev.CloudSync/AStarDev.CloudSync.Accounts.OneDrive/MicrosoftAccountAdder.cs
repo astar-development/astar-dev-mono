@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using AStarDev.CloudSync.Accounts;
+using AStarDev.CloudSync.Sync;
 using AStarDev.FunctionalParadigm;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
@@ -13,9 +14,10 @@ namespace AStarDev.CloudSync.Accounts.OneDrive;
 /// <param name="msal">Signs in and manages MSAL accounts.</param>
 /// <param name="driveLookup">Reads the drive after sign-in.</param>
 /// <param name="accountStore">Saves the account.</param>
+/// <param name="syncRoots">Gives a new account its default sync root.</param>
 /// <param name="timeProvider">Times each step for the attempt log.</param>
 /// <param name="logger">Logs every step of the attempt under one attempt id, without tokens, error messages or account details.</param>
-internal sealed class MicrosoftAccountAdder(TokenCacheInitialiser tokenCache, IMsalClient msal, IDriveLookup driveLookup, IAccountStore accountStore, TimeProvider timeProvider, ILogger<MicrosoftAccountAdder> logger) : IAccountAdder
+internal sealed class MicrosoftAccountAdder(TokenCacheInitialiser tokenCache, IMsalClient msal, IDriveLookup driveLookup, IAccountStore accountStore, IDefaultSyncRootAssigner syncRoots, TimeProvider timeProvider, ILogger<MicrosoftAccountAdder> logger) : IAccountAdder
 {
     private const string ProviderName = "OneDrive";
 
@@ -169,7 +171,21 @@ internal sealed class MicrosoftAccountAdder(TokenCacheInitialiser tokenCache, IM
         var durationMs = ElapsedMilliseconds(started);
         AccountAddLog.Persisted(logger, durationMs);
 
-        return Result.Success<AccountAddOutcome, AccountAddOutcome>(outcome);
+        return outcome is AccountAddOutcome.Added added
+            ? await AssignSyncRootAsync(added, registration, cancellationToken).ConfigureAwait(false)
+            : Result.Success<AccountAddOutcome, AccountAddOutcome>(outcome);
+    }
+
+    private Task<Result<AccountAddOutcome, AccountAddOutcome>> AssignSyncRootAsync(AccountAddOutcome.Added added, AccountRegistration registration, CancellationToken cancellationToken) =>
+        syncRoots.AssignAsync(added.AccountId, registration, cancellationToken)
+            .MatchAsync(_ => Task.FromResult(Result.Success<AccountAddOutcome, AccountAddOutcome>(added)), _ => RemoveUnassignedAccountAsync(added.AccountId));
+
+    private async Task<Result<AccountAddOutcome, AccountAddOutcome>> RemoveUnassignedAccountAsync(AccountId accountId)
+    {
+        AccountAddLog.SyncRootNotAssigned(logger);
+        _ = await accountStore.RemoveAsync(accountId, CancellationToken.None).ConfigureAwait(false);
+
+        return Result.Failure<AccountAddOutcome, AccountAddOutcome>(AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreatePersistFailed()));
     }
 
     private Task<Result<AccountAddOutcome, AccountAddOutcome>> RollBackNewAccountAsync(SignInAttempt attempt, AccountAddOutcome outcome) =>
