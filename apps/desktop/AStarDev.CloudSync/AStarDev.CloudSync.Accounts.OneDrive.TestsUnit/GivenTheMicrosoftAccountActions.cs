@@ -137,6 +137,18 @@ public sealed class GivenTheMicrosoftAccountActions : IDisposable
     }
 
     [Fact]
+    public async Task when_the_token_cache_cannot_be_connected_then_sign_out_is_transient_and_removes_nothing()
+    {
+        var accountId = await AddAsync(TestSignIns.AccountKey);
+        var msal = new FakeMsalClient();
+        var storage = new FakeMsalTokenCacheStorage { SecureStoreFails = true, PlaintextFileFails = true };
+
+        var result = await new OneDriveModule(new OneDriveFakes { Msal = msal, Storage = storage, AccountStore = accountStore, Logs = logs }).SignOut.SignOutAsync(accountId, CancellationToken);
+
+        (result.Match(_ => (object)"ok", error => error), msal.RemovedKeys.Count).ShouldBe((ProviderErrorFactory.CreateTransient(), 0));
+    }
+
+    [Fact]
     public async Task when_an_unknown_account_signs_out_then_it_succeeds_and_nothing_is_removed()
     {
         var msal = new FakeMsalClient();
@@ -150,8 +162,8 @@ public sealed class GivenTheMicrosoftAccountActions : IDisposable
     [InlineData("acquired", "SignedIn")]
     [InlineData("ui-required", "SignInRequired")]
     [InlineData("network", "none")]
-    [InlineData("no-cached-account", "SignInRequired")]
-    public async Task when_the_sign_in_is_probed_then_only_ui_required_or_a_missing_cached_account_needs_sign_in(string silent, string expected)
+    [InlineData("no-cached-account", "none")]
+    public async Task when_the_sign_in_is_probed_then_only_ui_required_needs_sign_in(string silent, string expected)
     {
         var accountId = await AddAsync(TestSignIns.AccountKey);
         var msal = new FakeMsalClient

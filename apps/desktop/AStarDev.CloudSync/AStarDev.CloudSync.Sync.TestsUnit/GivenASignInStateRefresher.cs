@@ -44,6 +44,7 @@ public sealed class GivenASignInStateRefresher : IDisposable
         await failing.Refresher.RefreshAllAsync(CancellationToken);
 
         failing.States.StateOf(AccountIdFactory.Create(Guid.NewGuid())).ShouldBe(AccountSignInStateFactory.CreateSignedIn());
+        failing.Logs.Logger.Entries.ShouldContain(entry => entry.Level == Microsoft.Extensions.Logging.LogLevel.Warning);
     }
 
     [Fact]

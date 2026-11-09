@@ -96,6 +96,14 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
+    public void when_application_services_are_added_then_the_account_actions_and_startup_sign_in_check_resolve()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        (provider.GetRequiredService<IAccountActions>().GetType().Assembly, provider.GetRequiredService<ISignInStateRefresher>().GetType().Assembly).ShouldBe((typeof(SyncServiceCollectionExtensions).Assembly, typeof(SyncServiceCollectionExtensions).Assembly));
+    }
+
+    [Fact]
     public void when_application_services_are_added_then_one_sync_lock_and_one_throttle_gate_are_shared()
     {
         using var provider = CreateServices().BuildServiceProvider();

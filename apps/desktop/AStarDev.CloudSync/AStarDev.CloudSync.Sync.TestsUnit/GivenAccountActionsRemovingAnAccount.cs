@@ -101,6 +101,40 @@ public sealed class GivenAccountActionsRemovingAnAccount : IDisposable
     }
 
     [Fact]
+    public async Task when_a_step_after_sign_out_fails_then_the_account_is_marked_as_needing_sign_in()
+    {
+        var accountId = await services.AddAsync(Personal, CancellationToken);
+        services.Sync.Outcome = Result.Failure<Unit, ErrorResponse>(new ErrorResponse("The sync tables are locked."));
+
+        _ = await services.Actions.RemoveAsync(accountId, CancellationToken);
+
+        services.States.StateOf(accountId).ShouldBe(AccountSignInStateFactory.CreateSignInRequired());
+    }
+
+    [Fact]
+    public async Task when_sign_out_fails_then_the_sign_in_state_is_unchanged()
+    {
+        var accountId = await services.AddAsync(Personal, CancellationToken);
+        services.SignOut.Outcome = Result.Failure<Unit, ProviderError>(ProviderErrorFactory.CreateTransient());
+
+        _ = await services.Actions.RemoveAsync(accountId, CancellationToken);
+
+        services.States.StateOf(accountId).ShouldBe(AccountSignInStateFactory.CreateSignedIn());
+    }
+
+    [Fact]
+    public async Task when_the_lock_is_drained_then_removal_reports_sync_still_running_without_waiting()
+    {
+        var accountId = await services.AddAsync(Personal, CancellationToken);
+        using var drain = await services.SyncLock.DrainAsync(CancellationToken);
+
+        var removing = services.Actions.RemoveAsync(accountId, CancellationToken);
+        var result = await removing.WaitAsync(TimeSpan.FromSeconds(5), CancellationToken);
+
+        result.Match(_ => (object)"removed", error => error).ShouldBe(AccountRemovalFailureFactory.CreateSyncStillRunning());
+    }
+
+    [Fact]
     public async Task when_the_accounts_cannot_be_read_then_the_removal_is_a_store_failure()
     {
         using var failing = new AccountServices(new TestHelpers.Accounts.FakeAccountStore { All = () => new ErrorResponse("Database locked.") });
