@@ -1,3 +1,4 @@
+using System.IO.Abstractions;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.FunctionalParadigm;
 
@@ -8,7 +9,8 @@ namespace AStarDev.CloudSync.Sync;
 /// <param name="leases">Holds the account while the sign-in window is open.</param>
 /// <param name="reauthenticators">Finds the account's provider sign-in.</param>
 /// <param name="states">Records a successful sign-in.</param>
-internal sealed class AccountActions(IAccountRemover remover, AccountLeaseWaiter leases, IProviderCapability<IAccountReauthenticator> reauthenticators, IAccountSignInStates states) : IAccountActions
+/// <param name="syncRoots">Saves a changed sync root.</param>
+internal sealed class AccountActions(IAccountRemover remover, AccountLeaseWaiter leases, IProviderCapability<IAccountReauthenticator> reauthenticators, IAccountSignInStates states, ISyncRootWriter syncRoots) : IAccountActions
 {
     /// <inheritdoc />
     public Task<Result<Unit, AccountRemovalFailure>> RemoveAsync(AccountId accountId, CancellationToken cancellationToken) => remover.RemoveAsync(accountId, cancellationToken);
@@ -19,6 +21,14 @@ internal sealed class AccountActions(IAccountRemover remover, AccountLeaseWaiter
         var lease = await leases.AcquireAsync(accountId, cancellationToken).ConfigureAwait(false);
 
         return await lease.MatchAsync(held => ReauthenticateHoldingAsync(held, accountId, cancellationToken), () => Result.Failure<Unit, ReauthFailure>(ReauthFailureFactory.CreateSyncStillRunning())).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public Task<Result<SyncRoot, SyncRootRejection>> ChangeSyncRootAsync(AccountId accountId, IDirectoryInfo candidate, CancellationToken cancellationToken)
+    {
+        _ = syncRoots;
+
+        return Task.FromResult(Result.Failure<SyncRoot, SyncRootRejection>(SyncRootRejectionFactory.CreateUnavailable()));
     }
 
     private async Task<Result<Unit, ReauthFailure>> ReauthenticateHoldingAsync(SyncLease lease, AccountId accountId, CancellationToken cancellationToken)

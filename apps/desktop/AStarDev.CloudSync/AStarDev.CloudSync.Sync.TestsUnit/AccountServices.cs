@@ -14,6 +14,7 @@ public sealed class AccountServices : IDisposable
     public AccountServices(IAccountStore? store = null)
     {
         Store = store ?? new InMemoryAccountStore();
+        SyncRoots = new InMemorySyncRootStore(new SyncRootPolicy());
         SignOut = new FakeProviderSignOut(Steps);
         Cache = new FakeRemovalParticipant(Steps, "token-cache");
         Sync = new FakeRemovalParticipant(Steps, "sync-data");
@@ -21,6 +22,7 @@ public sealed class AccountServices : IDisposable
             .AddLogging(logging => logging.ClearProviders().AddProvider(Logs))
             .AddSingleton<TimeProvider>(Time)
             .AddSingleton(Store)
+            .AddSingleton<ISyncRootWriter>(SyncRoots)
             .AddKeyedSingleton<IProviderSignOut>(CloudProviderFactory.CreateOneDrive(), SignOut)
             .AddKeyedSingleton<IAccountReauthenticator>(CloudProviderFactory.CreateOneDrive(), Reauthenticator)
             .AddKeyedSingleton<IAccountSignInProbe>(CloudProviderFactory.CreateOneDrive(), Probe)
@@ -31,6 +33,10 @@ public sealed class AccountServices : IDisposable
     }
 
     public List<string> Steps { get; } = [];
+
+    public InMemorySyncRootStore SyncRoots { get; }
+
+    public Testably.Abstractions.Testing.MockFileSystem FileSystem { get; } = new(options => options.SimulatingOperatingSystem(Testably.Abstractions.Testing.SimulationMode.Linux));
 
     public IAccountStore Store { get; }
 

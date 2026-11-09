@@ -54,6 +54,14 @@ public abstract record SyncRootRejection
         }
     }
 
+    /// <summary>A sync pass or another account action did not finish in time, so the root was not changed.</summary>
+    public sealed record SyncStillRunning : SyncRootRejection
+    {
+        internal SyncStillRunning()
+        {
+        }
+    }
+
     /// <summary>The folder is the user's home folder or a filesystem root, which an account must not sync into.</summary>
     public sealed record Reserved : SyncRootRejection
     {
