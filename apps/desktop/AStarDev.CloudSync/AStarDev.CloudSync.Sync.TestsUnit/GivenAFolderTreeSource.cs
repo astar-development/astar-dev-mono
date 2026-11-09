@@ -145,7 +145,8 @@ public class GivenAFolderTreeSource
 
         var result = await ListAsync(FolderTreePositionFactory.CreateFolder(Path("OnlyHere"), Option.None<RemoteItemId>()));
 
-        (remote.Parents.Count, Nodes(result).Select(node => node.Origin).ToList()).ShouldBe((0, [FolderOriginFactory.CreateLocalOnly()]));
+        remote.Parents.Count.ShouldBe(0);
+        Nodes(result).Select(node => node.Origin).ToList().ShouldBe([FolderOriginFactory.CreateLocalOnly()]);
     }
 
     [Fact]
