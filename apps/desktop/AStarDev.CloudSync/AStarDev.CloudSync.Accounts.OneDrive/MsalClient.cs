@@ -32,7 +32,7 @@ internal sealed class MsalClient(IPublicClientApplication application, IOptions<
     {
         var accounts = await application.GetAccountsAsync().ConfigureAwait(false);
 
-        foreach (var account in accounts.Where(account => string.Equals(account.HomeAccountId?.Identifier, key.Value, StringComparison.OrdinalIgnoreCase)))
+        foreach (var account in accounts.Where(account => string.Equals(account.HomeAccountId?.Identifier, key.Value, StringComparison.Ordinal)))
             await application.RemoveAsync(account).ConfigureAwait(false);
     }
 
@@ -40,7 +40,7 @@ internal sealed class MsalClient(IPublicClientApplication application, IOptions<
     public async Task<MicrosoftSignIn> ReauthenticateAsync(ProviderAccountKey key, string loginHint, CancellationToken cancellationToken)
     {
         var accounts = await application.GetAccountsAsync().ConfigureAwait(false);
-        var request = accounts.FirstOrNone(account => string.Equals(account.HomeAccountId?.Identifier, key.Value, StringComparison.OrdinalIgnoreCase))
+        var request = accounts.FirstOrNone(account => string.Equals(account.HomeAccountId?.Identifier, key.Value, StringComparison.Ordinal))
             .Match(account => application.AcquireTokenInteractive(options.Value.Scopes).WithAccount(account), () => application.AcquireTokenInteractive(options.Value.Scopes).WithLoginHint(loginHint));
         var result = await request.WithPrompt(Prompt.SelectAccount).WithUseEmbeddedWebView(false).ExecuteAsync(cancellationToken).ConfigureAwait(false);
 
@@ -51,7 +51,7 @@ internal sealed class MsalClient(IPublicClientApplication application, IOptions<
     public async Task<Option<string>> AcquireTokenSilentAsync(ProviderAccountKey key, CancellationToken cancellationToken)
     {
         var accounts = await application.GetAccountsAsync().ConfigureAwait(false);
-        var cached = accounts.FirstOrNone(account => string.Equals(account.HomeAccountId?.Identifier, key.Value, StringComparison.OrdinalIgnoreCase));
+        var cached = accounts.FirstOrNone(account => string.Equals(account.HomeAccountId?.Identifier, key.Value, StringComparison.Ordinal));
 
         return await cached.MatchAsync(
                 async account => Option.Some((await application.AcquireTokenSilent(options.Value.Scopes, account).ExecuteAsync(cancellationToken).ConfigureAwait(false)).AccessToken),

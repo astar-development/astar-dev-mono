@@ -31,7 +31,7 @@ internal sealed class MicrosoftReauthenticator(TokenCacheInitialiser tokenCache,
         if (!cacheConnected)
             return Failure(ReauthFailureFactory.CreateProvider(ProviderErrorFactory.CreateUnexpected()));
 
-        return await Try.RunAsync(() => msal.ReauthenticateAsync(account.Registration.Key, account.Registration.Email, cancellationToken), cancellationToken)
+        return await Try.RunAsync(async () => await msal.ReauthenticateAsync(await msal.ToCachedKeyAsync(account.Registration.Key).ConfigureAwait(false), account.Registration.Email, cancellationToken).ConfigureAwait(false), cancellationToken)
             .MatchAsync(signIn => CheckSameAccountAsync(account, signIn, storedAccounts), exception => Task.FromResult(SignInFailed(exception)))
             .Unwrap()
             .ConfigureAwait(false);

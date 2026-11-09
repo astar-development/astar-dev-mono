@@ -34,7 +34,7 @@ internal sealed class MicrosoftSignOut(TokenCacheInitialiser tokenCache, IAccoun
     }
 
     private Task<Result<Unit, ProviderError>> RemoveTokensAsync(ProviderAccountKey key) =>
-        Try.RunAsync(() => UnitTask.RunAsync(() => msal.RemoveAccountAsync(key)), CancellationToken.None)
+        Try.RunAsync(() => UnitTask.RunAsync(async () => await msal.RemoveAccountAsync(await msal.ToCachedKeyAsync(key).ConfigureAwait(false)).ConfigureAwait(false)), CancellationToken.None)
             .MatchAsync(Result.Success<Unit, ProviderError>, Failed);
 
     private Result<Unit, ProviderError> Failed(Exception exception)
