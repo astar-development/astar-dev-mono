@@ -27,6 +27,14 @@ public abstract record AccessTokenOutcome
         }
     }
 
+    /// <summary>The token cache holds no MSAL account for the stored account. This can follow a transient keyring failure (KB gotcha #374), so it never means "sign in again" on its own.</summary>
+    public sealed record AccountNotCached : AccessTokenOutcome
+    {
+        internal AccountNotCached()
+        {
+        }
+    }
+
     /// <summary>No stored account has the requested id.</summary>
     public sealed record UnknownAccount : AccessTokenOutcome
     {

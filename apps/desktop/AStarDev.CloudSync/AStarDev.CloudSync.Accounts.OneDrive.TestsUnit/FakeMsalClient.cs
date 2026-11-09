@@ -53,6 +53,10 @@ public sealed class FakeMsalClient : IMsalClient
         }
     }
 
+    public Func<ProviderAccountKey, string, CancellationToken, Task<MicrosoftSignIn>> Reauthenticate { get; init; } = (_, _, _) => Task.FromResult(TestSignIns.NewAccount);
+
+    public Task<MicrosoftSignIn> ReauthenticateAsync(ProviderAccountKey key, string loginHint, CancellationToken cancellationToken) => Reauthenticate(key, loginHint, cancellationToken);
+
     public Task<Option<string>> AcquireTokenSilentAsync(ProviderAccountKey key, CancellationToken cancellationToken)
     {
         lock (gate)

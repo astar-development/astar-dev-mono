@@ -9,6 +9,9 @@ public static class AccessTokenOutcomeFactory
     /// <summary>Creates a sign-in-required outcome.</summary>
     public static AccessTokenOutcome CreateSignInRequired() => new AccessTokenOutcome.SignInRequired();
 
+    /// <summary>Creates an account-not-cached outcome.</summary>
+    public static AccessTokenOutcome CreateAccountNotCached() => new AccessTokenOutcome.AccountNotCached();
+
     /// <summary>Creates an unknown-account outcome.</summary>
     public static AccessTokenOutcome CreateUnknownAccount() => new AccessTokenOutcome.UnknownAccount();
 

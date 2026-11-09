@@ -1,5 +1,6 @@
 using System.IO.Abstractions;
 using AStarDev.CloudSync.Accounts;
+using AStarDev.CloudSync.Sync;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -36,7 +37,10 @@ public static class OneDriveServiceCollectionExtensions
             .AddSingleton<IPlaintextCacheConsentSettings>(provider => provider.GetRequiredService<TokenCacheInitialiser>())
             .AddSingleton<IDriveLookup, GraphDriveLookup>()
             .AddKeyedSingleton<IAccountAdder, MicrosoftAccountAdder>(CloudProviderFactory.CreateOneDrive())
-            .AddSingleton<IAccessTokenSource, MsalAccessTokenSource>();
+            .AddSingleton<IAccessTokenSource, MsalAccessTokenSource>()
+            .AddKeyedSingleton<IAccountReauthenticator, MicrosoftReauthenticator>(CloudProviderFactory.CreateOneDrive())
+            .AddKeyedSingleton<IProviderSignOut, MicrosoftSignOut>(CloudProviderFactory.CreateOneDrive())
+            .AddKeyedSingleton<IAccountSignInProbe, MicrosoftSignInProbe>(CloudProviderFactory.CreateOneDrive());
     }
 
     private static IPublicClientApplication CreatePublicClientApplication(IServiceProvider provider)

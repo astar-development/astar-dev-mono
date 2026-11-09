@@ -21,4 +21,10 @@ public interface IAccountStore
     /// <remarks>The order of the accounts is not specified.</remarks>
     /// <param name="cancellationToken">Cancels the read.</param>
     Task<Result<IReadOnlyList<StoredAccount>, ErrorResponse>> GetAllAsync(CancellationToken cancellationToken);
+
+    /// <summary>Deletes the account. Deleting an account that does not exist succeeds, so a repeated removal is safe.</summary>
+    /// <param name="accountId">The account to delete.</param>
+    /// <param name="cancellationToken">Cancels the delete.</param>
+    /// <returns><see cref="Unit"/> once the account is gone, or the error that stopped the delete.</returns>
+    Task<Result<Unit, ErrorResponse>> RemoveAsync(AccountId accountId, CancellationToken cancellationToken);
 }

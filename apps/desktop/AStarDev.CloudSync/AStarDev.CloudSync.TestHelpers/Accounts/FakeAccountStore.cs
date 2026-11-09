@@ -34,4 +34,8 @@ public sealed class FakeAccountStore : IAccountStore
     public Func<Result<IReadOnlyList<StoredAccount>, ErrorResponse>> All { get; init; } = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([]);
 
     public Task<Result<IReadOnlyList<StoredAccount>, ErrorResponse>> GetAllAsync(CancellationToken cancellationToken) => Task.FromResult(All());
+
+    public Func<AccountId, Result<Unit, ErrorResponse>> Remove { get; init; } = _ => Result.Success<Unit, ErrorResponse>(Unit.Instance);
+
+    public Task<Result<Unit, ErrorResponse>> RemoveAsync(AccountId accountId, CancellationToken cancellationToken) => Task.FromResult(Remove(accountId));
 }

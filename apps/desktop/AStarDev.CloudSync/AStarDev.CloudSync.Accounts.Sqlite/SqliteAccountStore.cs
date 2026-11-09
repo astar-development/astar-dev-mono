@@ -38,6 +38,19 @@ internal sealed class SqliteAccountStore(IDbContextFactory<CloudSyncDbContext> d
                     (accounts, entity) => accounts.Bind(read => ToStoredAccount(entity).Map(IReadOnlyList<StoredAccount> (account) => [.. read, account]))),
                 exception => ReadFailed<IReadOnlyList<StoredAccount>>(exception, "Could not read the accounts.", "The accounts could not be read."));
 
+    /// <inheritdoc />
+    public Task<Result<Unit, ErrorResponse>> RemoveAsync(AccountId accountId, CancellationToken cancellationToken) =>
+        Try.RunAsync(() => DeleteAsync(accountId, cancellationToken), cancellationToken)
+            .MatchAsync(Result.Success<Unit, ErrorResponse>, exception => ReadFailed<Unit>(exception, "Could not remove the account.", "The account could not be removed."));
+
+    private async Task<Unit> DeleteAsync(AccountId accountId, CancellationToken cancellationToken)
+    {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        _ = await dbContext.Accounts.Where(account => account.Id == accountId.Value).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+
+        return Unit.Instance;
+    }
+
     private Task<Result<AccountAddOutcome, Exception>> TryAddOrRefreshAsync(AccountRegistration registration, CancellationToken cancellationToken) =>
         Try.RunAsync(() => AddOrRefreshAsync(registration, cancellationToken), cancellationToken).ToResultAsync(exception => exception);
 

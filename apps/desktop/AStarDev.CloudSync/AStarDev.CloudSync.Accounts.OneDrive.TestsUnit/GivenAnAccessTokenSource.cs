@@ -48,14 +48,14 @@ public sealed class GivenAnAccessTokenSource : IDisposable
     }
 
     [Fact]
-    public async Task when_the_token_cache_has_no_such_account_then_sign_in_is_required()
+    public async Task when_the_token_cache_has_no_such_account_then_the_account_is_not_cached_rather_than_needing_sign_in()
     {
         var accountId = await AddStoredAccountAsync();
         var msal = new FakeMsalClient { SilentToken = (_, _) => Task.FromResult(Option.None<string>()) };
 
         var outcome = await CreateModule(msal).TokenSource.GetAccessTokenAsync(accountId, CancellationToken);
 
-        outcome.ShouldBe(AccessTokenOutcomeFactory.CreateSignInRequired());
+        outcome.ShouldBe(AccessTokenOutcomeFactory.CreateAccountNotCached());
     }
 
     [Fact]

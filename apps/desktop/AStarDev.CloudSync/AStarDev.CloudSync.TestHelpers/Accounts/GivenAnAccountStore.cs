@@ -145,6 +145,52 @@ public abstract class GivenAnAccountStore : IAsyncLifetime
         all.Match(accounts => accounts.Select(account => account.Registration.Key.Value), _ => []).ShouldBe(identifiers, ignoreOrder: true);
     }
 
+    [Fact]
+    public async Task when_an_account_is_removed_then_it_is_no_longer_found_or_listed()
+    {
+        var removed = (await Store.AddAsync(Registration(HomeAccountIdentifier, PersonalDisplayName), CancellationToken)).ShouldBeOfType<AccountAddOutcome.Added>().AccountId;
+        var kept = (await Store.AddAsync(Registration(OtherHomeAccountIdentifier, "Photos"), CancellationToken)).ShouldBeOfType<AccountAddOutcome.Added>().AccountId;
+
+        var result = await Store.RemoveAsync(removed, CancellationToken);
+
+        result.Match(_ => "removed", error => error.Message).ShouldBe("removed");
+        (await Store.GetAllAsync(CancellationToken)).Match(accounts => accounts.Select(account => account.Id), _ => []).ShouldBe([kept]);
+        (await Store.GetByKeyAsync(CloudProviderFactory.CreateOneDrive(), Key(HomeAccountIdentifier), CancellationToken)).Match(found => found.Match(_ => "found", () => "none"), _ => "failed").ShouldBe("none");
+    }
+
+    [Fact]
+    public async Task when_an_unknown_or_already_removed_account_is_removed_then_it_succeeds()
+    {
+        var added = (await Store.AddAsync(Registration(HomeAccountIdentifier, PersonalDisplayName), CancellationToken)).ShouldBeOfType<AccountAddOutcome.Added>().AccountId;
+        _ = await Store.RemoveAsync(added, CancellationToken);
+
+        var results = new[] { await Store.RemoveAsync(added, CancellationToken), await Store.RemoveAsync(AccountIdFactory.Create(Guid.NewGuid()), CancellationToken) };
+
+        results.ShouldAllBe(result => result.Match(_ => true, _ => false));
+    }
+
+    [Fact]
+    public async Task when_a_removed_account_signs_in_again_then_it_is_added_with_a_new_id()
+    {
+        var first = (await Store.AddAsync(Registration(HomeAccountIdentifier, PersonalDisplayName), CancellationToken)).ShouldBeOfType<AccountAddOutcome.Added>().AccountId;
+        _ = await Store.RemoveAsync(first, CancellationToken);
+
+        var again = await Store.AddAsync(Registration(HomeAccountIdentifier, PersonalDisplayName), CancellationToken);
+
+        again.ShouldBeOfType<AccountAddOutcome.Added>().AccountId.ShouldNotBe(first);
+    }
+
+    [Fact]
+    public async Task when_one_account_is_removed_many_times_at_once_then_every_removal_succeeds_and_it_is_gone()
+    {
+        var added = (await Store.AddAsync(Registration(HomeAccountIdentifier, PersonalDisplayName), CancellationToken)).ShouldBeOfType<AccountAddOutcome.Added>().AccountId;
+
+        var results = await Task.WhenAll(Enumerable.Range(0, 20).Select(_ => Task.Run(() => Store.RemoveAsync(added, CancellationToken), CancellationToken)));
+
+        results.ShouldAllBe(result => result.Match(_ => true, _ => false));
+        (await Store.GetAllAsync(CancellationToken)).Match(accounts => accounts.Count, _ => -1).ShouldBe(0);
+    }
+
     private static ProviderAccountKey Key(string identifier) => ProviderAccountKeyFactory.Create(identifier).Match(key => key, _ => throw new InvalidOperationException("The test key must be valid."));
 
     private static AccountRegistration Registration(string identifier, string displayName) => AccountRegistrationFactory.Create(Key(identifier), CloudProviderFactory.CreateOneDrive(), displayName, $"{displayName.ToLowerInvariant()}@example.com", new DriveId("8A3F2C1D0E9B7A65"), StorageUsageFactory.Create(1_024, 5_368_709_120));
