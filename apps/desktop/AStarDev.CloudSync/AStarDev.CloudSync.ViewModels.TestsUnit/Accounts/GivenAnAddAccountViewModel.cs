@@ -157,12 +157,24 @@ public class GivenAnAddAccountViewModel
     {
         var consent = new TokenCacheConsentViewModel(new ImmediateUiDispatcher(), TestData.CreateLocalization());
         var adder = new FakeAccountAdder { Add = async token => { _ = await consent.AskAsync(token); return AccountAddOutcomeFactory.CreateCancelled(); } };
-        var dialog = new AddAccountViewModel(adder, consent, TestData.CreateLocalization(), NullLogger<AddAccountViewModel>.Instance);
+        var dialog = new AddAccountViewModel(new SingleProviderCapability<IAccountAdder>(adder), consent, TestData.CreateLocalization(), NullLogger<AddAccountViewModel>.Instance);
 
         var shown = dialog.ShowAsync(TestContext.Current.CancellationToken);
 
         (dialog.IsAskingConsent, dialog.IsSigningIn).ShouldBe((true, false));
         consent.DeclineCommand.Execute(null);
+        await shown;
+    }
+
+    [Fact]
+    public async Task when_no_adder_is_registered_for_the_provider_then_the_dialog_shows_a_failure_with_try_again()
+    {
+        var dialog = new AddAccountViewModel(new NoAccountAdders(), new TokenCacheConsentViewModel(new ImmediateUiDispatcher(), TestData.CreateLocalization()), TestData.CreateLocalization(), NullLogger<AddAccountViewModel>.Instance);
+
+        var shown = dialog.ShowAsync(TestContext.Current.CancellationToken);
+
+        (dialog.Step, dialog.CanTryAgain, shown.IsCompleted).ShouldBe((AddAccountStepFactory.CreateFailed(AccountAddFailureFactory.CreateAuthRejected()), true, false));
+        dialog.CloseCommand.Execute(null);
         await shown;
     }
 
@@ -186,7 +198,7 @@ public class GivenAnAddAccountViewModel
     {
         var logger = new RecordingLogger<AddAccountViewModel>();
         var adder = new FakeAccountAdder { Add = _ => Task.FromException<AccountAddOutcome>(new InvalidOperationException("captain.flint@example.com could not be saved")) };
-        var dialog = new AddAccountViewModel(adder, new TokenCacheConsentViewModel(new ImmediateUiDispatcher(), TestData.CreateLocalization()), TestData.CreateLocalization(), logger);
+        var dialog = new AddAccountViewModel(new SingleProviderCapability<IAccountAdder>(adder), new TokenCacheConsentViewModel(new ImmediateUiDispatcher(), TestData.CreateLocalization()), TestData.CreateLocalization(), logger);
 
         var shown = dialog.ShowAsync(TestContext.Current.CancellationToken);
         await WaitUntilAsync(() => dialog.IsShowingMessage);
@@ -238,7 +250,7 @@ public class GivenAnAddAccountViewModel
                 return answer.IsCanceled ? AccountAddOutcomeFactory.CreateCancelled() : AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreateTokenCacheUnavailable());
             }
         };
-        var dialog = new AddAccountViewModel(adder, consent, TestData.CreateLocalization(), NullLogger<AddAccountViewModel>.Instance);
+        var dialog = new AddAccountViewModel(new SingleProviderCapability<IAccountAdder>(adder), consent, TestData.CreateLocalization(), NullLogger<AddAccountViewModel>.Instance);
 
         var shown = dialog.ShowAsync(TestContext.Current.CancellationToken);
         dialog.CancelCommand.Execute(null);
