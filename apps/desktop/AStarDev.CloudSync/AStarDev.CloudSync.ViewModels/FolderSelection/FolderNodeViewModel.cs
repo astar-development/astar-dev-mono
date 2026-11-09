@@ -81,7 +81,11 @@ public sealed class FolderNodeViewModel : LocalizedObservableObject
     public bool IsExpanded
     {
         get => isExpanded;
-        set => SetProperty(ref isExpanded, value);
+        set
+        {
+            if (SetProperty(ref isExpanded, value))
+                OnPropertyChanged(nameof(ExpanderGlyph));
+        }
     }
 
     /// <summary>Whether the children are loading.</summary>
@@ -112,16 +116,21 @@ public sealed class FolderNodeViewModel : LocalizedObservableObject
     public string ChangeDirectionText => Localization.GetLocal("FolderSelection.Direction.Change");
 
     /// <summary>The symbol of the expand button: an arrow pointing right when closed and down when open.</summary>
-    public string ExpanderGlyph => Localization.CurrentCulture.Name.Length < 0 ? string.Empty : string.Empty;
+    public string ExpanderGlyph => Localization.GetLocal(isExpanded ? "FolderSelection.Glyph.Expanded" : "FolderSelection.Glyph.Collapsed");
 
     /// <summary>The symbol of the checkbox button for the current state.</summary>
-    public string CheckGlyph => Localization.CurrentCulture.Name.Length < 0 ? string.Empty : string.Empty;
+    public string CheckGlyph => Localization.GetLocal(CheckState switch
+    {
+        FolderCheckState.Ticked => "FolderSelection.Glyph.Ticked",
+        FolderCheckState.PartiallyTicked => "FolderSelection.Glyph.Partial",
+        _ => "FolderSelection.Glyph.Unticked",
+    });
 
     /// <summary>Opens the folder, loading its children the first time and after a failure.</summary>
     public IAsyncRelayCommand ExpandCommand { get; }
 
     /// <summary>Opens a closed folder (loading its children if needed) and closes an open one.</summary>
-    public IAsyncRelayCommand ToggleExpandedCommand => field ??= new AsyncRelayCommand(() => Task.CompletedTask);
+    public IAsyncRelayCommand ToggleExpandedCommand => field ??= new AsyncRelayCommand(ToggleExpandedAsync);
 
     /// <summary>Ticks or unticks the folder. This stages a change; nothing is saved until Apply.</summary>
     public IRelayCommand ToggleCommand { get; }
@@ -144,6 +153,7 @@ public sealed class FolderNodeViewModel : LocalizedObservableObject
         DirectionText = state is SelectionState.Included { } direction && IsPairRoot ? Localization.GetLocal(DirectionKey(direction.Direction)) : string.Empty;
         OnPropertyChanged(nameof(CheckState));
         OnPropertyChanged(nameof(CheckStateText));
+        OnPropertyChanged(nameof(CheckGlyph));
         OnPropertyChanged(nameof(AccessibleName));
         OnPropertyChanged(nameof(CanToggle));
         OnPropertyChanged(nameof(IsPairRoot));
@@ -160,6 +170,16 @@ public sealed class FolderNodeViewModel : LocalizedObservableObject
         SyncDirection.DownloadOnly => "Direction.DownloadOnly",
         _ => "Direction.TwoWay",
     };
+
+    private Task ToggleExpandedAsync(CancellationToken cancellationToken)
+    {
+        if (!IsExpanded)
+            return ExpandAsync(cancellationToken);
+
+        IsExpanded = false;
+
+        return Task.CompletedTask;
+    }
 
     private async Task ExpandAsync(CancellationToken cancellationToken)
     {

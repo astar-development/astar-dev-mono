@@ -25,12 +25,7 @@ public sealed class PlaceholderSyncActions(IAddAccountDialog addAccountDialog, I
     public Task AddAccountAsync(CancellationToken cancellationToken) => addAccountDialog.ShowAsync(cancellationToken);
 
     /// <inheritdoc />
-    public Task AddSyncPairAsync(Option<AccountId> accountId, CancellationToken cancellationToken)
-    {
-        _ = folderSelectionDialog;
-
-        return LogRequestAsync("Add sync pair requested (placeholder: the sync engine is not implemented yet)", accountId.Match(id => id.ToString(), () => string.Empty));
-    }
+    public Task AddSyncPairAsync(Option<AccountId> accountId, CancellationToken cancellationToken) => folderSelectionDialog.ShowAsync(accountId, cancellationToken);
 
     /// <inheritdoc />
     public Task KeepBothAsync(SyncConflict conflict, CancellationToken cancellationToken) => LogRequestAsync("Keep both requested (placeholder: the sync engine is not implemented yet)", conflict.SyncPairId.ToString());

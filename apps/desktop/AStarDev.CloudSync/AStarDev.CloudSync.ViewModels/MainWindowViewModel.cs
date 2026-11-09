@@ -30,6 +30,7 @@ public sealed class MainWindowViewModel : LocalizedObservableObject
         AccountDialog = accountDialog;
         FolderSelection = folderSelection;
         accountDialog.PropertyChanged += OnDialogChanged;
+        folderSelection.PropertyChanged += OnFolderSelectionChanged;
         addAccount.PropertyChanged += OnDialogChanged;
         displaySettings.PropertyChanged += OnDisplaySettingsChanged;
     }
@@ -59,7 +60,7 @@ public sealed class MainWindowViewModel : LocalizedObservableObject
     public FolderSelectionViewModel FolderSelection { get; }
 
     /// <summary>Whether a modal dialog is open, so the layout behind it is disabled.</summary>
-    public bool IsDialogOpen => AddAccount.IsOpen || AccountDialog.IsOpen;
+    public bool IsDialogOpen => AddAccount.IsOpen || AccountDialog.IsOpen || FolderSelection.IsOpen;
 
     /// <summary>The view model of the layout to show. Each layout keeps its own state, so switching back restores it.</summary>
     public object CurrentLayout => DisplaySettings.CurrentLayout switch
@@ -72,6 +73,12 @@ public sealed class MainWindowViewModel : LocalizedObservableObject
     private void OnDialogChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(AddAccountViewModel.IsOpen))
+            OnPropertyChanged(nameof(IsDialogOpen));
+    }
+
+    private void OnFolderSelectionChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(FolderSelectionViewModel.IsOpen))
             OnPropertyChanged(nameof(IsDialogOpen));
     }
 

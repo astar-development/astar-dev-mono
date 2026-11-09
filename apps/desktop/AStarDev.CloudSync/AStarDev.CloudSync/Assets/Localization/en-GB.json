@@ -220,5 +220,10 @@
   "FolderSelection.Confirm.Prompt.Many": "{0} folders that have already synced will stop syncing. Your copies on this computer are kept, and nothing is deleted on this computer or in the cloud.",
   "FolderSelection.Confirm.Yes": "Stop syncing",
   "FolderSelection.Failure.Save": "Your folder choices could not be saved. Try again.",
-  "FolderSelection.Failure.Accounts": "The accounts could not be read."
+  "FolderSelection.Failure.Accounts": "The accounts could not be read.",
+  "FolderSelection.Glyph.Expanded": "▾",
+  "FolderSelection.Glyph.Collapsed": "▸",
+  "FolderSelection.Glyph.Ticked": "☑",
+  "FolderSelection.Glyph.Unticked": "☐",
+  "FolderSelection.Glyph.Partial": "◪"
 }
