@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:accounts="using:AStarDev.CloudSync.Accounts"
+        xmlns:folderSelection="using:AStarDev.CloudSync.FolderSelection"
         xmlns:layouts="using:AStarDev.CloudSync.Layouts"
         xmlns:vm="using:AStarDev.CloudSync.ViewModels"
         xmlns:vmLayouts="using:AStarDev.CloudSync.ViewModels.Layouts"
@@ -52,6 +53,12 @@
                 Background="{DynamicResource CloudSyncScrimBrush}"
                 IsVisible="{Binding AccountDialog.IsOpen}">
             <accounts:AccountDialogView DataContext="{Binding AccountDialog}" />
+        </Border>
+        <Border Grid.Row="0"
+                Grid.RowSpan="2"
+                Background="{DynamicResource CloudSyncScrimBrush}"
+                IsVisible="{Binding FolderSelection.IsOpen}">
+            <folderSelection:FolderSelectionView DataContext="{Binding FolderSelection}" />
         </Border>
     </Grid>
 </Window>

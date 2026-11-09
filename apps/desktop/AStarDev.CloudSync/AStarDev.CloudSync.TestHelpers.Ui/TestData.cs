@@ -70,12 +70,16 @@ public static class TestData
 
     public static MainWindowViewModel CreateMainWindowViewModel(SyncOverviewViewModel overview, DisplaySettingsViewModel displaySettings) => CreateMainWindowViewModel(overview, displaySettings, CreateAddAccount(new FakeAccountAdder()));
 
-    public static MainWindowViewModel CreateMainWindowViewModel(SyncOverviewViewModel overview, DisplaySettingsViewModel displaySettings, AddAccountViewModel addAccount)
+    public static MainWindowViewModel CreateMainWindowViewModel(SyncOverviewViewModel overview, DisplaySettingsViewModel displaySettings, AddAccountViewModel addAccount) => CreateMainWindowViewModel(overview, displaySettings, addAccount, CreateFolderSelection());
+
+    public static MainWindowViewModel CreateMainWindowViewModel(SyncOverviewViewModel overview, DisplaySettingsViewModel displaySettings, FolderSelectionViewModel folderSelection) => CreateMainWindowViewModel(overview, displaySettings, CreateAddAccount(new FakeAccountAdder()), folderSelection);
+
+    public static MainWindowViewModel CreateMainWindowViewModel(SyncOverviewViewModel overview, DisplaySettingsViewModel displaySettings, AddAccountViewModel addAccount, FolderSelectionViewModel folderSelection)
     {
         var localization = CreateLocalization();
         var syncActions = new RecordingSyncActions();
 
-        return new MainWindowViewModel(localization, displaySettings, new LayoutAViewModel(overview, syncActions, localization), new LayoutBViewModel(overview, CreateLocalPathFormatter(), syncActions, localization), new LayoutCViewModel(overview, syncActions, localization), addAccount, CreateAccountDialog(new FakeAccountActions()), CreateFolderSelection());
+        return new MainWindowViewModel(localization, displaySettings, new LayoutAViewModel(overview, syncActions, localization), new LayoutBViewModel(overview, CreateLocalPathFormatter(), syncActions, localization), new LayoutCViewModel(overview, syncActions, localization), addAccount, CreateAccountDialog(new FakeAccountActions()), folderSelection);
     }
 
     public static FolderSelectionViewModel CreateFolderSelection() => CreateFolderSelection(new FakeFolderTreeSource(), new FakeSelectionRuleReader(), new FakeSelectionRuleWriter(), new FakeSyncPairReader(), new InMemoryAccountStore());
