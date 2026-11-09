@@ -1,3 +1,4 @@
+using System.IO.Abstractions;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.ViewModels.Common;
@@ -69,13 +70,13 @@ public sealed class AccountDialogViewModel(IAccountActions actions, ISyncRootRea
     public string ChangeSyncFolderConfirmText => Localization.GetLocal("AccountDialog.SyncFolder.Confirm.Yes");
 
     /// <summary>Asks the user for a folder and changes the account's sync folder to it.</summary>
-    public IAsyncRelayCommand ChooseSyncFolderCommand => field ??= new AsyncRelayCommand(() => Task.CompletedTask);
+    public IAsyncRelayCommand ChooseSyncFolderCommand => field ??= new AsyncRelayCommand(ChooseSyncFolderAsync, CanChooseSyncFolder);
 
     /// <summary>Changes the sync folder after the user confirmed.</summary>
-    public IAsyncRelayCommand ConfirmSyncFolderChangeCommand => field ??= new AsyncRelayCommand(() => Task.CompletedTask);
+    public IAsyncRelayCommand ConfirmSyncFolderChangeCommand => field ??= new AsyncRelayCommand(ConfirmSyncFolderChangeAsync);
 
     /// <summary>Goes back to the sync folder panel without changing anything.</summary>
-    public IRelayCommand CancelSyncFolderChangeCommand => field ??= new RelayCommand(() => { });
+    public IRelayCommand CancelSyncFolderChangeCommand => field ??= new RelayCommand(CancelSyncFolderChange);
 
     /// <summary>The dialog title.</summary>
     public string TitleText => Localization.GetLocal(TitleKey());
@@ -128,12 +129,95 @@ public sealed class AccountDialogViewModel(IAccountActions actions, ISyncRootRea
     }
 
     /// <inheritdoc />
-    public Task ChangeSyncFolderAsync(AccountViewModel account, CancellationToken cancellationToken)
+    public async Task ChangeSyncFolderAsync(AccountViewModel account, CancellationToken cancellationToken)
     {
-        _ = (syncRoots, accounts, folderPicker);
+        if (IsOpen)
+            return;
 
-        return Task.CompletedTask;
+        closed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        SetStep(AccountDialogStepFactory.CreateSyncFolder(account, string.Empty, string.Empty));
+        var currentText = await CurrentFolderTextAsync(account.Id, cancellationToken);
+        _ = ShowSyncFolder(account, currentText, string.Empty);
+        await closed.Task.WaitAsync(cancellationToken);
     }
+
+    private bool CanChooseSyncFolder() => Step is AccountDialogStep.SyncFolder { Account.Status.IsSyncing: false };
+
+    private async Task ChooseSyncFolderAsync(CancellationToken cancellationToken)
+    {
+        if (Step is not AccountDialogStep.SyncFolder folder)
+            return;
+
+        var chosen = await folderPicker.PickAsync(Option.None<IDirectoryInfo>(), cancellationToken);
+        _ = await chosen.Match(
+            directory => folder.Account.HasSynced ? Task.FromResult(AskToConfirm(folder, directory)) : ApplySyncFolderAsync(folder.Account, directory, folder.CurrentFolderText, cancellationToken),
+            () => Task.FromResult(Unit.Instance));
+    }
+
+    private async Task ConfirmSyncFolderChangeAsync(CancellationToken cancellationToken)
+    {
+        if (Step is AccountDialogStep.ConfirmingSyncFolderChange confirming)
+            _ = await ApplySyncFolderAsync(confirming.Account, confirming.Candidate, confirming.CurrentFolderText, cancellationToken);
+    }
+
+    private void CancelSyncFolderChange()
+    {
+        if (Step is AccountDialogStep.ConfirmingSyncFolderChange confirming)
+            _ = ShowSyncFolder(confirming.Account, confirming.CurrentFolderText, string.Empty);
+    }
+
+    private Unit AskToConfirm(AccountDialogStep.SyncFolder folder, IDirectoryInfo directory)
+    {
+        SetStep(AccountDialogStepFactory.CreateConfirmingSyncFolderChange(folder.Account, directory, folder.CurrentFolderText));
+
+        return Unit.Instance;
+    }
+
+    private Unit ShowSyncFolder(AccountViewModel account, string currentText, string message)
+    {
+        SetStep(AccountDialogStepFactory.CreateSyncFolder(account, currentText, message));
+
+        return Unit.Instance;
+    }
+
+    private Task<string> CurrentFolderTextAsync(AccountId accountId, CancellationToken cancellationToken) =>
+        syncRoots.GetAsync(accountId, cancellationToken)
+            .MatchAsync(
+                root => root.Match(found => found.Directory.FullName, () => Localization.GetLocal("AccountDialog.SyncFolder.None")),
+                _ => Localization.GetLocal("AccountDialog.SyncFolder.ReadFailed"));
+
+    private async Task<Unit> ApplySyncFolderAsync(AccountViewModel account, IDirectoryInfo directory, string currentText, CancellationToken cancellationToken)
+    {
+        SetStep(AccountDialogStepFactory.CreateWorking(Localization.GetLocal("AccountDialog.SyncFolder.Working", account.Name)));
+
+        return await Try.RunAsync(() => actions.ChangeSyncRootAsync(account.Id, directory, cancellationToken), cancellationToken)
+            .MatchAsync(
+                changed => changed.Match(root => Task.FromResult(ShowSyncFolder(account, root.Directory.FullName, string.Empty)), rejection => ShowRejectionAsync(account, currentText, rejection, cancellationToken)),
+                _ => Task.FromResult(ShowSyncFolder(account, currentText, Localization.GetLocal("AccountDialog.SyncFolder.Failure.Store"))))
+            .Unwrap();
+    }
+
+    private async Task<Unit> ShowRejectionAsync(AccountViewModel account, string currentText, SyncRootRejection rejection, CancellationToken cancellationToken) =>
+        ShowSyncFolder(account, currentText, await RejectionTextAsync(rejection, cancellationToken));
+
+    private async Task<string> RejectionTextAsync(SyncRootRejection rejection, CancellationToken cancellationToken) => rejection switch
+    {
+        SyncRootRejection.SameAs clash => Localization.GetLocal("AccountDialog.SyncFolder.Failure.SameAs", await AccountNameAsync(clash.Other, cancellationToken)),
+        SyncRootRejection.InsideOf clash => Localization.GetLocal("AccountDialog.SyncFolder.Failure.InsideOf", await AccountNameAsync(clash.Other, cancellationToken)),
+        SyncRootRejection.Contains clash => Localization.GetLocal("AccountDialog.SyncFolder.Failure.Contains", await AccountNameAsync(clash.Other, cancellationToken)),
+        SyncRootRejection.NotAbsolute => Localization.GetLocal("AccountDialog.SyncFolder.Failure.NotAbsolute"),
+        SyncRootRejection.NotWritable => Localization.GetLocal("AccountDialog.SyncFolder.Failure.NotWritable"),
+        SyncRootRejection.Unavailable => Localization.GetLocal("AccountDialog.SyncFolder.Failure.Unavailable"),
+        SyncRootRejection.Reserved => Localization.GetLocal("AccountDialog.SyncFolder.Failure.Reserved"),
+        SyncRootRejection.SyncStillRunning => Localization.GetLocal("AccountDialog.Failure.SyncStillRunning"),
+        _ => Localization.GetLocal("AccountDialog.SyncFolder.Failure.Store"),
+    };
+
+    private Task<string> AccountNameAsync(AccountId accountId, CancellationToken cancellationToken) =>
+        accounts.GetAllAsync(cancellationToken)
+            .MatchAsync(
+                stored => stored.FirstOrNone(account => account.Id == accountId).Match(account => account.Registration.DisplayName, () => Localization.GetLocal("AccountDialog.SyncFolder.OtherAccount")),
+                _ => Localization.GetLocal("AccountDialog.SyncFolder.OtherAccount"));
 
     private async Task ConfirmRemoveAsync(CancellationToken cancellationToken)
     {
@@ -217,6 +301,7 @@ public sealed class AccountDialogViewModel(IAccountActions actions, ISyncRootRea
         OnPropertyChanged(nameof(SyncFolderSyncingText));
         OnPropertyChanged(nameof(SyncFolderConfirmText));
         OnPropertyChanged(nameof(TitleText));
+        ChooseSyncFolderCommand.NotifyCanExecuteChanged();
         OnPropertyChanged(nameof(ConfirmText));
         OnPropertyChanged(nameof(WorkingText));
         OnPropertyChanged(nameof(MessageText));
