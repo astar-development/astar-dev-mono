@@ -79,8 +79,11 @@ public sealed class GivenASyncRootStore : IAsyncLifetime
     public async Task when_the_same_folder_is_set_for_twenty_accounts_at_once_then_exactly_one_wins_and_the_rest_are_rejected_as_the_same()
     {
         var accounts = Enumerable.Range(0, 20).Select(_ => AccountIdFactory.Create(Guid.NewGuid())).ToList();
+        var start = new TaskCompletionSource();
+        var pending = accounts.Select(account => Task.Run(async () => await start.Task.ContinueWith(_ => Database.Writer.SetAsync(account, Database.Folder(OneDrive), CancellationToken), CancellationToken).Unwrap(), CancellationToken)).ToList();
 
-        var results = await Task.WhenAll(accounts.Select(account => Task.Run(() => Database.Writer.SetAsync(account, Database.Folder(OneDrive), CancellationToken), CancellationToken)));
+        start.SetResult();
+        var results = await Task.WhenAll(pending);
 
         results.Count(result => result.Match(_ => true, _ => false)).ShouldBe(1);
         results.Select(result => result.Match(_ => string.Empty, rejection => rejection.GetType().Name)).Where(name => name.Length > 0).ShouldAllBe(name => name == nameof(SyncRootRejection.SameAs));

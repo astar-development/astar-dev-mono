@@ -3,6 +3,7 @@ using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Accounts.OneDrive;
 using AStarDev.CloudSync.Accounts.Sqlite;
+using AStarDev.CloudSync.Sync.Sqlite;
 using AStarDev.CloudSync.Common;
 using AStarDev.CloudSync.DisplaySettings;
 using AStarDev.CloudSync.Overview;
@@ -249,14 +250,14 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
-    public void when_application_services_are_added_then_the_account_store_and_database_come_from_the_sqlite_module()
+    public void when_application_services_are_added_then_the_account_store_comes_from_the_accounts_sqlite_module_and_the_combined_database_from_the_sync_sqlite_module()
     {
         using var provider = CreateServices().BuildServiceProvider();
         var sqliteModule = typeof(PersistenceServiceCollectionExtensions).Assembly;
 
         (provider.GetRequiredService<IAccountStore>(), provider.GetRequiredService<ICloudSyncDatabase>()).ShouldSatisfyAllConditions(
             services => services.Item1.GetType().Assembly.ShouldBe(sqliteModule),
-            services => services.Item2.GetType().Assembly.ShouldBe(sqliteModule));
+            services => services.Item2.GetType().Assembly.ShouldBe(typeof(SyncPersistenceServiceCollectionExtensions).Assembly));
     }
 
     [Fact]
