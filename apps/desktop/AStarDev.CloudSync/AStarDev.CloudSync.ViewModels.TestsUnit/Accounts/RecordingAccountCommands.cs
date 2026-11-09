@@ -19,4 +19,11 @@ public sealed class RecordingAccountCommands : IAccountCommands
 
         return Task.CompletedTask;
     }
+
+    public Task ChangeSyncFolderAsync(AccountViewModel account, CancellationToken cancellationToken)
+    {
+        Calls.Add($"sync-folder:{account.Name}");
+
+        return Task.CompletedTask;
+    }
 }

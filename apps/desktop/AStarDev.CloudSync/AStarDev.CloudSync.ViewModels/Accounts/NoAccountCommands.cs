@@ -15,4 +15,7 @@ public sealed class NoAccountCommands : IAccountCommands
 
     /// <inheritdoc />
     public Task RemoveAsync(AccountViewModel account, CancellationToken cancellationToken) => Task.CompletedTask;
+
+    /// <inheritdoc />
+    public Task ChangeSyncFolderAsync(AccountViewModel account, CancellationToken cancellationToken) => Task.CompletedTask;
 }

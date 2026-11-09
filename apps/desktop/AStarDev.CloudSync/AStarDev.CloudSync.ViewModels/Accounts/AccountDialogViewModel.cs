@@ -1,4 +1,6 @@
+using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Sync;
+using AStarDev.CloudSync.ViewModels.Common;
 using AStarDev.FunctionalParadigm;
 using AStarDev.Localization;
 using CommunityToolkit.Mvvm.Input;
@@ -6,9 +8,12 @@ using CommunityToolkit.Mvvm.Input;
 namespace AStarDev.CloudSync.ViewModels.Accounts;
 
 /// <summary>The modal dialog for removing an account and for signing one in again (#1474). It is the app's <see cref="IAccountCommands"/>.</summary>
-/// <param name="actions">Removes and re-authenticates accounts.</param>
+/// <param name="actions">Removes and re-authenticates accounts, and changes sync folders.</param>
+/// <param name="syncRoots">Reads an account's current sync folder.</param>
+/// <param name="accounts">Names the account a rejected folder clashes with.</param>
+/// <param name="folderPicker">Lets the user choose a folder.</param>
 /// <param name="localization">Supplies the text.</param>
-public sealed class AccountDialogViewModel(IAccountActions actions, ILocalizationService localization) : LocalizedObservableObject(localization), IAccountCommands
+public sealed class AccountDialogViewModel(IAccountActions actions, ISyncRootReader syncRoots, IAccountStore accounts, IFolderPicker folderPicker, ILocalizationService localization) : LocalizedObservableObject(localization), IAccountCommands
 {
     private TaskCompletionSource closed = new();
     private Option<AccountViewModel> pendingRemoval = Option.None<AccountViewModel>();
@@ -28,8 +33,52 @@ public sealed class AccountDialogViewModel(IAccountActions actions, ILocalizatio
     /// <summary>Whether a failure message shows.</summary>
     public bool IsShowingMessage => Step is AccountDialogStep.Message;
 
+    /// <summary>Whether the sync folder panel shows.</summary>
+    public bool IsShowingSyncFolder => Step is AccountDialogStep.SyncFolder;
+
+    /// <summary>Whether the sync folder change confirmation shows.</summary>
+    public bool IsConfirmingSyncFolderChange => Step is AccountDialogStep.ConfirmingSyncFolderChange;
+
+    /// <summary>The line above the account's current sync folder.</summary>
+    public string SyncFolderText => Step is AccountDialogStep.SyncFolder folder ? Localization.GetLocal("AccountDialog.SyncFolder.Current", folder.Account.Name) : string.Empty;
+
+    /// <summary>The account's current sync folder path, or text saying there is none.</summary>
+    public string SyncFolderPathText => Step switch
+    {
+        AccountDialogStep.SyncFolder folder => folder.CurrentFolderText,
+        AccountDialogStep.ConfirmingSyncFolderChange confirming => confirming.CurrentFolderText,
+        _ => string.Empty,
+    };
+
+    /// <summary>The last change failure, or empty.</summary>
+    public string SyncFolderMessageText => Step is AccountDialogStep.SyncFolder folder ? folder.MessageText : string.Empty;
+
+    /// <summary>Whether a change failure shows.</summary>
+    public bool HasSyncFolderMessage => SyncFolderMessageText.Length > 0;
+
+    /// <summary>Why the folder cannot be changed right now, or empty.</summary>
+    public string SyncFolderSyncingText => Step is AccountDialogStep.SyncFolder { Account.Status.IsSyncing: true } ? Localization.GetLocal("AccountDialog.SyncFolder.Syncing") : string.Empty;
+
+    /// <summary>The confirmation text for moving an account that has synced.</summary>
+    public string SyncFolderConfirmText => Step is AccountDialogStep.ConfirmingSyncFolderChange confirming ? Localization.GetLocal("AccountDialog.SyncFolder.Confirm.Prompt", confirming.Account.Name) : string.Empty;
+
+    /// <summary>The Change button text.</summary>
+    public string ChangeText => Localization.GetLocal("AccountDialog.SyncFolder.Change");
+
+    /// <summary>The confirm button text for moving the sync folder.</summary>
+    public string ChangeSyncFolderConfirmText => Localization.GetLocal("AccountDialog.SyncFolder.Confirm.Yes");
+
+    /// <summary>Asks the user for a folder and changes the account's sync folder to it.</summary>
+    public IAsyncRelayCommand ChooseSyncFolderCommand => field ??= new AsyncRelayCommand(() => Task.CompletedTask);
+
+    /// <summary>Changes the sync folder after the user confirmed.</summary>
+    public IAsyncRelayCommand ConfirmSyncFolderChangeCommand => field ??= new AsyncRelayCommand(() => Task.CompletedTask);
+
+    /// <summary>Goes back to the sync folder panel without changing anything.</summary>
+    public IRelayCommand CancelSyncFolderChangeCommand => field ??= new RelayCommand(() => { });
+
     /// <summary>The dialog title.</summary>
-    public string TitleText => Localization.GetLocal(Step is AccountDialogStep.ConfirmingRemoval || pendingRemoval.Match(_ => true, () => false) ? "AccountDialog.Remove.Title" : "AccountDialog.SignIn.Title");
+    public string TitleText => Localization.GetLocal(TitleKey());
 
     /// <summary>The removal question, naming the account and saying local files are kept.</summary>
     public string ConfirmText => Step is AccountDialogStep.ConfirmingRemoval confirming ? Localization.GetLocal("AccountDialog.Remove.Prompt", confirming.Account.Name, confirming.Account.Email) : string.Empty;
@@ -78,6 +127,14 @@ public sealed class AccountDialogViewModel(IAccountActions actions, ILocalizatio
         await closed.Task.WaitAsync(cancellationToken);
     }
 
+    /// <inheritdoc />
+    public Task ChangeSyncFolderAsync(AccountViewModel account, CancellationToken cancellationToken)
+    {
+        _ = (syncRoots, accounts, folderPicker);
+
+        return Task.CompletedTask;
+    }
+
     private async Task ConfirmRemoveAsync(CancellationToken cancellationToken)
     {
         if (Step is not AccountDialogStep.ConfirmingRemoval confirming)
@@ -103,6 +160,14 @@ public sealed class AccountDialogViewModel(IAccountActions actions, ILocalizatio
         SetStep(AccountDialogStepFactory.CreateMessage(Localization.GetLocal(SignInFailureKey(failure), account.Email)));
 
         return Unit.Instance;
+    }
+
+    private string TitleKey()
+    {
+        if (Step is AccountDialogStep.SyncFolder or AccountDialogStep.ConfirmingSyncFolderChange)
+            return "AccountDialog.SyncFolder.Title";
+
+        return Step is AccountDialogStep.ConfirmingRemoval || pendingRemoval.Match(_ => true, () => false) ? "AccountDialog.Remove.Title" : "AccountDialog.SignIn.Title";
     }
 
     private static string RemovalFailureKey(AccountRemovalFailure failure) => failure switch
@@ -143,6 +208,14 @@ public sealed class AccountDialogViewModel(IAccountActions actions, ILocalizatio
         OnPropertyChanged(nameof(IsConfirming));
         OnPropertyChanged(nameof(IsWorking));
         OnPropertyChanged(nameof(IsShowingMessage));
+        OnPropertyChanged(nameof(IsShowingSyncFolder));
+        OnPropertyChanged(nameof(IsConfirmingSyncFolderChange));
+        OnPropertyChanged(nameof(SyncFolderText));
+        OnPropertyChanged(nameof(SyncFolderPathText));
+        OnPropertyChanged(nameof(SyncFolderMessageText));
+        OnPropertyChanged(nameof(HasSyncFolderMessage));
+        OnPropertyChanged(nameof(SyncFolderSyncingText));
+        OnPropertyChanged(nameof(SyncFolderConfirmText));
         OnPropertyChanged(nameof(TitleText));
         OnPropertyChanged(nameof(ConfirmText));
         OnPropertyChanged(nameof(WorkingText));

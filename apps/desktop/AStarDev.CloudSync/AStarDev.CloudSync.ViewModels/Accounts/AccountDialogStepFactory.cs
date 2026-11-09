@@ -9,6 +9,12 @@ public static class AccountDialogStepFactory
     /// <summary>Creates the confirm-removal step.</summary>
     public static AccountDialogStep CreateConfirmingRemoval(AccountViewModel account) => new AccountDialogStep.ConfirmingRemoval(account);
 
+    /// <summary>Creates the sync-folder step.</summary>
+    public static AccountDialogStep CreateSyncFolder(AccountViewModel account, string? currentFolderText, string? messageText) => new AccountDialogStep.SyncFolder(account, currentFolderText ?? string.Empty, messageText ?? string.Empty);
+
+    /// <summary>Creates the confirm-sync-folder-change step.</summary>
+    public static AccountDialogStep CreateConfirmingSyncFolderChange(AccountViewModel account, System.IO.Abstractions.IDirectoryInfo candidate, string? currentFolderText) => new AccountDialogStep.ConfirmingSyncFolderChange(account, candidate, currentFolderText ?? string.Empty);
+
     /// <summary>Creates the working step.</summary>
     public static AccountDialogStep CreateWorking(string? text) => new AccountDialogStep.Working(text ?? string.Empty);
 
