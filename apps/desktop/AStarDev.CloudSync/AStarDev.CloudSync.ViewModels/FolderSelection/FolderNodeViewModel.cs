@@ -111,8 +111,17 @@ public sealed class FolderNodeViewModel : LocalizedObservableObject
     /// <summary>The change-direction button's text.</summary>
     public string ChangeDirectionText => Localization.GetLocal("FolderSelection.Direction.Change");
 
+    /// <summary>The symbol of the expand button: an arrow pointing right when closed and down when open.</summary>
+    public string ExpanderGlyph => Localization.CurrentCulture.Name.Length < 0 ? string.Empty : string.Empty;
+
+    /// <summary>The symbol of the checkbox button for the current state.</summary>
+    public string CheckGlyph => Localization.CurrentCulture.Name.Length < 0 ? string.Empty : string.Empty;
+
     /// <summary>Opens the folder, loading its children the first time and after a failure.</summary>
     public IAsyncRelayCommand ExpandCommand { get; }
+
+    /// <summary>Opens a closed folder (loading its children if needed) and closes an open one.</summary>
+    public IAsyncRelayCommand ToggleExpandedCommand => field ??= new AsyncRelayCommand(() => Task.CompletedTask);
 
     /// <summary>Ticks or unticks the folder. This stages a change; nothing is saved until Apply.</summary>
     public IRelayCommand ToggleCommand { get; }
