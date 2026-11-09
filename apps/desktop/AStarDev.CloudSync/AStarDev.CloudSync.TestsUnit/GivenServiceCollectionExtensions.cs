@@ -16,6 +16,7 @@ using AStarDev.CloudSync.ViewModels.Common;
 using AStarDev.CloudSync.ViewModels.DisplaySettings;
 using AStarDev.CloudSync.ViewModels.Layouts;
 using AStarDev.CloudSync.ViewModels.Overview;
+using AStarDev.FunctionalParadigm;
 using AStarDev.Localization;
 using AStarDev.SingleInstance;
 using Microsoft.Extensions.Configuration;
@@ -129,11 +130,13 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
-    public void when_application_services_are_added_then_the_account_adder_can_be_resolved()
+    public void when_application_services_are_added_then_the_onedrive_account_adder_is_resolved_by_provider()
     {
         using var provider = CreateServices().BuildServiceProvider();
 
-        provider.GetRequiredService<IAccountAdder>().GetType().Assembly.ShouldBe(typeof(OneDriveServiceCollectionExtensions).Assembly);
+        var adder = provider.GetRequiredService<IProviderCapability<IAccountAdder>>().ForProvider(CloudProviderFactory.CreateOneDrive());
+
+        adder.Match(found => found.GetType().Assembly, _ => typeof(object).Assembly).ShouldBe(typeof(OneDriveServiceCollectionExtensions).Assembly);
     }
 
     [Fact]
@@ -241,11 +244,11 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
-    public void when_application_services_are_added_then_the_microsoft_account_adder_is_registered()
+    public void when_application_services_are_added_then_the_microsoft_account_adder_is_registered_keyed_by_onedrive()
     {
         var services = CreateServices();
 
-        services.ShouldContain(descriptor => descriptor.ServiceType == typeof(IAccountAdder) && descriptor.ImplementationType!.Assembly == typeof(OneDriveServiceCollectionExtensions).Assembly && descriptor.Lifetime == ServiceLifetime.Singleton);
+        services.ShouldContain(descriptor => descriptor.ServiceType == typeof(IAccountAdder) && descriptor.IsKeyedService && Equals(descriptor.ServiceKey, CloudProviderFactory.CreateOneDrive()) && descriptor.KeyedImplementationType!.Assembly == typeof(OneDriveServiceCollectionExtensions).Assembly && descriptor.Lifetime == ServiceLifetime.Singleton);
     }
 
     [Fact]

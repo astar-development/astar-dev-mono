@@ -215,7 +215,7 @@ public class GivenAMainWindow
     {
         var consent = new TokenCacheConsentViewModel(new ImmediateUiDispatcher(), TestData.CreateLocalization());
         var adder = new FakeAccountAdder { Add = async token => { await ((Task)consent.AskAsync(token)).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing | ConfigureAwaitOptions.ContinueOnCapturedContext); return AccountAddOutcomeFactory.CreateCancelled(); } };
-        var addAccount = new AddAccountViewModel(adder, consent, TestData.CreateLocalization(), NullLogger<AddAccountViewModel>.Instance);
+        var addAccount = new AddAccountViewModel(new SingleProviderCapability<IAccountAdder>(adder), consent, TestData.CreateLocalization(), NullLogger<AddAccountViewModel>.Instance);
         var window = new MainWindow { DataContext = TestData.CreateMainWindowViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), TestData.CreateDisplaySettings(), addAccount) };
         window.Show();
 

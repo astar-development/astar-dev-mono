@@ -29,7 +29,7 @@ public sealed class OneDriveModule
             .BuildServiceProvider();
     }
 
-    public IAccountAdder Adder => provider.GetRequiredService<IAccountAdder>();
+    public IAccountAdder Adder => provider.GetRequiredKeyedService<IAccountAdder>(CloudProviderFactory.CreateOneDrive());
 
     public IPlaintextCacheConsentSettings ConsentSettings => provider.GetRequiredService<IPlaintextCacheConsentSettings>();
 

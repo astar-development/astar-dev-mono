@@ -1,8 +1,9 @@
 using System.ComponentModel;
 using AStarDev.CloudSync.Accounts;
+using AStarDev.CloudSync.Sync;
 using AStarDev.FunctionalParadigm;
-using AStarDev.LoggingExtensions;
 using AStarDev.Localization;
+using AStarDev.LoggingExtensions;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 
@@ -11,7 +12,7 @@ namespace AStarDev.CloudSync.ViewModels.Accounts;
 /// <summary>The add-account dialog: signs in, shows the plaintext token question when needed, and shows the "already added" notice or a failure message. A new account or a cancel closes it by itself.</summary>
 public sealed class AddAccountViewModel : LocalizedObservableObject, IAddAccountDialog, IDisposable
 {
-    private readonly IAccountAdder accountAdder;
+    private readonly IProviderCapability<IAccountAdder> accountAdders;
     private readonly ILogger<AddAccountViewModel> logger;
     private TaskCompletionSource closed = CreateClosedSignal(true);
     private CancellationTokenSource attempt = new();
@@ -19,14 +20,14 @@ public sealed class AddAccountViewModel : LocalizedObservableObject, IAddAccount
     private CancellationTokenRegistration callerRegistration;
 
     /// <summary>Creates the dialog view model.</summary>
-    /// <param name="accountAdder">Runs the add-account attempt.</param>
+    /// <param name="accountAdders">Finds the adder for the provider being added; OneDrive until the provider picker (#1415).</param>
     /// <param name="consent">The plaintext token question shown inside the dialog.</param>
     /// <param name="localization">Supplies the dialog text.</param>
     /// <param name="logger">Reports an attempt that failed unexpectedly, without account details.</param>
-    public AddAccountViewModel(IAccountAdder accountAdder, TokenCacheConsentViewModel consent, ILocalizationService localization, ILogger<AddAccountViewModel> logger) : base(localization)
+    public AddAccountViewModel(IProviderCapability<IAccountAdder> accountAdders, TokenCacheConsentViewModel consent, ILocalizationService localization, ILogger<AddAccountViewModel> logger) : base(localization)
     {
         this.logger = logger;
-        this.accountAdder = accountAdder;
+        this.accountAdders = accountAdders;
         Consent = consent;
         consent.PropertyChanged += OnConsentChanged;
     }
@@ -133,7 +134,8 @@ public sealed class AddAccountViewModel : LocalizedObservableObject, IAddAccount
         attempt = CancellationTokenSource.CreateLinkedTokenSource(callerToken);
         SetStep(AddAccountStepFactory.CreateSigningIn());
 
-        var outcome = await Try.RunAsync(() => accountAdder.AddAsync(attempt.Token), CancellationToken.None).MatchAsync(added => added, Unexpected);
+        var outcome = await accountAdders.ForProvider(CloudProviderFactory.CreateOneDrive())
+            .Match(adder => Try.RunAsync(() => adder.AddAsync(attempt.Token), CancellationToken.None).MatchAsync(added => added, Unexpected), AdderUnavailable);
 
         switch (outcome)
         {
@@ -147,6 +149,13 @@ public sealed class AddAccountViewModel : LocalizedObservableObject, IAddAccount
                 Close();
                 break;
         }
+    }
+
+    private Task<AccountAddOutcome> AdderUnavailable(ProviderError error)
+    {
+        AddAccountDialogLog.AttemptFailedUnexpectedly(logger, error.GetType().Name);
+
+        return Task.FromResult(AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreateAuthRejected()));
     }
 
     private AccountAddOutcome Unexpected(Exception exception)

@@ -57,7 +57,7 @@ public static class TestData
 
     public static PlaintextCacheConsentSettingsViewModel CreatePlaintextCacheConsentSettings(FakePlaintextCacheConsentSettings settings) => new(settings, CreateLocalization());
 
-    public static AddAccountViewModel CreateAddAccount(IAccountAdder accountAdder) => new(accountAdder, new TokenCacheConsentViewModel(new ImmediateUiDispatcher(), CreateLocalization()), CreateLocalization(), NullLogger<AddAccountViewModel>.Instance);
+    public static AddAccountViewModel CreateAddAccount(IAccountAdder accountAdder) => new(new SingleProviderCapability<IAccountAdder>(accountAdder), new TokenCacheConsentViewModel(new ImmediateUiDispatcher(), CreateLocalization()), CreateLocalization(), NullLogger<AddAccountViewModel>.Instance);
 
     public static MainWindowViewModel CreateMainWindowViewModel(SyncOverviewViewModel overview, DisplaySettingsViewModel displaySettings) => CreateMainWindowViewModel(overview, displaySettings, CreateAddAccount(new FakeAccountAdder()));
 
