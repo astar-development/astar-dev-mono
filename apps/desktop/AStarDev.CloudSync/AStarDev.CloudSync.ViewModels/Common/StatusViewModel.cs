@@ -17,7 +17,7 @@ public sealed class StatusViewModel(SyncStatus status, AccountSignInState signIn
     }
 
     /// <summary>Whether the account must sign in again before it can sync; this wins over the sync status.</summary>
-    public bool IsSignInRequired => signIn is null;
+    public bool IsSignInRequired => signIn is AccountSignInState.SignInRequired;
 
     /// <summary>The status text, e.g. "Syncing 25%" or "2 conflicts".</summary>
     public string Text => IsSignInRequired ? Localization.GetLocal("Status.SignInRequired") : SyncText;

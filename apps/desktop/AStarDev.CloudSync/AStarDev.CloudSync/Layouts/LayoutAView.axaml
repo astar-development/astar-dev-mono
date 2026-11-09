@@ -294,7 +294,7 @@
                                             </StackPanel>
                                             <common:StatusPill Grid.Column="2" VerticalAlignment="Center" DataContext="{Binding Account.Status}" />
                                             <Button Grid.Column="3" Classes="card-action" Content="{Binding ActionText}" Command="{Binding ActionCommand}" />
-                                            <Button Grid.Column="4" Classes="card-action" Content="{Binding Account.RemoveText}" Command="{Binding Account.RemoveCommand}" />
+                                            <Button Grid.Column="4" Classes="card-action card-remove" Content="{Binding Account.RemoveText}" Command="{Binding Account.RemoveCommand}" />
                                         </Grid>
                                     </Border>
 

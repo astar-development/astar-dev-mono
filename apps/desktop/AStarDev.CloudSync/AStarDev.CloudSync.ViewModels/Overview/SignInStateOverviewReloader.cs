@@ -10,5 +10,5 @@ public sealed class SignInStateOverviewReloader
     /// <param name="states">The in-memory sign-in states.</param>
     /// <param name="overview">The overview to reload.</param>
     /// <param name="dispatcher">Runs the reload on the UI thread.</param>
-    public SignInStateOverviewReloader(IAccountSignInStates states, SyncOverviewViewModel overview, IUiDispatcher dispatcher) => _ = (states, overview, dispatcher);
+    public SignInStateOverviewReloader(IAccountSignInStates states, SyncOverviewViewModel overview, IUiDispatcher dispatcher) => states.Changed += (_, _) => _ = dispatcher.InvokeAsync(() => _ = overview.LoadAsync(CancellationToken.None));
 }

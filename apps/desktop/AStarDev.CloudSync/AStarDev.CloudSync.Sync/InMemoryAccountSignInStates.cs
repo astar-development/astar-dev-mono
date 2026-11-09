@@ -25,6 +25,6 @@ internal sealed class InMemoryAccountSignInStates : IAccountSignInStates
     public void Forget(AccountId accountId)
     {
         _ = states.TryRemove(accountId, out _);
-        
+        Changed?.Invoke(this, EventArgs.Empty);
     }
 }

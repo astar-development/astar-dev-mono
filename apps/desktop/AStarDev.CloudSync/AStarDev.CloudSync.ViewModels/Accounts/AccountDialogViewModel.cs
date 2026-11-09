@@ -58,18 +58,34 @@ public sealed class AccountDialogViewModel(IAccountActions actions, ILocalizatio
     /// <inheritdoc />
     public async Task SignInAsync(AccountViewModel account, CancellationToken cancellationToken)
     {
-        await Task.FromException(new NotImplementedException($"{actions}"));
+        if (IsOpen)
+            return;
+
+        SetStep(AccountDialogStepFactory.CreateWorking(Localization.GetLocal("AccountDialog.SigningIn", account.Name)));
+        var signedIn = await actions.ReauthenticateAsync(account.Id, cancellationToken);
+        signedIn.Match(_ => Close(), failure => ShowSignInFailure(failure, account));
     }
 
     /// <inheritdoc />
     public async Task RemoveAsync(AccountViewModel account, CancellationToken cancellationToken)
     {
-        await Task.FromException(new NotImplementedException($"{actions}"));
+        if (IsOpen)
+            return;
+
+        pendingRemoval = account;
+        SetStep(AccountDialogStepFactory.CreateConfirmingRemoval(account));
+        closed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await closed.Task.WaitAsync(cancellationToken);
     }
 
     private async Task ConfirmRemoveAsync(CancellationToken cancellationToken)
     {
-        await Task.FromException(new NotImplementedException($"{actions}"));
+        if (Step is not AccountDialogStep.ConfirmingRemoval confirming)
+            return;
+
+        SetStep(AccountDialogStepFactory.CreateWorking(Localization.GetLocal("AccountDialog.Removing", confirming.Account.Name)));
+        var removed = await actions.RemoveAsync(confirming.Account.Id, cancellationToken);
+        removed.Match(_ => Close(), ShowRemovalFailure);
     }
 
     private Unit ShowRemovalFailure(AccountRemovalFailure failure)
