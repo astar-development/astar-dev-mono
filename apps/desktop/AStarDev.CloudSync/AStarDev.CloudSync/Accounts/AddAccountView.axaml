@@ -51,6 +51,16 @@
                 </StackPanel>
             </StackPanel>
 
+            <StackPanel Spacing="16" IsVisible="{Binding IsOfferingFolders}">
+                <TextBlock Text="{Binding OfferText}"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource CloudSyncTextPrimaryBrush}" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                    <Button Classes="secondary" Content="{Binding LaterText}" Command="{Binding LaterCommand}" />
+                    <Button Classes="primary" Content="{Binding ChooseFoldersText}" Command="{Binding ChooseFoldersCommand}" />
+                </StackPanel>
+            </StackPanel>
+
             <StackPanel Spacing="16" IsVisible="{Binding IsShowingMessage}">
                 <TextBlock Text="{Binding MessageText}"
                            TextWrapping="Wrap"

@@ -18,6 +18,9 @@ public abstract record AddAccountStep
     /// <summary>The account was already added; it was signed in again and its settings were kept.</summary>
     public sealed record AlreadyAdded : AddAccountStep;
 
+    /// <summary>A new account was added; the user can choose its folders now or later.</summary>
+    public sealed record Added(AccountId AccountId) : AddAccountStep;
+
     /// <summary>The attempt failed.</summary>
     public sealed record Failed(AccountAddFailure Failure) : AddAccountStep;
 }

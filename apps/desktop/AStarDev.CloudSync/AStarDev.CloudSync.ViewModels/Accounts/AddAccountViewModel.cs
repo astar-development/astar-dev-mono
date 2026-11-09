@@ -13,6 +13,7 @@ namespace AStarDev.CloudSync.ViewModels.Accounts;
 public sealed class AddAccountViewModel : LocalizedObservableObject, IAddAccountDialog, IDisposable
 {
     private readonly IProviderCapability<IAccountAdder> accountAdders;
+    private readonly IFolderSelectionDialog folderSelection;
     private readonly ILogger<AddAccountViewModel> logger;
     private TaskCompletionSource closed = CreateClosedSignal(true);
     private CancellationTokenSource attempt = new();
@@ -22,10 +23,12 @@ public sealed class AddAccountViewModel : LocalizedObservableObject, IAddAccount
     /// <summary>Creates the dialog view model.</summary>
     /// <param name="accountAdders">Finds the adder for the provider being added; OneDrive until the provider picker (#1415).</param>
     /// <param name="consent">The plaintext token question shown inside the dialog.</param>
+    /// <param name="folderSelection">Opens the folder selection dialog when the user chooses folders for the new account.</param>
     /// <param name="localization">Supplies the dialog text.</param>
     /// <param name="logger">Reports an attempt that failed unexpectedly, without account details.</param>
-    public AddAccountViewModel(IProviderCapability<IAccountAdder> accountAdders, TokenCacheConsentViewModel consent, ILocalizationService localization, ILogger<AddAccountViewModel> logger) : base(localization)
+    public AddAccountViewModel(IProviderCapability<IAccountAdder> accountAdders, TokenCacheConsentViewModel consent, IFolderSelectionDialog folderSelection, ILocalizationService localization, ILogger<AddAccountViewModel> logger) : base(localization)
     {
+        this.folderSelection = folderSelection;
         this.logger = logger;
         this.accountAdders = accountAdders;
         Consent = consent;
@@ -52,6 +55,24 @@ public sealed class AddAccountViewModel : LocalizedObservableObject, IAddAccount
 
     /// <summary>Whether the failed attempt can be tried again.</summary>
     public bool CanTryAgain => Step is AddAccountStep.Failed;
+
+    /// <summary>Whether the offer to choose folders for the new account is showing.</summary>
+    public bool IsOfferingFolders => Step is AddAccountStep.Added;
+
+    /// <summary>The offer to choose folders now.</summary>
+    public string OfferText => Localization.GetLocal("AddAccount.Offer");
+
+    /// <summary>The label of the button that opens the folder selection.</summary>
+    public string ChooseFoldersText => Localization.GetLocal("AddAccount.ChooseFolders");
+
+    /// <summary>The label of the button that skips choosing folders.</summary>
+    public string LaterText => Localization.GetLocal("AddAccount.Later");
+
+    /// <summary>Closes this dialog and opens the folder selection for the new account.</summary>
+    public IAsyncRelayCommand ChooseFoldersCommand => field ??= new AsyncRelayCommand(ChooseFoldersAsync);
+
+    /// <summary>Skips choosing folders and closes the dialog.</summary>
+    public IRelayCommand LaterCommand => field ??= new RelayCommand(CloseOffer);
 
     /// <summary>The dialog heading.</summary>
     public string TitleText => Localization.GetLocal("AddAccount.Title");
@@ -139,6 +160,9 @@ public sealed class AddAccountViewModel : LocalizedObservableObject, IAddAccount
 
         switch (outcome)
         {
+            case AccountAddOutcome.Added added:
+                SetStep(AddAccountStepFactory.CreateAdded(added.AccountId));
+                break;
             case AccountAddOutcome.ReAuthenticated:
                 SetStep(AddAccountStepFactory.CreateAlreadyAdded());
                 break;
@@ -165,6 +189,21 @@ public sealed class AddAccountViewModel : LocalizedObservableObject, IAddAccount
         return AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreateAuthRejected());
     }
 
+    private async Task ChooseFoldersAsync()
+    {
+        if (Step is not AddAccountStep.Added added)
+            return;
+
+        Close();
+        await folderSelection.ShowAsync(Option.Some(added.AccountId), callerToken);
+    }
+
+    private void CloseOffer()
+    {
+        if (IsOfferingFolders)
+            Close();
+    }
+
     private void CloseMessage()
     {
         if (IsShowingMessage)
@@ -186,6 +225,7 @@ public sealed class AddAccountViewModel : LocalizedObservableObject, IAddAccount
         OnPropertyChanged(nameof(IsSigningIn));
         OnPropertyChanged(nameof(IsAskingConsent));
         OnPropertyChanged(nameof(IsShowingMessage));
+        OnPropertyChanged(nameof(IsOfferingFolders));
         OnPropertyChanged(nameof(CanTryAgain));
         OnPropertyChanged(nameof(MessageText));
     }
