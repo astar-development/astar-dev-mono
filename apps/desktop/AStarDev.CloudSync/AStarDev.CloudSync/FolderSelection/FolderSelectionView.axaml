@@ -1,0 +1,121 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:AStarDev.CloudSync.FolderSelection"
+             xmlns:vmFolders="using:AStarDev.CloudSync.ViewModels.FolderSelection"
+             x:Class="AStarDev.CloudSync.FolderSelection.FolderSelectionView"
+             x:DataType="vmFolders:FolderSelectionViewModel"
+             VerticalContentAlignment="Stretch"
+             HorizontalContentAlignment="Stretch"
+             HorizontalAlignment="Center"
+             VerticalAlignment="Center">
+    <Border Background="{DynamicResource CloudSyncSurfaceBrush}"
+            BorderBrush="{DynamicResource CloudSyncBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="8"
+            Padding="24"
+            Margin="24"
+            Width="560"
+            MaxHeight="640">
+        <Grid RowDefinitions="Auto,*,Auto"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch">
+            <StackPanel Grid.Row="0" Margin="0,0,0,16" Spacing="2">
+                <TextBlock Text="{Binding TitleText}"
+                           FontSize="18"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource CloudSyncTextPrimaryBrush}" />
+                <TextBlock Classes="muted" Text="{Binding AccountNameText}" />
+            </StackPanel>
+
+            <ScrollViewer Grid.Row="1"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          MinHeight="0">
+                <StackPanel Spacing="12">
+                    <StackPanel Spacing="8" IsVisible="{Binding IsChoosingAccount}">
+                        <TextBlock Text="{Binding ChooseAccountText}"
+                                   Foreground="{DynamicResource CloudSyncTextPrimaryBrush}" />
+                        <TextBlock Text="{Binding MessageText}"
+                                   IsVisible="{Binding HasMessage}"
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource CloudSyncWarnBrush}" />
+                        <ItemsControl ItemsSource="{Binding Accounts}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vmFolders:AccountChoiceViewModel">
+                                    <Button Classes="secondary"
+                                            HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Left"
+                                            Margin="0,0,0,6"
+                                            Command="{Binding ChooseCommand}"
+                                            AutomationProperties.Name="{Binding Name}">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Name}" FontWeight="Medium" />
+                                            <TextBlock Classes="muted" Text="{Binding Email}" FontSize="11" />
+                                        </StackPanel>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <StackPanel Spacing="8" IsVisible="{Binding IsShowingTree}">
+                        <TextBlock Text="{Binding LoadingText}"
+                                   IsVisible="{Binding IsLoadingRoot}"
+                                   Foreground="{DynamicResource CloudSyncTextMutedBrush}" />
+                        <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding HasRootError}">
+                            <TextBlock Text="{Binding RootErrorText}"
+                                       TextWrapping="Wrap"
+                                       MaxWidth="400"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource CloudSyncWarnBrush}" />
+                            <Button Classes="secondary" Content="{Binding RetryText}" Command="{Binding RetryCommand}" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding MessageText}"
+                                   IsVisible="{Binding HasMessage}"
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource CloudSyncWarnBrush}" />
+                        <ItemsControl ItemsSource="{Binding Roots}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vmFolders:FolderNodeViewModel">
+                                    <local:FolderNodeView />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <StackPanel Spacing="8" IsVisible="{Binding IsConfirming}">
+                        <TextBlock Text="{Binding ConfirmTitleText}"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource CloudSyncTextPrimaryBrush}" />
+                        <TextBlock Text="{Binding ConfirmText}"
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource CloudSyncTextPrimaryBrush}" />
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+
+            <StackPanel Grid.Row="2"
+                        Margin="0,16,0,0"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Spacing="8">
+                <Button Classes="secondary"
+                        Content="{Binding CancelText}"
+                        Command="{Binding CancelCommand}"
+                        IsVisible="{Binding !IsConfirming}" />
+                <Button Classes="primary"
+                        Content="{Binding ApplyText}"
+                        Command="{Binding ApplyCommand}"
+                        IsVisible="{Binding IsShowingTree}" />
+                <Button Classes="secondary"
+                        Content="{Binding BackText}"
+                        Command="{Binding BackCommand}"
+                        IsVisible="{Binding IsConfirming}" />
+                <Button Classes="danger"
+                        Content="{Binding ConfirmYesText}"
+                        Command="{Binding ConfirmCommand}"
+                        IsVisible="{Binding IsConfirming}" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

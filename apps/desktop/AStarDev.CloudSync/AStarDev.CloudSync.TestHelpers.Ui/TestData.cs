@@ -10,6 +10,7 @@ using AStarDev.CloudSync.ViewModels;
 using AStarDev.CloudSync.ViewModels.Accounts;
 using AStarDev.CloudSync.ViewModels.Common;
 using AStarDev.CloudSync.ViewModels.DisplaySettings;
+using AStarDev.CloudSync.ViewModels.FolderSelection;
 using AStarDev.CloudSync.ViewModels.Layouts;
 using AStarDev.CloudSync.ViewModels.Overview;
 using AStarDev.FunctionalParadigm;
@@ -69,11 +70,19 @@ public static class TestData
 
     public static MainWindowViewModel CreateMainWindowViewModel(SyncOverviewViewModel overview, DisplaySettingsViewModel displaySettings) => CreateMainWindowViewModel(overview, displaySettings, CreateAddAccount(new FakeAccountAdder()));
 
-    public static MainWindowViewModel CreateMainWindowViewModel(SyncOverviewViewModel overview, DisplaySettingsViewModel displaySettings, AddAccountViewModel addAccount)
+    public static MainWindowViewModel CreateMainWindowViewModel(SyncOverviewViewModel overview, DisplaySettingsViewModel displaySettings, AddAccountViewModel addAccount) => CreateMainWindowViewModel(overview, displaySettings, addAccount, CreateFolderSelection());
+
+    public static MainWindowViewModel CreateMainWindowViewModel(SyncOverviewViewModel overview, DisplaySettingsViewModel displaySettings, FolderSelectionViewModel folderSelection) => CreateMainWindowViewModel(overview, displaySettings, CreateAddAccount(new FakeAccountAdder()), folderSelection);
+
+    public static MainWindowViewModel CreateMainWindowViewModel(SyncOverviewViewModel overview, DisplaySettingsViewModel displaySettings, AddAccountViewModel addAccount, FolderSelectionViewModel folderSelection)
     {
         var localization = CreateLocalization();
         var syncActions = new RecordingSyncActions();
 
-        return new MainWindowViewModel(localization, displaySettings, new LayoutAViewModel(overview, syncActions, localization), new LayoutBViewModel(overview, CreateLocalPathFormatter(), syncActions, localization), new LayoutCViewModel(overview, syncActions, localization), addAccount, CreateAccountDialog(new FakeAccountActions()));
+        return new MainWindowViewModel(localization, displaySettings, new LayoutAViewModel(overview, syncActions, localization), new LayoutBViewModel(overview, CreateLocalPathFormatter(), syncActions, localization), new LayoutCViewModel(overview, syncActions, localization), addAccount, CreateAccountDialog(new FakeAccountActions()), folderSelection);
     }
+
+    public static FolderSelectionViewModel CreateFolderSelection() => CreateFolderSelection(new FakeFolderTreeSource(), new FakeSelectionRuleReader(), new FakeSelectionRuleWriter(), new FakeSyncPairReader(), new InMemoryAccountStore());
+
+    public static FolderSelectionViewModel CreateFolderSelection(FakeFolderTreeSource tree, FakeSelectionRuleReader rules, FakeSelectionRuleWriter writer, FakeSyncPairReader pairs, IAccountStore accounts) => new(tree, rules, writer, new SyncSelectionEvaluator(), pairs, accounts, CreateLocalization());
 }
