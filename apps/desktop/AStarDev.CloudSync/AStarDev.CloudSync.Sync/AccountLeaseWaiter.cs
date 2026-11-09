@@ -11,16 +11,17 @@ internal sealed class AccountLeaseWaiter(IAccountSyncLock syncLock, TimeProvider
     /// <summary>Takes the lease.</summary>
     /// <param name="accountId">The account.</param>
     /// <param name="cancellationToken">Cancels the wait.</param>
-    /// <returns>The lease, or none when the account stayed busy or the lock stayed drained.</returns>
+    /// <returns>The lease, or none when the account stayed busy for the whole wait or the lock is drained (no wait: an update or shutdown is under way).</returns>
     public async Task<Option<SyncLease>> AcquireAsync(AccountId accountId, CancellationToken cancellationToken)
     {
         var deadline = timeProvider.GetUtcNow() + AccountLeasePolicy.WaitForRunningWork;
         while (true)
         {
-            if (syncLock.TryAcquire(accountId) is SyncLockAttempt.Acquired acquired)
+            var attempt = syncLock.TryAcquire(accountId);
+            if (attempt is SyncLockAttempt.Acquired acquired)
                 return Option.Some(acquired.Lease);
 
-            if (timeProvider.GetUtcNow() >= deadline)
+            if (attempt is SyncLockAttempt.Draining || timeProvider.GetUtcNow() >= deadline)
                 return Option.None<SyncLease>();
 
             await Task.Delay(AccountLeasePolicy.RetryInterval, timeProvider, cancellationToken).ConfigureAwait(false);

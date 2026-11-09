@@ -4,7 +4,7 @@ using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.Accounts.OneDrive;
 
-/// <summary>Probes an account with a silent token request. Only MSAL's "UI required" marks it as needing sign-in; network, keyring or cache failures are unknown (KB: gotcha-msal-token-lifecycle-on-linux).</summary>
+/// <summary>Probes an account with a silent token request. Only MSAL's "UI required" marks it as needing sign-in; network, keyring, cache failures and a missing cached account are unknown (KB: gotcha-msal-token-lifecycle-on-linux).</summary>
 /// <param name="tokens">The silent token source.</param>
 internal sealed class MicrosoftSignInProbe(IAccessTokenSource tokens) : IAccountSignInProbe
 {

@@ -37,7 +37,7 @@ internal sealed class MsalAccessTokenSource(TokenCacheInitialiser tokenCache, IA
         if (request.IsCanceled)
             return Unavailable("The token request timed out.", TimeoutErrorType);
 
-        return request.Exception is { InnerException: { } exception } ? ToOutcome(exception) : request.Result.Match(AccessTokenOutcomeFactory.CreateAcquired, AccessTokenOutcomeFactory.CreateSignInRequired);
+        return request.Exception is { InnerException: { } exception } ? ToOutcome(exception) : request.Result.Match(AccessTokenOutcomeFactory.CreateAcquired, AccessTokenOutcomeFactory.CreateAccountNotCached);
     }
 
     private async Task<Option<string>> RequestAsync(ProviderAccountKey key, CancellationToken cancellationToken) => await msal.AcquireTokenSilentAsync(key, cancellationToken).ConfigureAwait(false);

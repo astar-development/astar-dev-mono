@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
+using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.ViewModels;
 using AStarDev.CloudSync.ViewModels.Overview;
 using AStarDev.LoggingOTel;
@@ -38,6 +39,7 @@ public partial class App : Application, IDisposable
             desktop.MainWindow = window;
             KeepAsRunningInstance(claim, window, desktop);
             _ = services.GetRequiredService<SyncOverviewViewModel>().LoadAsync(CancellationToken.None);
+            _ = Task.Run(() => services.GetRequiredService<ISignInStateRefresher>().RefreshAllAsync(CancellationToken.None), CancellationToken.None);
 
             _ = services.GetRequiredService<IUpdateNotificationService>().CheckAndNotifyAsync();
         }

@@ -48,8 +48,7 @@ internal sealed class AccountRemover(IAccountStore accountStore, AccountLeaseWai
 
             return await FindAsync(accountId, cancellationToken)
                 .BindAsync(_ => SignOutAsync(accountId))
-                .BindAsync(_ => RemoveParticipantDataAsync(accountId))
-                .BindAsync(_ => DeleteAccountAsync(accountId))
+                .BindAsync(_ => RemoveParticipantDataAsync(accountId).BindAsync(_ => DeleteAccountAsync(accountId)).MatchAsync(Result.Success<Unit, AccountRemovalFailure>, failure => SignedOutButNotRemoved(accountId, failure)))
                 .ConfigureAwait(false);
         }
     }
@@ -76,6 +75,13 @@ internal sealed class AccountRemover(IAccountStore accountStore, AccountLeaseWai
         LogMessage.Information(logger, Location, "The account was removed.");
 
         return Result.Success<Unit, AccountRemovalFailure>(removed);
+    }
+
+    private Result<Unit, AccountRemovalFailure> SignedOutButNotRemoved(AccountId accountId, AccountRemovalFailure failure)
+    {
+        states.Record(accountId, AccountSignInStateFactory.CreateSignInRequired());
+
+        return Result.Failure<Unit, AccountRemovalFailure>(failure);
     }
 
     private Result<Unit, AccountRemovalFailure> Logged(AccountRemovalFailure failure)
