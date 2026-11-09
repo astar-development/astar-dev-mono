@@ -16,6 +16,7 @@ using AStarDev.CloudSync.ViewModels;
 using AStarDev.CloudSync.ViewModels.Accounts;
 using AStarDev.CloudSync.ViewModels.Common;
 using AStarDev.CloudSync.ViewModels.DisplaySettings;
+using AStarDev.CloudSync.ViewModels.FolderSelection;
 using AStarDev.CloudSync.ViewModels.Layouts;
 using AStarDev.CloudSync.ViewModels.Overview;
 using AStarDev.Localization;
@@ -60,6 +61,8 @@ public static class ServiceCollectionExtensions
             .AddSingleton<ITokenCacheConsent>(provider => provider.GetRequiredService<TokenCacheConsentViewModel>())
             .AddSingleton<AddAccountViewModel>()
             .AddSingleton<AccountDialogViewModel>()
+            .AddSingleton<FolderSelectionViewModel>()
+            .AddSingleton<IFolderSelectionDialog>(provider => provider.GetRequiredService<FolderSelectionViewModel>())
             .AddSingleton<IAccountCommands>(provider => provider.GetRequiredService<AccountDialogViewModel>())
             .AddSingleton<SignInStateOverviewReloader>()
             .AddSingleton<IAddAccountDialog>(provider => provider.GetRequiredService<AddAccountViewModel>())

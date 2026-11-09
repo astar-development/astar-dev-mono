@@ -143,7 +143,7 @@ public sealed class FolderSelectionViewModel : LocalizedObservableObject, IFolde
     /// <inheritdoc />
     public async Task ShowAsync(Option<AccountId> accountId, CancellationToken cancellationToken)
     {
-        if (IsOpen || accountId.Match(_ => true, () => true))
+        if (IsOpen)
             return;
 
         callerToken = cancellationToken;
@@ -175,10 +175,19 @@ public sealed class FolderSelectionViewModel : LocalizedObservableObject, IFolde
 
     internal void Toggle(FolderNodeViewModel node)
     {
+        if (!node.CanToggle)
+            return;
+
+        var wasTicked = evaluator.Evaluate(node.Path, Planned()) is SelectionState.Included;
+        _ = staged.RemoveAll(change => IsInclusionAt(change, node.Path));
         var planned = Planned();
-        staged.Add(evaluator.Evaluate(node.Path, planned) is SelectionState.Included
-            ? SelectionChangeFactory.CreateExcludeFolder(node.Path, node.RemoteId)
-            : SelectionChangeFactory.CreateIncludeFolder(node.Path, node.RemoteId, evaluator.EnclosingDirection(node.Path, planned).Match(direction => direction, SyncDirectionFactory.CreateTwoWay)));
+        var isTicked = evaluator.Evaluate(node.Path, planned) is SelectionState.Included;
+
+        if (wasTicked && isTicked)
+            staged.Add(SelectionChangeFactory.CreateExcludeFolder(node.Path, node.RemoteId));
+        else if (!wasTicked && !isTicked)
+            staged.Add(SelectionChangeFactory.CreateIncludeFolder(node.Path, node.RemoteId, evaluator.EnclosingDirection(node.Path, planned).Match(direction => direction, SyncDirectionFactory.CreateTwoWay)));
+
         StagedChanged();
     }
 
@@ -195,6 +204,13 @@ public sealed class FolderSelectionViewModel : LocalizedObservableObject, IFolde
         }));
         StagedChanged();
     }
+
+    private static bool IsInclusionAt(SelectionChange change, LocalRelativePath path) => change switch
+    {
+        SelectionChange.IncludeFolder include => string.Equals(include.Path.Value, path.Value, StringComparison.OrdinalIgnoreCase),
+        SelectionChange.ExcludeFolder exclude => string.Equals(exclude.Path.Value, path.Value, StringComparison.OrdinalIgnoreCase),
+        _ => false,
+    };
 
     private static bool IsInside(LocalRelativePath path, LocalRelativePath folder)
     {

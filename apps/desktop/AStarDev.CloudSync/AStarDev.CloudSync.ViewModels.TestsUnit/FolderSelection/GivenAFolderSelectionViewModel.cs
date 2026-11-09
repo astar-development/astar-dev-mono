@@ -104,7 +104,9 @@ public class GivenAFolderSelectionViewModel
         await docs.ExpandCommand.ExecuteAsync(null);
         await docs.ExpandCommand.ExecuteAsync(null);
 
-        (tree.Requested.Count, docs.IsExpanded, docs.Children.Select(child => (child.Path.Value, child.CheckState)).ToList()).ShouldBe((2, true, [("Docs/Sub", FolderCheckStateFactory.CreateTicked())]));
+        (tree.Requested.Count, docs.IsExpanded).ShouldBe((2, true));
+        docs.Children.Select(child => child.Path.Value).ToList().ShouldBe(["Docs/Sub"]);
+        docs.Children.Single().CheckState.ShouldBe(FolderCheckStateFactory.CreateTicked());
     }
 
     [Fact]
