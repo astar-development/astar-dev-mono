@@ -228,6 +228,21 @@ public class GivenAMainWindow
         await shown.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
     }
 
+    [AvaloniaFact]
+    public async Task when_a_new_account_was_added_then_the_dialog_offers_choose_folders_and_later_buttons_bound_to_their_commands()
+    {
+        var addAccount = TestData.CreateAddAccount(new FakeAccountAdder { Add = _ => Task.FromResult(AccountAddOutcomeFactory.CreateAdded(AccountIdFactory.Create(Guid.NewGuid()))) });
+        var window = new MainWindow { DataContext = TestData.CreateMainWindowViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), TestData.CreateDisplaySettings(), addAccount) };
+        window.Show();
+
+        _ = addAccount.ShowAsync(TestContext.Current.CancellationToken);
+        window.UpdateLayout();
+
+        var buttons = FindSingle<AddAccountView>(window).GetVisualDescendants().OfType<Button>().ToList();
+        buttons.Single(button => Equals(button.Content, addAccount.ChooseFoldersText)).Command.ShouldBeSameAs(addAccount.ChooseFoldersCommand);
+        buttons.Single(button => Equals(button.Content, addAccount.LaterText)).Command.ShouldBeSameAs(addAccount.LaterCommand);
+    }
+
     private static T FindSingle<T>(Window window) where T : Control => window.GetVisualDescendants().OfType<T>().ShouldHaveSingleItem();
 
     private static async Task<MainWindowViewModel> CreateViewModelAsync() => TestData.CreateMainWindowViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), TestData.CreateDisplaySettings());
