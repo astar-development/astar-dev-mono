@@ -4,5 +4,5 @@ namespace AStarDev.CloudSync.Sync;
 public static class RemovePreconditionFactory
 {
     /// <summary>Creates the <see cref="RemovePrecondition.MustMatch"/> case.</summary>
-    public static RemovePrecondition CreateMustMatch(string eTag) => new RemovePrecondition.MustMatch(eTag);
+    public static RemovePrecondition CreateMustMatch(string? eTag) => new RemovePrecondition.MustMatch(eTag ?? string.Empty);
 }

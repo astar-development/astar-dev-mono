@@ -12,8 +12,15 @@ internal sealed class KeyedProviderCapability<TCapability>(IServiceProvider serv
     where TCapability : class
 {
     /// <inheritdoc />
-    public Result<TCapability, ProviderError> ForProvider(CloudProvider provider) => throw new NotImplementedException($"{services}{provider}");
+    public Result<TCapability, ProviderError> ForProvider(CloudProvider provider) =>
+        services.GetKeyedService<TCapability>(provider) is { } capability
+            ? Result.Success<TCapability, ProviderError>(capability)
+            : Result.Failure<TCapability, ProviderError>(ProviderErrorFactory.CreateUnsupported());
 
     /// <inheritdoc />
-    public Task<Result<TCapability, ProviderError>> ForAccountAsync(AccountId accountId, CancellationToken cancellationToken) => throw new NotImplementedException($"{accountStore}{accountId}{cancellationToken}");
+    public Task<Result<TCapability, ProviderError>> ForAccountAsync(AccountId accountId, CancellationToken cancellationToken) =>
+        accountStore.GetAllAsync(cancellationToken)
+            .MatchAsync(
+                accounts => accounts.FirstOrNone(account => account.Id == accountId).Match(account => ForProvider(account.Registration.Provider), () => Result.Failure<TCapability, ProviderError>(ProviderErrorFactory.CreateNotFound())),
+                _ => Result.Failure<TCapability, ProviderError>(ProviderErrorFactory.CreateTransient()));
 }

@@ -4,5 +4,5 @@ namespace AStarDev.CloudSync.Sync;
 public static class RemoteChangePageFactory
 {
     /// <summary>Creates a page. Missing items become an empty list.</summary>
-    public static RemoteChangePage Create(IEnumerable<RemoteItemSnapshot>? items, PageContinuation next) => throw new NotImplementedException($"{items}{next}");
+    public static RemoteChangePage Create(IEnumerable<RemoteItemSnapshot>? items, PageContinuation next) => new([.. items ?? []], next);
 }

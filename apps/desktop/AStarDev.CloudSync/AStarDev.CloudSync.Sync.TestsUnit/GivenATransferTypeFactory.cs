@@ -46,6 +46,7 @@ public class GivenATransferTypeFactory
     {
         var failures = new[] { ReauthFailureFactory.CreateCancelled(), ReauthFailureFactory.CreateDifferentAccount(), ReauthFailureFactory.CreateProvider(ProviderErrorFactory.CreateTransient()) };
 
-        (failures.Select(failure => failure.GetType().Name).ToList(), failures[2].ShouldBeOfType<ReauthFailure.Provider>().Error).ShouldBe((new List<string> { "Cancelled", "DifferentAccount", "Provider" }, ProviderErrorFactory.CreateTransient()));
+        failures.Select(failure => failure.GetType().Name).ShouldBe(["Cancelled", "DifferentAccount", "Provider"]);
+        failures[2].ShouldBeOfType<ReauthFailure.Provider>().Error.ShouldBe(ProviderErrorFactory.CreateTransient());
     }
 }

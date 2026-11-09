@@ -6,5 +6,5 @@ namespace AStarDev.CloudSync.Sync;
 public static class DownloadedFileFactory
 {
     /// <summary>Creates the result. A missing cTag becomes an empty string and a negative size zero.</summary>
-    public static DownloadedFile Create(RemoteItemId id, string? cTag, long size, Option<string> hash) => throw new NotImplementedException($"{id}{cTag}{size}{hash}");
+    public static DownloadedFile Create(RemoteItemId id, string? cTag, long size, Option<string> hash) => new(id, cTag ?? string.Empty, Math.Max(size, 0), hash);
 }

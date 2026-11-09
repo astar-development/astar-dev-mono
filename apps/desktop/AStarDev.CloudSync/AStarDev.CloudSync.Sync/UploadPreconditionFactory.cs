@@ -7,5 +7,5 @@ public static class UploadPreconditionFactory
     public static UploadPrecondition CreateMustNotExist() => new UploadPrecondition.MustNotExist();
 
     /// <summary>Creates the <see cref="UploadPrecondition.MustMatch"/> case.</summary>
-    public static UploadPrecondition CreateMustMatch(string cTag) => new UploadPrecondition.MustMatch(cTag);
+    public static UploadPrecondition CreateMustMatch(string? cTag) => new UploadPrecondition.MustMatch(cTag ?? string.Empty);
 }
