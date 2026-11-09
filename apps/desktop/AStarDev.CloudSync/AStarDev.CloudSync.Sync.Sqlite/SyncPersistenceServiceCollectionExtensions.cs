@@ -23,7 +23,7 @@ public static class SyncPersistenceServiceCollectionExtensions
 
         return services
             .AddDbContextFactory<SyncDbContext>((provider, options) => options.UseSqlite(new SqliteConnectionStringBuilder { DataSource = databaseFile(provider).FullName }.ToString(), sqlite => sqlite.MigrationsHistoryTable(SyncDbContext.MigrationsHistoryTable)))
-            .AddSingleton<ICloudSyncDatabase>(provider => Compose(provider, accountsDatabase, databaseFile))
+            .AddSingleton<ICloudSyncDatabase>(provider => Compose(provider, accountsDatabase))
             .AddSingleton<ISyncRootPolicy, SyncRootPolicy>()
             .AddSingleton<SqliteSyncRootStore>()
             .AddSingleton<ISyncRootReader>(provider => provider.GetRequiredService<SqliteSyncRootStore>())
@@ -31,9 +31,9 @@ public static class SyncPersistenceServiceCollectionExtensions
             .AddSingleton<IAccountRemovalParticipant>(provider => provider.GetRequiredService<SqliteSyncRootStore>());
     }
 
-    private static ICloudSyncDatabase Compose(IServiceProvider provider, ServiceDescriptor? accountsDatabase, Func<IServiceProvider, IFileInfo> databaseFile)
+    private static ICloudSyncDatabase Compose(IServiceProvider provider, ServiceDescriptor? accountsDatabase)
     {
-        var syncDatabase = new SqliteSyncDatabase(provider.GetRequiredService<IDbContextFactory<SyncDbContext>>(), databaseFile(provider), provider.GetRequiredService<ILogger<SqliteSyncDatabase>>());
+        var syncDatabase = new SqliteSyncDatabase(provider.GetRequiredService<IDbContextFactory<SyncDbContext>>(), provider.GetRequiredService<ILogger<SqliteSyncDatabase>>());
 
         return accountsDatabase is null ? syncDatabase : new CompositeCloudSyncDatabase(CreateAccountsDatabase(provider, accountsDatabase), syncDatabase);
     }
