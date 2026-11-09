@@ -1,5 +1,6 @@
 using AStarDev.CloudSync.Layouts;
 using AStarDev.CloudSync.TestHelpers.Common;
+using AStarDev.CloudSync.TestHelpers.Ui;
 using AStarDev.CloudSync.ViewModels.Layouts;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
@@ -18,18 +19,18 @@ public class GivenALayoutBView
         var texts = window.GetVisualDescendants().OfType<TextBlock>().Select(text => text.Text).ToList();
 
         texts.ShouldContain("OneDrive / Work");
-        texts.ShouldContain(TestPaths.Native("~/CloudSync/OneDrive/Work/Documents"));
-        texts.ShouldNotContain(TestPaths.Native("~/CloudSync/OneDrive/Photos/Holiday photos"));
+        texts.ShouldContain("Documents");
+        texts.ShouldNotContain("Camera");
     }
 
     [AvaloniaFact]
-    public async Task when_shown_then_each_short_local_path_keeps_the_full_path_in_its_tooltip()
+    public async Task when_shown_then_each_local_path_is_also_its_tooltip()
     {
         var window = await CreateShownWindowAsync();
 
-        var localPath = window.GetVisualDescendants().OfType<TextBlock>().First(text => text.Text == TestPaths.Native("~/CloudSync/OneDrive/Work/Documents"));
+        var localPath = window.GetVisualDescendants().OfType<TextBlock>().First(text => text.Text == "Documents");
 
-        ToolTip.GetTip(localPath).ShouldBe(TestPaths.Full("/home/user/CloudSync/OneDrive/Work/Documents"));
+        ToolTip.GetTip(localPath).ShouldBe("Documents");
     }
 
     [AvaloniaFact]
@@ -66,8 +67,8 @@ public class GivenALayoutBView
         var texts = window.GetVisualDescendants().OfType<TextBlock>().Select(text => text.Text).ToList();
         window.Content.ShouldBeOfType<LayoutBView>().DataContext.ShouldBeOfType<LayoutBViewModel>().SearchText.ShouldBe("holiday");
         texts.ShouldContain("OneDrive / Photos");
-        texts.ShouldContain(TestPaths.Native("~/CloudSync/OneDrive/Photos/Holiday photos"));
-        texts.ShouldNotContain(TestPaths.Native("~/CloudSync/OneDrive/Work/Documents"));
+        texts.ShouldContain("Camera");
+        texts.ShouldNotContain("Documents");
     }
 
     [AvaloniaFact]

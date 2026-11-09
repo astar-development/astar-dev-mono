@@ -1,24 +1,29 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <!--
-    Test doubles and test data shared by more than one CloudSync test project.
+    Test doubles and test data for the CloudSync modules. References modules
+    only, never the Avalonia host or the view models: UI-level helpers live in
+    AStarDev.CloudSync.TestHelpers.Ui.
   -->
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <IsPackable>false</IsPackable>
     <IsPublishable>false</IsPublishable>
+    <SonarQubeTestProject>true</SonarQubeTestProject>
     <NoWarn>$(NoWarn);CS1591;CA1707;CA2007;</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../AStarDev.CloudSync/AStarDev.CloudSync.csproj" />
-    <ProjectReference Include="../AStarDev.CloudSync.Infrastructure/AStarDev.CloudSync.Infrastructure.csproj" />
-    <ProjectReference Include="../AStarDev.CloudSync.ViewModels/AStarDev.CloudSync.ViewModels.csproj" />
+    <ProjectReference Include="../AStarDev.CloudSync.Accounts/AStarDev.CloudSync.Accounts.csproj" />
+    <ProjectReference Include="../AStarDev.CloudSync.DisplaySettings/AStarDev.CloudSync.DisplaySettings.csproj" />
+    <ProjectReference Include="../AStarDev.CloudSync.Overview/AStarDev.CloudSync.Overview.csproj" />
+    <ProjectReference Include="../AStarDev.CloudSync.Sync/AStarDev.CloudSync.Sync.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+    <PackageReference Include="Shouldly" />
     <PackageReference Include="xunit.v3.extensibility.core" />
   </ItemGroup>
 

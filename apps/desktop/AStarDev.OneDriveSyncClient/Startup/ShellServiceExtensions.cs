@@ -25,9 +25,14 @@ using Testably.Abstractions;
 
 namespace AStarDev.OneDriveSyncClient.Startup;
 
-internal static class ShellServiceExtensions
+/// <summary>Composition root for the sync client's application services.</summary>
+public static class ShellServiceExtensions
 {
-    internal static IServiceCollection AddShell(this IServiceCollection services, InMemoryLogProcessor inMemoryLogProcessor)
+    /// <summary>Registers the sync client's application services: authentication, Graph access, the sync pipeline, settings, tray and update services.</summary>
+    /// <param name="services">The service collection to register into.</param>
+    /// <param name="inMemoryLogProcessor">The in-memory log processor that backs the log viewer.</param>
+    /// <returns>The same <paramref name="services"/> instance, for chaining.</returns>
+    public static IServiceCollection AddShell(this IServiceCollection services, InMemoryLogProcessor inMemoryLogProcessor)
     {
         var featureAvailability = new FeatureAvailabilityService();
         RegisterAvailableFeatures(featureAvailability);
@@ -35,6 +40,7 @@ internal static class ShellServiceExtensions
 
         _ = services.AddSingleton<IFeatureAvailabilityService>(featureAvailability);
         _ = services.AddSingleton<IFeatureRegistrar>(featureAvailability);
+        _ = services.AddSingleton<IProcessLauncher, ProcessLauncher>();
         _ = services.AddSingleton<IFileManagerService, FileManagerService>();
         _ = services.AddTransient<IFileOpenerService, FileOpenerService>();
         _ = services.AddSingleton(inMemoryLogProcessor);

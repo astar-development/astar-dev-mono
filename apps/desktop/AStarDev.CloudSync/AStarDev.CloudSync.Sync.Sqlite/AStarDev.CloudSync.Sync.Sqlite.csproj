@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    SQLite sync module: its own DbContext and migration history for the sync
+    tables (remote index, baseline, selection rules, attention queue, runs,
+    activity) and per-account sync settings. Everything is internal except
+    AddSyncPersistence. Must not reference Avalonia.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <IsPublishable>false</IsPublishable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Testably.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../AStarDev.CloudSync.Sync/AStarDev.CloudSync.Sync.csproj" />
+    <ProjectReference Include="../../../../packages/core/logging/AStarDev.LoggingExtensions/AStarDev.LoggingExtensions.csproj" />
+  </ItemGroup>
+
+</Project>

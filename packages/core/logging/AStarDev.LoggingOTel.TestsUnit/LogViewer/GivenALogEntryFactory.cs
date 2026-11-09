@@ -10,7 +10,7 @@ public sealed class GivenALogEntryFactory
     {
         var timestamp = new DateTimeOffset(2025, 6, 1, 12, 0, 0, TimeSpan.Zero);
 
-        var entry = LogEntryFactory.Create(timestamp, LogLevel.Information, "msg", null);
+        var entry = LogEntryFactory.Create(timestamp, LogLevel.Information, "msg");
 
         entry.Timestamp.ShouldBe(timestamp);
     }
@@ -18,7 +18,7 @@ public sealed class GivenALogEntryFactory
     [Fact]
     public void when_creating_entry_then_level_is_preserved()
     {
-        var entry = LogEntryFactory.Create(DateTimeOffset.UtcNow, LogLevel.Error, "msg", null);
+        var entry = LogEntryFactory.Create(DateTimeOffset.UtcNow, LogLevel.Error, "msg");
 
         entry.Level.ShouldBe(LogLevel.Error);
     }
@@ -26,25 +26,9 @@ public sealed class GivenALogEntryFactory
     [Fact]
     public void when_creating_entry_then_rendered_message_is_preserved()
     {
-        var entry = LogEntryFactory.Create(DateTimeOffset.UtcNow, LogLevel.Information, "hello world", null);
+        var entry = LogEntryFactory.Create(DateTimeOffset.UtcNow, LogLevel.Information, "hello world");
 
         entry.RenderedMessage.ShouldBe("hello world");
-    }
-
-    [Fact]
-    public void when_creating_entry_with_account_id_then_account_id_is_preserved()
-    {
-        var entry = LogEntryFactory.Create(DateTimeOffset.UtcNow, LogLevel.Information, "msg", "acc-123");
-
-        entry.AccountId.ShouldBe("acc-123");
-    }
-
-    [Fact]
-    public void when_creating_entry_with_null_account_id_then_account_id_is_null()
-    {
-        var entry = LogEntryFactory.Create(DateTimeOffset.UtcNow, LogLevel.Information, "msg", null);
-
-        entry.AccountId.ShouldBeNull();
     }
 
     [Theory]
@@ -56,7 +40,7 @@ public sealed class GivenALogEntryFactory
     [InlineData(LogLevel.Critical)]
     public void when_creating_entry_with_each_level_then_level_is_preserved(LogLevel level)
     {
-        var entry = LogEntryFactory.Create(DateTimeOffset.UtcNow, level, "msg", null);
+        var entry = LogEntryFactory.Create(DateTimeOffset.UtcNow, level, "msg");
 
         entry.Level.ShouldBe(level);
     }

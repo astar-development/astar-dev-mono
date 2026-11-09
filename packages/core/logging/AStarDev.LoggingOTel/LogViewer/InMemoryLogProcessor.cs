@@ -64,23 +64,8 @@ public sealed class InMemoryLogProcessor : BaseProcessor<LogRecord>, ILogEntryPr
     private static LogEntry ToLogEntry(LogRecord logRecord)
     {
         string rendered = PiiScrubber.Scrub(logRecord.FormattedMessage ?? string.Empty);
-        string? accountId = ExtractAccountId(logRecord);
         var timestamp = new DateTimeOffset(logRecord.Timestamp, TimeSpan.Zero);
 
-        return LogEntryFactory.Create(timestamp, logRecord.LogLevel, rendered, accountId);
-    }
-
-    private static string? ExtractAccountId(LogRecord logRecord)
-    {
-        if (logRecord.Attributes is null)
-            return null;
-
-        foreach (var attribute in logRecord.Attributes)
-        {
-            if (attribute.Key == "AccountId")
-                return attribute.Value?.ToString();
-        }
-
-        return null;
+        return LogEntryFactory.Create(timestamp, logRecord.LogLevel, rendered);
     }
 }

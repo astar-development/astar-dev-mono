@@ -23,6 +23,16 @@
     <Style Selector="Border.status-pill.paused > TextBlock">
         <Setter Property="Foreground" Value="{DynamicResource CloudSyncIdleBrush}" />
     </Style>
+    <Style Selector="Border.status-pill.signin > TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource CloudSyncWarnBrush}" />
+    </Style>
+
+    <Style Selector="Button.danger">
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Background" Value="{DynamicResource CloudSyncWarnBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource CloudSyncOnAccentBrush}" />
+    </Style>
 
     <Style Selector="TextBlock.stat-value.warn">
         <Setter Property="Foreground" Value="{DynamicResource CloudSyncWarnBrush}" />

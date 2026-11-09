@@ -1,9 +1,9 @@
-using AStarDev.CloudSync.Domain.Common;
-using AStarDev.CloudSync.Domain.Conflicts;
-using AStarDev.CloudSync.Domain.Overview;
-using AStarDev.CloudSync.Domain.SyncPairs;
+using AStarDev.CloudSync.Accounts;
+using AStarDev.CloudSync.Overview;
+using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.CloudSync.TestHelpers.Overview;
+using AStarDev.CloudSync.TestHelpers.Ui;
 using AStarDev.CloudSync.ViewModels.Layouts;
 using AStarDev.CloudSync.ViewModels.Overview;
 using AStarDev.CloudSync.ViewModels.TestsUnit.Overview;
@@ -84,7 +84,7 @@ public class GivenALayoutCViewModel
     public async Task when_one_pair_of_each_status_is_loaded_then_the_headline_uses_the_singular_conflict()
     {
         var account = TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
-        var conflictedPair = SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), account.Id, "Photos", new DirectoryInfo("/home/user/CloudSync/Photos"), "/Photos", SyncDirectionFactory.CreateTwoWay(), SyncStatusFactory.CreateHasConflicts(1), 1, Option.None<DateTimeOffset>());
+        var conflictedPair = SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), account.Id, "Photos", RelativePaths.Of("Photos"), Option.None<RemoteItemId>(), SyncDirectionFactory.CreateTwoWay(), SyncStatusFactory.CreateHasConflicts(1), 1, Option.None<DateTimeOffset>());
         var overviewData = SyncOverviewFactory.Create([account], [conflictedPair], [], [SyncConflictFactory.Create(conflictedPair.Id, "photo.jpg", TestData.CreateTime().GetUtcNow())], [], 0, Option.None<DateTimeOffset>());
         var overview = new SyncOverviewViewModel(new FixedSyncOverviewSource(overviewData), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         await overview.LoadAsync(TestContext.Current.CancellationToken);

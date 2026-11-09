@@ -1,4 +1,4 @@
-using AStarDev.CloudSync.Core.Accounts;
+using AStarDev.CloudSync.Accounts;
 
 namespace AStarDev.CloudSync.ViewModels.Accounts;
 
@@ -13,6 +13,10 @@ public static class AddAccountStepFactory
 
     /// <summary>Creates the already-added step.</summary>
     public static AddAccountStep CreateAlreadyAdded() => new AddAccountStep.AlreadyAdded();
+
+    /// <summary>Creates the added step.</summary>
+    /// <param name="accountId">The new account.</param>
+    public static AddAccountStep CreateAdded(AccountId accountId) => new AddAccountStep.Added(accountId);
 
     /// <summary>Creates the failed step.</summary>
     /// <param name="failure">Why the attempt failed.</param>

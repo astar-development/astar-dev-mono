@@ -286,7 +286,7 @@
                                             Padding="16,14"
                                             BorderBrush="{DynamicResource CloudSyncBorderBrush}"
                                             BorderThickness="0,0,0,1">
-                                        <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
+                                        <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" ColumnSpacing="12">
                                             <accounts:ProviderBadge Grid.Column="0" VerticalAlignment="Center" DataContext="{Binding Account.Provider}" />
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                                 <TextBlock Text="{Binding Account.Name}" FontSize="14" FontWeight="SemiBold" />
@@ -294,6 +294,8 @@
                                             </StackPanel>
                                             <common:StatusPill Grid.Column="2" VerticalAlignment="Center" DataContext="{Binding Account.Status}" />
                                             <Button Grid.Column="3" Classes="card-action" Content="{Binding ActionText}" Command="{Binding ActionCommand}" />
+                                            <Button Grid.Column="4" Classes="card-action card-sync-folder" Content="{Binding Account.ChangeSyncFolderText}" Command="{Binding Account.ChangeSyncFolderCommand}" />
+                                            <Button Grid.Column="5" Classes="card-action card-remove" Content="{Binding Account.RemoveText}" Command="{Binding Account.RemoveCommand}" />
                                         </Grid>
                                     </Border>
 

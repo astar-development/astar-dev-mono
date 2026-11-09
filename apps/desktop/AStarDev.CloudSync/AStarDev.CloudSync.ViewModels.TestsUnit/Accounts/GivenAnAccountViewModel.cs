@@ -1,9 +1,6 @@
-using AStarDev.CloudSync.Core.Activity;
-using AStarDev.CloudSync.Core.SyncPairs;
-using AStarDev.CloudSync.Domain.Accounts;
-using AStarDev.CloudSync.Domain.Activity;
-using AStarDev.CloudSync.Domain.Common;
-using AStarDev.CloudSync.TestHelpers.Common;
+using AStarDev.CloudSync.Accounts;
+using AStarDev.CloudSync.Sync;
+using AStarDev.CloudSync.TestHelpers.Ui;
 using AStarDev.CloudSync.ViewModels.Accounts;
 using AStarDev.FunctionalParadigm;
 

@@ -1,6 +1,6 @@
 using System.Windows.Input;
-using AStarDev.CloudSync.Core.Accounts;
-using AStarDev.CloudSync.Core.Common;
+using AStarDev.CloudSync.Accounts;
+using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.ViewModels.Common;
 using AStarDev.CloudSync.ViewModels.Overview;
 using AStarDev.CloudSync.ViewModels.SyncPairs;

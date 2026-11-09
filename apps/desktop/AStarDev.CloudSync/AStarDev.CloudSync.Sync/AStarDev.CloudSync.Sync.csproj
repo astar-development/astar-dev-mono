@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Sync module: sync pairs, activity, conflicts, their factories and the
+    ISyncActions seam the UI's action buttons call. Pure and deterministic.
+    Must not reference Avalonia.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <IsPublishable>false</IsPublishable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Testably.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../AStarDev.CloudSync.Accounts/AStarDev.CloudSync.Accounts.csproj" />
+    <ProjectReference Include="../../../../packages/core/functional/AStarDev.FunctionalParadigm/AStarDev.FunctionalParadigm.csproj" />
+    <ProjectReference Include="../../../../packages/core/logging/AStarDev.LoggingExtensions/AStarDev.LoggingExtensions.csproj" />
+    <ProjectReference Include="../../../../packages/source-generators/AStarDev.SourceGeneratorAttributes/AStarDev.SourceGeneratorAttributes.csproj" />
+    <ProjectReference Include="../../../../packages/source-generators/AStarDev.SourceGenerators/AStarDev.SourceGenerators.csproj" PrivateAssets="all" />
+  </ItemGroup>
+
+  <Target Name="AddGeneratorAnalyzerRefs" BeforeTargets="CoreCompile">
+    <MSBuild Projects="../../../../packages/source-generators/AStarDev.SourceGenerators/AStarDev.SourceGenerators.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration);TargetFramework=netstandard2.0;RuntimeIdentifier=;SelfContained=false">
+      <Output TaskParameter="TargetOutputs" ItemName="Analyzer" />
+    </MSBuild>
+    <MSBuild Projects="../../../../packages/source-generators/AStarDev.SourceGeneratorAttributes/AStarDev.SourceGeneratorAttributes.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration);TargetFramework=netstandard2.0;RuntimeIdentifier=;SelfContained=false">
+      <Output TaskParameter="TargetOutputs" ItemName="Analyzer" />
+    </MSBuild>
+  </Target>
+
+</Project>

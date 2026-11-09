@@ -1,8 +1,9 @@
-using AStarDev.CloudSync.Core.Overview;
-using AStarDev.CloudSync.Domain.Common;
-using AStarDev.CloudSync.Domain.Overview;
+using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Layouts;
+using AStarDev.CloudSync.Overview;
+using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.TestHelpers.Common;
+using AStarDev.CloudSync.TestHelpers.Ui;
 using AStarDev.CloudSync.ViewModels.Layouts;
 using AStarDev.CloudSync.ViewModels.Overview;
 using AStarDev.FunctionalParadigm;
@@ -85,10 +86,16 @@ public class GivenALayoutAView
         var layout = window.Content.ShouldBeOfType<LayoutAView>().DataContext.ShouldBeOfType<LayoutAViewModel>();
         var buttons = window.GetVisualDescendants().OfType<Button>().ToList();
 
-        var cardActions = buttons.Where(button => button.Classes.Contains("card-action")).ToList();
+        var cardActions = buttons.Where(button => button.Classes.Contains("card-action") && !button.Classes.Contains("card-remove") && !button.Classes.Contains("card-sync-folder")).ToList();
+        var removeActions = buttons.Where(button => button.Classes.Contains("card-remove")).ToList();
+        var syncFolderActions = buttons.Where(button => button.Classes.Contains("card-sync-folder")).ToList();
 
         cardActions.ShouldNotBeEmpty();
         cardActions.ShouldAllBe(button => button.Command == ((LayoutAAccountCardViewModel)button.DataContext!).ActionCommand);
+        removeActions.Count.ShouldBe(cardActions.Count);
+        removeActions.ShouldAllBe(button => button.Command == ((LayoutAAccountCardViewModel)button.DataContext!).Account.RemoveCommand);
+        syncFolderActions.Count.ShouldBe(cardActions.Count);
+        syncFolderActions.ShouldAllBe(button => button.Command == ((LayoutAAccountCardViewModel)button.DataContext!).Account.ChangeSyncFolderCommand);
         buttons.Single(button => button.Classes.Contains("add-account")).Command.ShouldBeSameAs(layout.AddAccountCommand);
     }
 

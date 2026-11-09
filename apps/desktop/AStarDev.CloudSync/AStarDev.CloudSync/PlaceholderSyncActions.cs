@@ -1,17 +1,16 @@
-using AStarDev.CloudSync.Core.Accounts;
-using AStarDev.CloudSync.Core.Common;
-using AStarDev.CloudSync.Core.Conflicts;
-using AStarDev.CloudSync.Core.SyncPairs;
+using AStarDev.CloudSync.Accounts;
+using AStarDev.CloudSync.Sync;
 using AStarDev.FunctionalParadigm;
 using AStarDev.LoggingExtensions;
 using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync;
 
-/// <summary>Stands in for the sync engine until it exists: opens the add-account dialog for "add account", and logs every other requested action without doing anything else.</summary>
+/// <summary>Stands in for the sync engine until it exists: opens the add-account dialog for "add account", the folder selection dialog for "add sync pair", and logs every other requested action without doing anything else.</summary>
 /// <param name="addAccountDialog">Shows the add-account dialog.</param>
+/// <param name="folderSelectionDialog">Shows the folder selection dialog for "add sync pair".</param>
 /// <param name="logger">Records each requested placeholder action.</param>
-public sealed class PlaceholderSyncActions(IAddAccountDialog addAccountDialog, ILogger<PlaceholderSyncActions> logger) : ISyncActions
+public sealed class PlaceholderSyncActions(IAddAccountDialog addAccountDialog, IFolderSelectionDialog folderSelectionDialog, ILogger<PlaceholderSyncActions> logger) : ISyncActions
 {
     /// <inheritdoc />
     public Task SyncNowAsync(AccountId accountId, CancellationToken cancellationToken) => LogRequestAsync("Sync now requested (placeholder: the sync engine is not implemented yet)", accountId.ToString());
@@ -26,7 +25,7 @@ public sealed class PlaceholderSyncActions(IAddAccountDialog addAccountDialog, I
     public Task AddAccountAsync(CancellationToken cancellationToken) => addAccountDialog.ShowAsync(cancellationToken);
 
     /// <inheritdoc />
-    public Task AddSyncPairAsync(Option<AccountId> accountId, CancellationToken cancellationToken) => LogRequestAsync("Add sync pair requested (placeholder: the sync engine is not implemented yet)", accountId.Match(id => id.ToString(), () => string.Empty));
+    public Task AddSyncPairAsync(Option<AccountId> accountId, CancellationToken cancellationToken) => folderSelectionDialog.ShowAsync(accountId, cancellationToken);
 
     /// <inheritdoc />
     public Task KeepBothAsync(SyncConflict conflict, CancellationToken cancellationToken) => LogRequestAsync("Keep both requested (placeholder: the sync engine is not implemented yet)", conflict.SyncPairId.ToString());

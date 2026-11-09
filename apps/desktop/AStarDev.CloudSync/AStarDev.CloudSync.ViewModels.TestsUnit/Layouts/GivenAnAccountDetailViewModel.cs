@@ -1,12 +1,7 @@
-using AStarDev.CloudSync.Core.Accounts;
-using AStarDev.CloudSync.Core.Activity;
-using AStarDev.CloudSync.Core.Common;
-using AStarDev.CloudSync.Core.SyncPairs;
-using AStarDev.CloudSync.Domain.Accounts;
-using AStarDev.CloudSync.Domain.Activity;
-using AStarDev.CloudSync.Domain.Common;
-using AStarDev.CloudSync.Domain.SyncPairs;
+using AStarDev.CloudSync.Accounts;
+using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.TestHelpers.Common;
+using AStarDev.CloudSync.TestHelpers.Ui;
 using AStarDev.CloudSync.ViewModels.Accounts;
 using AStarDev.CloudSync.ViewModels.Activity;
 using AStarDev.CloudSync.ViewModels.Layouts;
@@ -98,19 +93,37 @@ public class GivenAnAccountDetailViewModel
     }
 
     [Fact]
-    public void when_the_account_has_a_sync_pair_then_its_synced_folder_shows_the_short_and_full_local_path()
+    public void when_the_account_has_a_sync_pair_then_its_synced_folder_shows_the_local_path_relative_to_the_sync_root()
     {
         var localization = TestData.CreateLocalization();
         var cloudAccount = TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
-        var model = SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), cloudAccount.Id, "Documents", new DirectoryInfo("/home/user/CloudSync/OneDrive/Work/Documents"), "/Documents", SyncDirectionFactory.CreateTwoWay(), SyncStatusFactory.CreateUpToDate(), 1, Option.None<DateTimeOffset>());
+        var model = SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), cloudAccount.Id, "Documents", RelativePaths.Of("Documents"), Option.None<RemoteItemId>(), SyncDirectionFactory.CreateTwoWay(), SyncStatusFactory.CreateUpToDate(), 1, Option.None<DateTimeOffset>());
         var pair = new SyncPairViewModel(model, cloudAccount, localization, TestData.CreateTime());
         var account = new AccountViewModel(cloudAccount, [], localization, TestData.CreateTime());
 
         var detail = new AccountDetailViewModel(account, [pair], [], TestData.CreateLocalPathFormatter(), new RecordingSyncActions(), localization);
 
         var folder = detail.SyncedFolders.ShouldHaveSingleItem();
-        folder.LocalPathText.ShouldBe(TestPaths.Native("~/CloudSync/OneDrive/Work/Documents"));
-        folder.Pair.LocalPath.ShouldBe(TestPaths.Full("/home/user/CloudSync/OneDrive/Work/Documents"));
+        folder.LocalPathText.ShouldBe("Documents");
+        folder.Pair.LocalPath.ShouldBe("Documents");
+    }
+
+    [Fact]
+    public void when_the_account_needs_sign_in_then_pause_and_sync_now_are_disabled()
+    {
+        var account = TestData.CreateAccountViewModel(TestData.CreateAccountNeedingSignIn(), NoAccountCommands.Instance);
+
+        var detail = new AccountDetailViewModel(account, [], [], TestData.CreateLocalPathFormatter(), new RecordingSyncActions(), TestData.CreateLocalization());
+
+        detail.CanSync.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void when_the_account_is_signed_in_then_pause_and_sync_now_are_enabled()
+    {
+        var detail = CreateDetail(1, 1, SyncStatusFactory.CreateUpToDate());
+
+        detail.CanSync.ShouldBeTrue();
     }
 
     private static AccountDetailViewModel CreateDetail(int folderCount, int fileCount, SyncStatus status)

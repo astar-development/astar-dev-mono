@@ -1,5 +1,4 @@
-using AStarDev.CloudSync.Core.DisplaySettings;
-using AStarDev.CloudSync.Domain.DisplaySettings;
+using AStarDev.CloudSync.DisplaySettings;
 using AStarDev.CloudSync.ViewModels.Accounts;
 using AStarDev.Localization;
 

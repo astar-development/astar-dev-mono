@@ -66,28 +66,6 @@ public sealed class GivenAnInMemoryLogProcessor
     }
 
     [Fact]
-    public void when_a_log_entry_is_emitted_with_an_account_id_property_then_entry_account_id_is_extracted()
-    {
-        using var sut = new InMemoryLogProcessor();
-        var logger = CreateLogger(sut);
-
-        logger.LogInformation("account event for {AccountId}", "acc-test");
-
-        sut.GetSnapshot()[0].AccountId.ShouldBe("acc-test");
-    }
-
-    [Fact]
-    public void when_a_log_entry_is_emitted_without_an_account_id_property_then_entry_account_id_is_null()
-    {
-        using var sut = new InMemoryLogProcessor();
-        var logger = CreateLogger(sut);
-
-        logger.LogInformation("no account here");
-
-        sut.GetSnapshot()[0].AccountId.ShouldBeNull();
-    }
-
-    [Fact]
     public void when_a_log_entry_is_emitted_then_entry_added_observable_fires()
     {
         using var sut = new InMemoryLogProcessor();
@@ -137,6 +115,61 @@ public sealed class GivenAnInMemoryLogProcessor
 
         snapshot.Count.ShouldBe(1);
         sut.GetSnapshot().Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public void when_a_message_contains_no_email_then_the_rendered_message_is_unchanged()
+    {
+        using var sut = new InMemoryLogProcessor();
+        var logger = CreateLogger(sut);
+
+        logger.LogInformation("SyncAccountAsync for account-123");
+
+        sut.GetSnapshot()[0].RenderedMessage.ShouldBe("SyncAccountAsync for account-123");
+    }
+
+    [Fact]
+    public void when_a_message_contains_one_email_then_the_email_is_redacted()
+    {
+        using var sut = new InMemoryLogProcessor();
+        var logger = CreateLogger(sut);
+
+        logger.LogInformation("[SyncService] SyncAccountAsync for user@outlook.com");
+
+        sut.GetSnapshot()[0].RenderedMessage.ShouldBe("[SyncService] SyncAccountAsync for [email redacted]");
+    }
+
+    [Fact]
+    public void when_a_message_contains_multiple_emails_then_all_are_redacted()
+    {
+        using var sut = new InMemoryLogProcessor();
+        var logger = CreateLogger(sut);
+
+        logger.LogInformation("Syncing alice@outlook.com and bob@example.com");
+
+        sut.GetSnapshot()[0].RenderedMessage.ShouldBe("Syncing [email redacted] and [email redacted]");
+    }
+
+    [Fact]
+    public void when_an_email_is_passed_as_a_template_argument_then_it_is_redacted()
+    {
+        using var sut = new InMemoryLogProcessor();
+        var logger = CreateLogger(sut);
+
+        logger.LogInformation("Authenticated as {Account}", "user@mail.subdomain.example.co.uk");
+
+        sut.GetSnapshot()[0].RenderedMessage.ShouldBe("Authenticated as [email redacted]");
+    }
+
+    [Fact]
+    public void when_a_message_is_empty_then_the_rendered_message_is_empty()
+    {
+        using var sut = new InMemoryLogProcessor();
+        var logger = CreateLogger(sut);
+
+        logger.LogInformation("");
+
+        sut.GetSnapshot()[0].RenderedMessage.ShouldBe(string.Empty);
     }
 
     [Fact]

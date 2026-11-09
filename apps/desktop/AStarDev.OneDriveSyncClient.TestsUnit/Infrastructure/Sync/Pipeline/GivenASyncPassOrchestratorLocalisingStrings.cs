@@ -9,7 +9,6 @@ using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Detection;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Jobs;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Pipeline;
 using AStarDev.Localization;
-using Microsoft.Extensions.Logging.Abstractions;
 using AccountId = AStar.Dev.Infrastructure.AppDb.Entities.AccountId;
 using OneDriveItemId = AStar.Dev.Infrastructure.AppDb.Entities.OneDriveItemId;
 
@@ -38,9 +37,6 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
         _classificationRepository.GetAllCategoriesAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<FileClassificationCategory>>([]));
     }
 
-    private static IOptions<SyncSettings> SyncSettingsOptions
-        => Options.Create(new SyncSettings { ProgressReportInterval = 100 });
-
     private ISyncPassOrchestrator CreateSut()
     {
         var dependencies = new SyncServiceDependencies(
@@ -52,12 +48,7 @@ public sealed class GivenASyncPassOrchestratorLocalisingStrings
             _downloadJobBuilder,
             _remoteFolderCreator);
 
-        var syncPassRepositories = new SyncPassRepositories(
-            _accountRepository,
-            _driveStateRepository,
-            _classificationRepository);
-
-        return new SyncPassOrchestrator(syncPassRepositories, dependencies, SyncSettingsOptions, _settingsService, _localizationService, NullLogger<SyncPassOrchestrator>.Instance);
+        return SyncPassOrchestratorTestHost.Create(dependencies, _accountRepository, _driveStateRepository, _classificationRepository, _settingsService, _localizationService);
     }
 
     private static OneDriveAccount CreateAccount(string localSyncPath = "/path/to/sync") => new()

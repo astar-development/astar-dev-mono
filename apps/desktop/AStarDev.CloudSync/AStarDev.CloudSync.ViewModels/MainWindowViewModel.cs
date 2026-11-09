@@ -1,7 +1,8 @@
 using System.ComponentModel;
-using AStarDev.CloudSync.Core.DisplaySettings;
+using AStarDev.CloudSync.DisplaySettings;
 using AStarDev.CloudSync.ViewModels.Accounts;
 using AStarDev.CloudSync.ViewModels.DisplaySettings;
+using AStarDev.CloudSync.ViewModels.FolderSelection;
 using AStarDev.CloudSync.ViewModels.Layouts;
 using AStarDev.Localization;
 
@@ -17,13 +18,20 @@ public sealed class MainWindowViewModel : LocalizedObservableObject
     /// <param name="layoutB">Layout B, grouped by provider.</param>
     /// <param name="layoutC">Layout C, sync pairs first.</param>
     /// <param name="addAccount">The add-account dialog shown over the layout.</param>
-    public MainWindowViewModel(ILocalizationService localization, DisplaySettingsViewModel displaySettings, LayoutAViewModel layoutA, LayoutBViewModel layoutB, LayoutCViewModel layoutC, AddAccountViewModel addAccount) : base(localization)
+    /// <param name="accountDialog">The remove-account and sign-in dialog shown over the layout.</param>
+    /// <param name="folderSelection">The folder selection dialog shown over the layout.</param>
+    public MainWindowViewModel(ILocalizationService localization, DisplaySettingsViewModel displaySettings, LayoutAViewModel layoutA, LayoutBViewModel layoutB, LayoutCViewModel layoutC, AddAccountViewModel addAccount, AccountDialogViewModel accountDialog, FolderSelectionViewModel folderSelection) : base(localization)
     {
         DisplaySettings = displaySettings;
         LayoutA = layoutA;
         LayoutB = layoutB;
         LayoutC = layoutC;
         AddAccount = addAccount;
+        AccountDialog = accountDialog;
+        FolderSelection = folderSelection;
+        accountDialog.PropertyChanged += OnDialogChanged;
+        folderSelection.PropertyChanged += OnFolderSelectionChanged;
+        addAccount.PropertyChanged += OnDialogChanged;
         displaySettings.PropertyChanged += OnDisplaySettingsChanged;
     }
 
@@ -45,6 +53,15 @@ public sealed class MainWindowViewModel : LocalizedObservableObject
     /// <summary>The add-account dialog shown over the layout.</summary>
     public AddAccountViewModel AddAccount { get; }
 
+    /// <summary>The remove-account and sign-in dialog.</summary>
+    public AccountDialogViewModel AccountDialog { get; }
+
+    /// <summary>The folder selection dialog.</summary>
+    public FolderSelectionViewModel FolderSelection { get; }
+
+    /// <summary>Whether a modal dialog is open, so the layout behind it is disabled.</summary>
+    public bool IsDialogOpen => AddAccount.IsOpen || AccountDialog.IsOpen || FolderSelection.IsOpen;
+
     /// <summary>The view model of the layout to show. Each layout keeps its own state, so switching back restores it.</summary>
     public object CurrentLayout => DisplaySettings.CurrentLayout switch
     {
@@ -52,6 +69,18 @@ public sealed class MainWindowViewModel : LocalizedObservableObject
         MainLayout.SyncPairsFirst => LayoutC,
         _ => LayoutA
     };
+
+    private void OnDialogChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(AddAccountViewModel.IsOpen))
+            OnPropertyChanged(nameof(IsDialogOpen));
+    }
+
+    private void OnFolderSelectionChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(FolderSelectionViewModel.IsOpen))
+            OnPropertyChanged(nameof(IsDialogOpen));
+    }
 
     private void OnDisplaySettingsChanged(object? sender, PropertyChangedEventArgs e)
     {

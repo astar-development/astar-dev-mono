@@ -168,14 +168,17 @@
 
                         <StackPanel Grid.Row="0" Margin="28,20,28,0" Spacing="14">
                             <TextBlock Classes="muted" Text="{Binding BreadcrumbText}" />
-                            <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="14">
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="14">
                                 <accounts:ProviderBadge Grid.Column="0" DataContext="{Binding Account.Provider}" VerticalAlignment="Center" />
                                 <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
                                     <TextBlock Text="{Binding Account.Name}" FontSize="22" FontWeight="SemiBold" />
                                     <TextBlock Classes="muted" Text="{Binding SubtitleText}" FontSize="13" />
                                 </StackPanel>
-                                <Button Grid.Column="2" Classes="secondary" Content="{Binding PauseText}" Command="{Binding PauseCommand}" VerticalAlignment="Center" />
-                                <Button Grid.Column="3" Classes="primary" Content="{Binding SyncNowText}" Command="{Binding SyncNowCommand}" VerticalAlignment="Center" />
+                                <Button Grid.Column="2" Classes="secondary" Content="{Binding PauseText}" Command="{Binding PauseCommand}" IsEnabled="{Binding CanSync}" VerticalAlignment="Center" />
+                                <Button Grid.Column="3" Classes="primary" Content="{Binding SyncNowText}" Command="{Binding SyncNowCommand}" IsEnabled="{Binding CanSync}" VerticalAlignment="Center" />
+                                <Button Grid.Column="4" Classes="primary" Content="{Binding Account.SignInText}" Command="{Binding Account.SignInCommand}" IsVisible="{Binding Account.NeedsSignIn}" VerticalAlignment="Center" />
+                                <Button Grid.Column="5" Classes="secondary" Content="{Binding Account.ChangeSyncFolderText}" Command="{Binding Account.ChangeSyncFolderCommand}" VerticalAlignment="Center" />
+                                <Button Grid.Column="6" Classes="secondary" Content="{Binding Account.RemoveText}" Command="{Binding Account.RemoveCommand}" VerticalAlignment="Center" />
                             </Grid>
                             <ProgressBar Classes="account-progress" Value="{Binding Progress}" AutomationProperties.Name="{Binding Account.Status.Text}" />
                         </StackPanel>
@@ -210,7 +213,7 @@
                                                         </Grid>
                                                     </Border>
                                                     <Border Padding="16,8" BorderBrush="{DynamicResource CloudSyncBorderBrush}" BorderThickness="0,0,0,1">
-                                                        <Grid ColumnDefinitions="2*,2*,*,*" ColumnSpacing="12">
+                                                        <Grid ColumnDefinitions="2*,2*,*,*,150" ColumnSpacing="12">
                                                             <TextBlock Grid.Column="0" Classes="column-header" Text="{Binding LocalColumnText}" />
                                                             <TextBlock Grid.Column="1" Classes="column-header" Text="{Binding CloudColumnText}" />
                                                             <TextBlock Grid.Column="2" Classes="column-header" Text="{Binding StatusColumnText}" />
@@ -226,11 +229,13 @@
                                                         <ItemsControl.ItemTemplate>
                                                             <DataTemplate DataType="vmSyncPairs:SyncedFolderViewModel">
                                                                 <Border Padding="16,10" BorderBrush="{DynamicResource CloudSyncBorderBrush}" BorderThickness="0,0,0,1">
-                                                                    <Grid ColumnDefinitions="2*,2*,*,*" ColumnSpacing="12">
+                                                                    <Grid ColumnDefinitions="2*,2*,*,*,150" RowDefinitions="Auto,Auto" ColumnSpacing="12">
                                                                         <TextBlock Grid.Column="0" Text="{Binding LocalPathText}" FontSize="12" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Pair.LocalPath}" VerticalAlignment="Center" />
                                                                         <TextBlock Grid.Column="1" Classes="muted" Text="{Binding Pair.RemotePath}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
                                                                         <common:StatusPill Grid.Column="2" DataContext="{Binding Pair.Status}" VerticalAlignment="Center" />
                                                                         <TextBlock Grid.Column="3" Classes="muted" Text="{Binding Pair.LastSyncText}" VerticalAlignment="Center" />
+                                                                        <Button Grid.Column="4" Classes="secondary" Content="{Binding Pair.ChangeDirectionText}" Command="{Binding Pair.ChangeDirectionCommand}" />
+                                                                        <TextBlock Grid.Row="1" Grid.ColumnSpan="5" Classes="muted" Text="{Binding Pair.ErrorText}" IsVisible="{Binding Pair.HasError}" TextWrapping="Wrap" />
                                                                     </Grid>
                                                                 </Border>
                                                             </DataTemplate>

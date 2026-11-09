@@ -1,5 +1,4 @@
-using AStarDev.CloudSync.Core.DisplaySettings;
-using AStarDev.CloudSync.Domain.DisplaySettings;
+using AStarDev.CloudSync.DisplaySettings;
 
 namespace AStarDev.CloudSync.TestHelpers.DisplaySettings;
 

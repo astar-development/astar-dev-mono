@@ -2,7 +2,6 @@ using System.Reactive;
 using Unit = System.Reactive.Unit;
 using AStarDev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Domain;
-using AStarDev.OneDriveSyncClient.Infrastructure.Sync;
 using AStarDev.OneDriveSyncClient.Infrastructure.Sync.Jobs;
 using Microsoft.Graph.Models;
 using Microsoft.Graph.Models.ODataErrors;
@@ -26,30 +25,17 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
     ];
 
     /// <inheritdoc />
-    public async Task<Result<DriveId, string>> GetDriveIdAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var contextResult = await driveContextCache.ResolveAsync(accountId, tokenFactory, cancellationToken).ConfigureAwait(false);
-
-            return contextResult.Match(
-                ctx => new Ok<DriveId, string>(ctx.Ctx.DriveId),
-                error => (Result<DriveId, string>)new Fail<DriveId, string>(error));
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException and not SyncReAuthRequiredException)
-        {
-            return new Fail<DriveId, string>(ex.Message);
-        }
-    }
+    public Task<Result<DriveId, string>> GetDriveIdAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, CancellationToken cancellationToken = default)
+        => GraphFailure.CaptureAsync(
+            () => driveContextCache.ResolveAsync(accountId, tokenFactory, cancellationToken).MatchAsync(
+                ctx => (Result<DriveId, string>)new Ok<DriveId, string>(ctx.Ctx.DriveId),
+                error => new Fail<DriveId, string>(error)),
+            cancellationToken);
 
     /// <inheritdoc />
-    public async Task<Result<List<DriveFolder>, string>> GetRootFoldersAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var contextResult = await driveContextCache.ResolveAsync(accountId, tokenFactory, cancellationToken).ConfigureAwait(false);
-
-            return await contextResult.MatchAsync(
+    public Task<Result<List<DriveFolder>, string>> GetRootFoldersAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, CancellationToken cancellationToken = default)
+        => GraphFailure.CaptureAsync(
+            () => driveContextCache.ResolveAsync(accountId, tokenFactory, cancellationToken).MatchAsync(
                 async ctx =>
                 {
                     var firstPage = await ctx.Client.Drives[ctx.Ctx.DriveId.Value].Items[ctx.Ctx.RootId].Children
@@ -63,50 +49,37 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
 
                     return (Result<List<DriveFolder>, string>)new Ok<List<DriveFolder>, string>([.. folders.OrderBy(f => f.Name)]);
                 },
-                error => new Fail<List<DriveFolder>, string>(error)).ConfigureAwait(false);
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException and not SyncReAuthRequiredException)
-        {
-            return new Fail<List<DriveFolder>, string>(ex.Message);
-        }
-    }
+                error => Task.FromResult<Result<List<DriveFolder>, string>>(new Fail<List<DriveFolder>, string>(error))),
+            cancellationToken);
 
     /// <inheritdoc />
-    public async Task<Result<List<DriveFolder>, string>> GetChildFoldersAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, string parentFolderId, CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var client = graphClientFactory.CreateClient(tokenFactory);
+    public Task<Result<List<DriveFolder>, string>> GetChildFoldersAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, string parentFolderId, CancellationToken cancellationToken = default)
+        => GraphFailure.CaptureAsync(
+            async () =>
+            {
+                var client = graphClientFactory.CreateClient(tokenFactory);
 
-            var firstPage = await client.Drives[driveId.Value].Items[parentFolderId].Children
-                .GetAsync(req =>
-                {
-                    req.QueryParameters.Select = ["id", "name", "folder", "parentReference"];
-                    req.QueryParameters.Top = 100;
-                }, cancellationToken).ConfigureAwait(false);
+                var firstPage = await client.Drives[driveId.Value].Items[parentFolderId].Children
+                    .GetAsync(req =>
+                    {
+                        req.QueryParameters.Select = ["id", "name", "folder", "parentReference"];
+                        req.QueryParameters.Top = 100;
+                    }, cancellationToken).ConfigureAwait(false);
 
-            var folders = await PaginateDriveFoldersAsync(
-                firstPage,
-                nextLink => client.Drives[driveId.Value].Items[parentFolderId].Children
-                    .WithUrl(nextLink)
-                    .GetAsync(cancellationToken: cancellationToken)).ConfigureAwait(false);
+                var folders = await PaginateDriveFoldersAsync(
+                    firstPage,
+                    nextLink => client.Drives[driveId.Value].Items[parentFolderId].Children
+                        .WithUrl(nextLink)
+                        .GetAsync(cancellationToken: cancellationToken)).ConfigureAwait(false);
 
-            return new Ok<List<DriveFolder>, string>([.. folders.OrderBy(f => f.Name)]);
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException and not SyncReAuthRequiredException)
-        {
-            return new Fail<List<DriveFolder>, string>(ex.Message);
-        }
-    }
+                return (Result<List<DriveFolder>, string>)new Ok<List<DriveFolder>, string>([.. folders.OrderBy(f => f.Name)]);
+            },
+            cancellationToken);
 
     /// <inheritdoc />
-    public async Task<Result<(long Total, long Used), string>> GetQuotaAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var contextResult = await driveContextCache.ResolveAsync(accountId, tokenFactory, cancellationToken).ConfigureAwait(false);
-
-            return await contextResult.MatchAsync(
+    public Task<Result<(long Total, long Used), string>> GetQuotaAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, CancellationToken cancellationToken = default)
+        => GraphFailure.CaptureAsync(
+            () => driveContextCache.ResolveAsync(accountId, tokenFactory, cancellationToken).MatchAsync(
                 async ctx =>
                 {
                     var drive = await ctx.Client.Drives[ctx.Ctx.DriveId.Value]
@@ -118,13 +91,8 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
 
                     return (Result<(long Total, long Used), string>)new Ok<(long Total, long Used), string>(quota);
                 },
-                error => new Fail<(long Total, long Used), string>(error)).ConfigureAwait(false);
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException and not SyncReAuthRequiredException)
-        {
-            return new Fail<(long Total, long Used), string>(ex.Message);
-        }
-    }
+                error => Task.FromResult<Result<(long Total, long Used), string>>(new Fail<(long Total, long Used), string>(error))),
+            cancellationToken);
 
     /// <inheritdoc />
     public Task<Result<string, string>> GetLatestDeltaLinkAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, CancellationToken cancellationToken = default)
@@ -139,35 +107,24 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
         => graphFolderEnumerator.EnumerateFolderAsync(tokenFactory, driveId, folderId, remotePath, onItemDiscovered, cancellationToken);
 
     /// <inheritdoc />
-    public async Task<Result<Option<string>, string>> GetFolderIdByPathAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, string remotePath, CancellationToken cancellationToken = default)
+    public Task<Result<Option<string>, string>> GetFolderIdByPathAsync(Func<CancellationToken, Task<string>> tokenFactory, DriveId driveId, string remotePath, CancellationToken cancellationToken = default)
     {
         var client = graphClientFactory.CreateClient(tokenFactory);
 
-        try
-        {
-            var item = await client.Drives[driveId.Value].Items[$"{RootPathMarker}:{remotePath}"]
-                .GetAsync(req => req.QueryParameters.Select = ["id"], cancellationToken).ConfigureAwait(false);
-
-            return new Ok<Option<string>, string>(item?.Id is { } id ? Option.Some(id) : Option.None<string>());
-        }
-        catch (ApiException ex) when (ex.ResponseStatusCode == 404)
-        {
-            return new Ok<Option<string>, string>(Option.None<string>());
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException and not SyncReAuthRequiredException)
-        {
-            return new Fail<Option<string>, string>(ex.Message);
-        }
+        return Try.RunAsync(
+                () => client.Drives[driveId.Value].Items[$"{RootPathMarker}:{remotePath}"].GetAsync(req => req.QueryParameters.Select = ["id"], cancellationToken),
+                cancellationToken)
+            .MatchAsync(
+                item => new Ok<Option<string>, string>(item?.Id is { } id ? Option.Some(id) : Option.None<string>()),
+                exception => exception is ApiException { ResponseStatusCode: NotFoundStatusCode }
+                    ? new Ok<Option<string>, string>(Option.None<string>())
+                    : GraphFailure.ToFail<Option<string>>(exception));
     }
 
     /// <inheritdoc />
-    public async Task<Result<string, string>> GetDownloadUrlAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, string itemId, CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var contextResult = await driveContextCache.ResolveAsync(accountId, tokenFactory, cancellationToken).ConfigureAwait(false);
-
-            return await contextResult.MatchAsync(
+    public Task<Result<string, string>> GetDownloadUrlAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, string itemId, CancellationToken cancellationToken = default)
+        => GraphFailure.CaptureAsync(
+            () => driveContextCache.ResolveAsync(accountId, tokenFactory, cancellationToken).MatchAsync(
                 async ctx =>
                 {
                     var item = await ctx.Client.Drives[ctx.Ctx.DriveId.Value].Items[itemId]
@@ -182,82 +139,53 @@ internal sealed class GraphService(IUploadService uploadService, IGraphClientFac
 
                     return new Ok<string, string>(url.ToString()!);
                 },
-                error => new Fail<string, string>(error)).ConfigureAwait(false);
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException and not SyncReAuthRequiredException)
-        {
-            return new Fail<string, string>(ex.Message);
-        }
-    }
+                error => Task.FromResult<Result<string, string>>(new Fail<string, string>(error))),
+            cancellationToken);
 
     /// <inheritdoc />
-    public async Task<Result<string, string>> UploadFileAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, string localPath, string remotePath, string parentFolderId, CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            var contextResult = await driveContextCache.ResolveAsync(accountId, tokenFactory, cancellationToken).ConfigureAwait(false);
-
-            return await contextResult.MatchAsync(
-                async ctx => await uploadService.UploadAsync(ctx.Client, ctx.Ctx.DriveId, parentFolderId, localPath, remotePath, cancellationToken: cancellationToken).ConfigureAwait(false),
-                error => new Fail<string, string>(error)).ConfigureAwait(false);
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException and not SyncReAuthRequiredException)
-        {
-            return new Fail<string, string>(ex.Message);
-        }
-    }
+    public Task<Result<string, string>> UploadFileAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, string localPath, string remotePath, string parentFolderId, CancellationToken cancellationToken = default)
+        => GraphFailure.CaptureAsync(
+            () => driveContextCache.ResolveAsync(accountId, tokenFactory, cancellationToken).MatchAsync(
+                ctx => uploadService.UploadAsync(ctx.Client, ctx.Ctx.DriveId, parentFolderId, localPath, remotePath, cancellationToken: cancellationToken),
+                error => Task.FromResult<Result<string, string>>(new Fail<string, string>(error))),
+            cancellationToken);
 
     /// <inheritdoc />
-    public async Task<Result<DriveFolder, string>> CreateFolderAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, string parentFolderId, string folderName, CancellationToken cancellationToken = default)
-    {
-        var contextResult = await driveContextCache.ResolveAsync(accountId, tokenFactory, cancellationToken).ConfigureAwait(false);
-
-        return await contextResult.MatchAsync(
-            async ctx =>
-            {
-                try
+    public Task<Result<DriveFolder, string>> CreateFolderAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, string parentFolderId, string folderName, CancellationToken cancellationToken = default)
+        => GraphFailure.CaptureAsync(
+            () => driveContextCache.ResolveAsync(accountId, tokenFactory, cancellationToken).MatchAsync(
+                async ctx =>
                 {
                     var created = await ctx.Client.Drives[ctx.Ctx.DriveId.Value].Items[parentFolderId].Children
                         .PostAsync(new DriveItem { Name = folderName, Folder = new Folder(), AdditionalData = new Dictionary<string, object> { [ConflictBehaviorKey] = ConflictBehaviorFail } }, cancellationToken: cancellationToken)
                         .ConfigureAwait(false);
 
                     return created?.Id is null
-                        ? (Result<DriveFolder, string>)new Fail<DriveFolder, string>($"No folder was returned when creating '{folderName}'.")
+                        ? (Result<DriveFolder, string>)new Fail<DriveFolder, string>("No folder was returned when creating the folder.")
                         : new Ok<DriveFolder, string>(new DriveFolder(Id: created.Id, Name: created.Name ?? folderName, ParentId: ToOptionString(created.ParentReference?.Id)));
-                }
-                catch (Exception ex) when (ex is not OperationCanceledException and not SyncReAuthRequiredException)
-                {
-                    return new Fail<DriveFolder, string>(ex.Message);
-                }
-            },
-            error => new Fail<DriveFolder, string>(error)).ConfigureAwait(false);
-    }
+                },
+                error => Task.FromResult<Result<DriveFolder, string>>(new Fail<DriveFolder, string>(error))),
+            cancellationToken);
 
     /// <inheritdoc />
-    public async Task<Result<Unit, string>> DeleteItemAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, string itemId, CancellationToken cancellationToken = default)
-    {
-        var contextResult = await driveContextCache.ResolveAsync(accountId, tokenFactory, cancellationToken).ConfigureAwait(false);
+    public Task<Result<Unit, string>> DeleteItemAsync(string accountId, Func<CancellationToken, Task<string>> tokenFactory, string itemId, CancellationToken cancellationToken = default)
+        => GraphFailure.CaptureAsync(
+            () => driveContextCache.ResolveAsync(accountId, tokenFactory, cancellationToken).MatchAsync(
+                ctx => Try.RunAsync(
+                        async () =>
+                        {
+                            await ctx.Client.Drives[ctx.Ctx.DriveId.Value].Items[itemId].DeleteAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        return await contextResult.MatchAsync(
-            async ctx =>
-            {
-                try
-                {
-                    await ctx.Client.Drives[ctx.Ctx.DriveId.Value].Items[itemId].DeleteAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
-
-                    return (Result<Unit, string>)new Ok<Unit, string>(Unit.Default);
-                }
-                catch (ODataError error) when (error.ResponseStatusCode == NotFoundStatusCode)
-                {
-                    return new Ok<Unit, string>(Unit.Default);
-                }
-                catch (Exception ex) when (ex is not OperationCanceledException and not SyncReAuthRequiredException)
-                {
-                    return new Fail<Unit, string>(ex.Message);
-                }
-            },
-            error => new Fail<Unit, string>(error)).ConfigureAwait(false);
-    }
+                            return Unit.Default;
+                        },
+                        cancellationToken)
+                    .MatchAsync(
+                        deleted => new Ok<Unit, string>(deleted),
+                        exception => exception is ODataError { ResponseStatusCode: NotFoundStatusCode }
+                            ? new Ok<Unit, string>(Unit.Default)
+                            : GraphFailure.ToFail<Unit>(exception)),
+                error => Task.FromResult<Result<Unit, string>>(new Fail<Unit, string>(error))),
+            cancellationToken);
 
     /// <inheritdoc />
     public void EvictCachedDriveContext(string accountId) => driveContextCache.Evict(accountId);

@@ -1,59 +1,106 @@
 using AStarDev.OneDriveSyncClient.Infrastructure.Shell;
+using AStarDev.OneDriveSyncClient.TestsUnit.TestHelpers;
 
 namespace AStarDev.OneDriveSyncClient.TestsUnit.Infrastructure.Shell;
 
 public sealed class GivenAFileOpenerService
 {
-    private readonly FileOpenerService sut = new();
+    private const string ExistingFileName = "report with spaces.txt";
 
-    [Fact]
-    public void when_file_does_not_exist_then_open_file_does_not_throw()
+    private readonly RecordingProcessLauncher processLauncher = new();
+    private readonly MockFileSystem fileSystem = new();
+    private readonly string existingFilePath;
+
+    public GivenAFileOpenerService()
     {
-        Should.NotThrow(() => sut.OpenFile("/nonexistent/path/to/file.txt"));
+        existingFilePath = fileSystem.Path.GetFullPath(ExistingFileName);
+        _ = fileSystem.Initialize().WithFile(existingFilePath).Which(file => file.HasStringContent("data"));
+    }
+
+    private FileOpenerService CreateSut() => new(processLauncher, fileSystem);
+
+    [Theory]
+    [InlineData("/nonexistent/path/to/file.txt")]
+    [InlineData("/nonexistent/path with spaces/to file.txt")]
+    [InlineData("")]
+    public void when_the_file_does_not_exist_then_no_process_is_started(string localPath)
+    {
+        CreateSut().OpenFile(localPath);
+
+        processLauncher.Started.ShouldBeEmpty();
     }
 
     [Fact]
-    public void when_file_does_not_exist_and_path_contains_spaces_then_open_file_does_not_throw()
+    public void when_the_file_exists_only_on_the_real_disk_then_no_process_is_started()
     {
-        Should.NotThrow(() => sut.OpenFile("/nonexistent/path with spaces/to file.txt"));
+        var realFilePath = typeof(GivenAFileOpenerService).Assembly.Location;
+
+        CreateSut().OpenFile(realFilePath);
+
+        processLauncher.Started.ShouldBeEmpty();
     }
 
     [Fact]
-    public void when_path_is_empty_string_then_open_file_does_not_throw()
+    public void when_on_linux_and_only_a_differently_cased_file_exists_then_no_process_is_started()
     {
-        Should.NotThrow(() => sut.OpenFile(string.Empty));
+        Assert.SkipUnless(OperatingSystem.IsLinux(), "Linux only");
+
+        CreateSut().OpenFile(existingFilePath.ToUpperInvariant());
+
+        processLauncher.Started.ShouldBeEmpty();
     }
 
     [Fact]
-    public void when_on_linux_then_opener_is_xdg_open()
+    public void when_the_file_exists_then_the_platform_opener_is_started()
     {
-        if (!OperatingSystem.IsLinux())
-            return;
+        CreateSut().OpenFile(existingFilePath);
 
-        FileOpenerService.GetOpener().ShouldBe("xdg-open");
+        processLauncher.Started.ShouldHaveSingleItem().FileName.ShouldBe(RecordingProcessLauncher.ExpectedPlatformOpener());
     }
 
     [Fact]
-    public void when_on_macos_then_opener_is_open()
+    public void when_the_file_exists_then_its_path_is_passed_as_a_single_argument()
     {
-        if (!OperatingSystem.IsMacOS())
-            return;
+        CreateSut().OpenFile(existingFilePath);
 
-        FileOpenerService.GetOpener().ShouldBe("open");
+        processLauncher.Started.ShouldHaveSingleItem().ArgumentList.ShouldBe([existingFilePath]);
     }
 
     [Fact]
-    public void when_on_windows_then_opener_is_explorer()
+    public void when_the_file_exists_then_the_shell_is_not_used()
     {
-        if (!OperatingSystem.IsWindows())
-            return;
+        CreateSut().OpenFile(existingFilePath);
 
-        FileOpenerService.GetOpener().ShouldBe("explorer");
+        processLauncher.Started.ShouldHaveSingleItem().UseShellExecute.ShouldBeFalse();
     }
 
     [Fact]
-    public void when_getting_opener_then_a_non_empty_string_is_returned()
+    public void when_on_linux_then_the_opener_is_xdg_open()
     {
-        FileOpenerService.GetOpener().ShouldNotBeNullOrEmpty();
+        Assert.SkipUnless(OperatingSystem.IsLinux(), "Linux only");
+
+        CreateSut().OpenFile(existingFilePath);
+
+        processLauncher.Started.ShouldHaveSingleItem().FileName.ShouldBe("xdg-open");
+    }
+
+    [Fact]
+    public void when_on_macos_then_the_opener_is_open()
+    {
+        Assert.SkipUnless(OperatingSystem.IsMacOS(), "macOS only");
+
+        CreateSut().OpenFile(existingFilePath);
+
+        processLauncher.Started.ShouldHaveSingleItem().FileName.ShouldBe("open");
+    }
+
+    [Fact]
+    public void when_on_windows_then_the_opener_is_explorer()
+    {
+        Assert.SkipUnless(OperatingSystem.IsWindows(), "Windows only");
+
+        CreateSut().OpenFile(existingFilePath);
+
+        processLauncher.Started.ShouldHaveSingleItem().FileName.ShouldBe("explorer");
     }
 }

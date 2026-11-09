@@ -1,5 +1,5 @@
-using AStarDev.CloudSync.Core.Accounts;
-using AStarDev.CloudSync.Core.Common;
+using AStarDev.CloudSync.Accounts;
+using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.ViewModels.Accounts;
 using AStarDev.CloudSync.ViewModels.Activity;
 using AStarDev.CloudSync.ViewModels.Common;
@@ -87,6 +87,9 @@ public sealed class AccountDetailViewModel : LayoutBDetailViewModel
 
     /// <summary>The pause action text.</summary>
     public string PauseText => Localization.GetLocal("LayoutB.Pause");
+
+    /// <summary>Whether Pause and Sync now can run; false while the account needs sign-in.</summary>
+    public bool CanSync => !Account.NeedsSignIn;
 
     /// <summary>The sync-now action text.</summary>
     public string SyncNowText => Localization.GetLocal("LayoutB.SyncNow");

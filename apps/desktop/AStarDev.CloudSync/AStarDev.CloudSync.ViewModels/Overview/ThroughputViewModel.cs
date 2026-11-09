@@ -1,4 +1,4 @@
-using AStarDev.CloudSync.Core.Overview;
+using AStarDev.CloudSync.Overview;
 using AStarDev.CloudSync.ViewModels.Common;
 using AStarDev.Localization;
 

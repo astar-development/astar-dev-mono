@@ -271,7 +271,7 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="vmSyncPairs:SyncPairViewModel">
                                 <Border Classes="pair-tile" Classes.conflicts="{Binding Status.HasConflicts}">
-                                    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto,Auto" RowSpacing="8">
+                                    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto,Auto,Auto" RowSpacing="8">
                                         <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="8">
                                             <TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                                             <common:StatusPill Grid.Column="1" DataContext="{Binding Status}" />
@@ -305,6 +305,18 @@
                                         <Grid Grid.Row="5" ColumnDefinitions="Auto,*" ColumnSpacing="8">
                                             <TextBlock Grid.Column="0" Classes="muted" Text="{Binding AccountName}" />
                                             <TextBlock Grid.Column="1" Classes="muted" Text="{Binding SummaryText}" HorizontalAlignment="Right" TextTrimming="CharacterEllipsis" />
+                                        </Grid>
+                                        <Grid Grid.Row="6" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                            <TextBlock Grid.Column="0"
+                                                       Classes="muted"
+                                                       Text="{Binding ErrorText}"
+                                                       IsVisible="{Binding HasError}"
+                                                       TextWrapping="Wrap"
+                                                       VerticalAlignment="Center" />
+                                            <Button Grid.Column="1"
+                                                    Classes="secondary"
+                                                    Content="{Binding ChangeDirectionText}"
+                                                    Command="{Binding ChangeDirectionCommand}" />
                                         </Grid>
                                     </Grid>
                                 </Border>
@@ -401,7 +413,11 @@
                                     <StackPanel Spacing="4" VerticalAlignment="Center">
                                         <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="Medium" />
                                         <ProgressBar Classes="storage-bar" Value="{Binding Storage.Fraction}" AutomationProperties.Name="{Binding Storage.Text}" />
+                                        <TextBlock Text="{Binding Status.Text}" FontSize="11" Foreground="{DynamicResource CloudSyncWarnBrush}" IsVisible="{Binding NeedsSignIn}" />
                                     </StackPanel>
+                                    <Button Classes="primary" Content="{Binding SignInText}" Command="{Binding SignInCommand}" IsVisible="{Binding NeedsSignIn}" VerticalAlignment="Center" />
+                                    <Button Classes="secondary" Content="{Binding ChangeSyncFolderText}" Command="{Binding ChangeSyncFolderCommand}" VerticalAlignment="Center" />
+                                    <Button Classes="secondary" Content="{Binding RemoveText}" Command="{Binding RemoveCommand}" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Border>
                         </DataTemplate>

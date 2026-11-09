@@ -1,15 +1,13 @@
 using AStar.Dev.Velopack.Publishing;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
+using AStarDev.CloudSync.Accounts;
+using AStarDev.CloudSync.Accounts.OneDrive;
+using AStarDev.CloudSync.Accounts.Sqlite;
+using AStarDev.CloudSync.Sync.Sqlite;
 using AStarDev.CloudSync.Common;
-using AStarDev.CloudSync.Core.Accounts;
-using AStarDev.CloudSync.Core.Common;
-using AStarDev.CloudSync.Core.DisplaySettings;
-using AStarDev.CloudSync.Core.Overview;
-using AStarDev.CloudSync.Core.Persistence;
-using AStarDev.CloudSync.Infrastructure.Common;
-using AStarDev.CloudSync.Infrastructure.OneDrive;
-using AStarDev.CloudSync.Infrastructure.Overview;
-using AStarDev.CloudSync.Infrastructure.Persistence;
+using AStarDev.CloudSync.DisplaySettings;
+using AStarDev.CloudSync.Overview;
+using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.TestHelpers.DisplaySettings;
 using AStarDev.CloudSync.TestHelpers.Overview;
 using AStarDev.CloudSync.Theming;
@@ -19,7 +17,9 @@ using AStarDev.CloudSync.ViewModels.Common;
 using AStarDev.CloudSync.ViewModels.DisplaySettings;
 using AStarDev.CloudSync.ViewModels.Layouts;
 using AStarDev.CloudSync.ViewModels.Overview;
+using AStarDev.FunctionalParadigm;
 using AStarDev.Localization;
+using AStarDev.SingleInstance;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -93,7 +93,55 @@ public class GivenServiceCollectionExtensions
     {
         using var provider = CreateServices().BuildServiceProvider();
 
-        provider.GetRequiredService<ISyncOverviewSource>().ShouldBeOfType<AccountStoreSyncOverviewSource>();
+        provider.GetRequiredService<ISyncOverviewSource>().GetType().Assembly.ShouldBe(typeof(OverviewServiceCollectionExtensions).Assembly);
+    }
+
+    [Fact]
+    public void when_application_services_are_added_then_the_account_dialog_is_the_account_commands_and_the_reloader_resolves()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        (provider.GetRequiredService<IAccountCommands>() == provider.GetRequiredService<AccountDialogViewModel>(), provider.GetRequiredService<MainWindowViewModel>().AccountDialog == provider.GetRequiredService<AccountDialogViewModel>(), provider.GetRequiredService<SignInStateOverviewReloader>() is not null).ShouldBe((true, true, true));
+    }
+
+    [Fact]
+    public void when_application_services_are_added_then_the_folder_selection_dialog_is_the_shared_view_model()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<IFolderSelectionDialog>().ShouldBeSameAs(provider.GetRequiredService<AStarDev.CloudSync.ViewModels.FolderSelection.FolderSelectionViewModel>());
+    }
+
+    [Fact]
+    public void when_application_services_are_added_then_the_account_actions_and_startup_sign_in_check_resolve()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        (provider.GetRequiredService<IAccountActions>().GetType().Assembly, provider.GetRequiredService<ISignInStateRefresher>().GetType().Assembly).ShouldBe((typeof(SyncServiceCollectionExtensions).Assembly, typeof(SyncServiceCollectionExtensions).Assembly));
+    }
+
+    [Fact]
+    public void when_application_services_are_added_then_one_sync_lock_and_one_throttle_gate_are_shared()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        (provider.GetRequiredService<IAccountSyncLock>() == provider.GetRequiredService<IAccountSyncLock>(), provider.GetRequiredService<IAccountThrottleGate>() == provider.GetRequiredService<IAccountThrottleGate>(), provider.GetRequiredService<IAccountSyncLock>().GetType().Assembly).ShouldBe((true, true, typeof(SyncServiceCollectionExtensions).Assembly));
+    }
+
+    [Fact]
+    public void when_application_services_are_added_then_the_single_instance_guard_uses_the_cloudsync_lock_in_the_data_folder()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        (provider.GetRequiredService<ISingleInstanceGuard>().GetType().Assembly, provider.GetRequiredService<SingleInstanceOptions>().Name).ShouldBe((typeof(SingleInstanceServiceCollectionExtensions).Assembly, "cloudsync"));
+    }
+
+    [Fact]
+    public void when_application_services_are_added_then_the_onedrive_access_token_source_resolves_against_the_real_account_store()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<IAccessTokenSource>().GetType().Assembly.ShouldBe(typeof(OneDriveServiceCollectionExtensions).Assembly);
     }
 
     [Fact]
@@ -107,11 +155,13 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
-    public void when_application_services_are_added_then_the_account_adder_can_be_resolved()
+    public void when_application_services_are_added_then_the_onedrive_account_adder_is_resolved_by_provider()
     {
         using var provider = CreateServices().BuildServiceProvider();
 
-        provider.GetRequiredService<IAccountAdder>().ShouldBeOfType<MicrosoftAccountAdder>();
+        var adder = provider.GetRequiredService<IProviderCapability<IAccountAdder>>().ForProvider(CloudProviderFactory.CreateOneDrive());
+
+        adder.Match(found => found.GetType().Assembly, _ => typeof(object).Assembly).ShouldBe(typeof(OneDriveServiceCollectionExtensions).Assembly);
     }
 
     [Fact]
@@ -173,6 +223,15 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
+    public void when_application_services_are_added_then_the_folder_picker_is_the_avalonia_one()
+    {
+        var services = CreateServices();
+
+        var descriptor = services.Single(service => service.ServiceType == typeof(AStarDev.CloudSync.ViewModels.Common.IFolderPicker));
+        descriptor.ImplementationType.ShouldBe(typeof(AvaloniaFolderPicker));
+    }
+
+    [Fact]
     public void when_application_services_are_added_then_the_sync_overview_view_model_resolves()
     {
         using var provider = CreateServices().BuildServiceProvider();
@@ -208,33 +267,34 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
-    public void when_application_services_are_added_then_the_account_store_and_database_are_registered()
+    public void when_application_services_are_added_then_the_account_store_comes_from_the_accounts_sqlite_module_and_the_combined_database_from_the_sync_sqlite_module()
     {
         using var provider = CreateServices().BuildServiceProvider();
+        var sqliteModule = typeof(PersistenceServiceCollectionExtensions).Assembly;
 
         (provider.GetRequiredService<IAccountStore>(), provider.GetRequiredService<ICloudSyncDatabase>()).ShouldSatisfyAllConditions(
-            services => services.Item1.ShouldBeOfType<SqliteAccountStore>(),
-            services => services.Item2.ShouldBeOfType<SqliteCloudSyncDatabase>());
+            services => services.Item1.GetType().Assembly.ShouldBe(sqliteModule),
+            services => services.Item2.GetType().Assembly.ShouldBe(typeof(SyncPersistenceServiceCollectionExtensions).Assembly));
     }
 
     [Fact]
-    public void when_application_services_are_added_then_the_microsoft_account_adder_is_registered()
+    public void when_application_services_are_added_then_the_microsoft_account_adder_is_registered_keyed_by_onedrive()
     {
         var services = CreateServices();
 
-        services.ShouldContain(descriptor => descriptor.ServiceType == typeof(IAccountAdder) && descriptor.ImplementationType == typeof(MicrosoftAccountAdder) && descriptor.Lifetime == ServiceLifetime.Singleton);
+        services.ShouldContain(descriptor => descriptor.ServiceType == typeof(IAccountAdder) && descriptor.IsKeyedService && Equals(descriptor.ServiceKey, CloudProviderFactory.CreateOneDrive()) && descriptor.KeyedImplementationType!.Assembly == typeof(OneDriveServiceCollectionExtensions).Assembly && descriptor.Lifetime == ServiceLifetime.Singleton);
     }
 
     [Fact]
-    public void when_application_services_are_added_then_the_msal_client_drive_lookup_and_public_client_application_are_registered()
+    public void when_application_services_are_added_then_the_msal_client_token_cache_storage_and_public_client_application_are_registered()
     {
         using var provider = CreateServices().BuildServiceProvider();
+        var oneDriveModule = typeof(OneDriveServiceCollectionExtensions).Assembly;
 
-        (provider.GetRequiredService<IMsalClient>(), provider.GetRequiredService<IDriveLookup>(), provider.GetRequiredService<IMsalTokenCacheStorage>(), provider.GetRequiredService<IPublicClientApplication>()).ShouldSatisfyAllConditions(
-            services => services.Item1.ShouldBeOfType<MsalClient>(),
-            services => services.Item2.ShouldBeOfType<GraphDriveLookup>(),
-            services => services.Item3.ShouldBeOfType<MsalCacheHelperStorage>(),
-            services => services.Item4.ShouldBeSameAs(provider.GetRequiredService<IPublicClientApplication>()));
+        (provider.GetRequiredService<IMsalClient>(), provider.GetRequiredService<IMsalTokenCacheStorage>(), provider.GetRequiredService<IPublicClientApplication>()).ShouldSatisfyAllConditions(
+            services => services.Item1.GetType().Assembly.ShouldBe(oneDriveModule),
+            services => services.Item2.GetType().Assembly.ShouldBe(oneDriveModule),
+            services => services.Item3.ShouldBeSameAs(provider.GetRequiredService<IPublicClientApplication>()));
     }
 
     [Fact]
@@ -250,19 +310,13 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
-    public void when_application_services_are_added_then_the_plaintext_cache_consent_store_is_registered()
+    public void when_application_services_are_added_then_one_plaintext_cache_consent_setting_comes_from_the_onedrive_module()
     {
         using var provider = CreateServices().BuildServiceProvider();
 
-        provider.GetRequiredService<IPlaintextCacheConsentStore>().ShouldBeOfType<JsonPlaintextCacheConsentStore>();
-    }
-
-    [Fact]
-    public void when_application_services_are_added_then_the_plaintext_cache_consent_settings_are_the_token_cache_initialiser()
-    {
-        using var provider = CreateServices().BuildServiceProvider();
-
-        provider.GetRequiredService<IPlaintextCacheConsentSettings>().ShouldBeSameAs(provider.GetRequiredService<TokenCacheInitialiser>());
+        provider.GetRequiredService<IPlaintextCacheConsentSettings>().ShouldSatisfyAllConditions(
+            settings => settings.GetType().Assembly.ShouldBe(typeof(OneDriveServiceCollectionExtensions).Assembly),
+            settings => settings.ShouldBeSameAs(provider.GetRequiredService<IPlaintextCacheConsentSettings>()));
     }
 
     [Fact]
@@ -278,7 +332,7 @@ public class GivenServiceCollectionExtensions
     {
         using var provider = CreateServices().BuildServiceProvider();
 
-        var handlerTypes = HandlerChain(provider.GetRequiredService<IHttpMessageHandlerFactory>().CreateHandler(GraphDriveLookup.HttpClientName)).Select(handler => handler.GetType().Name).ToList();
+        var handlerTypes = HandlerChain(provider.GetRequiredService<IHttpMessageHandlerFactory>().CreateHandler("MicrosoftGraph")).Select(handler => handler.GetType().Name).ToList();
 
         handlerTypes.ShouldContain("RetryHandler");
         handlerTypes.ShouldContain("RedirectHandler");

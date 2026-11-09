@@ -1,6 +1,5 @@
-using AStarDev.CloudSync.Core.Accounts;
-using AStarDev.CloudSync.Core.Common;
-using AStarDev.CloudSync.Core.Conflicts;
+using AStarDev.CloudSync.Accounts;
+using AStarDev.CloudSync.Sync;
 using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.TestHelpers.Common;

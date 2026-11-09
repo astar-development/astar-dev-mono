@@ -1,8 +1,6 @@
 using AStarDev.CloudSync.Accounts;
-using AStarDev.CloudSync.Core.Accounts;
-using AStarDev.CloudSync.Domain.Accounts;
 using AStarDev.CloudSync.TestHelpers.Accounts;
-using AStarDev.CloudSync.TestHelpers.Common;
+using AStarDev.CloudSync.TestHelpers.Ui;
 using AStarDev.CloudSync.ViewModels.Accounts;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
@@ -23,6 +21,8 @@ public class GivenTheAddAccountSnapshots
     [InlineData("already-added", "light")]
     [InlineData("failed", "dark")]
     [InlineData("failed", "light")]
+    [InlineData("offer", "dark")]
+    [InlineData("offer", "light")]
     public void when_rendered_then_the_add_account_dialog_matches_the_baseline(string step, string theme)
     {
         Assert.SkipUnless(OperatingSystem.IsLinux(), Snapshot.LinuxOnlyReason);
@@ -50,10 +50,11 @@ public class GivenTheAddAccountSnapshots
                 "consent" => async token => { _ = await consent.AskAsync(token); return AccountAddOutcomeFactory.CreateCancelled(); },
                 "already-added" => _ => Task.FromResult(AccountAddOutcomeFactory.CreateReAuthenticated(AccountIdFactory.Create(Guid.Parse("5e6f7a8b-9c0d-4e1f-a2b3-c4d5e6f7a8b9")))),
                 "failed" => _ => Task.FromResult(AccountAddOutcomeFactory.CreateFailed(AccountAddFailureFactory.CreateNetwork())),
+                "offer" => _ => Task.FromResult(AccountAddOutcomeFactory.CreateAdded(AccountIdFactory.Create(Guid.Parse("5e6f7a8b-9c0d-4e1f-a2b3-c4d5e6f7a8b9")))),
                 _ => _ => new TaskCompletionSource<AccountAddOutcome>().Task,
             }
         };
-        var dialog = new AddAccountViewModel(adder, consent, TestData.CreateLocalization(), NullLogger<AddAccountViewModel>.Instance);
+        var dialog = new AddAccountViewModel(new SingleProviderCapability<IAccountAdder>(adder), consent, new RecordingFolderSelectionDialog(), TestData.CreateLocalization(), NullLogger<AddAccountViewModel>.Instance);
         _ = dialog.ShowAsync(TestContext.Current.CancellationToken);
 
         return dialog;

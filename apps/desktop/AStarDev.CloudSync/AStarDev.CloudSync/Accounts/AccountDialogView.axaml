@@ -1,0 +1,90 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmAccounts="using:AStarDev.CloudSync.ViewModels.Accounts"
+             x:Class="AStarDev.CloudSync.Accounts.AccountDialogView"
+             x:DataType="vmAccounts:AccountDialogViewModel"
+             HorizontalAlignment="Center"
+             VerticalAlignment="Center">
+    <Border Background="{DynamicResource CloudSyncSurfaceBrush}"
+            BorderBrush="{DynamicResource CloudSyncBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="8"
+            Padding="24"
+            Margin="24"
+            MaxWidth="460">
+        <Grid RowDefinitions="Auto,*"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch">
+            <TextBlock Grid.Row="0"
+                       Margin="0,0,0,16"
+                       Text="{Binding TitleText}"
+                       FontSize="18"
+                       FontWeight="SemiBold"
+                       Foreground="{DynamicResource CloudSyncTextPrimaryBrush}" />
+            <ScrollViewer Grid.Row="1"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          MinHeight="0">
+                <StackPanel Spacing="16">
+                    <StackPanel Spacing="16" IsVisible="{Binding IsConfirming}">
+                        <TextBlock Text="{Binding ConfirmText}"
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource CloudSyncTextPrimaryBrush}" />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                            <Button Classes="secondary" Content="{Binding CancelText}" Command="{Binding CloseCommand}" />
+                            <Button Classes="danger" Content="{Binding RemoveText}" Command="{Binding ConfirmRemoveCommand}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Spacing="16" IsVisible="{Binding IsShowingSyncFolder}">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="{Binding SyncFolderText}"
+                                       TextWrapping="Wrap"
+                                       Foreground="{DynamicResource CloudSyncTextMutedBrush}" />
+                            <TextBlock Text="{Binding SyncFolderPathText}"
+                                       TextWrapping="Wrap"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource CloudSyncTextPrimaryBrush}" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding SyncFolderSyncingText}"
+                                   IsVisible="{Binding SyncFolderSyncingText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource CloudSyncTextMutedBrush}" />
+                        <TextBlock Text="{Binding SyncFolderMessageText}"
+                                   IsVisible="{Binding HasSyncFolderMessage}"
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource CloudSyncWarnBrush}" />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                            <Button Classes="secondary" Content="{Binding CloseText}" Command="{Binding CloseCommand}" />
+                            <Button Classes="primary" Content="{Binding ChangeText}" Command="{Binding ChooseSyncFolderCommand}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Spacing="16" IsVisible="{Binding IsConfirmingSyncFolderChange}">
+                        <TextBlock Text="{Binding SyncFolderConfirmText}"
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource CloudSyncTextPrimaryBrush}" />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                            <Button Classes="secondary" Content="{Binding CancelText}" Command="{Binding CancelSyncFolderChangeCommand}" />
+                            <Button Classes="primary" Content="{Binding ChangeSyncFolderConfirmText}" Command="{Binding ConfirmSyncFolderChangeCommand}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Spacing="16" IsVisible="{Binding IsWorking}">
+                        <TextBlock Text="{Binding WorkingText}"
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource CloudSyncTextPrimaryBrush}" />
+                        <ProgressBar IsIndeterminate="True" />
+                    </StackPanel>
+
+                    <StackPanel Spacing="16" IsVisible="{Binding IsShowingMessage}">
+                        <TextBlock Text="{Binding MessageText}"
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource CloudSyncTextPrimaryBrush}" />
+                        <Button Classes="primary" HorizontalAlignment="Right" Content="{Binding CloseText}" Command="{Binding CloseCommand}" />
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Border>
+</UserControl>

@@ -1,22 +1,13 @@
-using AStarDev.CloudSync.Core.Accounts;
-using AStarDev.CloudSync.Core.Activity;
-using AStarDev.CloudSync.Core.Common;
-using AStarDev.CloudSync.Core.Conflicts;
-using AStarDev.CloudSync.Core.Overview;
-using AStarDev.CloudSync.Core.SyncPairs;
-using AStarDev.CloudSync.Domain.Accounts;
-using AStarDev.CloudSync.Domain.Activity;
-using AStarDev.CloudSync.Domain.Common;
-using AStarDev.CloudSync.Domain.Conflicts;
-using AStarDev.CloudSync.Domain.Overview;
-using AStarDev.CloudSync.Domain.SyncPairs;
+using AStarDev.CloudSync.Accounts;
+using AStarDev.CloudSync.Overview;
+using AStarDev.CloudSync.Sync;
+using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.TestHelpers.Overview;
 
 public sealed class PlaceholderSyncOverviewSource(TimeProvider timeProvider) : ISyncOverviewSource
 {
-    private const string OneDriveLocalRoot = "/home/user/CloudSync/OneDrive";
     private const long Gigabyte = 1_073_741_824;
     private const long Terabyte = 1_099_511_627_776;
     private const long BytesMovedToday = 3_328_599_655;
@@ -62,5 +53,5 @@ public sealed class PlaceholderSyncOverviewSource(TimeProvider timeProvider) : I
         return Task.FromResult(Result.Success<SyncOverview, ErrorResponse>(SyncOverviewFactory.Create([work, personal, photos, archive], [documents, projects, desktop, recipes, music, holidayPhotos, backups], activity, conflicts, throughput, BytesMovedToday, Option.Some(now.AddMinutes(-10)))));
     }
 
-    private static SyncPair CreatePair(CloudAccount account, string name, string remotePath, SyncDirection direction, SyncStatus status, int fileCount, Option<DateTimeOffset> lastSync) => SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), account.Id, name, new DirectoryInfo(Path.Join(OneDriveLocalRoot, account.DisplayName, name)), remotePath, direction, status, fileCount, lastSync);
+    private static SyncPair CreatePair(CloudAccount account, string name, string remotePath, SyncDirection direction, SyncStatus status, int fileCount, Option<DateTimeOffset> lastSync) => SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), account.Id, name, RelativePaths.Of(remotePath.TrimStart('/')), Option.None<RemoteItemId>(), direction, status, fileCount, lastSync);
 }

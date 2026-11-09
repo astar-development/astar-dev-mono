@@ -7,6 +7,7 @@ paths:
 
 - Private fields: camelCase, no underscore prefix (`fieldName` not `_fieldName`)
 - `nameof()` for parameter names in exceptions and logging
+- `[LoggerMessage]` placeholders: PascalCase (`{AccountIdHash}`, never `{message}`). The placeholder is the App Insights key, case-sensitive. Deliberately not semconv dotted names (#1375).
 - No single-letter variables except loop indices. Name for meaning: `customerId` not `id`.
 
 ## Structure
@@ -49,6 +50,7 @@ paths:
 - AAA pattern, blank lines between sections, no section comments.
 - Shouldly assertions. NSubstitute mocks (prefer real instances).
 - No comments anywhere in test files — no XML docs, no inline comments, no block comments. Name the test and the variables clearly enough that no comment is needed.
+- Never use `InternalsVisibleTo`. Test through the public API; internal types are covered by those tests. A case the public API cannot reach is deleted, not exposed — never make a type or member `public` for a test.
 
 ## Error Handling
 
@@ -68,6 +70,12 @@ Never await `Task<Result<T,E>>` into a variable then call `.Match()` — chain `
 ```
 
 Error-branch logic belongs INSIDE the error lambda. Never use `is Result<T,E>.Ok` pattern matching.
+
+## Async
+
+- Non-UI code (services, infrastructure, background workers): every `await` uses `.ConfigureAwait(false)`.
+- View models and code-behind: never `.ConfigureAwait(false)` before touching UI-bound state or controls.
+- `ConfigureAwait(false)` does not leave the UI thread if the awaited task has already completed. Long DB or CPU loops started from a command run through `Task.Run`.
 
 ## Sync Pipelines
 

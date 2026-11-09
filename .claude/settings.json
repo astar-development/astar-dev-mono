@@ -85,7 +85,6 @@
   },
   "enabledPlugins": {
     "csharp-lsp@claude-plugins-official": true,
-    "serena@claude-plugins-official": true,
     "serena@anthropic-plugin-directory": true
   }
 }

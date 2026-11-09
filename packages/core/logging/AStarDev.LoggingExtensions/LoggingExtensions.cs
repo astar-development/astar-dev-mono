@@ -1,11 +1,13 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using AStarDev.LoggingOTel;
 using AStarDev.Utilities;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OpenTelemetry.Logs;
 using OpenTelemetry.Resources;
 
 namespace AStarDev.LoggingExtensions;
@@ -57,7 +59,7 @@ public static class LoggingExtensions
         string? connectionString = configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"] ?? configuration["ApplicationInsights:ConnectionString"];
 
         if (connectionString.IsNotNullOrWhiteSpace())
-            _ = services.AddOpenTelemetry().ConfigureResource(resource => ConfigureResource(resource, environment, serviceName, Assembly.GetEntryAssembly())).UseAzureMonitor(options => options.ConnectionString = connectionString);
+            _ = services.AddOpenTelemetry().ConfigureResource(resource => ConfigureResource(resource, environment, serviceName, Assembly.GetEntryAssembly())).WithLogging(logging => logging.AddProcessor<ErrorTypeLogProcessor>()).UseAzureMonitor(options => options.ConnectionString = connectionString);
     }
 
     [SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "OpenTelemetry deployment.environment.name values are lower case by convention.")]

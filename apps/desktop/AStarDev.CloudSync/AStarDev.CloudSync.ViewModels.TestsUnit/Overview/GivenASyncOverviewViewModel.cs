@@ -1,11 +1,9 @@
-using AStarDev.CloudSync.Core.Overview;
-using AStarDev.CloudSync.Domain.Accounts;
-using AStarDev.CloudSync.Domain.Common;
-using AStarDev.CloudSync.Domain.Conflicts;
-using AStarDev.CloudSync.Domain.Overview;
-using AStarDev.CloudSync.Domain.SyncPairs;
+using AStarDev.CloudSync.Accounts;
+using AStarDev.CloudSync.Overview;
+using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.CloudSync.TestHelpers.Overview;
+using AStarDev.CloudSync.TestHelpers.Ui;
 using AStarDev.CloudSync.ViewModels.Overview;
 using AStarDev.FunctionalParadigm;
 using Microsoft.Extensions.Logging;
@@ -104,6 +102,34 @@ public class GivenASyncOverviewViewModel
 
         viewModel.Stats[3].Tone.ShouldBeOfType<StatTileTone.Normal>();
         viewModel.Stats[4].Tone.ShouldBeOfType<StatTileTone.Accent>();
+    }
+
+    [Fact]
+    public async Task when_any_account_needs_sign_in_then_the_overall_status_is_sign_in_required_even_while_another_syncs()
+    {
+        var overview = SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateSyncing(40), Option.None<DateTimeOffset>()), TestData.CreateAccountNeedingSignIn()], [], [], [], [], 0, Option.None<DateTimeOffset>());
+        var viewModel = new SyncOverviewViewModel(new FixedSyncOverviewSource(overview), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+
+        await viewModel.LoadAsync(TestContext.Current.CancellationToken);
+
+        viewModel.OverallStatusText().ShouldBe(TestData.CreateLocalization().GetLocal("Status.Overall.SignInRequired"));
+    }
+
+    [Fact]
+    public async Task when_an_older_load_finishes_after_a_newer_one_then_the_newer_overview_stays()
+    {
+        var older = new TaskCompletionSource<Result<SyncOverview, ErrorResponse>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var newer = SyncOverviewFactory.Create([TestData.CreateAccountNeedingSignIn()], [], [], [], [], 0, Option.None<DateTimeOffset>());
+        var stale = SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>()), TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>())], [], [], [], [], 0, Option.None<DateTimeOffset>());
+        var source = new SequencedSyncOverviewSource([older.Task, Task.FromResult(Result.Success<SyncOverview, ErrorResponse>(newer))]);
+        var viewModel = new SyncOverviewViewModel(source, new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+
+        var firstLoad = viewModel.LoadAsync(TestContext.Current.CancellationToken);
+        await viewModel.LoadAsync(TestContext.Current.CancellationToken);
+        older.SetResult(Result.Success<SyncOverview, ErrorResponse>(stale));
+        await firstLoad;
+
+        viewModel.Accounts.ShouldHaveSingleItem().NeedsSignIn.ShouldBeTrue();
     }
 
     [Fact]

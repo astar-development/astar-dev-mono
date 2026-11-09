@@ -1,5 +1,6 @@
 using AStarDev.CloudSync.Layouts;
 using AStarDev.CloudSync.TestHelpers.Common;
+using AStarDev.CloudSync.TestHelpers.Ui;
 using AStarDev.CloudSync.ViewModels.Conflicts;
 using AStarDev.CloudSync.ViewModels.Layouts;
 using AStarDev.CloudSync.ViewModels.SyncPairs;
@@ -61,6 +62,17 @@ public class GivenALayoutCView
 
         tiles.ShouldNotBeEmpty();
         tiles.ShouldAllBe(tile => tile.GetVisualDescendants().OfType<TextBlock>().Any(text => text.Text == ((SyncPairViewModel)tile.DataContext!).DirectionGlyph && AutomationProperties.GetName(text) == ((SyncPairViewModel)tile.DataContext!).DirectionLabel));
+    }
+
+    [AvaloniaFact]
+    public async Task when_shown_then_each_pair_tile_has_a_change_direction_button_bound_to_its_command()
+    {
+        var window = await CreateShownWindowAsync();
+
+        var tiles = window.GetVisualDescendants().OfType<Border>().Where(border => border.Classes.Contains("pair-tile")).ToList();
+
+        tiles.ShouldNotBeEmpty();
+        tiles.ShouldAllBe(tile => tile.GetVisualDescendants().OfType<Button>().Any(button => Equals(button.Content, "Change direction") && button.Command == ((SyncPairViewModel)tile.DataContext!).ChangeDirectionCommand));
     }
 
     [AvaloniaFact]

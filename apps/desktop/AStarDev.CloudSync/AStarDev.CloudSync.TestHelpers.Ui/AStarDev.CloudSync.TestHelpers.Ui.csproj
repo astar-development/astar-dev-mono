@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    UI-level test helpers shared by the view model and host test projects:
+    view model builders, the UI dispatcher and the home folder fakes.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <IsPackable>false</IsPackable>
+    <IsPublishable>false</IsPublishable>
+    <SonarQubeTestProject>true</SonarQubeTestProject>
+    <NoWarn>$(NoWarn);CS1591;CA1707;CA2007;</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../AStarDev.CloudSync/AStarDev.CloudSync.csproj" />
+    <ProjectReference Include="../AStarDev.CloudSync.TestHelpers/AStarDev.CloudSync.TestHelpers.csproj" />
+    <ProjectReference Include="../AStarDev.CloudSync.ViewModels/AStarDev.CloudSync.ViewModels.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+    <PackageReference Include="xunit.v3.extensibility.core" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage" />
+  </ItemGroup>
+
+</Project>
