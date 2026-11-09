@@ -61,7 +61,7 @@ public static class TestData
 
     public static AccountDialogViewModel CreateAccountDialog(FakeAccountActions actions) => new(actions, CreateLocalization());
 
-    public static CloudAccount CreateAccountNeedingSignIn() => CloudAccountFactory.Create(AccountIdFactory.Create(Guid.Parse("6f7e8d9c-0b1a-4c3d-9e8f-7a6b5c4d3e2f")), "Personal", "personal@example.com", CloudProviderFactory.CreateOneDrive(), StorageUsageFactory.Create(12_884_901_888, 1_099_511_627_776), 4, 1_204, SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>(), AccountSignInStateFactory.CreateSignInRequired());
+    public static CloudAccount CreateAccountNeedingSignIn() => CloudAccountFactory.CreateWithSignIn(CloudAccountFactory.Create(AccountIdFactory.Create(Guid.Parse("6f7e8d9c-0b1a-4c3d-9e8f-7a6b5c4d3e2f")), "Personal", "personal@example.com", CloudProviderFactory.CreateOneDrive(), StorageUsageFactory.Create(12_884_901_888, 1_099_511_627_776), 4, 1_204, SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>()), AccountSignInStateFactory.CreateSignInRequired());
 
     public static AccountViewModel CreateAccountViewModel(CloudAccount account, IAccountCommands commands) => new(account, [], commands, CreateLocalization(), CreateTime());
 

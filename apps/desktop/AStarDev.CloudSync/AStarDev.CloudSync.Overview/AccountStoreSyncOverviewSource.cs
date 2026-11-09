@@ -16,5 +16,5 @@ internal sealed class AccountStoreSyncOverviewSource(ICloudSyncDatabase database
             .MatchAsync(accounts => Result.Success<SyncOverview, ErrorResponse>(SyncOverviewFactory.Create([.. accounts.Select(ToCloudAccount)], [], [], [], [], 0, Option.None<DateTimeOffset>())), Result.Failure<SyncOverview, ErrorResponse>);
 
     private CloudAccount ToCloudAccount(StoredAccount account) =>
-        CloudAccountFactory.Create(account.Id, account.Registration.DisplayName, account.Registration.Email, account.Registration.Provider, account.Registration.Storage, 0, 0, SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>(), signInStates.StateOf(account.Id));
+        CloudAccountFactory.CreateWithSignIn(CloudAccountFactory.Create(account.Id, account.Registration.DisplayName, account.Registration.Email, account.Registration.Provider, account.Registration.Storage, 0, 0, SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>()), signInStates.StateOf(account.Id));
 }
