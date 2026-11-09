@@ -31,6 +31,7 @@ public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ISyncActio
     {
     }
 
+    private int loadsStarted;
     private SyncOverview overview = SyncOverviewFactory.Create([], [], [], [], [], 0, Option.None<DateTimeOffset>());
 
     /// <summary>The connected accounts.</summary>
@@ -68,9 +69,14 @@ public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ISyncActio
 
     /// <summary>Reads the overview from the source and rebuilds every collection. A failing source is logged and reported through <see cref="LoadState"/> instead of throwing; cancellation still throws.</summary>
     /// <param name="cancellationToken">Cancels the read.</param>
-    public async Task LoadAsync(CancellationToken cancellationToken) =>
+    public async Task LoadAsync(CancellationToken cancellationToken)
+    {
+        var load = Interlocked.Increment(ref loadsStarted);
         _ = await Try.RunAsync(() => source.GetOverviewAsync(cancellationToken), cancellationToken)
-            .MatchAsync(result => result.Match(Show, NotRead), Threw);
+            .MatchAsync(result => IsLatest(load) ? result.Match(Show, NotRead) : Unit.Instance, exception => IsLatest(load) ? Threw(exception) : Unit.Instance);
+    }
+
+    private bool IsLatest(int load) => load == Volatile.Read(ref loadsStarted);
 
     private Unit Threw(Exception exception)
     {
@@ -141,6 +147,9 @@ public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ISyncActio
     /// <returns>The localised overall status.</returns>
     public string OverallStatusText()
     {
+        if (overview.Accounts.Any(account => account.SignIn is AccountSignInState.SignInRequired))
+            return Localization.GetLocal("Status.Overall.SignInRequired");
+
         if (overview.Accounts.Any(account => account.Status is SyncStatus.Syncing))
             return Localization.GetLocal("Status.Overall.Syncing");
 

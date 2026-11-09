@@ -62,8 +62,8 @@ public sealed class AccountDialogViewModel(IAccountActions actions, ILocalizatio
             return;
 
         SetStep(AccountDialogStepFactory.CreateWorking(Localization.GetLocal("AccountDialog.SigningIn", account.Name)));
-        var signedIn = await actions.ReauthenticateAsync(account.Id, cancellationToken);
-        signedIn.Match(_ => Close(), failure => ShowSignInFailure(failure, account));
+        _ = await Try.RunAsync(() => actions.ReauthenticateAsync(account.Id, cancellationToken), cancellationToken)
+            .MatchAsync(signedIn => signedIn.Match(_ => Close(), failure => ShowSignInFailure(failure, account)), _ => ShowSignInFailure(ReauthFailureFactory.CreateProvider(ProviderErrorFactory.CreateUnexpected()), account));
     }
 
     /// <inheritdoc />
@@ -84,8 +84,8 @@ public sealed class AccountDialogViewModel(IAccountActions actions, ILocalizatio
             return;
 
         SetStep(AccountDialogStepFactory.CreateWorking(Localization.GetLocal("AccountDialog.Removing", confirming.Account.Name)));
-        var removed = await actions.RemoveAsync(confirming.Account.Id, cancellationToken);
-        removed.Match(_ => Close(), ShowRemovalFailure);
+        _ = await Try.RunAsync(() => actions.RemoveAsync(confirming.Account.Id, cancellationToken), cancellationToken)
+            .MatchAsync(removed => removed.Match(_ => Close(), ShowRemovalFailure), _ => ShowRemovalFailure(AccountRemovalFailureFactory.CreateProvider(ProviderErrorFactory.CreateUnexpected())));
     }
 
     private Unit ShowRemovalFailure(AccountRemovalFailure failure)

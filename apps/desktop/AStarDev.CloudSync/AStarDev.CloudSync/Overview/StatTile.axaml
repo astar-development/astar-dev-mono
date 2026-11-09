@@ -10,7 +10,7 @@
         <TextBlock Classes="stat-value"
                    Classes.warn="{Binding IsWarn}"
                    Classes.accent="{Binding IsAccent}"
-                   Text="{Binding Value}" FontSize="20" FontWeight="SemiBold" />
+                   Text="{Binding Value}" TextWrapping="Wrap" FontSize="20" FontWeight="SemiBold" />
         <TextBlock Classes="muted" Text="{Binding Label}" />
     </StackPanel>
 </UserControl>

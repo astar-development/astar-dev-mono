@@ -17,6 +17,7 @@ public sealed class MainWindowViewModel : LocalizedObservableObject
     /// <param name="layoutB">Layout B, grouped by provider.</param>
     /// <param name="layoutC">Layout C, sync pairs first.</param>
     /// <param name="addAccount">The add-account dialog shown over the layout.</param>
+    /// <param name="accountDialog">The remove-account and sign-in dialog shown over the layout.</param>
     public MainWindowViewModel(ILocalizationService localization, DisplaySettingsViewModel displaySettings, LayoutAViewModel layoutA, LayoutBViewModel layoutB, LayoutCViewModel layoutC, AddAccountViewModel addAccount, AccountDialogViewModel accountDialog) : base(localization)
     {
         DisplaySettings = displaySettings;

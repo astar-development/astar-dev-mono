@@ -25,32 +25,31 @@
                           VerticalScrollBarVisibility="Auto"
                           HorizontalScrollBarVisibility="Disabled"
                           MinHeight="0">
-            <StackPanel Spacing="16">
+                <StackPanel Spacing="16">
+                    <StackPanel Spacing="16" IsVisible="{Binding IsConfirming}">
+                        <TextBlock Text="{Binding ConfirmText}"
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource CloudSyncTextPrimaryBrush}" />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                            <Button Classes="secondary" Content="{Binding CancelText}" Command="{Binding CloseCommand}" />
+                            <Button Classes="danger" Content="{Binding RemoveText}" Command="{Binding ConfirmRemoveCommand}" />
+                        </StackPanel>
+                    </StackPanel>
 
-            <StackPanel Spacing="16" IsVisible="{Binding IsConfirming}">
-                <TextBlock Text="{Binding ConfirmText}"
-                           TextWrapping="Wrap"
-                           Foreground="{DynamicResource CloudSyncTextPrimaryBrush}" />
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-                    <Button Classes="secondary" Content="{Binding CancelText}" Command="{Binding CloseCommand}" />
-                    <Button Classes="primary" Content="{Binding RemoveText}" Command="{Binding ConfirmRemoveCommand}" />
+                    <StackPanel Spacing="16" IsVisible="{Binding IsWorking}">
+                        <TextBlock Text="{Binding WorkingText}"
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource CloudSyncTextPrimaryBrush}" />
+                        <ProgressBar IsIndeterminate="True" />
+                    </StackPanel>
+
+                    <StackPanel Spacing="16" IsVisible="{Binding IsShowingMessage}">
+                        <TextBlock Text="{Binding MessageText}"
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource CloudSyncTextPrimaryBrush}" />
+                        <Button Classes="primary" HorizontalAlignment="Right" Content="{Binding CloseText}" Command="{Binding CloseCommand}" />
+                    </StackPanel>
                 </StackPanel>
-            </StackPanel>
-
-            <StackPanel Spacing="16" IsVisible="{Binding IsWorking}">
-                <TextBlock Text="{Binding WorkingText}"
-                           TextWrapping="Wrap"
-                           Foreground="{DynamicResource CloudSyncTextPrimaryBrush}" />
-                <ProgressBar IsIndeterminate="True" />
-            </StackPanel>
-
-            <StackPanel Spacing="16" IsVisible="{Binding IsShowingMessage}">
-                <TextBlock Text="{Binding MessageText}"
-                           TextWrapping="Wrap"
-                           Foreground="{DynamicResource CloudSyncTextPrimaryBrush}" />
-                <Button Classes="primary" HorizontalAlignment="Right" Content="{Binding CloseText}" Command="{Binding CloseCommand}" />
-            </StackPanel>
-            </StackPanel>
             </ScrollViewer>
         </Grid>
     </Border>

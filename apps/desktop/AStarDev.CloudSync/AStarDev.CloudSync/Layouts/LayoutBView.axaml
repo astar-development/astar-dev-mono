@@ -174,8 +174,8 @@
                                     <TextBlock Text="{Binding Account.Name}" FontSize="22" FontWeight="SemiBold" />
                                     <TextBlock Classes="muted" Text="{Binding SubtitleText}" FontSize="13" />
                                 </StackPanel>
-                                <Button Grid.Column="2" Classes="secondary" Content="{Binding PauseText}" Command="{Binding PauseCommand}" VerticalAlignment="Center" />
-                                <Button Grid.Column="3" Classes="primary" Content="{Binding SyncNowText}" Command="{Binding SyncNowCommand}" VerticalAlignment="Center" />
+                                <Button Grid.Column="2" Classes="secondary" Content="{Binding PauseText}" Command="{Binding PauseCommand}" IsEnabled="{Binding CanSync}" VerticalAlignment="Center" />
+                                <Button Grid.Column="3" Classes="primary" Content="{Binding SyncNowText}" Command="{Binding SyncNowCommand}" IsEnabled="{Binding CanSync}" VerticalAlignment="Center" />
                                 <Button Grid.Column="4" Classes="primary" Content="{Binding Account.SignInText}" Command="{Binding Account.SignInCommand}" IsVisible="{Binding Account.NeedsSignIn}" VerticalAlignment="Center" />
                                 <Button Grid.Column="5" Classes="secondary" Content="{Binding Account.RemoveText}" Command="{Binding Account.RemoveCommand}" VerticalAlignment="Center" />
                             </Grid>

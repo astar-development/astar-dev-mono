@@ -38,10 +38,10 @@ public sealed class StatusViewModel(SyncStatus status, AccountSignInState signIn
     public bool IsUpToDate => !IsSignInRequired && status is SyncStatus.UpToDate;
 
     /// <summary>Whether there are conflicts; selects the pill colour.</summary>
-    public bool HasConflicts => status is SyncStatus.HasConflicts;
+    public bool HasConflicts => !IsSignInRequired && status is SyncStatus.HasConflicts;
 
     /// <summary>Whether paused; selects the pill colour.</summary>
-    public bool IsPaused => status is SyncStatus.Paused;
+    public bool IsPaused => !IsSignInRequired && status is SyncStatus.Paused;
 
     /// <summary>Sync progress from 0 to 1: the percentage when syncing, 0 when paused (no progress is known), otherwise 1.</summary>
     public double Progress => status switch

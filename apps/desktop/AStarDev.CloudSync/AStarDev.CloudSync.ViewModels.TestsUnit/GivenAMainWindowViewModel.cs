@@ -68,7 +68,6 @@ public class GivenAMainWindowViewModel
     [Fact]
     public async Task when_the_account_dialog_opens_then_a_dialog_is_open()
     {
-        var actions = new AStarDev.CloudSync.TestHelpers.Accounts.FakeAccountActions();
         var overview = await TestData.CreateLoadedOverviewViewModelAsync();
         var window = TestData.CreateMainWindowViewModel(overview, TestData.CreateDisplaySettings());
         var opened = new List<string?>();
@@ -79,6 +78,5 @@ public class GivenAMainWindowViewModel
         (window.IsDialogOpen, opened.Contains(nameof(window.IsDialogOpen))).ShouldBe((true, true));
         window.AccountDialog.CloseCommand.Execute(null);
         window.IsDialogOpen.ShouldBeFalse();
-        _ = actions;
     }
 }

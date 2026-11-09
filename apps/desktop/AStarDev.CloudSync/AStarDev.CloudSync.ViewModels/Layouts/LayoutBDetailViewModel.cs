@@ -89,7 +89,7 @@ public sealed class AccountDetailViewModel : LayoutBDetailViewModel
     public string PauseText => Localization.GetLocal("LayoutB.Pause");
 
     /// <summary>Whether Pause and Sync now can run; false while the account needs sign-in.</summary>
-    public bool CanSync => Account.NeedsSignIn || !Account.NeedsSignIn;
+    public bool CanSync => !Account.NeedsSignIn;
 
     /// <summary>The sync-now action text.</summary>
     public string SyncNowText => Localization.GetLocal("LayoutB.SyncNow");

@@ -16,6 +16,7 @@
   "Status.Paused": "Paused",
   "Status.Overall.Syncing": "Syncing",
   "Status.Overall.Conflicts": "Needs attention",
+  "Status.Overall.SignInRequired": "Sign-in required",
   "Storage.Usage": "{0} of {1}",
   "Size.Bytes": "{0} B",
   "Size.Kilobytes": "{0} KB",
