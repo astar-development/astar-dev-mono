@@ -21,7 +21,7 @@ public sealed class SyncSelectionEvaluator : ISyncSelectionEvaluator
 
     /// <inheritdoc />
     public Option<SyncDirection> EnclosingDirection(LocalRelativePath path, IReadOnlyList<SelectionRule> rules) =>
-        Option.None<SyncDirection>();
+        CoveringRules(path, rules).Where(IsInclude).OrderBy(rule => SelectionPaths.Depth(rule.Path)).Select(rule => ((SelectionRuleKind.Include)rule.Kind).Direction).FirstOrNone();
 
     private static List<SelectionRule> CoveringRules(LocalRelativePath path, IReadOnlyList<SelectionRule> rules) => [.. rules.Where(rule => SelectionPaths.IsAncestorOrSelf(rule.Path, path))];
 
