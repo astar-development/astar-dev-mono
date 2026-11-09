@@ -19,6 +19,10 @@ public sealed class SyncSelectionEvaluator : ISyncSelectionEvaluator
     /// <inheritdoc />
     public bool IsIncluded(LocalRelativePath path, IReadOnlyList<SelectionRule> rules) => OwnState(CoveringRules(path, rules)).Match(IsInclude, () => false);
 
+    /// <inheritdoc />
+    public Option<SyncDirection> EnclosingDirection(LocalRelativePath path, IReadOnlyList<SelectionRule> rules) =>
+        Option.None<SyncDirection>();
+
     private static List<SelectionRule> CoveringRules(LocalRelativePath path, IReadOnlyList<SelectionRule> rules) => [.. rules.Where(rule => SelectionPaths.IsAncestorOrSelf(rule.Path, path))];
 
     private static bool IsInclude(SelectionRule rule) => rule.Kind is SelectionRuleKind.Include;
