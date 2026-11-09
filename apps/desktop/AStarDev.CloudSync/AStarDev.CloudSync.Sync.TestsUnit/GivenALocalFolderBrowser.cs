@@ -11,6 +11,7 @@ namespace AStarDev.CloudSync.Sync.TestsUnit;
 public sealed class GivenALocalFolderBrowser
 {
     private const string Root = "/home/jbarden/CloudSync/OneDrive-Personal";
+    private const string WindowsRoot = "C:\\Sync\\Personal";
     private static readonly AccountId Account = AccountIdFactory.Create(Guid.Parse("11111111-1111-1111-1111-111111111111"));
 
     private readonly MockFileSystem fileSystem = new(options => options.SimulatingOperatingSystem(SimulationMode.Linux));
@@ -124,10 +125,10 @@ public sealed class GivenALocalFolderBrowser
     [Fact]
     public async Task when_the_parent_folder_cannot_be_read_then_access_is_denied()
     {
-        Prepare("Locked/Inner");
-        fileSystem.WithAccessControlStrategy(new DenyReading($"{Root}/Locked"));
+        var windows = WindowsWithRootOf("Locked\\Inner");
+        windows.WithAccessControlStrategy(new DenyReading(WindowsRoot + "\\Locked"));
 
-        var result = await List(Path("Locked"));
+        var result = await Browser().GetChildFoldersAsync(Account, Path("Locked"), CancellationToken);
 
         result.Match(_ => (object)"listed", error => error).ShouldBe(LocalFolderErrorFactory.CreateAccessDenied());
     }
@@ -135,10 +136,11 @@ public sealed class GivenALocalFolderBrowser
     [Fact]
     public async Task when_a_child_folder_cannot_be_read_then_it_is_still_listed_without_sub_folders_and_a_warning_is_logged_without_its_name()
     {
-        Prepare("Open/Inner", "Locked/Inner");
-        fileSystem.WithAccessControlStrategy(new DenyReading($"{Root}/Locked"));
+        var windows = WindowsWithRootOf("Open\\Inner", "Locked\\Inner");
+        var denial = new DenyReading(WindowsRoot + "\\Locked", armed: false);
+        windows.WithAccessControlStrategy(denial);
 
-        var result = await List(LocalRelativePathFactory.Root);
+        var result = await Browser(new ArmingFilter(denial, "Locked")).GetChildFoldersAsync(Account, LocalRelativePathFactory.Root, CancellationToken);
 
         result.Match(folders => folders.Select(folder => (folder.Name, folder.Children)), _ => []).ShouldBe([("Locked", LocalFolderChildrenFactory.CreateNoChildFolders()), ("Open", LocalFolderChildrenFactory.CreateHasChildFolders())]);
         logger.Entries.Count(entry => entry.Level == LogLevel.Warning).ShouldBe(1);
@@ -157,17 +159,32 @@ public sealed class GivenALocalFolderBrowser
     }
 
     [Fact]
-    public async Task when_a_folder_has_ten_thousand_child_folders_then_all_are_listed_sorted_and_off_the_calling_thread()
+    public async Task when_a_folder_has_ten_thousand_child_folders_then_all_are_listed_and_sorted()
     {
         SetRoot();
         foreach (var number in Enumerable.Range(0, 10_000))
             _ = fileSystem.Directory.CreateDirectory($"{Root}/folder-{number:00000}");
-        var filter = new ThreadRecordingFilter();
 
-        var result = await Browser(filter).GetChildFoldersAsync(Account, LocalRelativePathFactory.Root, CancellationToken);
+        var result = await List(LocalRelativePathFactory.Root);
 
         var names = Names(result);
-        (names.Count, names[0], names[^1], filter.Threads.Contains(Environment.CurrentManagedThreadId)).ShouldBe((10_000, "folder-00000", "folder-09999", false));
+        (names.Count, names[0], names[^1]).ShouldBe((10_000, "folder-00000", "folder-09999"));
+    }
+
+    [Fact]
+    public async Task when_the_listing_is_slow_then_the_call_returns_at_once_because_the_listing_runs_off_the_calling_thread()
+    {
+        Prepare("a", "b");
+        using var gate = new ManualResetEventSlim();
+        var filter = new BlockingFilter(gate);
+
+        var listing = Browser(filter).GetChildFoldersAsync(Account, LocalRelativePathFactory.Root, CancellationToken);
+        var returnedBeforeTheListingFinished = !listing.IsCompleted;
+        gate.Set();
+        var result = await listing;
+
+        returnedBeforeTheListingFinished.ShouldBeTrue();
+        Names(result).ShouldBe(["a", "b"]);
     }
 
     [Fact]
@@ -202,9 +219,35 @@ public sealed class GivenALocalFolderBrowser
 
     private LocalFolderBrowser Browser(ILocalFolderFilter? filter = null) => new(syncRoots, filter ?? new LocalFolderFilter(), logger);
 
-    private sealed class DenyReading(string deniedPath) : Testably.Abstractions.Testing.FileSystem.IAccessControlStrategy
+    private MockFileSystem WindowsWithRootOf(params string[] folders)
     {
-        public bool IsAccessGranted(string fullPath, Testably.Abstractions.Helpers.IFileSystemExtensibility extensibility) => !string.Equals(fullPath.TrimEnd('/'), deniedPath, StringComparison.Ordinal);
+        var windows = new MockFileSystem(options => options.SimulatingOperatingSystem(SimulationMode.Windows));
+        foreach (var folder in folders)
+            _ = windows.Directory.CreateDirectory(WindowsRoot + "\\" + folder);
+
+        syncRoots.Roots = [AccountSyncRootFactory.Create(Account, SyncRootFactory.Create(windows.DirectoryInfo.New(WindowsRoot)).Match(root => root, _ => throw new InvalidOperationException("The test root must be valid.")))];
+
+        return windows;
+    }
+
+    private sealed class DenyReading(string deniedPath, bool armed = true) : Testably.Abstractions.Testing.FileSystem.IAccessControlStrategy
+    {
+        private volatile bool denying = armed;
+
+        public void Arm() => denying = true;
+
+        public bool IsAccessGranted(string fullPath, Testably.Abstractions.Helpers.IFileSystemExtensibility extensibility) => !denying || !string.Equals(fullPath.TrimEnd('\\'), deniedPath, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private sealed class ArmingFilter(DenyReading denial, string folderName) : ILocalFolderFilter
+    {
+        public LocalFolderVisibility ShouldSkip(IDirectoryInfo folder)
+        {
+            if (string.Equals(folder.Name, folderName, StringComparison.Ordinal))
+                denial.Arm();
+
+            return LocalFolderVisibilityFactory.CreateVisible();
+        }
     }
 
     private sealed class DeletingFilter(MockFileSystem fileSystem, string pathToDelete) : ILocalFolderFilter
@@ -218,15 +261,11 @@ public sealed class GivenALocalFolderBrowser
         }
     }
 
-    private sealed class ThreadRecordingFilter : ILocalFolderFilter
+    private sealed class BlockingFilter(ManualResetEventSlim gate) : ILocalFolderFilter
     {
-        private readonly System.Collections.Concurrent.ConcurrentBag<int> threads = [];
-
-        public IReadOnlyCollection<int> Threads => threads;
-
         public LocalFolderVisibility ShouldSkip(IDirectoryInfo folder)
         {
-            threads.Add(Environment.CurrentManagedThreadId);
+            _ = gate.Wait(TimeSpan.FromSeconds(5));
 
             return LocalFolderVisibilityFactory.CreateVisible();
         }

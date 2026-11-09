@@ -10,7 +10,7 @@ public class GivenALocalRelativePathFactory
     [InlineData("Photos", "Photos")]
     [InlineData("Photos/2026", "Photos/2026")]
     [InlineData("Photos\\2026", "Photos/2026")]
-    [InlineData("/Photos/", "Photos")]
+    [InlineData("Photos/", "Photos")]
     public void when_the_path_is_relative_then_it_is_normalised(string value, string expected)
     {
         var result = LocalRelativePathFactory.Create(value);

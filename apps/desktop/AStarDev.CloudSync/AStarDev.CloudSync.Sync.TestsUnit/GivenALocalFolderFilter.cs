@@ -26,7 +26,8 @@ public class GivenALocalFolderFilter
     [Fact]
     public void when_the_folder_has_the_hidden_attribute_then_it_is_skipped_as_hidden()
     {
-        var folder = fileSystem.Directory.CreateDirectory("/root/Cache");
+        var windows = new MockFileSystem(options => options.SimulatingOperatingSystem(SimulationMode.Windows));
+        var folder = windows.Directory.CreateDirectory("C:\\root\\Cache");
         folder.Attributes |= FileAttributes.Hidden;
 
         Filter(folder).ShouldBe(LocalFolderVisibilityFactory.CreateSkipped(SkipReasonFactory.CreateHidden()));
