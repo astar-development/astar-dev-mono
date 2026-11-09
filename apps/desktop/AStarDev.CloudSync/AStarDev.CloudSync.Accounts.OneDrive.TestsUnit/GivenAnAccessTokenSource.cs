@@ -36,6 +36,17 @@ public sealed class GivenAnAccessTokenSource : IDisposable
     }
 
     [Fact]
+    public async Task when_the_token_cache_holds_the_key_in_another_casing_then_msal_is_asked_for_the_cached_casing()
+    {
+        var accountId = await AddStoredAccountAsync();
+        var msal = new FakeMsalClient { CachedAccountKeys = [TestSignIns.AccountKey.ToUpperInvariant()] };
+
+        await CreateModule(msal).TokenSource.GetAccessTokenAsync(accountId, CancellationToken);
+
+        msal.SilentTokenKeys.Select(key => key.Value).ShouldBe([TestSignIns.AccountKey.ToUpperInvariant()]);
+    }
+
+    [Fact]
     public async Task when_no_stored_account_has_the_id_then_the_account_is_unknown_and_msal_is_not_asked()
     {
         await AddStoredAccountAsync();

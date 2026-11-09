@@ -30,6 +30,18 @@ public sealed class GivenTheMicrosoftAccountActions : IDisposable
     }
 
     [Fact]
+    public async Task when_the_token_cache_holds_the_key_in_another_casing_then_reauthentication_uses_the_cached_casing()
+    {
+        var accountId = await AddAsync(TestSignIns.AccountKey);
+        var hintedKeys = new List<string>();
+        var msal = new FakeMsalClient { CachedAccountKeys = [TestSignIns.AccountKey.ToUpperInvariant()], Reauthenticate = (key, _, _) => { hintedKeys.Add(key.Value); return Task.FromResult(TestSignIns.NewAccount); } };
+
+        _ = await Module(msal).Reauthenticator.ReauthenticateAsync(accountId, CancellationToken);
+
+        hintedKeys.ShouldBe([TestSignIns.AccountKey.ToUpperInvariant()]);
+    }
+
+    [Fact]
     public async Task when_the_same_account_signs_in_with_different_casing_then_it_is_the_same_account()
     {
         var accountId = await AddAsync(TestSignIns.AccountKey.ToUpperInvariant());
@@ -134,6 +146,17 @@ public sealed class GivenTheMicrosoftAccountActions : IDisposable
 
         result.Match(_ => true, _ => false).ShouldBeTrue();
         msal.RemovedKeys.Select(key => key.Value).ShouldBe([TestSignIns.AccountKey]);
+    }
+
+    [Fact]
+    public async Task when_the_token_cache_holds_the_key_in_another_casing_then_sign_out_removes_the_cached_casing()
+    {
+        var accountId = await AddAsync(TestSignIns.AccountKey);
+        var msal = new FakeMsalClient { CachedAccountKeys = [TestSignIns.AccountKey.ToUpperInvariant()] };
+
+        _ = await Module(msal).SignOut.SignOutAsync(accountId, CancellationToken);
+
+        msal.RemovedKeys.Select(key => key.Value).ShouldBe([TestSignIns.AccountKey.ToUpperInvariant()]);
     }
 
     [Fact]

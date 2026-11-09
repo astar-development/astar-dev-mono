@@ -40,7 +40,7 @@ internal sealed class MsalAccessTokenSource(TokenCacheInitialiser tokenCache, IA
         return request.Exception is { InnerException: { } exception } ? ToOutcome(exception) : request.Result.Match(AccessTokenOutcomeFactory.CreateAcquired, AccessTokenOutcomeFactory.CreateAccountNotCached);
     }
 
-    private async Task<Option<string>> RequestAsync(ProviderAccountKey key, CancellationToken cancellationToken) => await msal.AcquireTokenSilentAsync(key, cancellationToken).ConfigureAwait(false);
+    private async Task<Option<string>> RequestAsync(ProviderAccountKey key, CancellationToken cancellationToken) => await msal.AcquireTokenSilentAsync(await msal.ToCachedKeyAsync(key).ConfigureAwait(false), cancellationToken).ConfigureAwait(false);
 
     private AccessTokenOutcome ToOutcome(Exception exception)
     {
