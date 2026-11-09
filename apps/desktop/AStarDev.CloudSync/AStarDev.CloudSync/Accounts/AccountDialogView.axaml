@@ -36,6 +36,40 @@
                         </StackPanel>
                     </StackPanel>
 
+                    <StackPanel Spacing="16" IsVisible="{Binding IsShowingSyncFolder}">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="{Binding SyncFolderText}"
+                                       TextWrapping="Wrap"
+                                       Foreground="{DynamicResource CloudSyncTextMutedBrush}" />
+                            <TextBlock Text="{Binding SyncFolderPathText}"
+                                       TextWrapping="Wrap"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource CloudSyncTextPrimaryBrush}" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding SyncFolderSyncingText}"
+                                   IsVisible="{Binding SyncFolderSyncingText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource CloudSyncTextMutedBrush}" />
+                        <TextBlock Text="{Binding SyncFolderMessageText}"
+                                   IsVisible="{Binding HasSyncFolderMessage}"
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource CloudSyncWarnBrush}" />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                            <Button Classes="secondary" Content="{Binding CloseText}" Command="{Binding CloseCommand}" />
+                            <Button Classes="primary" Content="{Binding ChangeText}" Command="{Binding ChooseSyncFolderCommand}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Spacing="16" IsVisible="{Binding IsConfirmingSyncFolderChange}">
+                        <TextBlock Text="{Binding SyncFolderConfirmText}"
+                                   TextWrapping="Wrap"
+                                   Foreground="{DynamicResource CloudSyncTextPrimaryBrush}" />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                            <Button Classes="secondary" Content="{Binding CancelText}" Command="{Binding CancelSyncFolderChangeCommand}" />
+                            <Button Classes="primary" Content="{Binding ChangeSyncFolderConfirmText}" Command="{Binding ConfirmSyncFolderChangeCommand}" />
+                        </StackPanel>
+                    </StackPanel>
+
                     <StackPanel Spacing="16" IsVisible="{Binding IsWorking}">
                         <TextBlock Text="{Binding WorkingText}"
                                    TextWrapping="Wrap"

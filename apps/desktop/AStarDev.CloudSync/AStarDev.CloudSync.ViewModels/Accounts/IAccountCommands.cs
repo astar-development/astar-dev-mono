@@ -12,4 +12,9 @@ public interface IAccountCommands
     /// <param name="account">The account.</param>
     /// <param name="cancellationToken">Cancels the wait for the dialog.</param>
     Task RemoveAsync(AccountViewModel account, CancellationToken cancellationToken);
+
+    /// <summary>Shows the folder the account syncs into and lets the user change it (#1394).</summary>
+    /// <param name="account">The account.</param>
+    /// <param name="cancellationToken">Cancels the wait for the dialog.</param>
+    Task ChangeSyncFolderAsync(AccountViewModel account, CancellationToken cancellationToken);
 }

@@ -39,6 +39,7 @@ public sealed class AccountViewModel : LocalizedObservableObject
         Provider = new ProviderViewModel(account.Provider, localization);
         Status = new StatusViewModel(account.Status, account.SignIn, localization);
         Storage = new StorageViewModel(account.Storage, localization);
+        ChangeSyncFolderCommand = new AsyncRelayCommand(cancellationToken => commands.ChangeSyncFolderAsync(this, cancellationToken), () => !Status.IsSyncing);
         RecentActivity = [.. activity.Where(entry => entry.AccountId == account.Id).OrderByDescending(entry => entry.OccurredAt).Take(RecentActivityLimit).Select(entry => new ActivityItemViewModel(entry, Provider, localization, timeProvider))];
     }
 
@@ -93,9 +94,18 @@ public sealed class AccountViewModel : LocalizedObservableObject
     /// <summary>The Remove action's text.</summary>
     public string RemoveText => Localization.GetLocal("Account.Remove");
 
+    /// <summary>Whether the account has finished a sync before.</summary>
+    public bool HasSynced => account.LastSync.Match(_ => true, () => false);
+
+    /// <summary>The Sync folder action's text.</summary>
+    public string ChangeSyncFolderText => Localization.GetLocal("Account.SyncFolder");
+
     /// <summary>Signs the account in again.</summary>
     public IAsyncRelayCommand SignInCommand { get; }
 
     /// <summary>Asks to remove the account.</summary>
     public IAsyncRelayCommand RemoveCommand { get; }
+
+    /// <summary>Opens the sync folder dialog; not available while the account syncs.</summary>
+    public IAsyncRelayCommand ChangeSyncFolderCommand { get; }
 }

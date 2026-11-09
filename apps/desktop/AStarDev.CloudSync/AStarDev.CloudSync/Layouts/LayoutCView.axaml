@@ -404,6 +404,7 @@
                                         <TextBlock Text="{Binding Status.Text}" FontSize="11" Foreground="{DynamicResource CloudSyncWarnBrush}" IsVisible="{Binding NeedsSignIn}" />
                                     </StackPanel>
                                     <Button Classes="primary" Content="{Binding SignInText}" Command="{Binding SignInCommand}" IsVisible="{Binding NeedsSignIn}" VerticalAlignment="Center" />
+                                    <Button Classes="secondary" Content="{Binding ChangeSyncFolderText}" Command="{Binding ChangeSyncFolderCommand}" VerticalAlignment="Center" />
                                     <Button Classes="secondary" Content="{Binding RemoveText}" Command="{Binding RemoveCommand}" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Border>

@@ -74,6 +74,7 @@ public static class ServiceCollectionExtensions
             .AddDisplayPreferences(provider => provider.GetRequiredService<IFileSystem>().FileInfo.New(SettingsFilePath))
             .AddSingleton<IThemeApplier, AvaloniaThemeApplier>()
             .AddSingleton<IHomeFolder, UserProfileHomeFolder>()
+            .AddSingleton<IFolderPicker, AvaloniaFolderPicker>()
             .AddSingleton<LocalPathFormatter>()
             .AddSingleton<PlaintextCacheConsentSettingsViewModel>()
             .AddSingleton<DisplaySettingsViewModel>()
