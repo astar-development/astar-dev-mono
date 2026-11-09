@@ -108,6 +108,24 @@ public class GivenAnAccountDetailViewModel
         folder.Pair.LocalPath.ShouldBe(TestPaths.Full("/home/user/CloudSync/OneDrive/Work/Documents"));
     }
 
+    [Fact]
+    public void when_the_account_needs_sign_in_then_pause_and_sync_now_are_disabled()
+    {
+        var account = TestData.CreateAccountViewModel(TestData.CreateAccountNeedingSignIn(), NoAccountCommands.Instance);
+
+        var detail = new AccountDetailViewModel(account, [], [], TestData.CreateLocalPathFormatter(), new RecordingSyncActions(), TestData.CreateLocalization());
+
+        detail.CanSync.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void when_the_account_is_signed_in_then_pause_and_sync_now_are_enabled()
+    {
+        var detail = CreateDetail(1, 1, SyncStatusFactory.CreateUpToDate());
+
+        detail.CanSync.ShouldBeTrue();
+    }
+
     private static AccountDetailViewModel CreateDetail(int folderCount, int fileCount, SyncStatus status)
     {
         var localization = TestData.CreateLocalization();

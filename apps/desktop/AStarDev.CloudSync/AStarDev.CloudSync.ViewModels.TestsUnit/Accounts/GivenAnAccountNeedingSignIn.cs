@@ -16,6 +16,27 @@ public class GivenAnAccountNeedingSignIn
         (account.NeedsSignIn, account.Status.Text, account.Status.IsUpToDate, account.Status.IsSyncing).ShouldBe((true, TestData.CreateLocalization().GetLocal("Status.SignInRequired"), false, false));
     }
 
+    [Theory]
+    [InlineData("paused")]
+    [InlineData("conflicts")]
+    public void when_a_paused_or_conflicted_account_needs_sign_in_then_only_the_sign_in_flag_is_set(string syncState)
+    {
+        var status = new StatusViewModel(syncState == "paused" ? SyncStatusFactory.CreatePaused() : SyncStatusFactory.CreateHasConflicts(2), AccountSignInStateFactory.CreateSignInRequired(), TestData.CreateLocalization());
+
+        (status.IsSignInRequired, status.IsPaused, status.HasConflicts).ShouldBe((true, false, false));
+    }
+
+    [Fact]
+    public async Task when_no_account_commands_are_wired_then_the_actions_do_nothing()
+    {
+        var account = TestData.CreateAccountViewModel(TestData.CreateAccountNeedingSignIn(), AStarDev.CloudSync.ViewModels.Accounts.NoAccountCommands.Instance);
+
+        await account.SignInCommand.ExecuteAsync(null);
+        await account.RemoveCommand.ExecuteAsync(null);
+
+        account.NeedsSignIn.ShouldBeTrue();
+    }
+
     [Fact]
     public void when_a_status_has_no_sign_in_then_it_is_never_sign_in_required()
     {

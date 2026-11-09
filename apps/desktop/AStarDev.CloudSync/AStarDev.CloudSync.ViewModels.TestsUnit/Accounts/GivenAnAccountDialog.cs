@@ -135,6 +135,29 @@ public class GivenAnAccountDialog
     }
 
     [Fact]
+    public async Task when_removal_throws_then_a_failure_shows_and_the_dialog_can_be_closed()
+    {
+        actions.Remove = _ => throw new InvalidOperationException($"Broken for {account.Email}");
+        var shown = dialog.RemoveAsync(account, CancellationToken);
+
+        await dialog.ConfirmRemoveCommand.ExecuteAsync(null);
+
+        (dialog.IsShowingMessage, dialog.MessageText).ShouldBe((true, Text("AccountDialog.Remove.Failure.Provider")));
+        dialog.CloseCommand.Execute(null);
+        await shown.WaitAsync(TimeSpan.FromSeconds(5), CancellationToken);
+    }
+
+    [Fact]
+    public async Task when_sign_in_throws_then_a_failure_shows_instead_of_staying_busy()
+    {
+        actions.Reauthenticate = _ => throw new InvalidOperationException("MSAL broke");
+
+        await dialog.SignInAsync(account, CancellationToken);
+
+        (dialog.IsWorking, dialog.IsShowingMessage, dialog.MessageText).ShouldBe((false, true, TestData.CreateLocalization().GetLocal("AccountDialog.SignIn.Failure.Provider", "personal@example.com")));
+    }
+
+    [Fact]
     public void when_a_dialog_step_is_printed_then_its_text_is_redacted()
     {
         var steps = new[] { AccountDialogStepFactory.CreateWorking("Removing personal@example.com"), AccountDialogStepFactory.CreateMessage("Sign in as personal@example.com"), AccountDialogStepFactory.CreateWorking(null) };
