@@ -14,6 +14,13 @@ internal sealed class SyncDbContext(DbContextOptions<SyncDbContext> options) : D
     /// <summary>The accounts' sync roots.</summary>
     public DbSet<SyncRootEntity> SyncRoots => Set<SyncRootEntity>();
 
+    /// <summary>The accounts' selection rules.</summary>
+    public DbSet<SelectionRuleEntity> SelectionRules => Set<SelectionRuleEntity>();
+
     /// <inheritdoc />
-    protected override void OnModelCreating(ModelBuilder modelBuilder) => modelBuilder.ApplyConfiguration(new SyncRootEntityConfiguration());
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfiguration(new SyncRootEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new SelectionRuleEntityConfiguration());
+    }
 }

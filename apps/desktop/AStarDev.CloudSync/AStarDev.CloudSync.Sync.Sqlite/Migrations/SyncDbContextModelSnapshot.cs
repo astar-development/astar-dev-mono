@@ -17,6 +17,33 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.12");
 
+            modelBuilder.Entity("AStarDev.CloudSync.Sync.Sqlite.SelectionRuleEntity", b =>
+                {
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Path")
+                        .HasColumnType("TEXT")
+                        .UseCollation("NOCASE");
+
+                    b.Property<string>("Direction")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsInclude")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("RemoteId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("AccountId", "Path");
+
+                    b.ToTable("SelectionRules", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_SelectionRules_Direction_Known", "\"Direction\" IN ('TwoWay', 'UploadOnly', 'DownloadOnly')");
+                        });
+                });
+
             modelBuilder.Entity("AStarDev.CloudSync.Sync.Sqlite.SyncRootEntity", b =>
                 {
                     b.Property<Guid>("AccountId")
