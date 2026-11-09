@@ -87,10 +87,11 @@ public sealed class GivenASelectionRuleStore : IAsyncLifetime
         _ = await Apply(FirstAccount, Include("Docs"));
         _ = await Apply(SecondAccount, Exclude("Photos"));
 
-        var first = (await Database.Rules.GetAsync(FirstAccount, CancellationToken)).Match(found => found.Select(rule => rule.Path.Value), _ => []);
-        var second = (await Database.Rules.GetAsync(SecondAccount, CancellationToken)).Match(found => found.Select(rule => rule.Path.Value), _ => []);
+        var first = (await Database.Rules.GetAsync(FirstAccount, CancellationToken)).Match(found => found.Select(rule => rule.Path.Value).ToList(), _ => []);
+        var second = (await Database.Rules.GetAsync(SecondAccount, CancellationToken)).Match(found => found.Select(rule => rule.Path.Value).ToList(), _ => []);
 
-        (first, second).ShouldBe((["Docs"], ["Photos"]));
+        first.ShouldBe(["Docs"]);
+        second.ShouldBe(["Photos"]);
     }
 
     [Fact]
