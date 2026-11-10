@@ -11,6 +11,7 @@ using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
+using Avalonia.Media;
 using Avalonia.VisualTree;
 
 namespace AStarDev.CloudSync.TestsUnit.FolderSelection;
@@ -103,6 +104,32 @@ public class GivenAFolderSelectionView
         window.GetVisualDescendants().OfType<TextBlock>().Select(text => text.Text).ShouldContain(Text("FolderSelection.Level.Failed.Remote"));
         window.GetVisualDescendants().OfType<Button>().Single(button => Equals(button.Content, dialog.RetryText) && button.IsEffectivelyVisible).Command.ShouldBeSameAs(dialog.RetryCommand);
     }
+
+    [Theory]
+    [InlineData("FolderSelection.Glyph.Expanded", "▾")]
+    [InlineData("FolderSelection.Glyph.Collapsed", "▸")]
+    [InlineData("FolderSelection.Glyph.Ticked", "☑")]
+    [InlineData("FolderSelection.Glyph.Unticked", "☐")]
+    [InlineData("FolderSelection.Glyph.Partial", "◪")]
+    public void when_a_folder_glyph_is_localised_then_it_is_the_symbol_and_not_plain_text(string key, string symbol) => Text(key).ShouldBe(symbol);
+
+    [AvaloniaFact]
+    public async Task when_the_tree_is_shown_then_the_expander_and_check_buttons_use_a_bundled_font_that_has_every_glyph()
+    {
+        var (window, dialog) = await ShownWindowAsync();
+        _ = dialog.ShowAsync(Option.Some(Account), TestContext.Current.CancellationToken);
+        window.UpdateLayout();
+
+        var glyphButtons = window.GetVisualDescendants().OfType<Button>().Where(button => Equals(button.Content, Text("FolderSelection.Glyph.Unticked")) || Equals(button.Content, Text("FolderSelection.Glyph.Collapsed"))).ToList();
+
+        glyphButtons.ShouldNotBeEmpty();
+        glyphButtons.ShouldAllBe(button => HasBundledSymbolFontWithGlyph(button));
+    }
+
+    private static bool HasBundledSymbolFontWithGlyph(Button button) =>
+        FontManager.Current.TryGetGlyphTypeface(new Typeface(button.FontFamily), out var typeface)
+        && typeface.FamilyName == "Noto Sans Symbols 2"
+        && typeface.CharacterToGlyphMap.ContainsGlyph(char.ConvertToUtf32((string)button.Content!, 0));
 
     private static string Text(string key) => TestData.CreateLocalization().GetLocal(key);
 
