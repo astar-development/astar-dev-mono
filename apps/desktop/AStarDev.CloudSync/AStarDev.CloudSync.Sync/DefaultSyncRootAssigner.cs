@@ -24,8 +24,21 @@ public sealed class DefaultSyncRootAssigner(ISyncRootReader reader, IDefaultSync
                 error => Task.FromResult(Result.Failure<SyncRoot, SyncRootRejection>(SyncRootRejectionFactory.CreateStore(error))));
 
     private Task<Result<SyncRoot, SyncRootRejection>> SaveAsync(AccountId accountId, AccountRegistration registration, SyncRoot root, int remaining, CancellationToken cancellationToken) =>
+        SyncRootFolder.EnsureWithAncestors(root.Directory)
+            .Match(
+                created => StoreAsync(accountId, registration, root, created, remaining, cancellationToken),
+                rejection => Task.FromResult(Result.Failure<SyncRoot, SyncRootRejection>(rejection)));
+
+    private Task<Result<SyncRoot, SyncRootRejection>> StoreAsync(AccountId accountId, AccountRegistration registration, SyncRoot root, bool created, int remaining, CancellationToken cancellationToken) =>
         writer.SetAsync(accountId, root.Directory, cancellationToken)
             .MatchAsync(
                 saved => Task.FromResult(Result.Success<SyncRoot, SyncRootRejection>(saved)),
-                rejection => IsClash(rejection) && remaining > 1 ? AttemptAsync(accountId, registration, remaining - 1, cancellationToken) : Task.FromResult(Result.Failure<SyncRoot, SyncRootRejection>(rejection)));
+                rejection => RetryOrFailAsync(accountId, registration, root, created, rejection, remaining, cancellationToken));
+
+    private Task<Result<SyncRoot, SyncRootRejection>> RetryOrFailAsync(AccountId accountId, AccountRegistration registration, SyncRoot root, bool created, SyncRootRejection rejection, int remaining, CancellationToken cancellationToken)
+    {
+        SyncRootFolder.RemoveIfCreated(root.Directory, created);
+
+        return IsClash(rejection) && remaining > 1 ? AttemptAsync(accountId, registration, remaining - 1, cancellationToken) : Task.FromResult(Result.Failure<SyncRoot, SyncRootRejection>(rejection));
+    }
 }

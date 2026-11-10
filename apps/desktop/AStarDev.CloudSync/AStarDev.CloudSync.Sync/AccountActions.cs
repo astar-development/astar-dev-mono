@@ -31,55 +31,18 @@ internal sealed class AccountActions(IAccountRemover remover, AccountLeaseWaiter
         return await lease.MatchAsync(held => ChangeSyncRootHoldingAsync(held, accountId, candidate, cancellationToken), () => Result.Failure<SyncRoot, SyncRootRejection>(SyncRootRejectionFactory.CreateSyncStillRunning())).ConfigureAwait(false);
     }
 
-    private static Result<bool, SyncRootRejection> EnsureFolder(IDirectoryInfo? candidate)
-    {
-        if (candidate is null || candidate.Exists)
-            return Result.Success<bool, SyncRootRejection>(false);
-
-        if (candidate.Parent is not { Exists: true })
-            return Result.Failure<bool, SyncRootRejection>(SyncRootRejectionFactory.CreateUnavailable());
-
-        try
-        {
-            candidate.Create();
-
-            return Result.Success<bool, SyncRootRejection>(true);
-        }
-        catch (UnauthorizedAccessException)
-        {
-            return Result.Failure<bool, SyncRootRejection>(SyncRootRejectionFactory.CreateNotWritable());
-        }
-        catch (IOException)
-        {
-            return Result.Failure<bool, SyncRootRejection>(SyncRootRejectionFactory.CreateUnavailable());
-        }
-    }
-
     private static Result<SyncRoot, SyncRootRejection> RemoveCreatedFolder(IDirectoryInfo candidate, bool created, SyncRootRejection rejection)
     {
-        if (created)
-            DeleteIfEmpty(candidate);
+        SyncRootFolder.RemoveIfCreated(candidate, created);
 
         return Result.Failure<SyncRoot, SyncRootRejection>(rejection);
-    }
-
-    private static void DeleteIfEmpty(IDirectoryInfo folder)
-    {
-        try
-        {
-            folder.Delete();
-        }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
-        {
-            return;
-        }
     }
 
     private async Task<Result<SyncRoot, SyncRootRejection>> ChangeSyncRootHoldingAsync(SyncLease lease, AccountId accountId, IDirectoryInfo candidate, CancellationToken cancellationToken)
     {
         using (lease)
         {
-            return await EnsureFolder(candidate)
+            return await SyncRootFolder.Ensure(candidate)
                 .Match(created => SaveSyncRootAsync(accountId, candidate, created, cancellationToken), rejection => Task.FromResult(Result.Failure<SyncRoot, SyncRootRejection>(rejection)))
                 .ConfigureAwait(false);
         }
