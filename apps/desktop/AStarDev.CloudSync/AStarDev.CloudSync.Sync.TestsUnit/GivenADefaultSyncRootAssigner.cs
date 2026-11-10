@@ -68,6 +68,85 @@ public class GivenADefaultSyncRootAssigner
         store.SetAttempts.ShouldBe(0);
     }
 
+    [Fact]
+    public async Task when_the_default_root_is_assigned_then_the_folder_and_its_missing_container_are_created_on_disk()
+    {
+        var store = new InMemorySyncRootStore(new SyncRootPolicy());
+
+        _ = await Assigner(store).AssignAsync(NewAccount, Registration(), CancellationToken);
+
+        fileSystem.Directory.Exists("/home/jbarden/CloudSync/OneDrive-Personal").ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task when_the_default_root_already_exists_on_disk_then_it_is_saved_and_its_contents_are_untouched()
+    {
+        var store = new InMemorySyncRootStore(new SyncRootPolicy());
+        _ = fileSystem.Directory.CreateDirectory("/home/jbarden/CloudSync/OneDrive-Personal");
+        fileSystem.File.WriteAllText("/home/jbarden/CloudSync/OneDrive-Personal/keep.txt", "kept");
+
+        var result = await Assigner(store).AssignAsync(NewAccount, Registration(), CancellationToken);
+
+        result.Match(_ => true, _ => false).ShouldBeTrue();
+        fileSystem.File.Exists("/home/jbarden/CloudSync/OneDrive-Personal/keep.txt").ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task when_the_folder_cannot_be_created_for_lack_of_permission_then_it_is_not_writable_and_nothing_is_saved()
+    {
+        var store = new InMemorySyncRootStore(new SyncRootPolicy());
+        _ = fileSystem.Intercept.Creating(FileSystemTypes.Directory, _ => throw new UnauthorizedAccessException());
+
+        var result = await Assigner(store).AssignAsync(NewAccount, Registration(), CancellationToken);
+
+        result.Match(root => (object)root, rejection => rejection).ShouldBe(SyncRootRejectionFactory.CreateNotWritable());
+        store.SetAttempts.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task when_the_folder_cannot_be_created_for_another_io_reason_then_it_is_unavailable_and_nothing_is_saved()
+    {
+        var store = new InMemorySyncRootStore(new SyncRootPolicy());
+        _ = fileSystem.Intercept.Creating(FileSystemTypes.Directory, _ => throw new IOException());
+
+        var result = await Assigner(store).AssignAsync(NewAccount, Registration(), CancellationToken);
+
+        result.Match(root => (object)root, rejection => rejection).ShouldBe(SyncRootRejectionFactory.CreateUnavailable());
+        store.SetAttempts.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task when_the_first_proposal_loses_the_race_then_its_empty_folder_is_removed_and_the_next_one_is_created()
+    {
+        var store = new InMemorySyncRootStore(new SyncRootPolicy()) { LostRaces = 1 };
+
+        _ = await Assigner(store).AssignAsync(NewAccount, Registration(), CancellationToken);
+
+        fileSystem.Directory.Exists("/home/jbarden/CloudSync/OneDrive-Personal").ShouldBeFalse();
+        fileSystem.Directory.Exists("/home/jbarden/CloudSync/OneDrive-Personal-2").ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task when_a_rejected_proposal_already_existed_on_disk_then_it_is_left_in_place()
+    {
+        var store = new InMemorySyncRootStore(new SyncRootPolicy()) { LostRaces = 1 };
+        _ = fileSystem.Directory.CreateDirectory("/home/jbarden/CloudSync/OneDrive-Personal");
+
+        _ = await Assigner(store).AssignAsync(NewAccount, Registration(), CancellationToken);
+
+        fileSystem.Directory.Exists("/home/jbarden/CloudSync/OneDrive-Personal").ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task when_every_attempt_loses_the_race_then_no_folder_is_left_behind()
+    {
+        var store = new InMemorySyncRootStore(new SyncRootPolicy()) { LostRaces = 100 };
+
+        _ = await Assigner(store).AssignAsync(NewAccount, Registration(), CancellationToken);
+
+        fileSystem.Directory.GetDirectories("/home/jbarden/CloudSync").ShouldBeEmpty();
+    }
+
     private DefaultSyncRootAssigner Assigner(InMemorySyncRootStore store) =>
         new(store, new DefaultSyncRootProvider(new TestHomeFolder(Option.Some(fileSystem.DirectoryInfo.New("/home/jbarden"))), new SyncRootPolicy()), store);
 
