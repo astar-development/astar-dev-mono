@@ -19,6 +19,9 @@
       "Bash(npx vitest:*)"
     ]
   },
+  "enabledPlugins": {
+    "context-mode@context-mode": true
+  },
   "hooks": {
     "Notification": [
       {
