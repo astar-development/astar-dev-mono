@@ -86,7 +86,7 @@ public abstract record LocalChange
         public override RelativeSyncPath Path { get; }
     }
 
-    /// <summary>An item the scan could not read or that clashes with a sibling that differs only in case. It is never reported as deleted.</summary>
+    /// <summary>An item the scan could not read or that clashes with a sibling that differs only in case: the path is then ambiguous and nothing is transferred for it. It is never reported as deleted.</summary>
     public sealed record Unreadable : LocalChange
     {
         internal Unreadable(RelativeSyncPath path)

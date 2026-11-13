@@ -314,7 +314,7 @@ public sealed class GivenALocalChangeDetector : IDisposable
     }
 
     [Fact]
-    public async Task when_two_siblings_differ_only_in_case_then_the_first_is_scanned_and_the_second_is_unreadable()
+    public async Task when_two_siblings_differ_only_in_case_then_the_ambiguous_path_is_unreadable()
     {
         fixture.Include("Docs");
         _ = fixture.Write("Docs/Report.txt", "one");
@@ -322,7 +322,7 @@ public sealed class GivenALocalChangeDetector : IDisposable
 
         var set = await fixture.ScanAsync(CancellationToken);
 
-        LocalScanFixture.Describe(set).ShouldBe("Added:Docs/Report.txt:File;Unreadable:Docs/report.TXT");
+        LocalScanFixture.Describe(set).ShouldBe("Unreadable:Docs/report.TXT");
     }
 
     [Fact]
