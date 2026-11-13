@@ -22,6 +22,9 @@ public static class OneDriveSyncServiceCollectionExtensions
 
         return services.AddKeyedSingleton<IRemoteFolderBrowser, OneDriveFolderBrowser>(CloudProviderFactory.CreateOneDrive())
             .AddKeyedSingleton<IRemoteChangeFeed, OneDriveChangeFeed>(CloudProviderFactory.CreateOneDrive())
-            .AddKeyedSingleton<IRemoteNamePolicy, OneDriveNamePolicy>(CloudProviderFactory.CreateOneDrive());
+            .AddKeyedSingleton<IRemoteNamePolicy, OneDriveNamePolicy>(CloudProviderFactory.CreateOneDrive())
+            .AddKeyedSingleton<IRemoteFileUploader, OneDriveFileUploader>(CloudProviderFactory.CreateOneDrive())
+            .AddKeyedSingleton<IRemoteFolderCreator, OneDriveFolderCreator>(CloudProviderFactory.CreateOneDrive())
+            .AddKeyedSingleton<IRemoteItemRemover, OneDriveItemRemover>(CloudProviderFactory.CreateOneDrive());
     }
 }

@@ -40,4 +40,7 @@ public static class ProviderErrorFactory
 
     /// <summary>Creates the <see cref="ProviderError.FileTooLarge"/> case.</summary>
     public static ProviderError CreateFileTooLarge() => new ProviderError.FileTooLarge();
+
+    /// <summary>Creates the <see cref="ProviderError.SourceChanged"/> case.</summary>
+    public static ProviderError CreateSourceChanged() => new ProviderError.SourceChanged();
 }

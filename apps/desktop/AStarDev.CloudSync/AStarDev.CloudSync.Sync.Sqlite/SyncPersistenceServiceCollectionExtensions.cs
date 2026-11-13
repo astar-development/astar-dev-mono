@@ -12,7 +12,7 @@ namespace AStarDev.CloudSync.Sync.Sqlite;
 /// <summary>Registers the SQLite sync module.</summary>
 public static class SyncPersistenceServiceCollectionExtensions
 {
-    /// <summary>Registers the sync tables in the same SQLite file as the accounts, their migration, the <see cref="ISyncRootPolicy"/>, <see cref="ISyncRootReader"/>, <see cref="ISyncRootWriter"/>, the <see cref="ISelectionRuleReader"/>, <see cref="ISelectionRuleWriter"/>, the <see cref="IRemoteIndexReader"/>, <see cref="IRemoteIndexWriter"/>, the <see cref="ISyncBaselineReader"/>, <see cref="ISyncBaselineWriter"/>, the <see cref="ISyncAttentionReader"/>, <see cref="ISyncAttentionWriter"/>, <see cref="ISyncAttentionCloser"/> and the <see cref="IAccountRemovalParticipant"/> that deletes an account's sync data. The sync migration is added to the registered <see cref="ICloudSyncDatabase"/>, which runs it after the accounts migration, so register the accounts persistence first. Needs an <see cref="IFileSystem"/> and an <see cref="IHomeFolder"/>.</summary>
+    /// <summary>Registers the sync tables in the same SQLite file as the accounts, their migration, the <see cref="ISyncRootPolicy"/>, <see cref="ISyncRootReader"/>, <see cref="ISyncRootWriter"/>, the <see cref="ISelectionRuleReader"/>, <see cref="ISelectionRuleWriter"/>, the <see cref="IRemoteIndexReader"/>, <see cref="IRemoteIndexWriter"/>, the <see cref="ISyncBaselineReader"/>, <see cref="ISyncBaselineWriter"/>, the <see cref="IUploadRecorder"/>, the <see cref="ISyncAttentionReader"/>, <see cref="ISyncAttentionWriter"/>, <see cref="ISyncAttentionCloser"/> and the <see cref="IAccountRemovalParticipant"/> that deletes an account's sync data. The sync migration is added to the registered <see cref="ICloudSyncDatabase"/>, which runs it after the accounts migration, so register the accounts persistence first. Needs an <see cref="IFileSystem"/> and an <see cref="IHomeFolder"/>.</summary>
     /// <param name="services">The service collection to register the module with.</param>
     /// <param name="databaseFile">Resolves the SQLite database file; it must be the file the accounts persistence uses.</param>
     /// <returns>The <paramref name="services" /> collection to allow further chaining.</returns>
@@ -40,6 +40,7 @@ public static class SyncPersistenceServiceCollectionExtensions
             .AddSingleton<IRemoteIndexReader>(provider => provider.GetRequiredService<SqliteRemoteIndexStore>())
             .AddSingleton<IRemoteIndexWriter>(provider => provider.GetRequiredService<SqliteRemoteIndexStore>())
             .AddSingleton<IAccountRemovalParticipant>(provider => provider.GetRequiredService<SqliteRemoteIndexStore>())
+            .AddSingleton<IUploadRecorder, SqliteUploadRecorder>()
             .AddSingleton<SqliteSyncBaselineStore>()
             .AddSingleton<ISyncBaselineReader>(provider => provider.GetRequiredService<SqliteSyncBaselineStore>())
             .AddSingleton<ISyncBaselineWriter>(provider => provider.GetRequiredService<SqliteSyncBaselineStore>())

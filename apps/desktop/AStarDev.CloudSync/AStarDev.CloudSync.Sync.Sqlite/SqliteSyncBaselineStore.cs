@@ -138,7 +138,7 @@ internal sealed class SqliteSyncBaselineStore(IDbContextFactory<SyncDbContext> d
         return Unit.Instance;
     }
 
-    private static async Task SaveChunkAsync(SyncDbContext dbContext, AccountId accountId, SyncBaselineEntry[] chunk, CancellationToken cancellationToken)
+    internal static async Task SaveChunkAsync(SyncDbContext dbContext, AccountId accountId, SyncBaselineEntry[] chunk, CancellationToken cancellationToken)
     {
         var keys = chunk.Select(entry => Key(entry.Path.Value)).ToList();
         var stored = await dbContext.SyncBaseline.Where(item => item.AccountId == accountId.Value && keys.Contains(item.PathKey)).ToListAsync(cancellationToken).ConfigureAwait(false);

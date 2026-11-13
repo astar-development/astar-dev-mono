@@ -116,13 +116,13 @@ public sealed class GivenAnUploadPlanner : IDisposable
     }
 
     [Fact]
-    public void when_a_file_is_deleted_and_the_remote_tag_is_unchanged_then_the_remote_item_is_removed_with_the_baseline_etag()
+    public void when_a_file_is_deleted_and_the_remote_tag_is_unchanged_then_the_remote_item_is_removed_with_the_baseline_content_tag()
     {
-        var plan = fixture.DeletedItem("Docs/a.txt", "r1").BaselineFile("Docs/a.txt", "r1", "c1", "e7").RemoteFile("Docs/a.txt", "r1", "c1", "e9").Plan();
+        var plan = fixture.DeletedItem("Docs/a.txt", "r1").BaselineFile("Docs/a.txt", "r1", "c7", "e7").RemoteFile("Docs/a.txt", "r1", "c7", "e9").Plan();
 
         var item = plan.Items.ShouldHaveSingleItem().ShouldBeOfType<UploadPlanItem.RemoveRemote>();
         item.ItemId.ShouldBe(Id("r1"));
-        item.Precondition.ShouldBe(RemovePreconditionFactory.CreateMustMatch(new EntityTag("e7")).Match(precondition => precondition, _ => throw new InvalidOperationException()));
+        item.Precondition.ShouldBe(RemovePreconditionFactory.CreateMustMatchContent(new ContentTag("c7")).Match(precondition => precondition, _ => throw new InvalidOperationException()));
     }
 
     [Fact]

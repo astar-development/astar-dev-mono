@@ -27,7 +27,7 @@ public class GivenATransferTypeFactory
     [Fact]
     public void when_an_upload_result_is_created_then_it_keeps_both_tags()
     {
-        var uploaded = UploadedFileFactory.Create(RemoteIds.Of("file-1"), RemoteIds.CTag("ctag"), RemoteIds.ETag("etag"), 2_048);
+        var uploaded = UploadedFileFactory.Create(RemoteIds.Of("file-1"), RemoteIds.CTag("ctag"), RemoteIds.ETag("etag"), 2_048, ContentHashFactory.Create("abc").Match(hash => hash, _ => throw new InvalidOperationException()));
 
         (uploaded.CTag, uploaded.ETag, uploaded.Size).ShouldBe((RemoteIds.CTag("ctag"), RemoteIds.ETag("etag"), 2_048L));
     }
