@@ -9,6 +9,14 @@ public abstract record LocalScanFailure
     {
     }
 
+    /// <summary>The account's sync root is missing, unmounted or not set, so no change is reported at all.</summary>
+    public sealed record RootUnavailable : LocalScanFailure
+    {
+        internal RootUnavailable()
+        {
+        }
+    }
+
     /// <summary>The file is locked, was deleted during the scan or cannot be opened; the scan reports it as unreadable, never as deleted.</summary>
     public sealed record Unreadable : LocalScanFailure
     {
