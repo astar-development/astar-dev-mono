@@ -52,8 +52,6 @@ internal sealed class OneDriveFileUploader(OneDriveTransferHttp http, ILogger<On
             document => document.RootElement.TryGetProperty("nextExpectedRanges", out var ranges) && ranges.GetArrayLength() > 0 && long.TryParse(ranges[0].GetString()?.Split('-')[0], NumberStyles.None, CultureInfo.InvariantCulture, out var next) ? Option.Some(next) : Option.None<long>(),
             _ => Option.None<long>());
 
-    private static string ContentRange(long start, long length, long total) => string.Create(CultureInfo.InvariantCulture, $"bytes {start}-{start + length - 1}/{total}");
-
     private static void WriteFileSystemInfo(System.Text.Json.Utf8JsonWriter writer, DateTime lastWriteUtc)
     {
         writer.WriteStartObject("fileSystemInfo");
