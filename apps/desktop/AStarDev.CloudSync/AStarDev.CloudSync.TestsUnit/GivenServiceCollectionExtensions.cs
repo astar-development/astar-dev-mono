@@ -121,6 +121,15 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
+    public void when_application_services_are_added_then_the_sync_pass_runner_resolves_and_shares_one_activity_registry()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<ISyncPassRunner>().ShouldNotBeNull();
+        provider.GetRequiredService<ISyncActivitySource>().ShouldBeSameAs(provider.GetRequiredService<ISyncCancelAction>());
+    }
+
+    [Fact]
     public void when_application_services_are_added_then_one_sync_lock_and_one_throttle_gate_are_shared()
     {
         using var provider = CreateServices().BuildServiceProvider();

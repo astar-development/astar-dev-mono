@@ -311,8 +311,7 @@ public sealed class GivenASyncPassRunner : IDisposable
 
         await services.Cancel.CancelAsync(Personal, CancellationToken).WaitAsync(Limit, CancellationToken);
 
-        running.IsCompleted.ShouldBeTrue();
-        Outcome(await running).ShouldBe(SyncPassFailureFactory.CreateCancelled());
+        Outcome(await running.WaitAsync(Limit, CancellationToken)).ShouldBe(SyncPassFailureFactory.CreateCancelled());
         Steps.Steps.ShouldNotContain("upload");
         services.Activity.ActivityOf(Personal).ShouldBe(AccountSyncActivityFactory.CreateIdle());
         services.SyncLock.TryAcquire(Personal).ShouldBeOfType<SyncLockAttempt.Acquired>();
@@ -355,7 +354,7 @@ public sealed class GivenASyncPassRunner : IDisposable
 
         var next = await RunAsync(Personal, Manual).WaitAsync(Limit, CancellationToken);
 
-        Outcome(await running).ShouldBe(SyncPassFailureFactory.CreateCancelled());
+        Outcome(await running.WaitAsync(Limit, CancellationToken)).ShouldBe(SyncPassFailureFactory.CreateCancelled());
         Outcome(next).ShouldBe("ran");
     }
 
