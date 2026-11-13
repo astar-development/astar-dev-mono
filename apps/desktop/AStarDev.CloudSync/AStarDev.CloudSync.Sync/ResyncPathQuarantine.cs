@@ -8,5 +8,5 @@ public sealed class ResyncPathQuarantine(IRemoteIndexReader indexReader) : IPath
 {
     /// <inheritdoc />
     public Task<Result<QuarantineSnapshot, ErrorResponse>> ReadAsync(AccountId accountId, CancellationToken cancellationToken) =>
-        throw new NotImplementedException($"{indexReader.GetType().Name} {accountId} {cancellationToken} are not yet read.");
+        indexReader.GetResyncPassAsync(accountId, cancellationToken).MatchAsync(pass => Result.Success<QuarantineSnapshot, ErrorResponse>(pass.Match(_ => QuarantineSnapshotFactory.CreateResyncing([]), QuarantineSnapshotFactory.CreateEmpty)), Result.Failure<QuarantineSnapshot, ErrorResponse>);
 }
