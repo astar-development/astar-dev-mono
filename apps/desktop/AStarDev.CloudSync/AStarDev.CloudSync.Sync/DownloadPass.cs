@@ -12,10 +12,9 @@ namespace AStarDev.CloudSync.Sync;
 /// <param name="loader">Reads the planner's inputs.</param>
 /// <param name="planner">Plans the pass.</param>
 /// <param name="executor">Carries out the plan.</param>
-/// <param name="attentionWriter">Records the deletions the guard held.</param>
-/// <param name="time">Stamps the held deletions.</param>
+/// <param name="holds">Records the deletions the guard held and closes the held sets of pairs that recovered.</param>
 /// <param name="logger">Reports the pass with counts and the hashed account id only.</param>
-internal sealed partial class DownloadPass(ISyncRootReader roots, DownloadPlanLoader loader, IDownloadPlanner planner, DownloadExecutor executor, ISyncAttentionWriter attentionWriter, TimeProvider time, ILogger<DownloadPass> logger) : IDownloadPass
+internal sealed partial class DownloadPass(ISyncRootReader roots, DownloadPlanLoader loader, IDownloadPlanner planner, DownloadExecutor executor, DownloadHolds holds, ILogger<DownloadPass> logger) : IDownloadPass
 {
     private const string Location = nameof(DownloadPass);
 
@@ -60,25 +59,14 @@ internal sealed partial class DownloadPass(ISyncRootReader roots, DownloadPlanLo
     private async Task<Result<DownloadPassSummary, DownloadPassFailure>> PlanAndRunAsync(AccountId accountId, IDirectoryInfo root, DownloadPlanRequest request, CancellationToken cancellationToken)
     {
         var plan = planner.Plan(request);
-        var recorded = await RecordHeldAsync(accountId, plan, cancellationToken).ConfigureAwait(false);
+        var recorded = await holds.SettleAsync(accountId, request, plan, cancellationToken).MatchAsync(Result.Success<Unit, DownloadPassFailure>, _ => HeldNotSettled()).ConfigureAwait(false);
 
         return await recorded.BindAsync(_ => executor.RunAsync(accountId, root, plan, request.Baseline, cancellationToken).BindAsync(outcomes => Task.FromResult(Result.Success<DownloadPassSummary, DownloadPassFailure>(DownloadPassSummaryFactory.Create(outcomes, plan.Held))))).ConfigureAwait(false);
     }
 
-    private async Task<Result<Unit, DownloadPassFailure>> RecordHeldAsync(AccountId accountId, DownloadPlan plan, CancellationToken cancellationToken)
+    private Result<Unit, DownloadPassFailure> HeldNotSettled()
     {
-        if (plan.Held.Count == 0)
-            return Result.Success<Unit, DownloadPassFailure>(Unit.Instance);
-
-        var items = plan.Held.Select(held => SyncAttentionItemFactory.CreateHeldDeletions(new HeldDeletionId(Guid.NewGuid()), accountId, held.PairId, DeletionDirectionFactory.CreateDeleteLocal(), held.Paths, time.GetUtcNow())).ToList();
-        var recorded = await attentionWriter.RecordAsync(items, cancellationToken).ConfigureAwait(false);
-
-        return recorded.Match(Result.Success<Unit, DownloadPassFailure>, _ => HeldNotRecorded());
-    }
-
-    private Result<Unit, DownloadPassFailure> HeldNotRecorded()
-    {
-        LogMessage.Warning(logger, Location, "The download pass could not record the deletions it held.");
+        LogMessage.Warning(logger, Location, "The download pass could not record the deletions it held or close the held sets of recovered pairs.");
 
         return Result.Failure<Unit, DownloadPassFailure>(DownloadPassFailureFactory.CreateUnexpected());
     }

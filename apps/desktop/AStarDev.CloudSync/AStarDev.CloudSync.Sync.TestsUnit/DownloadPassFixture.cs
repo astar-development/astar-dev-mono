@@ -34,6 +34,7 @@ public sealed class DownloadPassFixture : IDisposable
             .AddSingleton<ISyncBaselineWriter>(Baseline)
             .AddSingleton<ISyncAttentionWriter>(Attention)
             .AddSingleton<ISyncAttentionReader>(Attention)
+            .AddSingleton<ISyncAttentionCloser>(Attention)
             .AddSingleton<IRemoteIndexReader>(Remote)
             .AddKeyedSingleton<IRemoteFileDownloader>(CloudProviderFactory.CreateOneDrive(), Downloader)
             .AddCloudSync()
@@ -106,6 +107,16 @@ public sealed class DownloadPassFixture : IDisposable
         Baseline.Add(entry);
 
         return entry;
+    }
+
+    public HeldDeletionId Hold(string pairPath, DeletionDirection direction, IEnumerable<string> paths)
+    {
+        var id = new HeldDeletionId(Guid.NewGuid());
+        var held = paths.Select(Path).ToList();
+        Attention.Seed(SyncAttentionItemFactory.CreateHeldDeletions(id, Account, SelectionTestRules.PairAt(pairPath), direction, held, Start));
+        Quarantine.Snapshot = QuarantineSnapshotFactory.Extend(Quarantine.Snapshot, held.Select(path => KeyValuePair.Create(path, PathQuarantineStateFactory.CreateHeldByGuard())));
+
+        return id;
     }
 
     public void Docs() => SyncedFolder("Docs", "remote-DOCS");
