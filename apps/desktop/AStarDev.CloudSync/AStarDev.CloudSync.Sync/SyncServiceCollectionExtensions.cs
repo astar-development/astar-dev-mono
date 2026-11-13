@@ -6,7 +6,7 @@ namespace AStarDev.CloudSync.Sync;
 /// <summary>Registers the sync module's in-process services.</summary>
 public static class SyncServiceCollectionExtensions
 {
-    /// <summary>Registers <see cref="IAccountSyncLock"/>, <see cref="IAccountThrottleGate"/>, <see cref="ISyncSelectionEvaluator"/>, <see cref="IFolderTreeSource"/>, <see cref="ISyncPairReader"/>, <see cref="ILocalFolderFilter"/>, <see cref="ILocalFolderBrowser"/>, <see cref="IDefaultSyncRootProvider"/>, <see cref="IDefaultSyncRootAssigner"/> the keyed <see cref="IProviderCapability{TCapability}"/> resolver and the account services (<see cref="IAccountActions"/>, <see cref="IAccountRemover"/>, <see cref="IAccountSignInStates"/>, <see cref="ISignInStateRefresher"/>) as singletons, and <see cref="TimeProvider.System"/> if no clock is registered. Needs an <c>IAccountStore</c>, an <see cref="IHomeFolder"/>, an <see cref="ISyncRootReader"/>, an <see cref="ISyncRootWriter"/>, an <see cref="ISelectionRuleReader"/>, an <see cref="ISyncRootPolicy"/> and logging (<c>AddLogging</c>).</summary>
+    /// <summary>Registers <see cref="IAccountSyncLock"/>, <see cref="IAccountThrottleGate"/>, <see cref="ISyncSelectionEvaluator"/>, <see cref="IFolderTreeSource"/>, <see cref="ISyncPairReader"/>, <see cref="IPathQuarantine"/>, <see cref="ILocalFolderFilter"/>, <see cref="ILocalFolderBrowser"/>, <see cref="IDefaultSyncRootProvider"/>, <see cref="IDefaultSyncRootAssigner"/> the keyed <see cref="IProviderCapability{TCapability}"/> resolver and the account services (<see cref="IAccountActions"/>, <see cref="IAccountRemover"/>, <see cref="IAccountSignInStates"/>, <see cref="ISignInStateRefresher"/>) as singletons, and <see cref="TimeProvider.System"/> if no clock is registered. Needs an <see cref="IRemoteIndexReader"/>, an <c>IAccountStore</c>, an <see cref="IHomeFolder"/>, an <see cref="ISyncRootReader"/>, an <see cref="ISyncRootWriter"/>, an <see cref="ISelectionRuleReader"/>, an <see cref="ISyncRootPolicy"/> and logging (<c>AddLogging</c>).</summary>
     /// <param name="services">The service collection.</param>
     /// <returns>The <paramref name="services" /> collection to allow further chaining.</returns>
     public static IServiceCollection AddCloudSync(this IServiceCollection services)
@@ -21,6 +21,7 @@ public static class SyncServiceCollectionExtensions
             .AddSingleton<RemoteChangeRelevance>()
             .AddSingleton<ISelectionRuleRelocator, SelectionRuleRelocator>()
             .AddSingleton<IRemoteIndexUpdater, RemoteIndexUpdater>()
+            .AddSingleton<IPathQuarantine, ResyncPathQuarantine>()
             .AddSingleton<ILocalFolderFilter, LocalFolderFilter>()
             .AddSingleton<ILocalFolderBrowser, LocalFolderBrowser>()
             .AddSingleton<IDefaultSyncRootProvider, DefaultSyncRootProvider>()

@@ -5,7 +5,7 @@ public static class QuarantineSnapshotExtensions
 {
     private const char Separator = '/';
 
-    /// <summary>The state of the path: <see cref="PathQuarantineState.Skipped"/> when the path is empty or <see cref="SyncSkipFilter"/> matches it; otherwise the first non-clear state stored for the path itself or, walking up, for one of its folders; otherwise <see cref="PathQuarantineState.Clear"/>.</summary>
+    /// <summary>The state of the path: <see cref="PathQuarantineState.Skipped"/> when the path is empty or <see cref="SyncSkipFilter"/> matches it; otherwise the first non-clear state stored for the path itself or, walking up, for one of its folders; otherwise <see cref="QuarantineSnapshot.Baseline"/>.</summary>
     /// <param name="snapshot">The account's snapshot.</param>
     /// <param name="path">The path relative to the sync root.</param>
     public static PathQuarantineState StateOf(this QuarantineSnapshot snapshot, RelativeSyncPath path)
@@ -15,7 +15,7 @@ public static class QuarantineSnapshotExtensions
 
         return SelfAndAncestors(path.Value)
             .Select(candidate => snapshot.Entries.TryGetValue(new RelativeSyncPath(candidate), out var stored) ? stored : PathQuarantineStateFactory.CreateClear())
-            .FirstOrDefault(state => !state.AllowsSyncAction(), PathQuarantineStateFactory.CreateClear());
+            .FirstOrDefault(state => !state.AllowsSyncAction(), snapshot.Baseline);
     }
 
     private static IEnumerable<string> SelfAndAncestors(string path)
