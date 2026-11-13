@@ -61,9 +61,6 @@ internal sealed class SqliteRemoteIndexStore(IDbContextFactory<SyncDbContext> db
         Try.RunAsync(() => DeleteAsync(accountId, cancellationToken), cancellationToken)
             .MatchAsync(Result.Success<Unit, ErrorResponse>, exception => Failed<Unit>(exception, "The account's remote index could not be removed."));
 
-    private static Option<T> OptionOf<T>(T? value)
-        where T : class => value is null ? Option.None<T>() : Option.Some(value);
-
     private static RemoteItemSnapshot[] ToSnapshot(RemoteItemEntity entity) =>
         RemoteItemIdFactory.Create(entity.RemoteItemId).Match(
             id => EntityTagFactory.Create(entity.ETag).Match(eTag => new[] { RemoteItemSnapshotFactory.Create(id, ParentOf(entity), entity.Name, KindOf(entity), entity.LastModified, eTag) }, _ => Array.Empty<RemoteItemSnapshot>()),
@@ -148,7 +145,7 @@ internal sealed class SqliteRemoteIndexStore(IDbContextFactory<SyncDbContext> db
         var live = dbContext.RemoteItems.AsNoTracking().Where(item => item.AccountId == accountId.Value && !item.IsDeleted);
         var children = await parent.Match(
             id => live.Where(item => item.ParentId == id.Value),
-            () => live.Where(item => item.ParentId == null || !dbContext.RemoteItems.Any(other => other.AccountId == accountId.Value && other.RemoteItemId == item.ParentId)))
+            () => live.Where(item => item.ParentId == null || !dbContext.RemoteItems.Any(other => other.AccountId == accountId.Value && other.RemoteItemId == item.ParentId && !other.IsDeleted)))
             .ToListAsync(cancellationToken).ConfigureAwait(false);
 
         return [.. children.SelectMany(ToSnapshot).OrderBy(item => item.Name, StringComparer.OrdinalIgnoreCase)];
