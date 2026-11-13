@@ -17,7 +17,7 @@ internal sealed class LocalChangeComparer(ISyncBaselineReader baselineReader, IC
         var baseline = (await baselineReader.GetAsync(accountId, item.Path, cancellationToken).ConfigureAwait(false)).OrThrow();
 
         return await item.Info.Match(
-            info => info is IFileInfo file ? CompareFileAsync(accountId, item.Path, file, baseline, cancellationToken) : Task.FromResult(CompareFolder(item.Path, info, baseline)),
+            info => info is IFileInfo file ? CompareFileAsync(item.Path, file, baseline, cancellationToken) : Task.FromResult(CompareFolder(item.Path, info, baseline)),
             () => Task.FromResult(LocalComparison.Changed(LocalChangeFactory.CreateUnreadable(item.Path), hashed: false))).ConfigureAwait(false);
     }
 
@@ -35,17 +35,17 @@ internal sealed class LocalChangeComparer(ISyncBaselineReader baselineReader, IC
     private static Option<(long Size, DateTimeOffset WrittenAt)> Observe(IFileSystemInfo info) =>
         Try.Run(() => (Size: info is IFileInfo file ? file.Length : 0L, WrittenAt: new DateTimeOffset(info.LastWriteTimeUtc, TimeSpan.Zero))).Match(seen => Option.Some(seen), _ => Option.None<(long, DateTimeOffset)>());
 
-    private async Task<LocalComparison> CompareFileAsync(AccountId accountId, RelativeSyncPath path, IFileInfo file, Option<SyncBaselineEntry> baseline, CancellationToken cancellationToken)
+    private async Task<LocalComparison> CompareFileAsync(RelativeSyncPath path, IFileInfo file, Option<SyncBaselineEntry> baseline, CancellationToken cancellationToken)
     {
         file.Refresh();
         var observed = Observe(file);
 
         return await observed.Match(
-            seen => baseline.Match(entry => CompareWithBaselineAsync(accountId, path, file, seen, entry, cancellationToken), () => Task.FromResult(IsSettled(seen.WrittenAt) ? LocalComparison.Changed(LocalChangeFactory.CreateAdded(path, LocalItemKindFactory.CreateFile(), seen.Size, seen.WrittenAt), hashed: false) : Deferred(path))),
+            seen => baseline.Match(entry => CompareWithBaselineAsync(path, file, seen, entry, cancellationToken), () => Task.FromResult(IsSettled(seen.WrittenAt) ? LocalComparison.Changed(LocalChangeFactory.CreateAdded(path, LocalItemKindFactory.CreateFile(), seen.Size, seen.WrittenAt), hashed: false) : Deferred(path))),
             () => Task.FromResult(LocalComparison.Unchanged)).ConfigureAwait(false);
     }
 
-    private async Task<LocalComparison> CompareWithBaselineAsync(AccountId accountId, RelativeSyncPath path, IFileInfo file, (long Size, DateTimeOffset WrittenAt) seen, SyncBaselineEntry entry, CancellationToken cancellationToken)
+    private async Task<LocalComparison> CompareWithBaselineAsync(RelativeSyncPath path, IFileInfo file, (long Size, DateTimeOffset WrittenAt) seen, SyncBaselineEntry entry, CancellationToken cancellationToken)
     {
         if (entry.Kind is not SyncBaselineKind.File known)
             return LocalComparison.Changed(LocalChangeFactory.CreateUnreadable(path), hashed: false);
