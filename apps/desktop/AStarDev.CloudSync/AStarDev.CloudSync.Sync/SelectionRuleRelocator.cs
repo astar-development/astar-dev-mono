@@ -1,5 +1,6 @@
 using AStarDev.CloudSync.Accounts;
 using AStarDev.FunctionalParadigm;
+using AStarDev.LoggingExtensions;
 using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync.Sync;
@@ -11,7 +12,52 @@ namespace AStarDev.CloudSync.Sync;
 /// <param name="logger">Reports failures by exception type only.</param>
 internal sealed class SelectionRuleRelocator(IRemoteIndexReader indexReader, ISelectionRuleReader ruleReader, ISelectionRuleWriter ruleWriter, ILogger<SelectionRuleRelocator> logger) : ISelectionRuleRelocator
 {
+    private const string Location = nameof(SelectionRuleRelocator);
+
     /// <inheritdoc />
     public Task<Result<RuleRelocationSummary, ErrorResponse>> RelocateAsync(AccountId accountId, IReadOnlyList<RemoteChange.Moved> moves, CancellationToken cancellationToken) =>
-        throw new NotImplementedException($"{accountId}{moves}{cancellationToken}{indexReader}{ruleReader}{ruleWriter}{logger}");
+        moves.Count == 0
+            ? Task.FromResult(Result.Success<RuleRelocationSummary, ErrorResponse>(RuleRelocationSummaryFactory.None))
+            : Try.RunAsync(() => PlanAndSaveAsync(accountId, cancellationToken), cancellationToken)
+                .MatchAsync(summary => Result.Success<RuleRelocationSummary, ErrorResponse>(summary), exception => Failed(exception));
+
+    private async Task<RuleRelocationSummary> PlanAndSaveAsync(AccountId accountId, CancellationToken cancellationToken)
+    {
+        var rules = (await ruleReader.GetAsync(accountId, cancellationToken).ConfigureAwait(false)).OrThrow();
+        var changes = new List<SelectionChange>();
+        var dropped = 0;
+
+        foreach (var rule in rules)
+        {
+            var target = await TargetOfAsync(accountId, rule, cancellationToken).ConfigureAwait(false);
+
+            if (target.Equals(rule.Path))
+                continue;
+
+            changes.Add(SelectionChangeFactory.CreateRelocateFolder(rule.Path, target));
+            dropped += rules.Any(other => other.Path.Equals(target)) ? 1 : 0;
+        }
+
+        if (changes.Count > 0)
+            _ = (await ruleWriter.ApplyAsync(accountId, changes, cancellationToken).ConfigureAwait(false)).OrThrow();
+
+        return RuleRelocationSummaryFactory.Create(changes.Count - dropped, dropped);
+    }
+
+    private async Task<LocalRelativePath> TargetOfAsync(AccountId accountId, SelectionRule rule, CancellationToken cancellationToken)
+    {
+        if (rule.RemoteId.Match(_ => false, () => true))
+            return rule.Path;
+
+        var found = await rule.RemoteId.Match(id => indexReader.GetPathAsync(accountId, id, cancellationToken), () => Task.FromResult(Result.Success<Option<LocalRelativePath>, ErrorResponse>(Option.None<LocalRelativePath>()))).ConfigureAwait(false);
+
+        return found.OrThrow().Match(path => path, () => rule.Path);
+    }
+
+    private Result<RuleRelocationSummary, ErrorResponse> Failed(Exception exception)
+    {
+        LogMessage.ExceptionCaught(logger, Location, exception.ErrorType());
+
+        return Result.Failure<RuleRelocationSummary, ErrorResponse>(new ErrorResponse("The selection rules could not be relocated."));
+    }
 }
