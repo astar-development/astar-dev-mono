@@ -9,6 +9,8 @@ public sealed class RemoteTreeIndex : IRemoteIndexReader
 
     private readonly List<RemoteItemSnapshot> items = [];
 
+    public void Add(RemoteItemSnapshot item) => items.Add(item);
+
     public void Folder(string path, string id)
     {
         var segments = path.Split('/');
