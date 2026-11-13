@@ -51,7 +51,7 @@ public sealed class GivenAnOneDriveChangeFeed : IDisposable
 
         _ = await Feed().GetChangesAsync(account, Option.Some(Cursor(link)), CancellationToken);
 
-        Uri.UnescapeDataString(graph.Requests.ShouldHaveSingleItem().Url.AbsoluteUri).ShouldBe(link);
+        graph.Requests.ShouldHaveSingleItem().Url.OriginalString.ShouldBe(link);
     }
 
     [Fact]
@@ -257,6 +257,64 @@ public sealed class GivenAnOneDriveChangeFeed : IDisposable
         var result = await Feed().GetChangesAsync(AccountIdFactory.Create(Guid.NewGuid()), Option.None<ChangeCursor>(), CancellationToken);
 
         (result.Match(_ => "page", error => error.GetType().Name), tokenSource.Calls, graph.Requests.Count).ShouldBe(("NotFound", 0, 0));
+    }
+
+    [Fact]
+    public async Task when_an_incremental_feed_returns_changes_after_a_delta_link_then_the_page_is_caught_up_with_a_new_delta_cursor()
+    {
+        graph.Respond = _ => GraphScript.Json(HttpStatusCode.OK, Page("\"@odata.deltaLink\":\"" + RootDelta + "?token=next\"", Folder("dir-1", "Docs")));
+        var account = await AddAccountAsync();
+
+        var result = await Feed().GetChangesAsync(account, Option.Some(Cursor(TokenLink)), CancellationToken);
+
+        Describe(result).ShouldBe("caughtup:1:" + RootDelta + "?token=next");
+    }
+
+    [Fact]
+    public async Task when_graph_answers_410_without_a_location_header_then_the_restart_is_a_full_enumeration_from_the_drive_root_delta()
+    {
+        graph.Respond = _ => GraphScript.Json(HttpStatusCode.Gone, "{\"error\":{\"code\":\"resyncRequired\",\"message\":\"m\"}}");
+        var account = await AddAccountAsync();
+
+        var result = await Feed().GetChangesAsync(account, Option.Some(Cursor(TokenLink)), CancellationToken);
+
+        result.Match(_ => "page", error => error is ProviderError.CursorExpired expired ? expired.RestartFrom.Value : error.GetType().Name).ShouldBe(RootDelta);
+    }
+
+    [Fact]
+    public async Task when_a_deleted_item_has_no_entity_tag_then_it_is_still_reported_with_a_stand_in_tag()
+    {
+        graph.Respond = _ => GraphScript.Json(HttpStatusCode.OK, Page("\"@odata.deltaLink\":\"" + TokenLink + "\"", "{\"id\":\"gone-1\",\"name\":\"old\",\"parentReference\":{\"id\":\"dir-1\"},\"deleted\":{}}"));
+        var account = await AddAccountAsync();
+
+        var result = await Feed().GetChangesAsync(account, Option.None<ChangeCursor>(), CancellationToken);
+
+        result.Match(page => page.Items.Select(Summary).ToArray(), _ => []).ShouldBe(["gone-1|dir-1|old|Deleted|||gone-1"]);
+    }
+
+    [Fact]
+    public async Task when_items_have_no_kind_or_no_tags_at_all_then_they_are_left_out()
+    {
+        graph.Respond = _ => GraphScript.Json(HttpStatusCode.OK, Page(
+            "\"@odata.deltaLink\":\"" + TokenLink + "\"",
+            "{\"id\":\"odd\",\"name\":\"odd\",\"eTag\":\"e9\"}",
+            "{\"id\":\"bare\",\"name\":\"bare\",\"size\":1,\"file\":{}}"));
+        var account = await AddAccountAsync();
+
+        var result = await Feed().GetChangesAsync(account, Option.None<ChangeCursor>(), CancellationToken);
+
+        result.Match(page => page.Items.Count, _ => -1).ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task when_the_response_has_no_value_then_an_empty_caught_up_page_is_returned()
+    {
+        graph.Respond = _ => GraphScript.Json(HttpStatusCode.OK, "{\"@odata.deltaLink\":\"" + TokenLink + "\"}");
+        var account = await AddAccountAsync();
+
+        var result = await Feed().GetChangesAsync(account, Option.None<ChangeCursor>(), CancellationToken);
+
+        Describe(result).ShouldBe("caughtup:0:" + TokenLink);
     }
 
     [Fact]
