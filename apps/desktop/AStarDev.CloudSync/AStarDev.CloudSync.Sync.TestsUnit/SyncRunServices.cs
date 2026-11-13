@@ -14,6 +14,7 @@ public sealed class SyncRunServices : IDisposable
         provider = new ServiceCollection()
             .AddLogging(logging => logging.ClearProviders().AddProvider(Logs))
             .AddSingleton<TimeProvider>(Time)
+            .AddSingleton<IConfirmSyncRestartDialog>(Dialog)
             .AddCloudSync()
             .AddSingleton<IRemoteIndexUpdater>(Steps)
             .AddSingleton<ILocalChangeDetector>(Steps)
@@ -27,6 +28,8 @@ public sealed class SyncRunServices : IDisposable
 
     public ScriptedSyncSteps Steps { get; } = new();
 
+    public ScriptedRestartDialog Dialog { get; } = new();
+
     public FakeTimeProvider Time { get; } = new(new DateTimeOffset(2026, 11, 14, 9, 0, 0, TimeSpan.Zero));
 
     public RecordingLoggerProvider Logs { get; } = new();
@@ -36,6 +39,8 @@ public sealed class SyncRunServices : IDisposable
     public ISyncActivitySource Activity => provider.GetRequiredService<ISyncActivitySource>();
 
     public ISyncCancelAction Cancel => provider.GetRequiredService<ISyncCancelAction>();
+
+    public ISyncNowAction SyncNow => provider.GetRequiredService<ISyncNowAction>();
 
     public ISyncRunStatusSource Status => provider.GetRequiredService<ISyncRunStatusSource>();
 
