@@ -30,7 +30,20 @@ internal sealed class LocalTreeWalker(ISyncSelectionEvaluator evaluator, ILocalF
     {
         var includesFiles = TryPaths(path, out var folderPath, out _) && evaluator.IsIncluded(folderPath, rules);
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var child in folder.EnumerateFileSystemInfos().OrderBy(info => info.Name, StringComparer.Ordinal).ToList())
+        var listing = Try.Run(() => folder.EnumerateFileSystemInfos().OrderBy(info => info.Name, StringComparer.Ordinal).ToList());
+        var children = listing.Match(found => found, _ => (List<IFileSystemInfo>?)null);
+        if (children is null)
+        {
+            if (path.Length == 0)
+                throw new IOException("The sync root could not be listed.");
+
+            if (TryPaths(path, out _, out var unlistable))
+                yield return LocalWalkItem.Unlistable(unlistable);
+
+            yield break;
+        }
+
+        foreach (var child in children)
         {
             cancellationToken.ThrowIfCancellationRequested();
             foreach (var item in Visit(child, Join(path, child.Name), includesFiles, seen, rules, cancellationToken))

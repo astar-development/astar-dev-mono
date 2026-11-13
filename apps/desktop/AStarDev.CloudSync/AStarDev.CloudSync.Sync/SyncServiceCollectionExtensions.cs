@@ -29,6 +29,8 @@ public static class SyncServiceCollectionExtensions
             .AddSingleton<LocalTreeWalker>()
             .AddSingleton<LocalChangeComparer>()
             .AddSingleton<LocalDeletionFinder>()
+            .AddSingleton<LocalDeletionGuard>()
+            .AddSingleton<NewFolderRules>()
             .AddSingleton<ILocalChangeDetector, LocalChangeDetector>()
             .AddSingleton<IContentHasher, Sha256ContentHasher>()
             .AddSingleton<ILocalFolderBrowser, LocalFolderBrowser>()

@@ -17,11 +17,16 @@ public sealed class LocalScanFixture : IDisposable
 
     private readonly ServiceProvider provider;
 
-    public LocalScanFixture()
+    public LocalScanFixture(bool windows = false)
     {
-        FileSystem = new MockFileSystem(options => options.SimulatingOperatingSystem(SimulationMode.Linux));
+        Root = windows ? @"C:\sync\root" : RootPath;
+        FileSystem = new MockFileSystem(options => options.SimulatingOperatingSystem(windows ? SimulationMode.Windows : SimulationMode.Linux));
         Time = new FakeTimeProvider(Start);
-        Roots.Root = Option.Some(FileSystem.Directory.CreateDirectory(RootPath));
+        if (windows)
+            FileSystem.WithAccessControlStrategy(Denial);
+
+        Roots.Root = Option.Some(FileSystem.Directory.CreateDirectory(Root));
+        RuleWriter = new ApplyingRuleWriter(Rules);
         provider = new ServiceCollection()
             .AddLogging(logging => logging.ClearProviders().AddProvider(Logs))
             .AddSingleton<System.TimeProvider>(Time)
@@ -29,12 +34,20 @@ public sealed class LocalScanFixture : IDisposable
             .AddSingleton<ISelectionRuleReader>(Rules)
             .AddSingleton<ISyncBaselineReader>(Baseline)
             .AddSingleton<ISyncBaselineWriter>(Baseline)
+            .AddSingleton<ISyncAttentionWriter>(Attention)
+            .AddSingleton<ISelectionRuleWriter>(RuleWriter)
+            .AddSingleton<IRemoteIndexReader>(Remote)
             .AddCloudSync()
+            .AddSingleton<ILocalFolderFilter>(services => new ArmingFolderFilter(ActivatorUtilities.CreateInstance<LocalFolderFilter>(services), Denial))
             .AddSingleton<IContentHasher>(Hasher)
             .BuildServiceProvider();
     }
 
     public const string RootPath = "/sync/root";
+
+    public string Root { get; }
+
+    public DenyListing Denial { get; } = new();
 
     public MockFileSystem FileSystem { get; }
 
@@ -48,6 +61,12 @@ public sealed class LocalScanFixture : IDisposable
 
     public CountingContentHasher Hasher { get; } = new();
 
+    public RecordingAttentionWriter Attention { get; } = new();
+
+    public ApplyingRuleWriter RuleWriter { get; }
+
+    public ScriptedRemoteIndex Remote { get; } = new();
+
     public RecordingLoggerProvider Logs { get; } = new();
 
     public ILocalChangeDetector Detector => provider.GetRequiredService<ILocalChangeDetector>();
@@ -58,7 +77,7 @@ public sealed class LocalScanFixture : IDisposable
 
     public IFileInfo Write(string relative, string content, TimeSpan? age = null)
     {
-        var full = $"{RootPath}/{relative}";
+        var full = $"{Root}/{relative}";
         _ = FileSystem.Directory.CreateDirectory(FileSystem.Path.GetDirectoryName(full)!);
         FileSystem.File.WriteAllText(full, content);
         FileSystem.File.SetLastWriteTimeUtc(full, (Start - (age ?? TimeSpan.FromMinutes(10))).UtcDateTime);
@@ -66,7 +85,7 @@ public sealed class LocalScanFixture : IDisposable
         return FileSystem.FileInfo.New(full);
     }
 
-    public void Folder(string relative) => FileSystem.Directory.CreateDirectory($"{RootPath}/{relative}");
+    public void Folder(string relative) => FileSystem.Directory.CreateDirectory($"{Root}/{relative}");
 
     public SyncBaselineEntry Synced(string relative, string content, string itemId, TimeSpan? age = null)
     {
@@ -86,6 +105,20 @@ public sealed class LocalScanFixture : IDisposable
 
         return entry;
     }
+
+    public void SyncedFiles(string folder, int count)
+    {
+        for (var index = 0; index < count; index++)
+            _ = Synced($"{folder}/file{index:000}.txt", $"content {index}", $"item-{folder}-{index}");
+    }
+
+    public void Lose(string folder, int count)
+    {
+        for (var index = 0; index < count; index++)
+            FileSystem.File.Delete($"{Root}/{folder}/file{index:000}.txt");
+    }
+
+    public void Deny(string relative) => Denial.Target(relative.Length == 0 ? Root : $"{Root}/{relative}", relative.Length == 0);
 
     public static RelativeSyncPath Path(string value) => RelativeSyncPathFactory.Create(value).Match(path => path, _ => throw new InvalidOperationException("The test path must be valid."));
 
