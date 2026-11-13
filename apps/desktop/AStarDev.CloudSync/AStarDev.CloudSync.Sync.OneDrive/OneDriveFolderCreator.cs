@@ -34,9 +34,21 @@ internal sealed class OneDriveFolderCreator(OneDriveTransferHttp http, ILogger<O
         var parent = item.TryGetProperty("parentReference", out var reference) && reference.TryGetProperty("id", out var parentId) ? parentId.GetString() : requestedParent;
         var children = item.GetProperty("folder").TryGetProperty("childCount", out var count) && count.GetInt32() > 0 ? RemoteFolderChildrenFactory.CreateMayHaveChildFolders() : RemoteFolderChildrenFactory.CreateNoChildFolders();
 
-        return RemoteItemIdFactory.Create(item.TryGetProperty("id", out var id) ? id.GetString() : null).Match(
-            folderId => RemoteItemIdFactory.Create(parent).Match(parentItemId => Result.Success<RemoteFolder, ProviderError>(RemoteFolderFactory.Create(folderId, requestedName, parentItemId, children)), _ => Result.Failure<RemoteFolder, ProviderError>(ProviderErrorFactory.CreateUnexpected())),
-            _ => Result.Failure<RemoteFolder, ProviderError>(ProviderErrorFactory.CreateUnexpected()));
+        return VersionOf(item).Bind(version => RemoteItemIdFactory.Create(item.TryGetProperty("id", out var id) ? id.GetString() : null).Match(
+            folderId => RemoteItemIdFactory.Create(parent).Match(parentItemId => Result.Success<RemoteFolder, ProviderError>(RemoteFolderFactory.Create(folderId, requestedName, parentItemId, children, version)), _ => Result.Failure<RemoteFolder, ProviderError>(ProviderErrorFactory.CreateUnexpected())),
+            _ => Result.Failure<RemoteFolder, ProviderError>(ProviderErrorFactory.CreateUnexpected())));
+    }
+
+    private static Result<RemoteFolderVersion, ProviderError> VersionOf(JsonElement item)
+    {
+        if (!item.TryGetProperty("lastModifiedDateTime", out var modified) || modified.ValueKind is not JsonValueKind.String || !modified.TryGetDateTimeOffset(out var lastModified))
+            return Result.Failure<RemoteFolderVersion, ProviderError>(ProviderErrorFactory.CreateUnexpected());
+
+        var tag = item.TryGetProperty("eTag", out var eTag) && eTag.ValueKind is JsonValueKind.String ? eTag.GetString() : null;
+
+        return EntityTagFactory.Create(tag).Match(
+            entityTag => Result.Success<RemoteFolderVersion, ProviderError>(RemoteFolderVersionFactory.Create(entityTag, lastModified)),
+            _ => Result.Failure<RemoteFolderVersion, ProviderError>(ProviderErrorFactory.CreateUnexpected()));
     }
 
     private async Task<Result<RemoteFolder, ProviderError>> CreateAsync(AccountId accountId, TransferCredentials credentials, Option<RemoteItemId> parent, string name, CancellationToken cancellationToken)

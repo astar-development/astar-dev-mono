@@ -6,8 +6,8 @@ using AStarDev.FunctionalParadigm;
 namespace AStarDev.CloudSync.Sync;
 
 /// <summary>Runs the steps of an upload plan: folders one after another, files up to the configured number at a time, then deletions, recording every success.</summary>
-/// <param name="recorder">Writes the baseline and remote index rows of an uploaded file in one transaction.</param>
-/// <param name="baseline">Writes folder and deletion changes to the baseline.</param>
+/// <param name="recorder">Writes the baseline and remote index rows of an uploaded file or a created folder in one transaction.</param>
+/// <param name="baseline">Writes linked folders and deletion changes to the baseline.</param>
 /// <param name="options">The concurrency limit.</param>
 internal sealed class UploadItemExecutor(IUploadRecorder recorder, ISyncBaselineWriter baseline, UploadPassOptions options)
 {
@@ -99,12 +99,12 @@ internal sealed class UploadItemExecutor(IUploadRecorder recorder, ISyncBaseline
     private async Task<UploadItemOutcome> RunFolderStepAsync(PassRun run, UploadPlanItem item, CancellationToken cancellationToken)
     {
         if (item is UploadPlanItem.LinkExisting link)
-            return await RecordFolderAsync(run, item.Path, link.ItemId, UploadItemOutcomeFactory.CreateLinked(item.Path), cancellationToken).ConfigureAwait(false);
+            return await RecordFolderAsync(run, item.Path, link.ItemId, Option.None<RemoteItemSnapshot>(), UploadItemOutcomeFactory.CreateLinked(item.Path), cancellationToken).ConfigureAwait(false);
 
         return await ParentIdOf(run, item.Path).Match(
             parent => run.Providers.Folders.EnsureFolderAsync(run.AccountId, parent, NameOf(item.Path), cancellationToken)
                 .MatchAsync(
-                    folder => RecordFolderAsync(run, item.Path, folder.Id, UploadItemOutcomeFactory.CreateFolderCreated(item.Path), cancellationToken),
+                    folder => RecordFolderAsync(run, item.Path, folder.Id, IndexRowOf(folder, parent, item.Path), UploadItemOutcomeFactory.CreateFolderCreated(item.Path), cancellationToken),
                     error => Task.FromResult(FolderFailed(run, item.Path, error))),
             failed => Task.FromResult(failed)).ConfigureAwait(false);
     }
@@ -116,11 +116,15 @@ internal sealed class UploadItemExecutor(IUploadRecorder recorder, ISyncBaseline
         return UploadItemOutcomeFactory.CreateFailed(path, error);
     }
 
-    private Task<UploadItemOutcome> RecordFolderAsync(PassRun run, RelativeSyncPath path, RemoteItemId folderId, UploadItemOutcome success, CancellationToken cancellationToken)
+    private static Option<RemoteItemSnapshot> IndexRowOf(RemoteFolder folder, Option<RemoteItemId> parent, RelativeSyncPath path) =>
+        folder.Version.Map(version => RemoteItemSnapshotFactory.Create(folder.Id, parent, NameOf(path), RemoteItemKindFactory.CreateFolder(), version.LastModified, version.ETag));
+
+    private Task<UploadItemOutcome> RecordFolderAsync(PassRun run, RelativeSyncPath path, RemoteItemId folderId, Option<RemoteItemSnapshot> indexRow, UploadItemOutcome success, CancellationToken cancellationToken)
     {
         run.Folders[path] = folderId;
+        var entry = SyncBaselineEntryFactory.Create(run.AccountId, path, folderId, SyncBaselineKindFactory.CreateFolder());
 
-        return baseline.UpsertAsync(run.AccountId, [SyncBaselineEntryFactory.Create(run.AccountId, path, folderId, SyncBaselineKindFactory.CreateFolder())], cancellationToken)
+        return indexRow.Match(snapshot => recorder.RecordAsync(run.AccountId, entry, snapshot, cancellationToken), () => baseline.UpsertAsync(run.AccountId, [entry], cancellationToken))
             .MatchAsync(_ => success, _ => UploadItemOutcomeFactory.CreateFailed(path, ProviderErrorFactory.CreateUnexpected()));
     }
 
