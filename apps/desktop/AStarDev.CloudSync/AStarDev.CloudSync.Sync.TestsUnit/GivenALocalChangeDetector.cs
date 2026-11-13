@@ -338,6 +338,85 @@ public sealed class GivenALocalChangeDetector : IDisposable
     }
 
     [Fact]
+    public async Task when_the_baseline_casing_differs_from_the_disk_casing_then_the_file_is_not_reported_deleted()
+    {
+        fixture.Include("Docs");
+        _ = fixture.Synced("docs/a.txt", "same", "item-a");
+        fixture.Baseline.Add(SyncBaselineEntryFactory.Create(LocalScanFixture.Account, LocalScanFixture.Path("Docs"), RemoteIds.Of("item-docs"), SyncBaselineKindFactory.CreateFolder()));
+        var entry = fixture.Baseline.Find("docs/a.txt");
+        fixture.Baseline.Add(SyncBaselineEntryFactory.Create(LocalScanFixture.Account, LocalScanFixture.Path("Docs/A.TXT"), entry.ItemId, entry.Kind));
+
+        var set = await fixture.ScanAsync(CancellationToken);
+
+        set.Changes.Count.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task when_a_baseline_file_became_a_folder_then_the_path_is_unreadable_and_nothing_is_transferred()
+    {
+        fixture.Include("Docs");
+        _ = fixture.Synced("Docs/thing", "was a file", "item-thing");
+        fixture.FileSystem.File.Delete($"{LocalScanFixture.RootPath}/Docs/thing");
+        fixture.Folder("Docs/thing");
+
+        var set = await fixture.ScanAsync(CancellationToken);
+
+        LocalScanFixture.Describe(set).ShouldBe("Unreadable:Docs/thing");
+    }
+
+    [Fact]
+    public async Task when_a_baseline_folder_became_a_file_then_the_path_is_unreadable_and_nothing_is_transferred()
+    {
+        fixture.Include("Docs");
+        _ = fixture.SyncedFolder("Docs/thing", "item-thing");
+        fixture.FileSystem.Directory.Delete($"{LocalScanFixture.RootPath}/Docs/thing");
+        _ = fixture.Write("Docs/thing", "now a file");
+
+        var set = await fixture.ScanAsync(CancellationToken);
+
+        LocalScanFixture.Describe(set).ShouldBe("Unreadable:Docs/thing");
+    }
+
+    [Fact]
+    public async Task when_a_new_file_has_a_write_time_a_second_in_the_future_then_it_is_deferred()
+    {
+        fixture.Include("Docs");
+        _ = fixture.Write("Docs/skewed.txt", "x", TimeSpan.FromSeconds(-1));
+
+        var set = await fixture.ScanAsync(CancellationToken);
+
+        LocalScanFixture.Describe(set).ShouldBe("Deferred:Docs/skewed.txt");
+    }
+
+    [Fact]
+    public async Task when_the_baseline_refresh_fails_then_the_real_changes_are_still_reported()
+    {
+        fixture.Include("Docs");
+        _ = fixture.Synced("Docs/touched.txt", "content", "item-t", TimeSpan.FromMinutes(30));
+        _ = fixture.Write("Docs/touched.txt", "content", TimeSpan.FromMinutes(5));
+        _ = fixture.Write("Docs/new.txt", "new");
+        fixture.Baseline.UpsertFails = true;
+
+        var set = await fixture.ScanAsync(CancellationToken);
+
+        LocalScanFixture.Describe(set).ShouldBe("Added:Docs/new.txt:File");
+    }
+
+    [Fact]
+    public async Task when_the_scan_is_cancelled_while_hashing_then_it_throws_and_the_baseline_is_not_touched()
+    {
+        fixture.Include("Docs");
+        _ = fixture.Synced("Docs/a.txt", "before", "item-a", TimeSpan.FromMinutes(30));
+        _ = fixture.Write("Docs/a.txt", "after!", TimeSpan.FromMinutes(5));
+        using var source = new CancellationTokenSource();
+        fixture.Hasher.CancelOnHash = source;
+
+        await Should.ThrowAsync<OperationCanceledException>(() => fixture.Detector.DetectAsync(LocalScanFixture.Account, source.Token));
+
+        fixture.Baseline.Upserts.ShouldBe(0);
+    }
+
+    [Fact]
     public async Task when_the_token_is_already_cancelled_then_the_scan_throws_and_reports_nothing()
     {
         fixture.Include("Docs");

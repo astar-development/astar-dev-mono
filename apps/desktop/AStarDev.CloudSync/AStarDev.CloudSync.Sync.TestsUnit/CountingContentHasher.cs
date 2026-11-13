@@ -11,9 +11,12 @@ public sealed class CountingContentHasher : IContentHasher
 
     public HashSet<string> UnreadableNames { get; } = [];
 
+    public CancellationTokenSource? CancelOnHash { get; set; }
+
     public Task<Result<ContentHash, LocalScanFailure>> HashAsync(IFileInfo file, CancellationToken cancellationToken)
     {
         Calls++;
+        CancelOnHash?.Cancel();
 
         return UnreadableNames.Contains(file.Name)
             ? Task.FromResult(Result.Failure<ContentHash, LocalScanFailure>(LocalScanFailureFactory.CreateUnreadable()))

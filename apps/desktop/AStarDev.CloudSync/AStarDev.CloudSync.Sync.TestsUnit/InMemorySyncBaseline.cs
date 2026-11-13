@@ -13,6 +13,8 @@ public sealed class InMemorySyncBaseline : ISyncBaselineReader, ISyncBaselineWri
 
     public int Upserts { get; private set; }
 
+    public bool UpsertFails { get; set; }
+
     public IReadOnlyList<SyncBaselineEntry> All => [.. stored.Values];
 
     public bool Has(string path) => stored.ContainsKey(path);
@@ -38,6 +40,9 @@ public sealed class InMemorySyncBaseline : ISyncBaselineReader, ISyncBaselineWri
     public Task<Result<Unit, ErrorResponse>> UpsertAsync(AccountId accountId, IReadOnlyList<SyncBaselineEntry> entries, CancellationToken cancellationToken)
     {
         Upserts++;
+        if (UpsertFails)
+            return Task.FromResult(Result.Failure<Unit, ErrorResponse>(new ErrorResponse("locked")));
+
         foreach (var entry in entries)
             Add(entry);
 
