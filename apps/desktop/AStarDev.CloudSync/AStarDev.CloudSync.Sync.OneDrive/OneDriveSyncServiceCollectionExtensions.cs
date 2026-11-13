@@ -14,11 +14,13 @@ public static class OneDriveSyncServiceCollectionExtensions
     public static IServiceCollection AddOneDriveSync(this IServiceCollection services)
     {
         services.TryAddSingleton(new RetryHandlerOption());
+        services.TryAddSingleton<OneDriveGraphAccess>();
         _ = services.AddTransient<AccountThrottleHandler>()
             .AddHttpClient(OneDriveSyncHttp.ClientName)
             .RemoveAllLoggers()
             .AddHttpMessageHandler<AccountThrottleHandler>();
 
-        return services.AddKeyedSingleton<IRemoteFolderBrowser, OneDriveFolderBrowser>(CloudProviderFactory.CreateOneDrive());
+        return services.AddKeyedSingleton<IRemoteFolderBrowser, OneDriveFolderBrowser>(CloudProviderFactory.CreateOneDrive())
+            .AddKeyedSingleton<IRemoteChangeFeed, OneDriveChangeFeed>(CloudProviderFactory.CreateOneDrive());
     }
 }

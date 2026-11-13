@@ -22,4 +22,12 @@ public class GivenOneDriveSyncServiceCollectionExtensions
 
         services.ShouldContain(descriptor => descriptor.ServiceType == typeof(IRemoteFolderBrowser) && descriptor.IsKeyedService && Equals(descriptor.ServiceKey, CloudProviderFactory.CreateOneDrive()) && descriptor.Lifetime == ServiceLifetime.Singleton);
     }
+
+    [Fact]
+    public void when_the_module_is_added_then_the_change_feed_is_registered_keyed_by_onedrive()
+    {
+        var services = new ServiceCollection().AddOneDriveSync();
+
+        services.ShouldContain(descriptor => descriptor.ServiceType == typeof(IRemoteChangeFeed) && descriptor.IsKeyedService && Equals(descriptor.ServiceKey, CloudProviderFactory.CreateOneDrive()) && descriptor.Lifetime == ServiceLifetime.Singleton);
+    }
 }

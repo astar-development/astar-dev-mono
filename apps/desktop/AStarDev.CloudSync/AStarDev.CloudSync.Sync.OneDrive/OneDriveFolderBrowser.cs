@@ -1,25 +1,17 @@
 using AStarDev.CloudSync.Accounts;
-using AStarDev.CloudSync.Accounts.OneDrive;
 using AStarDev.FunctionalParadigm;
-using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.Graph.Models;
 using Microsoft.Kiota.Abstractions;
-using Microsoft.Kiota.Abstractions.Authentication;
-using Microsoft.Kiota.Http.HttpClientLibrary;
-using Microsoft.Kiota.Http.HttpClientLibrary.Middleware.Options;
 
 namespace AStarDev.CloudSync.Sync.OneDrive;
 
 /// <summary>Lists the folders of a OneDrive folder through Microsoft Graph, one level per call, following every page.</summary>
-/// <param name="tokens">Gives the account's access token without asking the user.</param>
-/// <param name="accounts">Holds the account's drive id.</param>
-/// <param name="handlers">Creates the shared HTTP pipeline, which includes the account throttle gate.</param>
-/// <param name="retry">The Graph SDK retry settings for 429 and 503.</param>
+/// <param name="graphAccess">Gives the account's drive id, access token and Graph client.</param>
 /// <param name="timeProvider">Turns a Retry-After date into a delay.</param>
 /// <param name="logger">Reports the outcome with the hashed account id, status, Graph error code and page count only.</param>
-internal sealed class OneDriveFolderBrowser(IAccessTokenSource tokens, IAccountStore accounts, IHttpMessageHandlerFactory handlers, RetryHandlerOption retry, TimeProvider timeProvider, ILogger<OneDriveFolderBrowser> logger) : IRemoteFolderBrowser
+internal sealed class OneDriveFolderBrowser(OneDriveGraphAccess graphAccess, TimeProvider timeProvider, ILogger<OneDriveFolderBrowser> logger) : IRemoteFolderBrowser
 {
     private const string RootSegment = "root";
     private const int PageSize = 200;
@@ -30,8 +22,8 @@ internal sealed class OneDriveFolderBrowser(IAccessTokenSource tokens, IAccountS
     {
         using var scope = SyncLogScope.Begin(logger, accountId);
 
-        return await DriveOfAsync(accountId, cancellationToken)
-            .BindAsync(driveId => TokenOfAsync(accountId, cancellationToken).BindAsync(token => ListAsync(accountId, driveId, token, parent, cancellationToken)))
+        return await graphAccess.DriveOfAsync(accountId, cancellationToken)
+            .BindAsync(driveId => graphAccess.TokenOfAsync(accountId, outcome => OneDriveBrowseLog.TokenUnavailable(logger, outcome), cancellationToken).BindAsync(token => ListAsync(accountId, driveId, token, parent, cancellationToken)))
             .ConfigureAwait(false);
     }
 
@@ -55,41 +47,6 @@ internal sealed class OneDriveFolderBrowser(IAccessTokenSource tokens, IAccountS
         configuration.QueryParameters.Top = PageSize;
     }
 
-    private async Task<Result<string, ProviderError>> DriveOfAsync(AccountId accountId, CancellationToken cancellationToken) =>
-        await accounts.GetAllAsync(cancellationToken)
-            .MatchAsync(
-                stored => stored.FirstOrNone(account => account.Id == accountId).Match(account => Result.Success<string, ProviderError>(account.Registration.DriveId.Value), () => Result.Failure<string, ProviderError>(ProviderErrorFactory.CreateNotFound())),
-                _ => Result.Failure<string, ProviderError>(ProviderErrorFactory.CreateTransient()))
-            .ConfigureAwait(false);
-
-    private async Task<Result<string, ProviderError>> TokenOfAsync(AccountId accountId, CancellationToken cancellationToken)
-    {
-        var outcome = await tokens.GetAccessTokenAsync(accountId, cancellationToken).ConfigureAwait(false);
-
-        return outcome switch
-        {
-            AccessTokenOutcome.Acquired acquired => Result.Success<string, ProviderError>(acquired.Token),
-            AccessTokenOutcome.SignInRequired => Refused(outcome, ProviderErrorFactory.CreateAuthenticationRequired()),
-            AccessTokenOutcome.UnknownAccount => Refused(outcome, ProviderErrorFactory.CreateNotFound()),
-            _ => Refused(outcome, ProviderErrorFactory.CreateTransient()),
-        };
-    }
-
-    private Result<string, ProviderError> Refused(AccessTokenOutcome outcome, ProviderError error)
-    {
-        OneDriveBrowseLog.TokenUnavailable(logger, outcome.GetType().Name);
-
-        return Result.Failure<string, ProviderError>(error);
-    }
-
-    private GraphServiceClient CreateClient(AccountId accountId, string accessToken)
-    {
-        var final = new AccountStampHandler(accountId, handlers.CreateHandler(OneDriveSyncHttp.ClientName));
-        var pipeline = KiotaClientFactory.ChainHandlersCollectionAndGetFirstLink(final, [.. KiotaClientFactory.CreateDefaultHandlers([retry])]);
-
-        return new GraphServiceClient(new HttpClient(pipeline!, disposeHandler: true), new BaseBearerTokenAuthenticationProvider(new BearerTokenProvider(accessToken)));
-    }
-
     private async Task<Result<IReadOnlyList<RemoteFolder>, ProviderError>> ListAsync(AccountId accountId, string driveId, string accessToken, Option<RemoteItemId> parent, CancellationToken cancellationToken)
     {
         var progress = new PageProgress();
@@ -110,7 +67,7 @@ internal sealed class OneDriveFolderBrowser(IAccessTokenSource tokens, IAccountS
 
     private async Task<Result<IReadOnlyList<RemoteFolder>, ProviderError>> ReadAllPagesAsync(AccountId accountId, string driveId, string accessToken, Option<RemoteItemId> parent, PageProgress progress, CancellationToken cancellationToken)
     {
-        using var graph = CreateClient(accountId, accessToken);
+        using var graph = graphAccess.CreateClient(accountId, accessToken);
         var parentSegment = parent.Match(id => id.Value, () => RootSegment);
         var children = graph.Drives[driveId].Items[parentSegment].Children;
         var folders = new List<RemoteFolder>();
