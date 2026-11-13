@@ -22,6 +22,9 @@ internal sealed class SqliteRemoteIndexStore(IDbContextFactory<SyncDbContext> db
             .MatchAsync(cursor => Result.Success<Option<ChangeCursor>, ErrorResponse>(cursor), exception => Failed<Option<ChangeCursor>>(exception, "The change cursor could not be read."));
 
     /// <inheritdoc />
+    public Task<Result<bool, ErrorResponse>> IsCompleteAsync(AccountId accountId, CancellationToken cancellationToken) => throw new NotImplementedException($"{accountId}{cancellationToken}");
+
+    /// <inheritdoc />
     public Task<Result<Option<ResyncPassId>, ErrorResponse>> GetResyncPassAsync(AccountId accountId, CancellationToken cancellationToken) =>
         Try.RunAsync(() => ReadResyncPassAsync(accountId, cancellationToken), cancellationToken)
             .MatchAsync(pass => Result.Success<Option<ResyncPassId>, ErrorResponse>(pass), exception => Failed<Option<ResyncPassId>>(exception, "The resync pass could not be read."));

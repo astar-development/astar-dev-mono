@@ -103,10 +103,10 @@ public sealed class GivenADefaultIncludeForNewFolders : IDisposable
     }
 
     [Fact]
-    public async Task when_the_remote_index_has_no_cursor_yet_then_no_rule_is_written()
+    public async Task when_the_remote_index_is_not_complete_yet_then_no_rule_is_written()
     {
         fixture.Include("Docs");
-        fixture.Remote.Cursor = AStarDev.FunctionalParadigm.Option.None<ChangeCursor>();
+        fixture.Remote.Complete = false;
         _ = fixture.Write("Photos/a.jpg", "pic");
 
         var set = await fixture.ScanAsync(CancellationToken);
