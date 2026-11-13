@@ -23,7 +23,6 @@ internal sealed class SelectionRuleRelocator(IRemoteIndexReader indexReader, ISe
     {
         var rules = (await ruleReader.GetAsync(accountId, cancellationToken).ConfigureAwait(false)).OrThrow();
         var moves = new List<FolderMove>();
-        var dropped = 0;
 
         foreach (var rule in rules)
         {
@@ -33,8 +32,9 @@ internal sealed class SelectionRuleRelocator(IRemoteIndexReader indexReader, ISe
                 continue;
 
             moves.Add(FolderMoveFactory.Create(rule.Path, target));
-            dropped += rules.Any(other => other.Path.Equals(target)) ? 1 : 0;
         }
+
+        var dropped = RuleRelocations.Apply(rules, moves).Dropped;
 
         if (moves.Count > 0)
             _ = (await ruleWriter.ApplyAsync(accountId, [SelectionChangeFactory.CreateRelocateFolders(moves)], cancellationToken).ConfigureAwait(false)).OrThrow();
@@ -44,9 +44,6 @@ internal sealed class SelectionRuleRelocator(IRemoteIndexReader indexReader, ISe
 
     private async Task<LocalRelativePath> TargetOfAsync(AccountId accountId, SelectionRule rule, CancellationToken cancellationToken)
     {
-        if (rule.RemoteId.Match(_ => false, () => true))
-            return rule.Path;
-
         var found = await rule.RemoteId.Match(id => indexReader.GetPathAsync(accountId, id, cancellationToken), () => Task.FromResult(Result.Success<Option<LocalRelativePath>, ErrorResponse>(Option.None<LocalRelativePath>()))).ConfigureAwait(false);
 
         return found.OrThrow().Match(path => path, () => rule.Path);

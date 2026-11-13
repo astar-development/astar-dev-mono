@@ -18,7 +18,7 @@ public static class SelectionRulePlanner
         SelectionChange.IncludeFolder include => Replace(rules, SelectionRuleFactory.Create(accountId, include.Path, include.RemoteId, SelectionRuleKindFactory.CreateInclude(include.Direction))),
         SelectionChange.ExcludeFolder exclude => Replace(rules, SelectionRuleFactory.Create(accountId, exclude.Path, exclude.RemoteId, SelectionRuleKindFactory.CreateExclude())),
         SelectionChange.ChangeDirection direction => [.. rules.Select(rule => IsPairRule(rule, direction.Pair) ? SelectionRuleFactory.Create(rule.AccountId, rule.Path, rule.RemoteId, SelectionRuleKindFactory.CreateInclude(direction.Direction)) : rule)],
-        SelectionChange.RelocateFolders => rules,
+        SelectionChange.RelocateFolders relocate => RuleRelocations.Apply(rules, relocate.Moves).Rules,
         _ => rules,
     };
 

@@ -41,7 +41,7 @@ internal sealed class RemoteIndexUpdater(IProviderCapability<IRemoteChangeFeed> 
         var gate = gates.GetOrAdd(accountId.Value, _ => new SemaphoreSlim(1, 1));
         await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-        return new GateRelease(gate);
+        return new SemaphoreRelease(gate);
     }
 
     private async Task<Result<RemoteUpdateSummary, ProviderError>> RunAsync(IRemoteChangeFeed feed, AccountId accountId, CancellationToken cancellationToken)
@@ -49,7 +49,9 @@ internal sealed class RemoteIndexUpdater(IProviderCapability<IRemoteChangeFeed> 
         var started = Stopwatch.GetTimestamp();
         var cursor = (await indexReader.GetCursorAsync(accountId, cancellationToken).ConfigureAwait(false)).OrThrow();
         var running = (await indexReader.GetResyncPassAsync(accountId, cancellationToken).ConfigureAwait(false)).OrThrow();
-        var run = new UpdateRun(accountId, cursor, running.Match(_ => Option.Some(ResyncKindFactory.CreateUnknown()), () => Option.None<ResyncKind>()));
+        var run = new RemoteUpdateRun(accountId, cursor, running.Match(_ => Option.Some(ResyncKindFactory.CreateUnknown()), () => Option.None<ResyncKind>()));
+
+        run.Add(RelevantChangeCountsFactory.None, (await relocator.RelocateAsync(accountId, cancellationToken).ConfigureAwait(false)).OrThrow());
 
         while (true)
         {
@@ -57,10 +59,10 @@ internal sealed class RemoteIndexUpdater(IProviderCapability<IRemoteChangeFeed> 
             var read = await feed.GetChangesAsync(accountId, run.Cursor, cancellationToken).ConfigureAwait(false);
             var step = await read.Match(page => ApplyAsync(run, page, cancellationToken), error => OnErrorAsync(run, error, cancellationToken)).ConfigureAwait(false);
 
-            if (step is Step.Failed failed)
+            if (step is RemoteUpdateStep.Failed failed)
                 return Stopped(failed.Error);
 
-            if (step is Step.Finished)
+            if (step is RemoteUpdateStep.Finished)
                 break;
         }
 
@@ -73,7 +75,7 @@ internal sealed class RemoteIndexUpdater(IProviderCapability<IRemoteChangeFeed> 
         return Succeeded(summary);
     }
 
-    private async Task<Step> ApplyAsync(UpdateRun run, RemoteChangePage page, CancellationToken cancellationToken)
+    private async Task<RemoteUpdateStep> ApplyAsync(RemoteUpdateRun run, RemoteChangePage page, CancellationToken cancellationToken)
     {
         var before = (await ruleReader.GetAsync(run.AccountId, cancellationToken).ConfigureAwait(false)).OrThrow();
         var delta = (await indexWriter.ApplyPageAsync(run.AccountId, page, cancellationToken).ConfigureAwait(false)).OrThrow();
@@ -86,28 +88,28 @@ internal sealed class RemoteIndexUpdater(IProviderCapability<IRemoteChangeFeed> 
         return page.Next switch
         {
             PageContinuation.MorePages more => Advance(run, more.Next),
-            _ => Step.Done,
+            _ => RemoteUpdateStep.Done,
         };
     }
 
-    private Step Advance(UpdateRun run, ChangeCursor next)
+    private RemoteUpdateStep Advance(RemoteUpdateRun run, ChangeCursor next)
     {
         if (!run.Seen.Add(next.Value))
         {
             LogMessage.Warning(logger, Location, "The change feed returned a link it had already returned, so the update stopped.");
 
-            return Step.Stop(ProviderErrorFactory.CreateUnexpected());
+            return RemoteUpdateStep.Stop(ProviderErrorFactory.CreateUnexpected());
         }
 
         run.Cursor = Option.Some(next);
 
-        return Step.Next;
+        return RemoteUpdateStep.Next;
     }
 
-    private async Task<Step> OnErrorAsync(UpdateRun run, ProviderError error, CancellationToken cancellationToken)
+    private async Task<RemoteUpdateStep> OnErrorAsync(RemoteUpdateRun run, ProviderError error, CancellationToken cancellationToken)
     {
         if (error is not ProviderError.CursorExpired expired || run.Expirations >= 1)
-            return Step.Stop(error);
+            return RemoteUpdateStep.Stop(error);
 
         run.Expirations++;
         _ = (await indexWriter.BeginResyncAsync(run.AccountId, cancellationToken).ConfigureAwait(false)).OrThrow();
@@ -116,10 +118,10 @@ internal sealed class RemoteIndexUpdater(IProviderCapability<IRemoteChangeFeed> 
         _ = run.Seen.Add(expired.RestartFrom.Value);
         LogMessage.Warning(logger, Location, $"The change cursor expired, so a resync of kind {expired.Kind.GetType().Name} started.");
 
-        return Step.Next;
+        return RemoteUpdateStep.Next;
     }
 
-    private async Task FinishResyncAsync(UpdateRun run, CancellationToken cancellationToken)
+    private async Task FinishResyncAsync(RemoteUpdateRun run, CancellationToken cancellationToken)
     {
         if (run.Resync.Match(_ => false, () => true))
             return;
@@ -134,56 +136,5 @@ internal sealed class RemoteIndexUpdater(IProviderCapability<IRemoteChangeFeed> 
         LogMessage.ExceptionCaught(logger, Location, exception.ErrorType());
 
         return Stopped(ProviderErrorFactory.CreateUnexpected());
-    }
-
-    private abstract record Step
-    {
-        internal static readonly Step Next = new Continue();
-
-        internal static readonly Step Done = new Finished();
-
-        private Step()
-        {
-        }
-
-        internal static Failed Stop(ProviderError error) => new Failed(error);
-
-        internal sealed record Continue : Step;
-
-        internal sealed record Finished : Step;
-
-        internal sealed record Failed(ProviderError Error) : Step;
-    }
-
-    private sealed class GateRelease(SemaphoreSlim gate) : IDisposable
-    {
-        public void Dispose() => gate.Release();
-    }
-
-    private sealed class UpdateRun(AccountId accountId, Option<ChangeCursor> cursor, Option<ResyncKind> resync)
-    {
-        private RelevantChangeCounts counts = RelevantChangeCountsFactory.None;
-        private RuleRelocationSummary rules = RuleRelocationSummaryFactory.None;
-        private int pages;
-
-        internal AccountId AccountId { get; } = accountId;
-
-        internal Option<ChangeCursor> Cursor { get; set; } = cursor;
-
-        internal Option<ResyncKind> Resync { get; set; } = resync;
-
-        internal int Expirations { get; set; }
-
-        internal HashSet<string> Seen { get; } = cursor.Match(found => new HashSet<string>(StringComparer.Ordinal) { found.Value }, () => new HashSet<string>(StringComparer.Ordinal));
-
-        internal void Add(RelevantChangeCounts found, RuleRelocationSummary relocated)
-        {
-            counts = counts.Plus(found);
-            rules = RuleRelocationSummaryFactory.Create(rules.Relocated + relocated.Relocated, rules.Dropped + relocated.Dropped);
-        }
-
-        internal void CountPage() => pages++;
-
-        internal RemoteUpdateSummary ToSummary() => RemoteUpdateSummaryFactory.Create(counts, rules, Resync, pages);
     }
 }
