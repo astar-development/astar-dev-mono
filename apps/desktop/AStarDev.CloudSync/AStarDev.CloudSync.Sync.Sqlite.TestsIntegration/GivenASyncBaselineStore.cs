@@ -1,3 +1,4 @@
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.FunctionalParadigm;
@@ -163,14 +164,80 @@ public sealed class GivenASyncBaselineStore : IAsyncLifetime
     }
 
     [Fact]
-    public async Task when_the_token_is_already_cancelled_then_a_save_changes_nothing()
+    public async Task when_a_stored_row_is_corrupt_then_the_page_read_fails_instead_of_returning_a_short_page()
+    {
+        _ = await Database.BaselineWriter.UpsertAsync(FirstAccount, [FileEntry(FirstAccount, "Docs/a.txt", "1"), FileEntry(FirstAccount, "Docs/c.txt", "3")], CancellationToken);
+        await InsertCorruptFileRowAsync("Docs/b.txt");
+
+        var read = await Database.BaselineReader.GetUnderAsync(FirstAccount, default, Option.None<RelativeSyncPath>(), 100, CancellationToken);
+
+        read.Match(_ => "page", error => error.Message).ShouldBe("The baseline could not be read.");
+    }
+
+    [Fact]
+    public async Task when_the_requested_row_is_corrupt_then_the_single_read_fails_instead_of_reporting_none()
+    {
+        await InsertCorruptFileRowAsync("Docs/b.txt");
+
+        var read = await Database.BaselineReader.GetAsync(FirstAccount, Path("Docs/b.txt"), CancellationToken);
+
+        read.Match(_ => "read", error => error.Message).ShouldBe("The baseline entry could not be read.");
+    }
+
+    [Theory]
+    [InlineData("100%")]
+    [InlineData("a_b")]
+    [InlineData("back\\slash")]
+    public async Task when_a_folder_name_holds_a_like_wildcard_then_only_that_folder_and_its_children_come_back(string folder)
+    {
+        _ = await Database.BaselineWriter.UpsertAsync(FirstAccount, [FolderEntry(FirstAccount, folder, "folder"), FileEntry(FirstAccount, $"{folder}/in.txt", "child"), FileEntry(FirstAccount, "100x/out.txt", "other-percent"), FileEntry(FirstAccount, "axb/out.txt", "other-underscore"), FileEntry(FirstAccount, "backXslash/out.txt", "other-backslash")], CancellationToken);
+
+        var page = await Page(FirstAccount, folder, Option.None<RelativeSyncPath>(), 100);
+
+        string.Join(',', page.Select(entry => entry.ItemId.Value).Order()).ShouldBe("child,folder");
+    }
+
+    [Fact]
+    public async Task when_more_entries_than_one_chunk_are_saved_then_every_entry_is_stored_once()
+    {
+        var entries = Enumerable.Range(0, 1200).Select(index => FileEntry(FirstAccount, $"Docs/file{index:0000}.txt", $"item-{index:0000}")).ToList();
+        _ = await Database.BaselineWriter.UpsertAsync(FirstAccount, entries, CancellationToken);
+        _ = await Database.BaselineWriter.UpsertAsync(FirstAccount, entries.Select(entry => FileEntry(FirstAccount, entry.Path.Value!.ToUpperInvariant(), entry.ItemId.Value, hash: "second")).ToList(), CancellationToken);
+
+        var page = await Page(FirstAccount, "", Option.None<RelativeSyncPath>(), 5000);
+
+        (page.Count, page.All(entry => ((SyncBaselineKind.File)entry.Kind).Hash.Value == "second")).ShouldBe((1200, true));
+    }
+
+    [Fact]
+    public async Task when_the_page_cursor_differs_only_in_case_then_paging_continues_after_that_path()
+    {
+        _ = await Database.BaselineWriter.UpsertAsync(FirstAccount, [FileEntry(FirstAccount, "a.txt", "1"), FileEntry(FirstAccount, "b.txt", "2"), FileEntry(FirstAccount, "c.txt", "3")], CancellationToken);
+
+        var page = await Page(FirstAccount, "", Option.Some(Path("B.TXT")), 100);
+
+        page.Select(entry => entry.ItemId.Value).ShouldBe(["3"]);
+    }
+
+    [Fact]
+    public async Task when_a_huge_limit_is_asked_then_the_page_is_still_capped()
+    {
+        _ = await Database.BaselineWriter.UpsertAsync(FirstAccount, [FileEntry(FirstAccount, "a.txt", "1")], CancellationToken);
+
+        var read = await Database.BaselineReader.GetUnderAsync(FirstAccount, default, Option.None<RelativeSyncPath>(), int.MaxValue, CancellationToken);
+
+        read.Match(page => page.Count, _ => -1).ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_the_token_is_already_cancelled_then_a_save_throws_cancelled_and_changes_nothing()
     {
         using var source = new CancellationTokenSource();
         await source.CancelAsync();
 
-        var outcome = await Record.ExceptionAsync(() => Database.BaselineWriter.UpsertAsync(FirstAccount, [FileEntry(FirstAccount, "a.txt", "1")], source.Token));
+        await Should.ThrowAsync<OperationCanceledException>(() => Database.BaselineWriter.UpsertAsync(FirstAccount, [FileEntry(FirstAccount, "a.txt", "1")], source.Token));
 
-        (outcome is null || outcome is OperationCanceledException, (await Page(FirstAccount, "", Option.None<RelativeSyncPath>(), 100)).Count).ShouldBe((true, 0));
+        (await Page(FirstAccount, "", Option.None<RelativeSyncPath>(), 100)).Count.ShouldBe(0);
     }
 
     [Fact]
@@ -188,6 +255,17 @@ public sealed class GivenASyncBaselineStore : IAsyncLifetime
 
         (Database.BaselineReader.GetType(), Database.BaselineWriter.GetType()).ShouldBe((Database.BaselineWriter.GetType(), Database.BaselineWriter.GetType()));
         participants.ShouldContain("SqliteSyncBaselineStore");
+    }
+
+    private async Task InsertCorruptFileRowAsync(string path)
+    {
+        await using var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = Database.DatabasePath }.ToString());
+        await connection.OpenAsync(CancellationToken);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "INSERT INTO SyncBaseline (AccountId, Path, RemoteItemId, IsFolder) VALUES ($account, $path, 'corrupt', 0)";
+        _ = command.Parameters.AddWithValue("$account", FirstAccount.Value.ToString().ToUpperInvariant());
+        _ = command.Parameters.AddWithValue("$path", path);
+        _ = await command.ExecuteNonQueryAsync(CancellationToken);
     }
 
     private static RelativeSyncPath Path(string value) => RelativeSyncPathFactory.Create(value).Match(path => path, _ => throw new InvalidOperationException("The test path must be valid."));
