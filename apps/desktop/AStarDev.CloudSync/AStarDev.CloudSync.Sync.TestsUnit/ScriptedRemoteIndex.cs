@@ -13,7 +13,7 @@ public sealed class ScriptedRemoteIndex : IRemoteIndexReader
 
     public bool Fails { get; set; }
 
-    public void Folder(string path)
+    public void Folder(string path, string? id = null)
     {
         var parent = Option.None<RemoteItemId>();
         var built = string.Empty;
@@ -23,12 +23,24 @@ public sealed class ScriptedRemoteIndex : IRemoteIndexReader
             var existing = items.FirstOrDefault(item => item.ParentId.Equals(parent) && string.Equals(item.Name, name, StringComparison.OrdinalIgnoreCase));
             if (existing is null)
             {
-                existing = RemoteItemSnapshotFactory.Create(RemoteIds.Of($"remote-{built.ToUpperInvariant()}"), parent, name, RemoteItemKindFactory.CreateFolder(), Stamp, RemoteIds.ETag("e"));
+                existing = RemoteItemSnapshotFactory.Create(RemoteIds.Of(id is not null && built.Length == path.Length ? id : $"remote-{built.ToUpperInvariant()}"), parent, name, RemoteItemKindFactory.CreateFolder(), Stamp, RemoteIds.ETag("e"));
                 items.Add(existing);
             }
 
             parent = Option.Some(existing.Id);
         }
+    }
+
+    public void File(string path, string id, string cTag, long size)
+    {
+        var slash = path.LastIndexOf('/');
+        if (slash > 0)
+            Folder(path[..slash]);
+
+        var parent = default(RemoteItemId);
+        if (slash > 0)
+            parent = path[..slash].Split('/').Aggregate(Option.None<RemoteItemId>(), (current, name) => Option.Some(items.First(item => item.ParentId.Equals(current) && string.Equals(item.Name, name, StringComparison.OrdinalIgnoreCase)).Id)).Match(found => found, () => default);
+        items.Add(RemoteItemSnapshotFactory.Create(RemoteIds.Of(id), slash > 0 ? Option.Some(parent) : Option.None<RemoteItemId>(), path[(slash + 1)..], RemoteItemKindFactory.CreateFile(size, Option.None<ContentHash>(), RemoteIds.CTag(cTag)), Stamp, RemoteIds.ETag("e-" + cTag)));
     }
 
     public Task<Result<Option<ChangeCursor>, ErrorResponse>> GetCursorAsync(AccountId accountId, CancellationToken cancellationToken) => throw new NotSupportedException();
