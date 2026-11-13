@@ -15,16 +15,14 @@ internal sealed class SelectionRuleRelocator(IRemoteIndexReader indexReader, ISe
     private const string Location = nameof(SelectionRuleRelocator);
 
     /// <inheritdoc />
-    public Task<Result<RuleRelocationSummary, ErrorResponse>> RelocateAsync(AccountId accountId, IReadOnlyList<RemoteChange.Moved> moves, CancellationToken cancellationToken) =>
-        moves.Count == 0
-            ? Task.FromResult(Result.Success<RuleRelocationSummary, ErrorResponse>(RuleRelocationSummaryFactory.None))
-            : Try.RunAsync(() => PlanAndSaveAsync(accountId, cancellationToken), cancellationToken)
-                .MatchAsync(summary => Result.Success<RuleRelocationSummary, ErrorResponse>(summary), exception => Failed(exception));
+    public Task<Result<RuleRelocationSummary, ErrorResponse>> RelocateAsync(AccountId accountId, CancellationToken cancellationToken) =>
+        Try.RunAsync(() => PlanAndSaveAsync(accountId, cancellationToken), cancellationToken)
+            .MatchAsync(summary => Result.Success<RuleRelocationSummary, ErrorResponse>(summary), exception => Failed(exception));
 
     private async Task<RuleRelocationSummary> PlanAndSaveAsync(AccountId accountId, CancellationToken cancellationToken)
     {
         var rules = (await ruleReader.GetAsync(accountId, cancellationToken).ConfigureAwait(false)).OrThrow();
-        var changes = new List<SelectionChange>();
+        var moves = new List<FolderMove>();
         var dropped = 0;
 
         foreach (var rule in rules)
@@ -34,14 +32,14 @@ internal sealed class SelectionRuleRelocator(IRemoteIndexReader indexReader, ISe
             if (target.Equals(rule.Path))
                 continue;
 
-            changes.Add(SelectionChangeFactory.CreateRelocateFolder(rule.Path, target));
+            moves.Add(FolderMoveFactory.Create(rule.Path, target));
             dropped += rules.Any(other => other.Path.Equals(target)) ? 1 : 0;
         }
 
-        if (changes.Count > 0)
-            _ = (await ruleWriter.ApplyAsync(accountId, changes, cancellationToken).ConfigureAwait(false)).OrThrow();
+        if (moves.Count > 0)
+            _ = (await ruleWriter.ApplyAsync(accountId, [SelectionChangeFactory.CreateRelocateFolders(moves)], cancellationToken).ConfigureAwait(false)).OrThrow();
 
-        return RuleRelocationSummaryFactory.Create(changes.Count - dropped, dropped);
+        return RuleRelocationSummaryFactory.Create(moves.Count - dropped, dropped);
     }
 
     private async Task<LocalRelativePath> TargetOfAsync(AccountId accountId, SelectionRule rule, CancellationToken cancellationToken)

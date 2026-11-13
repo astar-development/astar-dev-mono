@@ -132,6 +132,48 @@ public sealed class GivenARemoteIndexUpdater : IAsyncLifetime
     }
 
     [Fact]
+    public async Task when_two_folders_swap_names_then_both_rules_follow_their_folders_and_none_is_dropped()
+    {
+        await Include("A", "a");
+        await Include("B", "b");
+        feed.Enqueue(Caught("c1", Folder("a", "root-id", "A"), Folder("b", "root-id", "B")));
+        _ = await Updater.UpdateAsync(account, CancellationToken);
+        feed.Enqueue(Caught("c2", Folder("a", "root-id", "B"), Folder("b", "root-id", "A")));
+
+        var summary = await Updater.UpdateAsync(account, CancellationToken);
+
+        (Describe(summary), await RulesWithRemoteIds()).ShouldBe(("0/0/2/0 pages=1 resync=none rules=2/0", "A=b,B=a"));
+    }
+
+    [Fact]
+    public async Task when_one_folder_takes_the_old_name_of_another_that_is_renamed_then_neither_rule_is_dropped()
+    {
+        await Include("A", "a");
+        await Include("B", "b");
+        feed.Enqueue(Caught("c1", Folder("a", "root-id", "A"), Folder("b", "root-id", "B")));
+        _ = await Updater.UpdateAsync(account, CancellationToken);
+        feed.Enqueue(Caught("c2", Folder("a", "root-id", "B"), Folder("b", "root-id", "C")));
+
+        var summary = await Updater.UpdateAsync(account, CancellationToken);
+
+        (Describe(summary), await RulesWithRemoteIds()).ShouldBe(("0/0/2/0 pages=1 resync=none rules=2/0", "B=a,C=b"));
+    }
+
+    [Fact]
+    public async Task when_a_page_was_saved_but_its_rules_were_never_relocated_then_the_next_update_relocates_them()
+    {
+        await Include("Docs", "a");
+        feed.Enqueue(Caught("c1", Folder("a", "root-id", "Docs")));
+        _ = await Updater.UpdateAsync(account, CancellationToken);
+        _ = await Database.IndexWriter.ApplyPageAsync(account, Caught("c2", Folder("a", "root-id", "Papers")), CancellationToken);
+        feed.Enqueue(Caught("c3"));
+
+        var summary = await Updater.UpdateAsync(account, CancellationToken);
+
+        (Describe(summary), await RulePaths()).ShouldBe(("0/0/0/0 pages=1 resync=none rules=1/0", "Papers"));
+    }
+
+    [Fact]
     public async Task when_only_deletions_arrive_then_the_summary_reports_them()
     {
         await Include("Docs", "a");
@@ -259,11 +301,11 @@ public sealed class GivenARemoteIndexUpdater : IAsyncLifetime
     }
 
     [Fact]
-    public async Task when_no_moves_are_given_then_the_relocator_changes_nothing()
+    public async Task when_no_folder_moved_then_the_relocator_changes_nothing()
     {
         await Include("Docs", "a");
 
-        var relocated = await Database.Services.GetRequiredService<ISelectionRuleRelocator>().RelocateAsync(account, [], CancellationToken);
+        var relocated = await Database.Services.GetRequiredService<ISelectionRuleRelocator>().RelocateAsync(account, CancellationToken);
 
         (relocated.Match(found => $"{found.Relocated}/{found.Dropped}", _ => "error"), await RulePaths()).ShouldBe(("0/0", "Docs"));
     }
@@ -278,6 +320,8 @@ public sealed class GivenARemoteIndexUpdater : IAsyncLifetime
         _ = await Database.RuleWriter.ApplyAsync(account, [SelectionChangeFactory.CreateIncludeFolder(Path(path), Option.Some(Id(remoteId)), SyncDirectionFactory.CreateTwoWay())], CancellationToken);
 
     private async Task<string> RulePaths() => string.Join(',', (await Database.Rules.GetAsync(account, CancellationToken)).Match(found => found.Select(rule => rule.Path.Value), _ => []));
+
+    private async Task<string> RulesWithRemoteIds() => string.Join(',', (await Database.Rules.GetAsync(account, CancellationToken)).Match(found => found.Select(rule => $"{rule.Path.Value}={rule.RemoteId.Match(id => id.Value, () => string.Empty)}"), _ => []));
 
     private async Task<string> CursorOf() => (await Database.IndexReader.GetCursorAsync(account, CancellationToken)).Match(found => found.Match(cursor => cursor.Value, () => string.Empty), _ => "error");
 }

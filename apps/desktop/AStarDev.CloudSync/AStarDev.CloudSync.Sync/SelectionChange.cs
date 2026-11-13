@@ -61,19 +61,15 @@ public abstract record SelectionChange
         public SyncDirection Direction { get; }
     }
 
-    /// <summary>Move the rule at one path to a new path after the folder was renamed or moved remotely; if the new path already has a rule, the existing rule wins and the moved rule is dropped.</summary>
-    public sealed record RelocateFolder : SelectionChange
+    /// <summary>Move the rules of several folders at once after they were renamed or moved remotely. All moves are decided together: a target held by a rule that stays, or already taken by another moved rule, is a clash, and the existing rule wins.</summary>
+    public sealed record RelocateFolders : SelectionChange
     {
-        internal RelocateFolder(LocalRelativePath oldPath, LocalRelativePath newPath)
+        internal RelocateFolders(IReadOnlyList<FolderMove> moves)
         {
-            OldPath = oldPath;
-            NewPath = newPath;
+            Moves = moves;
         }
 
-        /// <summary>The path the rule has now.</summary>
-        public LocalRelativePath OldPath { get; }
-
-        /// <summary>The path the folder has now.</summary>
-        public LocalRelativePath NewPath { get; }
+        /// <summary>The moves.</summary>
+        public IReadOnlyList<FolderMove> Moves { get; }
     }
 }

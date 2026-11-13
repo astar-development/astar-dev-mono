@@ -78,7 +78,7 @@ internal sealed class RemoteIndexUpdater(IProviderCapability<IRemoteChangeFeed> 
         var before = (await ruleReader.GetAsync(run.AccountId, cancellationToken).ConfigureAwait(false)).OrThrow();
         var delta = (await indexWriter.ApplyPageAsync(run.AccountId, page, cancellationToken).ConfigureAwait(false)).OrThrow();
         var moves = delta.Changes.OfType<RemoteChange.Moved>().ToList();
-        var relocation = moves.Count == 0 ? RuleRelocationSummaryFactory.None : (await relocator.RelocateAsync(run.AccountId, moves, cancellationToken).ConfigureAwait(false)).OrThrow();
+        var relocation = moves.Count == 0 ? RuleRelocationSummaryFactory.None : (await relocator.RelocateAsync(run.AccountId, cancellationToken).ConfigureAwait(false)).OrThrow();
         var after = moves.Count == 0 ? before : (await ruleReader.GetAsync(run.AccountId, cancellationToken).ConfigureAwait(false)).OrThrow();
         run.CountPage();
         run.Add(await relevance.CountAsync(run.AccountId, delta.Changes, before, after, cancellationToken).ConfigureAwait(false), relocation);

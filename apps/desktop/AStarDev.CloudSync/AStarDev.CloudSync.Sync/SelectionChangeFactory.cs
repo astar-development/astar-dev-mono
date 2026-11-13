@@ -14,6 +14,6 @@ public static class SelectionChangeFactory
     /// <summary>Creates the <see cref="SelectionChange.ChangeDirection"/> case.</summary>
     public static SelectionChange CreateChangeDirection(SyncPairId pair, SyncDirection direction) => new SelectionChange.ChangeDirection(pair, direction);
 
-    /// <summary>Creates the <see cref="SelectionChange.RelocateFolder"/> case.</summary>
-    public static SelectionChange CreateRelocateFolder(LocalRelativePath oldPath, LocalRelativePath newPath) => new SelectionChange.RelocateFolder(oldPath, newPath);
+    /// <summary>Creates the <see cref="SelectionChange.RelocateFolders"/> case. Missing moves become an empty list.</summary>
+    public static SelectionChange CreateRelocateFolders(IEnumerable<FolderMove>? moves) => new SelectionChange.RelocateFolders([.. moves ?? []]);
 }

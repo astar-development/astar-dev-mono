@@ -18,19 +18,9 @@ public static class SelectionRulePlanner
         SelectionChange.IncludeFolder include => Replace(rules, SelectionRuleFactory.Create(accountId, include.Path, include.RemoteId, SelectionRuleKindFactory.CreateInclude(include.Direction))),
         SelectionChange.ExcludeFolder exclude => Replace(rules, SelectionRuleFactory.Create(accountId, exclude.Path, exclude.RemoteId, SelectionRuleKindFactory.CreateExclude())),
         SelectionChange.ChangeDirection direction => [.. rules.Select(rule => IsPairRule(rule, direction.Pair) ? SelectionRuleFactory.Create(rule.AccountId, rule.Path, rule.RemoteId, SelectionRuleKindFactory.CreateInclude(direction.Direction)) : rule)],
-        SelectionChange.RelocateFolder relocate => Relocate(rules, relocate),
+        SelectionChange.RelocateFolders => rules,
         _ => rules,
     };
-
-    private static IReadOnlyList<SelectionRule> Relocate(IReadOnlyList<SelectionRule> rules, SelectionChange.RelocateFolder relocate)
-    {
-        if (relocate.OldPath.Equals(relocate.NewPath))
-            return rules;
-
-        return rules.FirstOrNone(rule => rule.Path.Equals(relocate.OldPath)).Match(
-            moved => rules.Any(other => other.Path.Equals(relocate.NewPath)) ? [.. rules.Where(rule => rule != moved)] : [.. rules.Select(rule => rule == moved ? SelectionRuleFactory.Create(rule.AccountId, relocate.NewPath, rule.RemoteId, rule.Kind) : rule)],
-            () => rules);
-    }
 
     private static bool IsPairRule(SelectionRule rule, SyncPairId pair) => rule.Kind is SelectionRuleKind.Include && SyncPairIdFactory.CreateForRule(rule.AccountId, rule.Path) == pair;
 
