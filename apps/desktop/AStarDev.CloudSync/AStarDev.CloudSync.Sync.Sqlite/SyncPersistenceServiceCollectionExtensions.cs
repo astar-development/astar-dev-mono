@@ -4,6 +4,7 @@ using AStarDev.CloudSync.Sync;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync.Sync.Sqlite;
@@ -20,6 +21,8 @@ public static class SyncPersistenceServiceCollectionExtensions
         var accountsDatabase = services.LastOrDefault(descriptor => descriptor.ServiceType == typeof(ICloudSyncDatabase));
         if (accountsDatabase is not null)
             services.Remove(accountsDatabase);
+
+        services.TryAddSingleton(TimeProvider.System);
 
         return services
             .AddDbContextFactory<SyncDbContext>((provider, options) => options.UseSqlite(new SqliteConnectionStringBuilder { DataSource = databaseFile(provider).FullName }.ToString(), sqlite => sqlite.MigrationsHistoryTable(SyncDbContext.MigrationsHistoryTable)))
