@@ -21,6 +21,8 @@ internal sealed class SyncDbContext(DbContextOptions<SyncDbContext> options) : D
 
     public DbSet<RemoteCursorEntity> RemoteCursors => Set<RemoteCursorEntity>();
 
+    public DbSet<SyncBaselineEntity> SyncBaseline => Set<SyncBaselineEntity>();
+
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -28,5 +30,6 @@ internal sealed class SyncDbContext(DbContextOptions<SyncDbContext> options) : D
         modelBuilder.ApplyConfiguration(new SelectionRuleEntityConfiguration());
         modelBuilder.ApplyConfiguration(new RemoteItemEntityConfiguration());
         modelBuilder.ApplyConfiguration(new RemoteCursorEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new SyncBaselineEntityConfiguration());
     }
 }
