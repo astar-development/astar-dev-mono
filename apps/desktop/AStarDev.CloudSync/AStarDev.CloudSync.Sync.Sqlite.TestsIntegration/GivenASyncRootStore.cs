@@ -142,4 +142,61 @@ public sealed class GivenASyncRootStore : IAsyncLifetime
 
         outcome.ShouldBeOfType<AccountAddOutcome.Added>();
     }
+
+    [Fact]
+    public async Task when_the_root_changes_then_only_that_accounts_baseline_is_cleared()
+    {
+        _ = await Database.Writer.SetAsync(FirstAccount, Database.Folder(OneDrive), CancellationToken);
+        _ = await Database.Writer.SetAsync(SecondAccount, Database.Folder("/home/jbarden/CloudSync/Other"), CancellationToken);
+        await SeedBaselineAsync(FirstAccount, 3);
+        await SeedBaselineAsync(SecondAccount, 2);
+
+        _ = await Database.Writer.SetAsync(FirstAccount, Database.Folder("/home/jbarden/CloudSync/Elsewhere"), CancellationToken);
+
+        (await BaselineCountAsync(FirstAccount), await BaselineCountAsync(SecondAccount)).ShouldBe((0, 2));
+    }
+
+    [Fact]
+    public async Task when_the_same_root_is_saved_again_then_the_baseline_is_kept()
+    {
+        _ = await Database.Writer.SetAsync(FirstAccount, Database.Folder(OneDrive), CancellationToken);
+        await SeedBaselineAsync(FirstAccount, 3);
+
+        _ = await Database.Writer.SetAsync(FirstAccount, Database.Folder(OneDrive + "/"), CancellationToken);
+
+        (await BaselineCountAsync(FirstAccount)).ShouldBe(3);
+    }
+
+    [Fact]
+    public async Task when_a_root_change_is_rejected_then_the_baseline_is_kept()
+    {
+        _ = await Database.Writer.SetAsync(FirstAccount, Database.Folder(OneDrive), CancellationToken);
+        _ = await Database.Writer.SetAsync(SecondAccount, Database.Folder("/home/jbarden/CloudSync/Other"), CancellationToken);
+        await SeedBaselineAsync(SecondAccount, 3);
+
+        var set = await Database.Writer.SetAsync(SecondAccount, Database.Folder(OneDrive + "/Work"), CancellationToken);
+
+        (set.Match(_ => "saved", _ => "rejected"), await BaselineCountAsync(SecondAccount)).ShouldBe(("rejected", 3));
+    }
+
+    [Fact]
+    public async Task when_a_root_is_set_for_the_first_time_then_an_existing_baseline_is_kept()
+    {
+        await SeedBaselineAsync(FirstAccount, 3);
+
+        _ = await Database.Writer.SetAsync(FirstAccount, Database.Folder(OneDrive), CancellationToken);
+
+        (await BaselineCountAsync(FirstAccount)).ShouldBe(3);
+    }
+
+    private async Task SeedBaselineAsync(AccountId accountId, int count)
+    {
+        var entries = Enumerable.Range(0, count).Select(index => SyncBaselineEntryFactory.Create(accountId, RelativePath($"Docs{index}"), RemoteItemIdFactory.Create($"item-{index}").Match(id => id, _ => throw new InvalidOperationException("The test id must be valid.")), SyncBaselineKindFactory.CreateFolder())).ToList();
+        _ = await Database.BaselineWriter.UpsertAsync(accountId, entries, CancellationToken);
+    }
+
+    private async Task<int> BaselineCountAsync(AccountId accountId) =>
+        (await Database.BaselineReader.GetUnderAsync(accountId, default, Option.None<RelativeSyncPath>(), 100, CancellationToken)).Match(page => page.Count, _ => -1);
+
+    private static RelativeSyncPath RelativePath(string value) => RelativeSyncPathFactory.Create(value).Match(path => path, _ => throw new InvalidOperationException("The test path must be valid."));
 }
