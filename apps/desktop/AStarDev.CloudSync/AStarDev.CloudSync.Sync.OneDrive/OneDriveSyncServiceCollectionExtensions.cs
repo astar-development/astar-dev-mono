@@ -21,6 +21,7 @@ public static class OneDriveSyncServiceCollectionExtensions
             .AddHttpMessageHandler<AccountThrottleHandler>();
 
         return services.AddKeyedSingleton<IRemoteFolderBrowser, OneDriveFolderBrowser>(CloudProviderFactory.CreateOneDrive())
-            .AddKeyedSingleton<IRemoteChangeFeed, OneDriveChangeFeed>(CloudProviderFactory.CreateOneDrive());
+            .AddKeyedSingleton<IRemoteChangeFeed, OneDriveChangeFeed>(CloudProviderFactory.CreateOneDrive())
+            .AddKeyedSingleton<IRemoteNamePolicy, OneDriveNamePolicy>(CloudProviderFactory.CreateOneDrive());
     }
 }
