@@ -13,4 +13,7 @@ public static class SelectionChangeFactory
 
     /// <summary>Creates the <see cref="SelectionChange.ChangeDirection"/> case.</summary>
     public static SelectionChange CreateChangeDirection(SyncPairId pair, SyncDirection direction) => new SelectionChange.ChangeDirection(pair, direction);
+
+    /// <summary>Creates the <see cref="SelectionChange.RelocateFolder"/> case.</summary>
+    public static SelectionChange CreateRelocateFolder(LocalRelativePath oldPath, LocalRelativePath newPath) => new SelectionChange.RelocateFolder(oldPath, newPath);
 }

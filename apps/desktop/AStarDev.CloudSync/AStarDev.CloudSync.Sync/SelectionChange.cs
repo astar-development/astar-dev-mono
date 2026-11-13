@@ -60,4 +60,20 @@ public abstract record SelectionChange
         /// <summary>The Direction.</summary>
         public SyncDirection Direction { get; }
     }
+
+    /// <summary>Move the rule at one path to a new path after the folder was renamed or moved remotely; if the new path already has a rule, the existing rule wins and the moved rule is dropped.</summary>
+    public sealed record RelocateFolder : SelectionChange
+    {
+        internal RelocateFolder(LocalRelativePath oldPath, LocalRelativePath newPath)
+        {
+            OldPath = oldPath;
+            NewPath = newPath;
+        }
+
+        /// <summary>The path the rule has now.</summary>
+        public LocalRelativePath OldPath { get; }
+
+        /// <summary>The path the folder has now.</summary>
+        public LocalRelativePath NewPath { get; }
+    }
 }

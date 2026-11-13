@@ -1,13 +1,12 @@
 using AStarDev.CloudSync.Accounts;
 using AStarDev.FunctionalParadigm;
 using Microsoft.Data.Sqlite;
+using static AStarDev.CloudSync.Sync.Sqlite.TestsIntegration.RemoteIndexData;
 
 namespace AStarDev.CloudSync.Sync.Sqlite.TestsIntegration;
 
 public sealed class GivenARemoteIndexStore : IAsyncLifetime
 {
-    private const string Modified = "2026-11-01T10:00:00Z";
-
     private static readonly AccountId FirstAccount = AccountIdFactory.Create(Guid.Parse("11111111-1111-1111-1111-111111111111"));
     private static readonly AccountId SecondAccount = AccountIdFactory.Create(Guid.Parse("22222222-2222-2222-2222-222222222222"));
 
@@ -294,30 +293,7 @@ public sealed class GivenARemoteIndexStore : IAsyncLifetime
         (await CursorOf(FirstAccount), CountRows("RemoteItems")).ShouldBe(($"c{pages - 1}", pages * pageSize));
     }
 
-    private static RemoteItemSnapshot[] Items(int pageNumber, int pageSize) => [.. Enumerable.Range(0, pageSize).Select(number => File($"item-{pageNumber}-{number}", "root-id", $"file-{pageNumber}-{number}.txt"))];
-
-    private static RemoteItemId Id(string value) => RemoteItemIdFactory.Create(value).Match(id => id, _ => throw new InvalidOperationException("The test id must be valid."));
-
-    private static ChangeCursor Cursor(string value) => ChangeCursorFactory.Create(value).Match(cursor => cursor, _ => throw new InvalidOperationException("The test cursor must be valid."));
-
-    private static RemoteItemSnapshot Folder(string id, string parent, string name) =>
-        RemoteItemSnapshotFactory.Create(Id(id), Option.Some(Id(parent)), name, RemoteItemKindFactory.CreateFolder(), DateTimeOffset.Parse(Modified, System.Globalization.CultureInfo.InvariantCulture), ETag($"e-{id}"));
-
-    private static RemoteItemSnapshot File(string id, string parent, string name, string cTag = "c-1", string hash = "hash-1", string? eTag = null) =>
-        RemoteItemSnapshotFactory.Create(Id(id), Option.Some(Id(parent)), name, RemoteItemKindFactory.CreateFile(10, HashOf(hash), Tag(cTag)), DateTimeOffset.Parse(Modified, System.Globalization.CultureInfo.InvariantCulture), ETag(eTag ?? $"e-{id}"));
-
-    private static RemoteItemSnapshot Gone(string id, string parent) =>
-        RemoteItemSnapshotFactory.Create(Id(id), Option.Some(Id(parent)), "gone", RemoteItemKindFactory.CreateDeleted(), DateTimeOffset.Parse(Modified, System.Globalization.CultureInfo.InvariantCulture), ETag($"e-{id}"));
-
-    private static Option<ContentHash> HashOf(string value) => ContentHashFactory.Create(value).Match(hash => Option.Some(hash), _ => Option.None<ContentHash>());
-
-    private static ContentTag Tag(string value) => ContentTagFactory.Create(value).Match(tag => tag, _ => throw new InvalidOperationException("The test tag must be valid."));
-
-    private static EntityTag ETag(string value) => EntityTagFactory.Create(value).Match(tag => tag, _ => throw new InvalidOperationException("The test tag must be valid."));
-
-    private static RemoteChangePage More(string cursor, params RemoteItemSnapshot[] items) => RemoteChangePageFactory.Create(items, PageContinuationFactory.CreateMorePages(Cursor(cursor)));
-
-    private static RemoteChangePage Caught(string cursor, params RemoteItemSnapshot[] items) => RemoteChangePageFactory.Create(items, PageContinuationFactory.CreateCaughtUp(Cursor(cursor)));
+    private static RemoteItemSnapshot[] Items(int pageNumber, int pageSize) => [.. Enumerable.Range(0, pageSize).Select(number => RemoteIndexData.File($"item-{pageNumber}-{number}", "root-id", $"file-{pageNumber}-{number}.txt"))];
 
     private static string Describe(Result<RemoteIndexDelta, ErrorResponse> result) => string.Join(',', Changes(result));
 
