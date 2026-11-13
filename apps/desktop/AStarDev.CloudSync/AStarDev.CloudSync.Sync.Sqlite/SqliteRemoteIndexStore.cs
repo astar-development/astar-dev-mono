@@ -216,7 +216,7 @@ internal sealed class SqliteRemoteIndexStore(IDbContextFactory<SyncDbContext> db
         return RemoteIndexDeltaFactory.Create(changes);
     }
 
-    private static async Task<Dictionary<string, RemoteItemEntity>> LoadAsync(SyncDbContext dbContext, AccountId accountId, IEnumerable<string> ids, CancellationToken cancellationToken)
+    internal static async Task<Dictionary<string, RemoteItemEntity>> LoadAsync(SyncDbContext dbContext, AccountId accountId, IEnumerable<string> ids, CancellationToken cancellationToken)
     {
         var stored = new Dictionary<string, RemoteItemEntity>(StringComparer.Ordinal);
 
@@ -231,7 +231,7 @@ internal sealed class SqliteRemoteIndexStore(IDbContextFactory<SyncDbContext> db
         return stored;
     }
 
-    private static RemoteChange[] Upsert(SyncDbContext dbContext, AccountId accountId, RemoteItemSnapshot snapshot, Dictionary<string, RemoteItemEntity> stored, Guid? pass)
+    internal static RemoteChange[] Upsert(SyncDbContext dbContext, AccountId accountId, RemoteItemSnapshot snapshot, Dictionary<string, RemoteItemEntity> stored, Guid? pass)
     {
         if (!stored.TryGetValue(snapshot.Id.Value, out var entity))
         {

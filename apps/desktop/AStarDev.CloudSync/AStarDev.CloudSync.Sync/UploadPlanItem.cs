@@ -74,7 +74,7 @@ public abstract record UploadPlanItem
         public UploadPrecondition Precondition { get; }
     }
 
-    /// <summary>Delete the remote item because it was deleted locally and has not changed remotely.</summary>
+    /// <summary>Delete the remote item because it was deleted locally and has not changed remotely. A file carries its content tag, a folder the entity tag.</summary>
     public sealed record RemoveRemote : UploadPlanItem
     {
         internal RemoveRemote(RelativeSyncPath path, RemoteItemId itemId, RemovePrecondition precondition)

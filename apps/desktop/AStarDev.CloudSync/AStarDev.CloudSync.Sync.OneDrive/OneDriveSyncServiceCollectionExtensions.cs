@@ -15,6 +15,7 @@ public static class OneDriveSyncServiceCollectionExtensions
     {
         services.TryAddSingleton(new RetryHandlerOption());
         services.TryAddSingleton<OneDriveGraphAccess>();
+        services.TryAddSingleton<OneDriveTransferHttp>();
         _ = services.AddTransient<AccountThrottleHandler>()
             .AddHttpClient(OneDriveSyncHttp.ClientName)
             .RemoveAllLoggers()
@@ -23,6 +24,9 @@ public static class OneDriveSyncServiceCollectionExtensions
         return services.AddKeyedSingleton<IRemoteFolderBrowser, OneDriveFolderBrowser>(CloudProviderFactory.CreateOneDrive())
             .AddKeyedSingleton<IRemoteChangeFeed, OneDriveChangeFeed>(CloudProviderFactory.CreateOneDrive())
             .AddKeyedSingleton<IRemoteFileDownloader, OneDriveFileDownloader>(CloudProviderFactory.CreateOneDrive())
-            .AddKeyedSingleton<IRemoteNamePolicy, OneDriveNamePolicy>(CloudProviderFactory.CreateOneDrive());
+            .AddKeyedSingleton<IRemoteNamePolicy, OneDriveNamePolicy>(CloudProviderFactory.CreateOneDrive())
+            .AddKeyedSingleton<IRemoteFileUploader, OneDriveFileUploader>(CloudProviderFactory.CreateOneDrive())
+            .AddKeyedSingleton<IRemoteFolderCreator, OneDriveFolderCreator>(CloudProviderFactory.CreateOneDrive())
+            .AddKeyedSingleton<IRemoteItemRemover, OneDriveItemRemover>(CloudProviderFactory.CreateOneDrive());
     }
 }

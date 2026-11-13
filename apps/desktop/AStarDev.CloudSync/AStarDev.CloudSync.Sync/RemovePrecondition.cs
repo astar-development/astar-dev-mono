@@ -18,4 +18,16 @@ public abstract record RemovePrecondition
         /// <summary>The entity tag last seen.</summary>
         public EntityTag ETag { get; }
     }
+
+    /// <summary>The remote file must still have this content tag. A file's content tag changes only when its content does, so renames and sharing changes do not make the delete fail.</summary>
+    public sealed record MustMatchContent : RemovePrecondition
+    {
+        internal MustMatchContent(ContentTag cTag)
+        {
+            CTag = cTag;
+        }
+
+        /// <summary>The content tag last seen.</summary>
+        public ContentTag CTag { get; }
+    }
 }

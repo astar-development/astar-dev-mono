@@ -116,4 +116,12 @@ public abstract record ProviderError
         {
         }
     }
+
+    /// <summary>The local file changed while it was being read, so the transfer was abandoned and the file is retried on the next pass.</summary>
+    public sealed record SourceChanged : ProviderError
+    {
+        internal SourceChanged()
+        {
+        }
+    }
 }
