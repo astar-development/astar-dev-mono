@@ -17,6 +17,70 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.12");
 
+            modelBuilder.Entity("AStarDev.CloudSync.Sync.Sqlite.RemoteCursorEntity", b =>
+                {
+                    b.Property<Guid>("AccountId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Cursor")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ResyncPass")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("AccountId");
+
+                    b.ToTable("RemoteCursors", (string)null);
+                });
+
+            modelBuilder.Entity("AStarDev.CloudSync.Sync.Sqlite.RemoteItemEntity", b =>
+                {
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RemoteItemId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CTag")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ETag")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Hash")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsFolder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTimeOffset>("LastModified")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("LastSeenPass")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ParentId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long?>("Size")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("AccountId", "RemoteItemId");
+
+                    b.HasIndex("AccountId", "ParentId");
+
+                    b.ToTable("RemoteItems", (string)null);
+                });
+
             modelBuilder.Entity("AStarDev.CloudSync.Sync.Sqlite.SelectionRuleEntity", b =>
                 {
                     b.Property<Guid>("AccountId")

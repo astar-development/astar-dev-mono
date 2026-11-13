@@ -15,4 +15,12 @@ public class GivenSyncPersistenceServiceCollectionExtensions
 
         returned.ShouldBeSameAs(services);
     }
+
+    [Fact]
+    public void when_the_module_is_added_then_the_remote_index_reader_and_writer_are_registered_as_singletons_over_one_store()
+    {
+        var services = new ServiceCollection().AddSyncPersistence(_ => new MockFileSystem().FileInfo.New("/data/cloudsync.db"));
+
+        services.Where(descriptor => descriptor.ServiceType == typeof(IRemoteIndexReader) || descriptor.ServiceType == typeof(IRemoteIndexWriter)).Select(descriptor => descriptor.Lifetime).ShouldBe([ServiceLifetime.Singleton, ServiceLifetime.Singleton]);
+    }
 }
