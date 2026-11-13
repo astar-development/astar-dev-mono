@@ -21,10 +21,16 @@ internal sealed class LocalChangeComparer(ISyncBaselineReader baselineReader, IC
             () => Task.FromResult(LocalComparison.Changed(LocalChangeFactory.CreateUnreadable(item.Path), hashed: false))).ConfigureAwait(false);
     }
 
-    private static LocalComparison CompareFolder(RelativeSyncPath path, IFileSystemInfo folder, Option<SyncBaselineEntry> baseline) =>
-        baseline.Match(entry => entry.Kind is SyncBaselineKind.Folder, () => false)
-            ? LocalComparison.Unchanged
-            : Observe(folder).Match(seen => LocalComparison.Changed(LocalChangeFactory.CreateAdded(path, LocalItemKindFactory.CreateFolder(), 0, seen.WrittenAt), hashed: false), () => LocalComparison.Unchanged);
+    private static LocalComparison CompareFolder(RelativeSyncPath path, IFileSystemInfo folder, Option<SyncBaselineEntry> baseline)
+    {
+        if (baseline.Match(entry => entry.Kind is SyncBaselineKind.Folder, () => false))
+            return LocalComparison.Unchanged;
+
+        if (baseline.Match(_ => true, () => false))
+            return LocalComparison.Changed(LocalChangeFactory.CreateUnreadable(path), hashed: false);
+
+        return Observe(folder).Match(seen => LocalComparison.Changed(LocalChangeFactory.CreateAdded(path, LocalItemKindFactory.CreateFolder(), 0, seen.WrittenAt), hashed: false), () => LocalComparison.Unchanged);
+    }
 
     private static Option<(long Size, DateTimeOffset WrittenAt)> Observe(IFileSystemInfo info) =>
         Try.Run(() => (Size: info is IFileInfo file ? file.Length : 0L, WrittenAt: new DateTimeOffset(info.LastWriteTimeUtc, TimeSpan.Zero))).Match(seen => Option.Some(seen), _ => Option.None<(long, DateTimeOffset)>());
@@ -42,7 +48,7 @@ internal sealed class LocalChangeComparer(ISyncBaselineReader baselineReader, IC
     private async Task<LocalComparison> CompareWithBaselineAsync(AccountId accountId, RelativeSyncPath path, IFileInfo file, (long Size, DateTimeOffset WrittenAt) seen, SyncBaselineEntry entry, CancellationToken cancellationToken)
     {
         if (entry.Kind is not SyncBaselineKind.File known)
-            return IsSettled(seen.WrittenAt) ? LocalComparison.Changed(LocalChangeFactory.CreateAdded(path, LocalItemKindFactory.CreateFile(), seen.Size, seen.WrittenAt), hashed: false) : Deferred(path);
+            return LocalComparison.Changed(LocalChangeFactory.CreateUnreadable(path), hashed: false);
 
         if (known.Size == seen.Size && known.LastWriteUtc == seen.WrittenAt)
             return LocalComparison.Unchanged;
@@ -65,6 +71,6 @@ internal sealed class LocalChangeComparer(ISyncBaselineReader baselineReader, IC
     {
         var age = time.GetUtcNow() - writtenAt;
 
-        return age < TimeSpan.Zero || age >= SettleTime;
+        return age.Duration() >= SettleTime;
     }
 }

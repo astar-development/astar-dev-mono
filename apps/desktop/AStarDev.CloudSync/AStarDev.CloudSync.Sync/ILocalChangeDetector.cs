@@ -3,7 +3,7 @@ using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.Sync;
 
-/// <summary>Finds what changed on disk under an account's sync root since the sync baseline (#1399). Changes are recomputed on every pass by comparing a scan with the baseline, so a crash never loses one.</summary>
+/// <summary>Finds what changed on disk under an account's sync root since the sync baseline (#1399). Call it while the account's sync pass lease is held (#1460), because it refreshes baseline rows of touched files. Changes are recomputed on every pass by comparing a scan with the baseline, so a crash never loses one.</summary>
 public interface ILocalChangeDetector
 {
     /// <summary>Scans the account's sync root once, going only into folders the selection rules include (#1397). A file is hashed only when its size or write time differs from the baseline. A file that changed in the last two seconds is deferred. A file whose write time changed but whose content did not is not reported; its baseline time is refreshed.</summary>

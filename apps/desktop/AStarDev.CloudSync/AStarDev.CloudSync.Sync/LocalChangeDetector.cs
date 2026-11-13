@@ -47,6 +47,20 @@ internal sealed class LocalChangeDetector(ISyncRootReader roots, ISelectionRuleR
         return Result.Failure<LocalChangeSet, LocalScanFailure>(LocalScanFailureFactory.CreateUnexpected(new ErrorResponse(exception.GetType().Name)));
     }
 
+    private async Task RefreshAsync(AccountId accountId, SyncBaselineEntry[] chunk, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var saved = await baselineWriter.UpsertAsync(accountId, chunk, cancellationToken).ConfigureAwait(false);
+        _ = saved.Match(_ => true, _ => Warn("The baseline time of touched files could not be refreshed; the next scan will try again."));
+    }
+
+    private bool Warn(string message)
+    {
+        LogMessage.Warning(logger, Location, message);
+
+        return false;
+    }
+
     private async Task<LocalChangeSet> ScanAsync(AccountId accountId, SyncRoot root, long started, CancellationToken cancellationToken)
     {
         var rules = (await ruleReader.GetAsync(accountId, cancellationToken).ConfigureAwait(false)).OrThrow();
@@ -63,7 +77,7 @@ internal sealed class LocalChangeDetector(ISyncRootReader roots, ISelectionRuleR
 
         changes.AddRange(await deletions.FindAsync(accountId, root.Directory, rules, cancellationToken).ConfigureAwait(false));
         foreach (var chunk in touched.Chunk(RefreshChunkSize))
-            _ = (await baselineWriter.UpsertAsync(accountId, chunk, cancellationToken).ConfigureAwait(false)).OrThrow();
+            await RefreshAsync(accountId, chunk, cancellationToken).ConfigureAwait(false);
 
         var set = LocalChangeSetFactory.Create(changes, touched.Count, hashed);
         var message = $"The local scan found {set.Summary.Added} added, {set.Summary.Modified} modified, {set.Summary.Deleted} deleted, {set.Summary.Deferred} deferred and {set.Summary.Unreadable} unreadable items and hashed {set.Summary.Hashed} files in {Stopwatch.GetElapsedTime(started).TotalMilliseconds:0} ms.";
