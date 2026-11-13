@@ -27,7 +27,7 @@ internal sealed class OneDriveFileDownloader(OneDriveGraphAccess graphAccess, IH
         using var scope = SyncLogScope.Begin(logger, accountId);
 
         return await graphAccess.DriveOfAsync(accountId, cancellationToken)
-            .BindAsync(driveId => graphAccess.TokenOfAsync(accountId, outcome => LogMessage.Warning(logger, Location, $"No access token for the download ({outcome})."), cancellationToken).BindAsync(token => AttemptAsync(accountId, driveId, token, fileId, target, progress, 1, cancellationToken)))
+            .BindAsync(driveId => graphAccess.TokenOfAsync(accountId, outcome => LogMessage.Warning(logger, Location, $"No access token for the download ({outcome})."), cancellationToken).BindAsync(token => AttemptAsync(accountId, (driveId, token), fileId, target, progress, 1, cancellationToken)))
             .ConfigureAwait(false);
     }
 
@@ -43,14 +43,14 @@ internal sealed class OneDriveFileDownloader(OneDriveGraphAccess graphAccess, IH
             tag => Result.Success<DownloadedFile, ProviderError>(DownloadedFileFactory.Create(fileId, tag, size, ContentHashFactory.Create(item.File?.Hashes?.QuickXorHash).Match(Option.Some, _ => Option.None<ContentHash>()))),
             _ => Failed(ProviderErrorFactory.CreateUnexpected()));
 
-    private async Task<Result<DownloadedFile, ProviderError>> AttemptAsync(AccountId accountId, string driveId, string accessToken, RemoteItemId fileId, IFileInfo target, IProgress<TransferProgress> progress, int attempt, CancellationToken cancellationToken)
+    private async Task<Result<DownloadedFile, ProviderError>> AttemptAsync(AccountId accountId, (string DriveId, string Token) access, RemoteItemId fileId, IFileInfo target, IProgress<TransferProgress> progress, int attempt, CancellationToken cancellationToken)
     {
-        var fetched = await FetchUrlAsync(accountId, driveId, accessToken, fileId, cancellationToken).ConfigureAwait(false);
+        var fetched = await FetchUrlAsync(accountId, access.DriveId, access.Token, fileId, cancellationToken).ConfigureAwait(false);
         var copied = await fetched.BindAsync(found => CopyAsync(accountId, found.Url, target, progress, cancellationToken).BindAsync(size => Task.FromResult(Described(fileId, found.Item, size)))).ConfigureAwait(false);
 
         return await copied.MatchAsync(
             done => Task.FromResult(Result.Success<DownloadedFile, ProviderError>(done)),
-            error => error is ProviderError.Transient && attempt < MaxAttempts ? AttemptAsync(accountId, driveId, accessToken, fileId, target, progress, attempt + 1, cancellationToken) : Task.FromResult(Failed(error))).ConfigureAwait(false);
+            error => error is ProviderError.Transient && attempt < MaxAttempts ? AttemptAsync(accountId, access, fileId, target, progress, attempt + 1, cancellationToken) : Task.FromResult(Failed(error))).ConfigureAwait(false);
     }
 
     private async Task<Result<(DriveItem Item, string Url), ProviderError>> FetchUrlAsync(AccountId accountId, string driveId, string accessToken, RemoteItemId fileId, CancellationToken cancellationToken)
