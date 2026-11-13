@@ -138,6 +138,16 @@ public sealed class GivenASyncAttentionStore : IAsyncLifetime
     }
 
     [Fact]
+    public async Task when_a_conflict_has_no_path_then_the_write_fails_and_nothing_of_the_batch_is_stored()
+    {
+        var noPath = SyncAttentionItemFactory.CreateConflict(new ConflictId(Guid.NewGuid()), FirstAccount, default, ConflictKindFactory.CreateBothAdded(), SideSnapshotFactory.CreateAbsent(), SideSnapshotFactory.CreateAbsent(), Moment);
+
+        var result = await Writer.RecordAsync([Conflict(FirstAccount, "Docs/A.txt"), noPath], CancellationToken);
+
+        (result.Match(_ => true, _ => false), await RowCountAsync()).ShouldBe((false, 0));
+    }
+
+    [Fact]
     public async Task when_the_write_is_cancelled_then_nothing_is_stored()
     {
         using var source = new CancellationTokenSource();

@@ -108,6 +108,88 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
                         });
                 });
 
+            modelBuilder.Entity("AStarDev.CloudSync.Sync.Sqlite.SyncAttentionEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ConflictKind")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("DetectedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Direction")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsConflict")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ItemKey")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LocalHash")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset?>("LocalModified")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("LocalPresent")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("LocalSize")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("LocalTag")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("PairId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Path")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RemoteHash")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset?>("RemoteModified")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("RemotePresent")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("RemoteSize")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("RemoteTag")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId", "ItemKey")
+                        .IsUnique();
+
+                    b.ToTable("SyncAttention", (string)null);
+                });
+
+            modelBuilder.Entity("AStarDev.CloudSync.Sync.Sqlite.SyncAttentionPathEntity", b =>
+                {
+                    b.Property<Guid>("AttentionId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Path")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("AttentionId", "Path");
+
+                    b.ToTable("SyncAttentionPaths", (string)null);
+                });
+
             modelBuilder.Entity("AStarDev.CloudSync.Sync.Sqlite.SyncRootEntity", b =>
                 {
                     b.Property<Guid>("AccountId")
@@ -128,6 +210,20 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
                         {
                             t.HasCheckConstraint("CK_SyncRoots_Path_NotBlank", "length(trim(\"Path\")) > 0");
                         });
+                });
+
+            modelBuilder.Entity("AStarDev.CloudSync.Sync.Sqlite.SyncAttentionPathEntity", b =>
+                {
+                    b.HasOne("AStarDev.CloudSync.Sync.Sqlite.SyncAttentionEntity", null)
+                        .WithMany("HeldPaths")
+                        .HasForeignKey("AttentionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AStarDev.CloudSync.Sync.Sqlite.SyncAttentionEntity", b =>
+                {
+                    b.Navigation("HeldPaths");
                 });
 #pragma warning restore 612, 618
         }
