@@ -159,6 +159,18 @@ public sealed class GivenARemoteIndexStore : IAsyncLifetime
     }
 
     [Fact]
+    public async Task when_a_child_returns_while_its_parent_folder_is_still_deleted_then_the_child_is_listed_at_the_top_level()
+    {
+        _ = await Apply(FirstAccount, More("c1", Folder("a", "root-id", "Docs"), File("f", "a", "one.txt")));
+        _ = await Apply(FirstAccount, More("c2", Gone("a", "root-id")));
+        _ = await Apply(FirstAccount, More("c3", File("f", "a", "one.txt", cTag: "c-2")));
+
+        var children = await Children(FirstAccount, Option.None<RemoteItemId>());
+
+        string.Join(',', children.Select(found => found.Id.Value)).ShouldBe("f");
+    }
+
+    [Fact]
     public async Task when_an_item_is_unknown_or_its_parent_chain_loops_then_it_has_no_path()
     {
         _ = await Apply(FirstAccount, More("c1", Folder("a", "b", "One"), Folder("b", "a", "Two")));
