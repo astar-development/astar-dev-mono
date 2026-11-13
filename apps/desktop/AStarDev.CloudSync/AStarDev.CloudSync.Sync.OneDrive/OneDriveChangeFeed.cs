@@ -161,8 +161,10 @@ internal sealed class OneDriveChangeFeed(IAccessTokenSource tokens, IAccountStor
         var errorCode = ErrorCodeOf(gone);
         OneDriveChangeLog.CursorExpired(logger, errorCode);
         var location = gone.ResponseHeaders.TryGetValue(LocationHeader, out var values) ? values.FirstOrDefault() : null;
-        var restartFrom = AllowedCursor(location).Match(cursor => cursor, () => ChangeCursorFactory.Create(RootDeltaOf(driveId)).Match(cursor => cursor, _ => default));
 
-        return Failed(ProviderErrorFactory.CreateCursorExpired(ResyncKindOf(errorCode), restartFrom));
+        return AllowedCursor(location).Match(cursor => ExpiredFrom(cursor, errorCode), () => AllowedCursor(RootDeltaOf(driveId)).Match(cursor => ExpiredFrom(cursor, errorCode), () => Failed(ProviderErrorFactory.CreateUnexpected())));
     }
+
+    private static Result<RemoteChangePage, ProviderError> ExpiredFrom(ChangeCursor restartFrom, string errorCode) =>
+        Failed(ProviderErrorFactory.CreateCursorExpired(ResyncKindOf(errorCode), restartFrom));
 }
