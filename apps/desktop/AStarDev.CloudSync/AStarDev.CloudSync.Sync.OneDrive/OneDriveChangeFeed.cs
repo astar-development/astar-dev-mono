@@ -22,8 +22,6 @@ namespace AStarDev.CloudSync.Sync.OneDrive;
 /// <param name="logger">Reports the outcome with the hashed account id, status, Graph error code and item count only.</param>
 internal sealed class OneDriveChangeFeed(IAccessTokenSource tokens, IAccountStore accounts, IHttpMessageHandlerFactory handlers, RetryHandlerOption retry, TimeProvider timeProvider, ILogger<OneDriveChangeFeed> logger) : IRemoteChangeFeed
 {
-    private const string DriveUrlPrefix = "https://graph.microsoft.com/v1.0/drives/";
-    private const string RootDeltaSuffix = "/root/delta";
     private const string LocationHeader = "Location";
     private const string ApplyDifferencesCode = "resyncChangesApplyDifferences";
     private const string UploadDifferencesCode = "resyncChangesUploadDifferences";
@@ -41,7 +39,7 @@ internal sealed class OneDriveChangeFeed(IAccessTokenSource tokens, IAccountStor
 
     private static Result<RemoteChangePage, ProviderError> Failed(ProviderError error) => Result.Failure<RemoteChangePage, ProviderError>(error);
 
-    private static string RootDeltaOf(string driveId) => DriveUrlPrefix + Uri.EscapeDataString(driveId) + RootDeltaSuffix;
+    private static string RootDeltaOf(string driveId) => $"{Uri.UriSchemeHttps}://{ODataNextLinkGuard.GraphHost}/v1.0/drives/{Uri.EscapeDataString(driveId)}/root/delta";
 
     private static string ErrorCodeOf(ApiException exception) => exception is ODataError { Error.Code: { Length: > 0 } code } ? code : NoCode;
 
