@@ -17,10 +17,16 @@ internal sealed class SyncDbContext(DbContextOptions<SyncDbContext> options) : D
     /// <summary>The accounts' selection rules.</summary>
     public DbSet<SelectionRuleEntity> SelectionRules => Set<SelectionRuleEntity>();
 
+    public DbSet<RemoteItemEntity> RemoteItems => Set<RemoteItemEntity>();
+
+    public DbSet<RemoteCursorEntity> RemoteCursors => Set<RemoteCursorEntity>();
+
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new SyncRootEntityConfiguration());
         modelBuilder.ApplyConfiguration(new SelectionRuleEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new RemoteItemEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new RemoteCursorEntityConfiguration());
     }
 }
