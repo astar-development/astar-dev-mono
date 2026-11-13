@@ -86,9 +86,8 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
                     b.Property<Guid>("AccountId")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Path")
-                        .HasColumnType("TEXT")
-                        .UseCollation("NOCASE");
+                    b.Property<string>("PathKey")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Direction")
                         .IsRequired()
@@ -97,10 +96,14 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
                     b.Property<bool>("IsInclude")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("RemoteId")
                         .HasColumnType("TEXT");
 
-                    b.HasKey("AccountId", "Path");
+                    b.HasKey("AccountId", "PathKey");
 
                     b.ToTable("SelectionRules", null, t =>
                         {
@@ -195,9 +198,8 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
                     b.Property<Guid>("AccountId")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Path")
-                        .HasColumnType("TEXT")
-                        .UseCollation("NOCASE");
+                    b.Property<string>("PathKey")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("CTag")
                         .HasColumnType("TEXT");
@@ -214,6 +216,10 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
                     b.Property<DateTimeOffset?>("LastWriteUtc")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("RemoteItemId")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -221,7 +227,7 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
                     b.Property<long?>("Size")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("AccountId", "Path");
+                    b.HasKey("AccountId", "PathKey");
 
                     b.ToTable("SyncBaseline", (string)null);
                 });
@@ -234,12 +240,15 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
 
                     b.Property<string>("Path")
                         .IsRequired()
-                        .HasColumnType("TEXT")
-                        .UseCollation("NOCASE");
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PathKey")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.HasKey("AccountId");
 
-                    b.HasIndex("Path")
+                    b.HasIndex("PathKey")
                         .IsUnique();
 
                     b.ToTable("SyncRoots", null, t =>

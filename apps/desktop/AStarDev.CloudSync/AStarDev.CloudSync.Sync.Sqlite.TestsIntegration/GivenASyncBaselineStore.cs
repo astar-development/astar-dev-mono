@@ -262,7 +262,7 @@ public sealed class GivenASyncBaselineStore : IAsyncLifetime
         await using var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = Database.DatabasePath }.ToString());
         await connection.OpenAsync(CancellationToken);
         await using var command = connection.CreateCommand();
-        command.CommandText = "INSERT INTO SyncBaseline (AccountId, Path, RemoteItemId, IsFolder) VALUES ($account, $path, 'corrupt', 0)";
+        command.CommandText = "INSERT INTO SyncBaseline (AccountId, Path, PathKey, RemoteItemId, IsFolder) VALUES ($account, $path, upper($path), 'corrupt', 0)";
         _ = command.Parameters.AddWithValue("$account", FirstAccount.Value.ToString().ToUpperInvariant());
         _ = command.Parameters.AddWithValue("$path", path);
         _ = await command.ExecuteNonQueryAsync(CancellationToken);
