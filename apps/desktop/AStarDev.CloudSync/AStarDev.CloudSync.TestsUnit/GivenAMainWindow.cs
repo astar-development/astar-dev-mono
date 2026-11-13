@@ -7,7 +7,9 @@ using AStarDev.CloudSync.TestHelpers.Overview;
 using AStarDev.CloudSync.TestHelpers.Ui;
 using AStarDev.CloudSync.ViewModels;
 using AStarDev.CloudSync.ViewModels.Accounts;
+using AStarDev.CloudSync.SyncRuns;
 using AStarDev.CloudSync.ViewModels.Overview;
+using AStarDev.CloudSync.ViewModels.SyncRuns;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.VisualTree;
@@ -241,6 +243,39 @@ public class GivenAMainWindow
         var buttons = FindSingle<AddAccountView>(window).GetVisualDescendants().OfType<Button>().ToList();
         buttons.Single(button => Equals(button.Content, addAccount.ChooseFoldersText)).Command.ShouldBeSameAs(addAccount.ChooseFoldersCommand);
         buttons.Single(button => Equals(button.Content, addAccount.LaterText)).Command.ShouldBeSameAs(addAccount.LaterCommand);
+    }
+
+    [AvaloniaFact]
+    public async Task when_no_sync_restart_question_is_attached_then_its_overlay_is_hidden()
+    {
+        var window = new MainWindow { DataContext = await CreateViewModelAsync() };
+
+        window.Show();
+
+        FindSingle<SyncRestartPromptView>(window).IsEffectivelyVisible.ShouldBeFalse();
+    }
+
+    [AvaloniaFact]
+    public async Task when_the_sync_restart_question_is_asked_then_its_overlay_shows_both_choices_and_hides_once_answered()
+    {
+        var prompt = new SyncRestartPromptViewModel(new ImmediateUiDispatcher(), TestData.CreateLocalization());
+        var window = new MainWindow { DataContext = await CreateViewModelAsync() };
+        window.AttachSyncRestartPrompt(prompt);
+        window.Show();
+        var view = FindSingle<SyncRestartPromptView>(window);
+        var visibleBefore = view.IsEffectivelyVisible;
+
+        var answer = prompt.AskAsync(AccountIdFactory.Create(Guid.NewGuid()), TestContext.Current.CancellationToken);
+        window.UpdateLayout();
+        var visibleWhileAsking = view.IsEffectivelyVisible;
+        var buttons = view.GetVisualDescendants().OfType<Button>().ToList();
+        prompt.KeepCommand.Execute(null);
+        _ = await answer;
+        window.UpdateLayout();
+
+        (visibleBefore, visibleWhileAsking, view.IsEffectivelyVisible).ShouldBe((false, true, false));
+        buttons.Single(button => Equals(button.Content, prompt.RestartText)).Command.ShouldBeSameAs(prompt.RestartCommand);
+        buttons.Single(button => Equals(button.Content, prompt.KeepText)).Command.ShouldBeSameAs(prompt.KeepCommand);
     }
 
     private static T FindSingle<T>(Window window) where T : Control => window.GetVisualDescendants().OfType<T>().ShouldHaveSingleItem();

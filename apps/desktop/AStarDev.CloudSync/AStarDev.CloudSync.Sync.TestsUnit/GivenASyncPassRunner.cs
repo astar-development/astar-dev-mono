@@ -1,4 +1,5 @@
 using AStarDev.CloudSync.Accounts;
+using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.Sync.TestsUnit;
@@ -418,6 +419,82 @@ public sealed class GivenASyncPassRunner : IDisposable
         _ = await RunAsync(Personal, Manual);
 
         freeAtFinish.ShouldBe([true]);
+    }
+
+    [Fact]
+    public async Task when_a_run_finishes_clean_then_up_to_date_is_stored_for_the_account()
+    {
+        _ = await RunAsync(Personal, Manual);
+
+        services.Outcomes.Saved.ShouldBe([(Personal, SyncStatusFactory.CreateUpToDate())]);
+    }
+
+    [Fact]
+    public async Task when_a_run_leaves_conflicts_and_held_deletions_then_needs_attention_is_stored_with_both_counts()
+    {
+        var pair = SyncPairIdFactory.Create(Guid.NewGuid());
+        Steps.Scan = Result.Success<LocalChangeSet, LocalScanFailure>(LocalChangeSetFactory.Create([], [MassDeletionSuspectedFactory.Create(pair, 60, 120)], 0, 0));
+        Steps.Downloaded = Result.Success<DownloadPassSummary, DownloadPassFailure>(DownloadPassSummaryFactory.Create([DownloadItemOutcomeFactory.CreateSentToConflicts(ConflictKindFactory.CreateBothModified())], []));
+
+        _ = await RunAsync(Personal, Manual);
+
+        services.Outcomes.Saved.ShouldBe([(Personal, SyncStatusFactory.CreateNeedsAttention(1, 60))]);
+    }
+
+    [Fact]
+    public async Task when_a_run_stops_on_a_full_disk_then_that_failure_is_stored()
+    {
+        Steps.Downloaded = Result.Failure<DownloadPassSummary, DownloadPassFailure>(DownloadPassFailureFactory.CreateInsufficientDiskSpace());
+
+        _ = await RunAsync(Personal, Manual);
+
+        services.Outcomes.Saved.ShouldBe([(Personal, SyncStatusFactory.CreateFailed(SyncFailureReasonFactory.CreateInsufficientDiskSpace()))]);
+    }
+
+    [Fact]
+    public async Task when_a_run_is_cancelled_then_cancelled_is_stored_not_a_failure_of_another_kind()
+    {
+        var gate = new WriteGate();
+        Steps.DownloadGate = Option.Some(gate);
+        var running = RunAsync(Personal, Manual);
+        await gate.Entered.WaitAsync(Limit, CancellationToken);
+
+        await services.Cancel.CancelAsync(Personal, CancellationToken).WaitAsync(Limit, CancellationToken);
+        _ = await running.WaitAsync(Limit, CancellationToken);
+
+        services.Outcomes.Saved.ShouldBe([(Personal, SyncStatusFactory.CreateFailed(SyncFailureReasonFactory.CreateCancelled()))]);
+    }
+
+    [Fact]
+    public async Task when_a_trigger_is_skipped_then_no_status_is_stored()
+    {
+        using var held = ((SyncLockAttempt.Acquired)services.SyncLock.TryAcquire(Personal)).Lease;
+
+        _ = await RunAsync(Personal, SyncTriggerFactory.CreateScheduled());
+
+        services.Outcomes.Saved.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_the_status_is_stored_then_the_account_is_still_held_so_a_removal_cannot_race_the_write()
+    {
+        var heldAtSave = new List<bool>();
+        services.Outcomes.OnSave = accountId => heldAtSave.Add(services.SyncLock.TryAcquire(accountId) is SyncLockAttempt.Busy);
+
+        _ = await RunAsync(Personal, Manual);
+
+        heldAtSave.ShouldBe([true]);
+    }
+
+    [Fact]
+    public async Task when_the_status_cannot_be_stored_then_the_run_still_reports_what_it_did()
+    {
+        services.Outcomes.SaveFails = Option.Some(new ErrorResponse("save failed"));
+
+        var result = await RunAsync(Personal, Manual);
+
+        Outcome(result).ShouldBe("ran");
+        services.SyncLock.TryAcquire(Personal).ShouldBeOfType<SyncLockAttempt.Acquired>();
     }
 
     public void Dispose() => services.Dispose();

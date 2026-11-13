@@ -10,13 +10,13 @@ namespace AStarDev.CloudSync;
 /// <param name="addAccountDialog">Shows the add-account dialog.</param>
 /// <param name="folderSelectionDialog">Shows the folder selection dialog for "add sync pair".</param>
 /// <param name="logger">Records each requested placeholder action.</param>
-public sealed class PlaceholderSyncActions(IAddAccountDialog addAccountDialog, IFolderSelectionDialog folderSelectionDialog, ILogger<PlaceholderSyncActions> logger) : ISyncActions
+public sealed class PlaceholderSyncActions(IAddAccountDialog addAccountDialog, IFolderSelectionDialog folderSelectionDialog, ISyncNowAction syncNow, ISyncCancelAction syncCancel, ILogger<PlaceholderSyncActions> logger) : ISyncActions
 {
     /// <inheritdoc />
-    public Task SyncNowAsync(AccountId accountId, CancellationToken cancellationToken) => LogRequestAsync("Sync now requested (placeholder: the sync engine is not implemented yet)", accountId.ToString());
+    public Task SyncNowAsync(AccountId accountId, CancellationToken cancellationToken) => syncNow.SyncNowAsync(accountId, cancellationToken);
 
     /// <inheritdoc />
-    public Task CancelSyncAsync(AccountId accountId, CancellationToken cancellationToken) => LogRequestAsync("Cancel sync requested (placeholder: the sync engine is not implemented yet)", accountId.ToString());
+    public Task CancelSyncAsync(AccountId accountId, CancellationToken cancellationToken) => syncCancel.CancelAsync(accountId, cancellationToken);
 
     /// <inheritdoc />
     public Task PauseAsync(AccountId accountId, CancellationToken cancellationToken) => LogRequestAsync("Pause requested (placeholder: the sync engine is not implemented yet)", accountId.ToString());

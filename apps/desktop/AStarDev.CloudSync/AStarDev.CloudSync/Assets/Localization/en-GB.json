@@ -230,5 +230,19 @@
   "FolderSelection.Glyph.Collapsed": "▸",
   "FolderSelection.Glyph.Ticked": "☑",
   "FolderSelection.Glyph.Unticked": "☐",
-  "FolderSelection.Glyph.Partial": "◪"
+  "FolderSelection.Glyph.Partial": "◪",
+  "Status.Failed.CouldNotStart": "Sync could not start. Try again shortly.",
+  "Status.Failed.AuthenticationRequired": "Sign-in required",
+  "Status.Failed.RootUnavailable": "Sync folder not found",
+  "Status.Failed.QuotaExceeded": "Cloud storage is full",
+  "Status.Failed.InsufficientDiskSpace": "This device is out of disk space",
+  "Status.Failed.Cancelled": "Sync cancelled",
+  "Status.Failed.Unexpected": "Sync failed. Try again.",
+  "Status.HeldDeletions.One": "{0} held deletion",
+  "Status.HeldDeletions.Many": "{0} held deletions",
+  "Status.NeedsAttention.Both": "{0}, {1}",
+  "SyncRestart.Title": "A sync is already running",
+  "SyncRestart.Message": "Do you want to cancel the current sync and start again?",
+  "SyncRestart.Restart": "Cancel the current sync and start again",
+  "SyncRestart.Keep": "Keep the current sync"
 }

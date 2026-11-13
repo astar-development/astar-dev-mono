@@ -61,4 +61,12 @@ public class GivenAnAccountViewModel
 
         account.RecentActivity.Select(item => item.Text).ShouldBe(["Detecting local changes…", "Uploaded 12 files (84.0 MB)", "Authenticated"]);
     }
+
+    [Fact]
+    public void when_the_last_run_left_conflicts_then_the_conflict_count_is_theirs()
+    {
+        var account = new AccountViewModel(TestData.CreateAccount(SyncStatusFactory.CreateNeedsAttention(4, 9), Option.None<DateTimeOffset>()), [], TestData.CreateLocalization(), TestData.CreateTime());
+
+        account.ConflictCount.ShouldBe(4);
+    }
 }

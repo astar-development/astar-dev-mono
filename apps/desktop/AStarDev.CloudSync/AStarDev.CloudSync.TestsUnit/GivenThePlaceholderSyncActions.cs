@@ -10,23 +10,45 @@ namespace AStarDev.CloudSync.TestsUnit;
 
 public class GivenThePlaceholderSyncActions
 {
+    private RecordingSyncRuns SyncRuns { get; } = new();
+
     [Fact]
-    public async Task when_every_action_except_add_account_and_add_sync_pair_is_requested_then_each_is_logged_as_information_and_completes()
+    public async Task when_sync_now_is_requested_then_the_sync_now_action_runs_for_the_account_with_the_callers_token()
+    {
+        var accountId = AccountIdFactory.Create(Guid.NewGuid());
+        using var cancellation = new CancellationTokenSource();
+
+        await new PlaceholderSyncActions(new RecordingAddAccountDialog(), new RecordingFolderSelectionDialog(), SyncRuns, SyncRuns, new RecordingLogger<PlaceholderSyncActions>()).SyncNowAsync(accountId, cancellation.Token);
+
+        SyncRuns.Calls.ShouldBe([("sync-now", accountId, cancellation.Token)]);
+    }
+
+    [Fact]
+    public async Task when_cancel_sync_is_requested_then_the_cancel_action_runs_for_the_account_with_the_callers_token()
+    {
+        var accountId = AccountIdFactory.Create(Guid.NewGuid());
+        using var cancellation = new CancellationTokenSource();
+
+        await new PlaceholderSyncActions(new RecordingAddAccountDialog(), new RecordingFolderSelectionDialog(), SyncRuns, SyncRuns, new RecordingLogger<PlaceholderSyncActions>()).CancelSyncAsync(accountId, cancellation.Token);
+
+        SyncRuns.Calls.ShouldBe([("cancel", accountId, cancellation.Token)]);
+    }
+
+    [Fact]
+    public async Task when_pause_or_a_conflict_choice_is_requested_then_each_is_logged_as_information_and_completes()
     {
         var logger = new RecordingLogger<PlaceholderSyncActions>();
-        var syncActions = new PlaceholderSyncActions(new RecordingAddAccountDialog(), new RecordingFolderSelectionDialog(), logger);
+        var syncActions = new PlaceholderSyncActions(new RecordingAddAccountDialog(), new RecordingFolderSelectionDialog(), SyncRuns, SyncRuns, logger);
         var accountId = AccountIdFactory.Create(Guid.NewGuid());
         var conflict = SyncConflictFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), "holiday-042.jpg", TestData.Now);
         var cancellationToken = TestContext.Current.CancellationToken;
 
-        await syncActions.SyncNowAsync(accountId, cancellationToken);
-        await syncActions.CancelSyncAsync(accountId, cancellationToken);
         await syncActions.PauseAsync(accountId, cancellationToken);
         await syncActions.KeepBothAsync(conflict, cancellationToken);
         await syncActions.KeepLocalAsync(conflict, cancellationToken);
         await syncActions.KeepCloudAsync(conflict, cancellationToken);
 
-        logger.Entries.Count.ShouldBe(6);
+        logger.Entries.Count.ShouldBe(4);
         logger.Entries.ShouldAllBe(entry => entry.Level == LogLevel.Information);
     }
 
@@ -36,7 +58,7 @@ public class GivenThePlaceholderSyncActions
         var dialog = new RecordingAddAccountDialog();
         using var cancellation = new CancellationTokenSource();
 
-        await new PlaceholderSyncActions(dialog, new RecordingFolderSelectionDialog(), new RecordingLogger<PlaceholderSyncActions>()).AddAccountAsync(cancellation.Token);
+        await new PlaceholderSyncActions(dialog, new RecordingFolderSelectionDialog(), SyncRuns, SyncRuns, new RecordingLogger<PlaceholderSyncActions>()).AddAccountAsync(cancellation.Token);
 
         dialog.ReceivedTokens.ShouldBe([cancellation.Token]);
     }
@@ -48,7 +70,7 @@ public class GivenThePlaceholderSyncActions
         var accountId = AccountIdFactory.Create(Guid.NewGuid());
         using var cancellation = new CancellationTokenSource();
 
-        await new PlaceholderSyncActions(new RecordingAddAccountDialog(), dialog, new RecordingLogger<PlaceholderSyncActions>()).AddSyncPairAsync(Option.Some(accountId), cancellation.Token);
+        await new PlaceholderSyncActions(new RecordingAddAccountDialog(), dialog, SyncRuns, SyncRuns, new RecordingLogger<PlaceholderSyncActions>()).AddSyncPairAsync(Option.Some(accountId), cancellation.Token);
 
         dialog.Shown.ShouldBe([(Option.Some(accountId), cancellation.Token)]);
     }
@@ -58,7 +80,7 @@ public class GivenThePlaceholderSyncActions
     {
         var dialog = new RecordingFolderSelectionDialog();
 
-        await new PlaceholderSyncActions(new RecordingAddAccountDialog(), dialog, new RecordingLogger<PlaceholderSyncActions>()).AddSyncPairAsync(Option.None<AccountId>(), TestContext.Current.CancellationToken);
+        await new PlaceholderSyncActions(new RecordingAddAccountDialog(), dialog, SyncRuns, SyncRuns, new RecordingLogger<PlaceholderSyncActions>()).AddSyncPairAsync(Option.None<AccountId>(), TestContext.Current.CancellationToken);
 
         dialog.Shown.Single().AccountId.Match(_ => "account", () => "none").ShouldBe("none");
     }

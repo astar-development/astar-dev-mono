@@ -19,6 +19,8 @@ public sealed class SyncRunServices : IDisposable
             .AddSingleton<ILocalChangeDetector>(Steps)
             .AddSingleton<IDownloadPass>(Steps)
             .AddSingleton<IUploadPass>(Steps)
+            .AddSingleton<ISyncOutcomeWriter>(Outcomes)
+            .AddSingleton<ISyncRestartPrompt>(Prompt)
             .BuildServiceProvider();
 
     public AccountId Personal { get; } = AccountIdFactory.Create(Guid.Parse("11111111-1111-1111-1111-111111111111"));
@@ -27,11 +29,17 @@ public sealed class SyncRunServices : IDisposable
 
     public ScriptedSyncSteps Steps { get; } = new();
 
+    public InMemorySyncOutcomes Outcomes { get; } = new();
+
+    public ScriptedRestartPrompt Prompt { get; } = new();
+
     public FakeTimeProvider Time { get; } = new(new DateTimeOffset(2026, 11, 14, 9, 0, 0, TimeSpan.Zero));
 
     public RecordingLoggerProvider Logs { get; } = new();
 
     public ISyncPassRunner Runner => provider.GetRequiredService<ISyncPassRunner>();
+
+    public ISyncNowAction SyncNow => provider.GetRequiredService<ISyncNowAction>();
 
     public ISyncActivitySource Activity => provider.GetRequiredService<ISyncActivitySource>();
 

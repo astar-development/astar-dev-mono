@@ -46,4 +46,32 @@ public abstract record SyncStatus
         {
         }
     }
+
+    /// <summary>The last sync run did not finish.</summary>
+    public sealed record Failed : SyncStatus
+    {
+        internal Failed(SyncFailureReason reason)
+        {
+            Reason = reason;
+        }
+
+        /// <summary>Why the run did not finish.</summary>
+        public SyncFailureReason Reason { get; }
+    }
+
+    /// <summary>The last sync run finished, but conflicts or held deletions wait for the user.</summary>
+    public sealed record NeedsAttention : SyncStatus
+    {
+        internal NeedsAttention(int conflicts, int heldDeletions)
+        {
+            Conflicts = conflicts;
+            HeldDeletions = heldDeletions;
+        }
+
+        /// <summary>Paths that changed on both sides.</summary>
+        public int Conflicts { get; }
+
+        /// <summary>Deletions the mass-deletion guard held.</summary>
+        public int HeldDeletions { get; }
+    }
 }

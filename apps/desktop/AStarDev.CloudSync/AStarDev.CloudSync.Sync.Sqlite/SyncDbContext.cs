@@ -29,6 +29,9 @@ internal sealed class SyncDbContext(DbContextOptions<SyncDbContext> options) : D
     public DbSet<SyncAttentionPathEntity> SyncAttentionPaths => Set<SyncAttentionPathEntity>();
 
     /// <inheritdoc />
+    /// <summary>The status each account's last sync run left.</summary>
+    public DbSet<SyncOutcomeEntity> SyncOutcomes => Set<SyncOutcomeEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new SyncRootEntityConfiguration());
@@ -38,5 +41,6 @@ internal sealed class SyncDbContext(DbContextOptions<SyncDbContext> options) : D
         modelBuilder.ApplyConfiguration(new SyncBaselineEntityConfiguration());
         modelBuilder.ApplyConfiguration(new SyncAttentionEntityConfiguration());
         modelBuilder.ApplyConfiguration(new SyncAttentionPathEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new SyncOutcomeEntityConfiguration());
     }
 }

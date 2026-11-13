@@ -235,6 +235,30 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
                     b.ToTable("SyncBaseline", (string)null);
                 });
 
+            modelBuilder.Entity("AStarDev.CloudSync.Sync.Sqlite.SyncOutcomeEntity", b =>
+                {
+                    b.Property<Guid>("AccountId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Conflicts")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("HeldDeletions")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("SavedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("AccountId");
+
+                    b.ToTable("SyncOutcomes", (string)null);
+                });
+
             modelBuilder.Entity("AStarDev.CloudSync.Sync.Sqlite.SyncRootEntity", b =>
                 {
                     b.Property<Guid>("AccountId")

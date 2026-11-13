@@ -19,6 +19,7 @@ using AStarDev.CloudSync.ViewModels.DisplaySettings;
 using AStarDev.CloudSync.ViewModels.FolderSelection;
 using AStarDev.CloudSync.ViewModels.Layouts;
 using AStarDev.CloudSync.ViewModels.Overview;
+using AStarDev.CloudSync.ViewModels.SyncRuns;
 using AStarDev.Localization;
 using AStarDev.SingleInstance;
 using AStarDev.Utilities;
@@ -65,6 +66,9 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IFolderSelectionDialog>(provider => provider.GetRequiredService<FolderSelectionViewModel>())
             .AddSingleton<IAccountCommands>(provider => provider.GetRequiredService<AccountDialogViewModel>())
             .AddSingleton<SignInStateOverviewReloader>()
+            .AddSingleton<SyncRunOverviewReloader>()
+            .AddSingleton<SyncRestartPromptViewModel>()
+            .AddSingleton<ISyncRestartPrompt>(provider => provider.GetRequiredService<SyncRestartPromptViewModel>())
             .AddSingleton<IAddAccountDialog>(provider => provider.GetRequiredService<AddAccountViewModel>())
             .AddSingleton<IFileSystem, RealFileSystem>()
             .AddSingleInstance()

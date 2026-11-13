@@ -130,6 +130,17 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
+    public void when_application_services_are_added_then_sync_now_resolves_and_asks_through_the_shared_restart_question()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<ISyncNowAction>().ShouldNotBeNull();
+        provider.GetRequiredService<ISyncRestartPrompt>().ShouldBeSameAs(provider.GetRequiredService<AStarDev.CloudSync.ViewModels.SyncRuns.SyncRestartPromptViewModel>());
+        provider.GetRequiredService<ISyncOutcomeReader>().ShouldBeSameAs(provider.GetRequiredService<ISyncOutcomeWriter>());
+        provider.GetRequiredService<AStarDev.CloudSync.ViewModels.Overview.SyncRunOverviewReloader>().ShouldNotBeNull();
+    }
+
+    [Fact]
     public void when_application_services_are_added_then_one_sync_lock_and_one_throttle_gate_are_shared()
     {
         using var provider = CreateServices().BuildServiceProvider();

@@ -1,0 +1,29 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmSyncRuns="using:AStarDev.CloudSync.ViewModels.SyncRuns"
+             x:Class="AStarDev.CloudSync.SyncRuns.SyncRestartPromptView"
+             x:DataType="vmSyncRuns:SyncRestartPromptViewModel"
+             HorizontalAlignment="Center"
+             VerticalAlignment="Center">
+    <Border Background="{DynamicResource CloudSyncSurfaceBrush}"
+            BorderBrush="{DynamicResource CloudSyncBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="8"
+            Padding="24"
+            Margin="24"
+            MaxWidth="460">
+        <StackPanel Spacing="16">
+            <TextBlock Text="{Binding TitleText}"
+                       FontSize="18"
+                       FontWeight="SemiBold"
+                       Foreground="{DynamicResource CloudSyncTextPrimaryBrush}" />
+            <TextBlock Text="{Binding MessageText}"
+                       TextWrapping="Wrap"
+                       Foreground="{DynamicResource CloudSyncTextPrimaryBrush}" />
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                <Button Classes="secondary" Content="{Binding KeepText}" Command="{Binding KeepCommand}" />
+                <Button Classes="primary" Content="{Binding RestartText}" Command="{Binding RestartCommand}" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>
