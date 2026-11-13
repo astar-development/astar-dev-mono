@@ -23,6 +23,9 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTimeOffset?>("CaughtUpAt")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Cursor")
                         .HasColumnType("TEXT");
 

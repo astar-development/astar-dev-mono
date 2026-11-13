@@ -9,8 +9,9 @@ namespace AStarDev.CloudSync.Sync.Sqlite;
 
 /// <summary>Keeps an account's remote item index and its change cursor in SQLite (#1398).</summary>
 /// <param name="dbContextFactory">Creates a context per operation.</param>
+/// <param name="time">Stamps the moment the index first caught up.</param>
 /// <param name="logger">Reports reads and writes that fail, by exception type only.</param>
-internal sealed class SqliteRemoteIndexStore(IDbContextFactory<SyncDbContext> dbContextFactory, ILogger<SqliteRemoteIndexStore> logger) : IRemoteIndexReader, IRemoteIndexWriter, IAccountRemovalParticipant
+internal sealed class SqliteRemoteIndexStore(IDbContextFactory<SyncDbContext> dbContextFactory, TimeProvider time, ILogger<SqliteRemoteIndexStore> logger) : IRemoteIndexReader, IRemoteIndexWriter, IAccountRemovalParticipant
 {
     private const string Location = nameof(SqliteRemoteIndexStore);
     private const int LookupChunkSize = 500;
@@ -20,6 +21,11 @@ internal sealed class SqliteRemoteIndexStore(IDbContextFactory<SyncDbContext> db
     public Task<Result<Option<ChangeCursor>, ErrorResponse>> GetCursorAsync(AccountId accountId, CancellationToken cancellationToken) =>
         Try.RunAsync(() => ReadCursorAsync(accountId, cancellationToken), cancellationToken)
             .MatchAsync(cursor => Result.Success<Option<ChangeCursor>, ErrorResponse>(cursor), exception => Failed<Option<ChangeCursor>>(exception, "The change cursor could not be read."));
+
+    /// <inheritdoc />
+    public Task<Result<bool, ErrorResponse>> IsCompleteAsync(AccountId accountId, CancellationToken cancellationToken) =>
+        Try.RunAsync(() => ReadCompleteAsync(accountId, cancellationToken), cancellationToken)
+            .MatchAsync(complete => Result.Success<bool, ErrorResponse>(complete), exception => Failed<bool>(exception, "The index state could not be read."));
 
     /// <inheritdoc />
     public Task<Result<Option<ResyncPassId>, ErrorResponse>> GetResyncPassAsync(AccountId accountId, CancellationToken cancellationToken) =>
@@ -123,6 +129,13 @@ internal sealed class SqliteRemoteIndexStore(IDbContextFactory<SyncDbContext> db
         return ChangeCursorFactory.Create(cursor).Match(found => Option.Some(found), _ => Option.None<ChangeCursor>());
     }
 
+    private async Task<bool> ReadCompleteAsync(AccountId accountId, CancellationToken cancellationToken)
+    {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+
+        return await dbContext.RemoteCursors.AsNoTracking().AnyAsync(row => row.AccountId == accountId.Value && row.CaughtUpAt != null, cancellationToken).ConfigureAwait(false);
+    }
+
     private async Task<Option<ResyncPassId>> ReadResyncPassAsync(AccountId accountId, CancellationToken cancellationToken)
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
@@ -196,7 +209,7 @@ internal sealed class SqliteRemoteIndexStore(IDbContextFactory<SyncDbContext> db
         foreach (var snapshot in wanted.Where(item => item.Kind is RemoteItemKind.Deleted))
             changes.AddRange(await DeleteTreeAsync(dbContext, accountId, snapshot.Id.Value, stored, pass, cancellationToken).ConfigureAwait(false));
 
-        SaveCursor(dbContext, accountId, cursorRow, page.Next);
+        SaveCursor(dbContext, accountId, cursorRow, page.Next, time.GetUtcNow());
         _ = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
 
@@ -286,7 +299,7 @@ internal sealed class SqliteRemoteIndexStore(IDbContextFactory<SyncDbContext> db
         changes.AddRange(RemoteItemIdFactory.Create(entity.RemoteItemId).Match(id => new[] { RemoteChangeFactory.CreateDeleted(id) }, _ => Array.Empty<RemoteChange>()));
     }
 
-    private static void SaveCursor(SyncDbContext dbContext, AccountId accountId, RemoteCursorEntity? row, PageContinuation next)
+    private static void SaveCursor(SyncDbContext dbContext, AccountId accountId, RemoteCursorEntity? row, PageContinuation next, DateTimeOffset now)
     {
         var cursor = next switch
         {
@@ -298,10 +311,14 @@ internal sealed class SqliteRemoteIndexStore(IDbContextFactory<SyncDbContext> db
         if (cursor is null)
             return;
 
+        var caughtUpAt = next is PageContinuation.CaughtUp ? now : row?.CaughtUpAt;
         if (row is null)
-            _ = dbContext.RemoteCursors.Add(new RemoteCursorEntity { AccountId = accountId.Value, Cursor = cursor });
+            _ = dbContext.RemoteCursors.Add(new RemoteCursorEntity { AccountId = accountId.Value, Cursor = cursor, CaughtUpAt = caughtUpAt });
         else
+        {
             row.Cursor = cursor;
+            row.CaughtUpAt = caughtUpAt;
+        }
     }
 
     private async Task<ResyncPassId> BeginAsync(AccountId accountId, CancellationToken cancellationToken)

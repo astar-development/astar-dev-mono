@@ -26,4 +26,6 @@ public sealed class FakeRemoteIndexReader : IRemoteIndexReader
     public Task<Result<IReadOnlyList<RemoteItemSnapshot>, ErrorResponse>> GetChildrenAsync(AccountId accountId, Option<RemoteItemId> parent, CancellationToken cancellationToken) => throw new NotSupportedException();
 
     public Task<Result<Option<LocalRelativePath>, ErrorResponse>> GetPathAsync(AccountId accountId, RemoteItemId itemId, CancellationToken cancellationToken) => throw new NotSupportedException();
+
+    public Task<Result<bool, ErrorResponse>> IsCompleteAsync(AccountId accountId, CancellationToken cancellationToken) => throw new NotSupportedException();
 }

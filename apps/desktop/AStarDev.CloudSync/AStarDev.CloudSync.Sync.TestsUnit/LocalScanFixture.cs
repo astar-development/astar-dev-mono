@@ -35,6 +35,8 @@ public sealed class LocalScanFixture : IDisposable
             .AddSingleton<ISyncBaselineReader>(Baseline)
             .AddSingleton<ISyncBaselineWriter>(Baseline)
             .AddSingleton<ISyncAttentionWriter>(Attention)
+            .AddSingleton<ISyncAttentionReader>(Attention)
+            .AddSingleton<ISyncAttentionCloser>(Attention)
             .AddSingleton<ISelectionRuleWriter>(RuleWriter)
             .AddSingleton<IRemoteIndexReader>(Remote)
             .AddCloudSync()
@@ -116,6 +118,14 @@ public sealed class LocalScanFixture : IDisposable
     {
         for (var index = 0; index < count; index++)
             FileSystem.File.Delete($"{Root}/{folder}/file{index:000}.txt");
+    }
+
+    public HeldDeletionId SeedHold(string pairFolder, DeletionDirection? direction = null)
+    {
+        var id = new HeldDeletionId(Guid.NewGuid());
+        Attention.Seed(SyncAttentionItemFactory.CreateHeldDeletions(id, Account, SelectionTestRules.PairAt(pairFolder), direction ?? DeletionDirectionFactory.CreateDeleteRemote(), [Path($"{pairFolder}/file000.txt")], Start));
+
+        return id;
     }
 
     public void Deny(string relative) => Denial.Target(relative.Length == 0 ? Root : $"{Root}/{relative}", relative.Length == 0);

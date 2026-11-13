@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync.Sync;
 
-/// <summary>Gives new local folders the default rule (#1397 decision 3, #1399): a folder that is on disk, has no covering rule, is not under an Exclude and is not in the remote index gets <c>Include(TwoWay)</c>. A folder that also exists remotely stays excluded. Only the top-most such folder gets a rule, and never one that would replace a rule below it. When the remote index has no cursor yet, or a read or the save fails, no rule is added and the next scan tries again.</summary>
+/// <summary>Gives new local folders the default rule (#1397 decision 3, #1399): a folder that is on disk, has no covering rule, is not under an Exclude and is not in the remote index gets <c>Include(TwoWay)</c>. A folder that also exists remotely stays excluded. Only the top-most such folder gets a rule, and never one that would replace a rule below it. When the remote index is not complete yet (its first full enumeration has not caught up, #1540), or a read or the save fails, no rule is added and the next scan tries again.</summary>
 /// <param name="ruleReader">Reads the account's selection rules.</param>
 /// <param name="ruleWriter">Saves the new rules; the write is idempotent.</param>
 /// <param name="remoteIndex">Tells whether a folder exists remotely.</param>
@@ -94,8 +94,7 @@ internal sealed class NewFolderRules(ISelectionRuleReader ruleReader, ISelection
 
     private async Task<IReadOnlyList<LocalRelativePath>> LocalOnlyAsync(AccountId accountId, IReadOnlyList<LocalRelativePath> candidates, CancellationToken cancellationToken)
     {
-        var cursor = (await remoteIndex.GetCursorAsync(accountId, cancellationToken).ConfigureAwait(false)).OrThrow();
-        if (cursor.Match(_ => false, () => true))
+        if (!(await remoteIndex.IsCompleteAsync(accountId, cancellationToken).ConfigureAwait(false)).OrThrow())
             return [];
 
         var cache = new Dictionary<Option<RemoteItemId>, IReadOnlyList<RemoteItemSnapshot>>();
