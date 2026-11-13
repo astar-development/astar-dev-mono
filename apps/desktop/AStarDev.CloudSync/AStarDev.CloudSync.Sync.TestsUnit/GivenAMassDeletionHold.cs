@@ -136,4 +136,16 @@ public sealed class GivenAMassDeletionHold : IDisposable
 
         fixture.Logs.Logger.Messages.ShouldNotContain(message => message.Contains("file0", StringComparison.Ordinal) || message.Contains("Docs", StringComparison.Ordinal));
     }
+
+    [Fact]
+    public async Task when_the_rule_casing_differs_from_the_disk_casing_then_the_hold_is_still_attributed_to_the_pair()
+    {
+        fixture.Include("docs");
+        fixture.SyncedFiles("Docs", 120);
+        fixture.Lose("Docs", 60);
+
+        var set = await fixture.ScanAsync(CancellationToken);
+
+        (set.Holds.Count, set.Changes.OfType<LocalChange.Deleted>().Count()).ShouldBe((1, 0));
+    }
 }

@@ -14,25 +14,23 @@ internal sealed class LocalDeletionFinder(ISyncBaselineReader baselineReader, IS
 
     internal async Task<DeletionScan> FindAsync(AccountId accountId, IDirectoryInfo root, IReadOnlyList<SelectionRule> rules, IReadOnlySet<string> blocked, CancellationToken cancellationToken)
     {
-        var pending = new List<PendingDeletion>();
-        var unreadable = new List<LocalChange>();
-        var totals = new Dictionary<SyncPairId, int>();
+        var state = new ScanState();
         var after = Option.None<RelativeSyncPath>();
         while (true)
         {
             var page = (await baselineReader.GetUnderAsync(accountId, default, after, PageSize, cancellationToken).ConfigureAwait(false)).OrThrow();
             foreach (var entry in page)
-                Classify(entry, root, rules, blocked, pending, unreadable, totals);
+                Classify(entry, root, rules, blocked, state);
 
             cancellationToken.ThrowIfCancellationRequested();
             if (page.Count < PageSize)
-                return new DeletionScan(unreadable, pending, totals);
+                return new DeletionScan(state.Unreadable, state.Pending, state.Totals);
 
             after = Option.Some(page[^1].Path);
         }
     }
 
-    private void Classify(SyncBaselineEntry entry, IDirectoryInfo root, IReadOnlyList<SelectionRule> rules, IReadOnlySet<string> blocked, List<PendingDeletion> pending, List<LocalChange> unreadable, Dictionary<SyncPairId, int> totals)
+    private void Classify(SyncBaselineEntry entry, IDirectoryInfo root, IReadOnlyList<SelectionRule> rules, IReadOnlySet<string> blocked, ScanState state)
     {
         var path = entry.Path.Value ?? string.Empty;
         var folder = entry.Kind is SyncBaselineKind.Folder ? path : ParentOf(path);
@@ -40,11 +38,11 @@ internal sealed class LocalDeletionFinder(ISyncBaselineReader baselineReader, IS
             return;
 
         var pair = PairOf(entry.AccountId, folder, rules);
-        totals[pair] = totals.GetValueOrDefault(pair) + 1;
+        state.Totals[pair] = state.Totals.GetValueOrDefault(pair) + 1;
         if (IsBlocked(path, blocked))
-            unreadable.Add(LocalChangeFactory.CreateUnreadable(entry.Path));
-        else if (IsMissing(root, entry))
-            pending.Add(new PendingDeletion(entry.Path, entry.ItemId, pair));
+            state.Unreadable.Add(LocalChangeFactory.CreateUnreadable(entry.Path));
+        else if (IsMissing(root, entry, state.Listings))
+            state.Pending.Add(new PendingDeletion(entry.Path, entry.ItemId, pair));
     }
 
     private static bool IsBlocked(string path, IReadOnlySet<string> blocked) => blocked.Count > 0 && Prefixes(path).Any(blocked.Contains);
@@ -65,9 +63,9 @@ internal sealed class LocalDeletionFinder(ISyncBaselineReader baselineReader, IS
         return SyncPairIdFactory.CreateForRule(accountId, topMost?.Path ?? default);
     }
 
-    private static bool IsMissing(IDirectoryInfo root, SyncBaselineEntry entry) => !Try.Run(() => IsPresent(root.FileSystem, root.FullName, (entry.Path.Value ?? string.Empty).Split(Separator), entry.Kind is SyncBaselineKind.Folder)).Match(present => present, _ => true);
+    private static bool IsMissing(IDirectoryInfo root, SyncBaselineEntry entry, Dictionary<string, Dictionary<string, string>> listings) => !Try.Run(() => IsPresent(root.FileSystem, root.FullName, (entry.Path.Value ?? string.Empty).Split(Separator), entry.Kind is SyncBaselineKind.Folder, listings)).Match(present => present, _ => true);
 
-    private static bool IsPresent(IFileSystem fileSystem, string current, string[] segments, bool isFolder)
+    private static bool IsPresent(IFileSystem fileSystem, string current, string[] segments, bool isFolder, Dictionary<string, Dictionary<string, string>> listings)
     {
         foreach (var segment in segments)
         {
@@ -79,8 +77,7 @@ internal sealed class LocalDeletionFinder(ISyncBaselineReader baselineReader, IS
                 continue;
             }
 
-            var match = fileSystem.Directory.Exists(current) ? fileSystem.Directory.EnumerateFileSystemEntries(current).Select(fileSystem.Path.GetFileName).FirstOrDefault(name => string.Equals(name, segment, StringComparison.OrdinalIgnoreCase)) : null;
-            if (match is null)
+            if (!ListingOf(fileSystem, current, listings).TryGetValue(segment, out var match))
                 return false;
 
             current = fileSystem.Path.Join(current, match);
@@ -89,5 +86,33 @@ internal sealed class LocalDeletionFinder(ISyncBaselineReader baselineReader, IS
         return isFolder ? fileSystem.Directory.Exists(current) : fileSystem.File.Exists(current);
     }
 
+    private static Dictionary<string, string> ListingOf(IFileSystem fileSystem, string folder, Dictionary<string, Dictionary<string, string>> listings)
+    {
+        if (listings.TryGetValue(folder, out var cached))
+            return cached;
+
+        var names = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (fileSystem.Directory.Exists(folder))
+        {
+            foreach (var name in fileSystem.Directory.EnumerateFileSystemEntries(folder).Select(fileSystem.Path.GetFileName).OfType<string>())
+                _ = names.TryAdd(name, name);
+        }
+
+        listings[folder] = names;
+
+        return names;
+    }
+
     private static string ParentOf(string path) => path.LastIndexOf(Separator) is var cut and >= 0 ? path[..cut] : string.Empty;
+
+    private sealed class ScanState
+    {
+        internal List<PendingDeletion> Pending { get; } = [];
+
+        internal List<LocalChange> Unreadable { get; } = [];
+
+        internal Dictionary<SyncPairId, int> Totals { get; } = [];
+
+        internal Dictionary<string, Dictionary<string, string>> Listings { get; } = [];
+    }
 }

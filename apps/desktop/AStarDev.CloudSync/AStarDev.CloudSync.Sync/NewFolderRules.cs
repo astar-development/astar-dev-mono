@@ -72,10 +72,10 @@ internal sealed class NewFolderRules(ISelectionRuleReader ruleReader, ISelection
         foreach (var child in children)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (!seen.Add(child.Name) || folderFilter.ShouldSkip(child) is not LocalFolderVisibility.Visible || LocalRelativePathFactory.Create(Join(path, child.Name)) is not { } created)
+            if (!seen.Add(child.Name) || folderFilter.ShouldSkip(child) is not LocalFolderVisibility.Visible )
                 continue;
 
-            foreach (var candidate in created.Match(childPath => Visit(child, childPath, rules, cancellationToken), _ => []))
+            foreach (var candidate in LocalRelativePathFactory.Create(Join(path, child.Name)).Match(childPath => Visit(child, childPath, rules, cancellationToken), _ => []))
                 yield return candidate;
         }
     }
