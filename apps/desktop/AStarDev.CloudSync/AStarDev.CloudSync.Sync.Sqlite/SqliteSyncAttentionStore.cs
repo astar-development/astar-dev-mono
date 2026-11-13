@@ -65,9 +65,9 @@ internal sealed class SqliteSyncAttentionStore(IDbContextFactory<SyncDbContext> 
 
     private static string NameOf(DeletionDirection direction) => direction is DeletionDirection.DeleteRemote ? nameof(DeletionDirection.DeleteRemote) : nameof(DeletionDirection.DeleteLocal);
 
-    private static DeletionDirection DirectionOf(string? name) => name == nameof(DeletionDirection.DeleteRemote) ? DeletionDirectionFactory.CreateDeleteRemote() : DeletionDirectionFactory.CreateDeleteLocal();
-
     private static string NameOf(ConflictKind kind) => kind.GetType().Name;
+
+    private static DeletionDirection DirectionOf(string? name) => name == nameof(DeletionDirection.DeleteRemote) ? DeletionDirectionFactory.CreateDeleteRemote() : DeletionDirectionFactory.CreateDeleteLocal();
 
     private static ConflictKind KindOf(string? name) => name switch
     {
