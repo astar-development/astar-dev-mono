@@ -22,6 +22,7 @@ public sealed class LocalScanFixture : IDisposable
         FileSystem = new MockFileSystem(options => options.SimulatingOperatingSystem(SimulationMode.Linux));
         Time = new FakeTimeProvider(Start);
         Roots.Root = Option.Some(FileSystem.Directory.CreateDirectory(RootPath));
+        RuleWriter = new ApplyingRuleWriter(Rules);
         provider = new ServiceCollection()
             .AddLogging(logging => logging.ClearProviders().AddProvider(Logs))
             .AddSingleton<System.TimeProvider>(Time)
@@ -29,6 +30,9 @@ public sealed class LocalScanFixture : IDisposable
             .AddSingleton<ISelectionRuleReader>(Rules)
             .AddSingleton<ISyncBaselineReader>(Baseline)
             .AddSingleton<ISyncBaselineWriter>(Baseline)
+            .AddSingleton<ISyncAttentionWriter>(Attention)
+            .AddSingleton<ISelectionRuleWriter>(RuleWriter)
+            .AddSingleton<IRemoteIndexReader>(Remote)
             .AddCloudSync()
             .AddSingleton<IContentHasher>(Hasher)
             .BuildServiceProvider();
@@ -47,6 +51,12 @@ public sealed class LocalScanFixture : IDisposable
     public InMemorySyncBaseline Baseline { get; } = new();
 
     public CountingContentHasher Hasher { get; } = new();
+
+    public RecordingAttentionWriter Attention { get; } = new();
+
+    public ApplyingRuleWriter RuleWriter { get; }
+
+    public ScriptedRemoteIndex Remote { get; } = new();
 
     public RecordingLoggerProvider Logs { get; } = new();
 
@@ -86,6 +96,20 @@ public sealed class LocalScanFixture : IDisposable
 
         return entry;
     }
+
+    public void SyncedFiles(string folder, int count)
+    {
+        for (var index = 0; index < count; index++)
+            _ = Synced($"{folder}/file{index:000}.txt", $"content {index}", $"item-{folder}-{index}");
+    }
+
+    public void Lose(string folder, int count)
+    {
+        for (var index = 0; index < count; index++)
+            FileSystem.File.Delete($"{RootPath}/{folder}/file{index:000}.txt");
+    }
+
+    public void Deny(string relative) => FileSystem.WithAccessControlStrategy(new DenyListing(relative.Length == 0 ? RootPath : $"{RootPath}/{relative}"));
 
     public static RelativeSyncPath Path(string value) => RelativeSyncPathFactory.Create(value).Match(path => path, _ => throw new InvalidOperationException("The test path must be valid."));
 

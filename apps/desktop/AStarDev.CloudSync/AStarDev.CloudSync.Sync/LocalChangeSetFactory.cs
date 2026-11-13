@@ -7,10 +7,19 @@ public static class LocalChangeSetFactory
     /// <param name="changes">The changes.</param>
     /// <param name="touched">How many files were only touched.</param>
     /// <param name="hashed">How many files were hashed.</param>
-    public static LocalChangeSet Create(IEnumerable<LocalChange> changes, int touched, int hashed)
+    public static LocalChangeSet Create(IEnumerable<LocalChange> changes, int touched, int hashed) => Create(changes, [], touched, hashed);
+
+    /// <summary>Creates a set with the pairs whose deletions were held. Holds are sorted by pair id and a pair is listed once.</summary>
+    /// <param name="changes">The changes.</param>
+    /// <param name="holds">The held pairs.</param>
+    /// <param name="touched">How many files were only touched.</param>
+    /// <param name="hashed">How many files were hashed.</param>
+    public static LocalChangeSet Create(IEnumerable<LocalChange> changes, IEnumerable<MassDeletionSuspected> holds, int touched, int hashed)
     {
         IReadOnlyList<LocalChange> unique = [.. (changes ?? []).GroupBy(change => change.Path).Select(group => group.OrderBy(change => change is LocalChange.Unreadable ? 0 : 1).First()).OrderBy(change => change.Path.Value, StringComparer.OrdinalIgnoreCase)];
 
-        return new LocalChangeSet(unique, LocalScanSummaryFactory.Create(unique, touched, hashed));
+        IReadOnlyList<MassDeletionSuspected> held = [.. (holds ?? []).GroupBy(hold => hold.PairId).Select(group => group.First()).OrderBy(hold => hold.PairId.Value)];
+
+        return new LocalChangeSet(unique, held, LocalScanSummaryFactory.Create(unique, touched, hashed));
     }
 }
