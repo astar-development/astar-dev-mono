@@ -9,7 +9,7 @@ public sealed class ScriptedRemoteIndex : IRemoteIndexReader
 
     private readonly List<RemoteItemSnapshot> items = [];
 
-    public Option<ChangeCursor> Cursor { get; set; } = Option.Some(RemoteIds.Cursor("cursor"));
+    public bool Complete { get; set; } = true;
 
     public bool Fails { get; set; }
 
@@ -31,7 +31,9 @@ public sealed class ScriptedRemoteIndex : IRemoteIndexReader
         }
     }
 
-    public Task<Result<Option<ChangeCursor>, ErrorResponse>> GetCursorAsync(AccountId accountId, CancellationToken cancellationToken) => Task.FromResult(Outcome(Cursor));
+    public Task<Result<Option<ChangeCursor>, ErrorResponse>> GetCursorAsync(AccountId accountId, CancellationToken cancellationToken) => throw new NotSupportedException();
+
+    public Task<Result<bool, ErrorResponse>> IsCompleteAsync(AccountId accountId, CancellationToken cancellationToken) => Task.FromResult(Outcome(Complete));
 
     public Task<Result<IReadOnlyList<RemoteItemSnapshot>, ErrorResponse>> GetChildrenAsync(AccountId accountId, Option<RemoteItemId> parent, CancellationToken cancellationToken) =>
         Task.FromResult(Outcome<IReadOnlyList<RemoteItemSnapshot>>([.. items.Where(item => item.ParentId.Equals(parent))]));

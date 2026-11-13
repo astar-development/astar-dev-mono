@@ -35,6 +35,41 @@ public sealed class GivenARemoteIndexStore : IAsyncLifetime
     }
 
     [Fact]
+    public async Task when_no_page_was_applied_then_the_index_is_not_complete()
+    {
+        (await IsCompleteAsync(FirstAccount)).ShouldBe("false");
+    }
+
+    [Fact]
+    public async Task when_only_more_pages_were_applied_then_the_index_is_not_complete()
+    {
+        _ = await Apply(FirstAccount, More("c1", Folder("a", "root-id", "Docs")));
+
+        (await IsCompleteAsync(FirstAccount)).ShouldBe("false");
+    }
+
+    [Fact]
+    public async Task when_a_caught_up_page_was_applied_then_the_index_is_complete_for_that_account_only()
+    {
+        _ = await Apply(FirstAccount, More("c1", Folder("a", "root-id", "Docs")));
+        _ = await Apply(FirstAccount, Caught("d1"));
+
+        (await IsCompleteAsync(FirstAccount), await IsCompleteAsync(SecondAccount)).ShouldBe(("true", "false"));
+    }
+
+    [Fact]
+    public async Task when_a_more_page_follows_a_caught_up_page_then_the_index_stays_complete()
+    {
+        _ = await Apply(FirstAccount, Caught("d1"));
+        _ = await Apply(FirstAccount, More("c2", Folder("b", "root-id", "Pics")));
+
+        (await IsCompleteAsync(FirstAccount)).ShouldBe("true");
+    }
+
+    private async Task<string> IsCompleteAsync(AccountId account) =>
+        (await Database.IndexReader.IsCompleteAsync(account, CancellationToken)).Match(complete => complete ? "true" : "false", error => error.Message);
+
+    [Fact]
     public async Task when_a_page_is_applied_then_its_items_are_added_and_its_cursor_is_saved()
     {
         var applied = await Apply(FirstAccount, More("c1", Folder("a", "root-id", "Docs"), File("a1", "a", "one.txt")));

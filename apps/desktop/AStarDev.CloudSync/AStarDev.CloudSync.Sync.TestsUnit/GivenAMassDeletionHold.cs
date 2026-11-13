@@ -148,4 +148,83 @@ public sealed class GivenAMassDeletionHold : IDisposable
 
         (set.Holds.Count, set.Changes.OfType<LocalChange.Deleted>().Count()).ShouldBe((1, 0));
     }
+
+    [Fact]
+    public async Task when_a_held_pair_is_below_the_threshold_again_then_its_held_set_is_closed()
+    {
+        fixture.Include("Docs");
+        fixture.SyncedFiles("Docs", 120);
+        fixture.Lose("Docs", 3);
+        var stale = fixture.SeedHold("Docs");
+
+        _ = await fixture.ScanAsync(CancellationToken);
+
+        fixture.Attention.Closed.ShouldBe([stale]);
+    }
+
+    [Fact]
+    public async Task when_the_pair_still_trips_the_guard_then_its_held_set_is_not_closed()
+    {
+        fixture.Include("Docs");
+        fixture.SyncedFiles("Docs", 120);
+        fixture.Lose("Docs", 60);
+        _ = fixture.SeedHold("Docs");
+
+        _ = await fixture.ScanAsync(CancellationToken);
+
+        fixture.Attention.Closed.Count.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task when_another_pair_is_held_then_a_recovered_pair_closes_only_its_own_set()
+    {
+        fixture.Include("Docs", "Pics");
+        fixture.SyncedFiles("Docs", 120);
+        fixture.SyncedFiles("Pics", 120);
+        fixture.Lose("Docs", 60);
+        fixture.Lose("Pics", 2);
+        _ = fixture.SeedHold("Docs");
+        var recovered = fixture.SeedHold("Pics");
+
+        _ = await fixture.ScanAsync(CancellationToken);
+
+        fixture.Attention.Closed.ShouldBe([recovered]);
+    }
+
+    [Fact]
+    public async Task when_a_held_set_is_for_local_deletions_then_the_scan_leaves_it_alone()
+    {
+        fixture.Include("Docs");
+        fixture.SyncedFiles("Docs", 120);
+        _ = fixture.SeedHold("Docs", DeletionDirectionFactory.CreateDeleteLocal());
+
+        _ = await fixture.ScanAsync(CancellationToken);
+
+        fixture.Attention.Closed.Count.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task when_the_open_items_cannot_be_read_then_the_scan_fails()
+    {
+        fixture.Include("Docs");
+        fixture.SyncedFiles("Docs", 120);
+        fixture.Attention.ReadFails = true;
+
+        var result = await fixture.Detector.DetectAsync(LocalScanFixture.Account, CancellationToken);
+
+        result.Match(_ => "scanned", failure => failure.GetType().Name).ShouldBe(nameof(LocalScanFailure.Unexpected));
+    }
+
+    [Fact]
+    public async Task when_a_recovered_set_cannot_be_closed_then_the_scan_fails()
+    {
+        fixture.Include("Docs");
+        fixture.SyncedFiles("Docs", 120);
+        _ = fixture.SeedHold("Docs");
+        fixture.Attention.CloseFails = true;
+
+        var result = await fixture.Detector.DetectAsync(LocalScanFixture.Account, CancellationToken);
+
+        result.Match(_ => "scanned", failure => failure.GetType().Name).ShouldBe(nameof(LocalScanFailure.Unexpected));
+    }
 }

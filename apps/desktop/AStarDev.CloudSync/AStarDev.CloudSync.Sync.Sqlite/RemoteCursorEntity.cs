@@ -7,4 +7,6 @@ internal sealed class RemoteCursorEntity
     public string? Cursor { get; set; }
 
     public Guid? ResyncPass { get; set; }
+
+    public DateTimeOffset? CaughtUpAt { get; set; }
 }

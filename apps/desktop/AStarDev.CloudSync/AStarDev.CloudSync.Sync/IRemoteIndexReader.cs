@@ -38,4 +38,10 @@ public interface IRemoteIndexReader
     /// <param name="cancellationToken">Cancels the read.</param>
     /// <returns>The path, none when the item is not indexed or its chain loops, or the error that stopped the read.</returns>
     Task<Result<Option<LocalRelativePath>, ErrorResponse>> GetPathAsync(AccountId accountId, RemoteItemId itemId, CancellationToken cancellationToken);
+
+    /// <summary>Tells whether the index holds the whole drive: the first full enumeration has reached its last page (#1540). A cursor alone does not say so, because the cursor is saved after every page.</summary>
+    /// <param name="accountId">The account.</param>
+    /// <param name="cancellationToken">Cancels the read.</param>
+    /// <returns>True once a caught-up page was saved, or the error that stopped the read. A failure is never read as complete.</returns>
+    Task<Result<bool, ErrorResponse>> IsCompleteAsync(AccountId accountId, CancellationToken cancellationToken);
 }
