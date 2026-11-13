@@ -24,6 +24,10 @@ internal sealed class SyncDbContext(DbContextOptions<SyncDbContext> options) : D
     /// <summary>The accounts' sync baselines.</summary>
     public DbSet<SyncBaselineEntity> SyncBaseline => Set<SyncBaselineEntity>();
 
+    public DbSet<SyncAttentionEntity> SyncAttention => Set<SyncAttentionEntity>();
+
+    public DbSet<SyncAttentionPathEntity> SyncAttentionPaths => Set<SyncAttentionPathEntity>();
+
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -32,5 +36,7 @@ internal sealed class SyncDbContext(DbContextOptions<SyncDbContext> options) : D
         modelBuilder.ApplyConfiguration(new RemoteItemEntityConfiguration());
         modelBuilder.ApplyConfiguration(new RemoteCursorEntityConfiguration());
         modelBuilder.ApplyConfiguration(new SyncBaselineEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new SyncAttentionEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new SyncAttentionPathEntityConfiguration());
     }
 }

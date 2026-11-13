@@ -121,6 +121,36 @@ public class GivenAQuarantineSnapshot
     }
 
     [Fact]
+    public void when_a_resyncing_snapshot_is_extended_then_the_baseline_and_the_old_entries_are_kept()
+    {
+        var basis = QuarantineSnapshotFactory.CreateResyncing([KeyValuePair.Create(SyncPaths.Of("Photos"), PathQuarantineStateFactory.CreateConflicted())]);
+
+        var extended = QuarantineSnapshotFactory.Extend(basis, [KeyValuePair.Create(SyncPaths.Of("Docs/A.txt"), PathQuarantineStateFactory.CreateHeldByGuard())]);
+
+        (extended.StateOf(SyncPaths.Of("Photos/B.jpg")), extended.StateOf(SyncPaths.Of("docs/a.txt")), extended.StateOf(SyncPaths.Of("Other.txt"))).ShouldBe((PathQuarantineStateFactory.CreateConflicted(), PathQuarantineStateFactory.CreateHeldByGuard(), PathQuarantineStateFactory.CreateResyncInProgress()));
+    }
+
+    [Fact]
+    public void when_a_snapshot_is_extended_with_a_casing_variant_of_a_stored_path_then_the_basis_state_is_kept()
+    {
+        var basis = Snapshot(("Docs/A.txt", PathQuarantineStateFactory.CreateConflicted()));
+
+        var extended = QuarantineSnapshotFactory.Extend(basis, [KeyValuePair.Create(SyncPaths.Of("docs/a.txt"), PathQuarantineStateFactory.CreateHeldByGuard())]);
+
+        (extended.Entries.Count, extended.StateOf(SyncPaths.Of("Docs/A.txt"))).ShouldBe((1, PathQuarantineStateFactory.CreateConflicted()));
+    }
+
+    [Fact]
+    public void when_a_snapshot_is_extended_with_no_entries_then_it_is_unchanged()
+    {
+        var basis = Snapshot(("Docs/A.txt", PathQuarantineStateFactory.CreateConflicted()));
+
+        var extended = QuarantineSnapshotFactory.Extend(basis, null!);
+
+        extended.Entries.Count.ShouldBe(1);
+    }
+
+    [Fact]
     public void when_no_entries_are_given_then_the_snapshot_is_empty()
     {
         var snapshot = QuarantineSnapshotFactory.Create(null!);
