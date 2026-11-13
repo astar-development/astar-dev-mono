@@ -224,6 +224,7 @@ public sealed class GivenALocalChangeDetector : IDisposable
     [Fact]
     public async Task when_no_rule_includes_anything_then_nothing_is_scanned_and_nothing_is_deleted()
     {
+        fixture.Remote.Folder("Docs");
         _ = fixture.Write("Docs/a.txt", "x");
         _ = fixture.Synced("Docs/b.txt", "y", "item-b");
         fixture.FileSystem.File.Delete($"{LocalScanFixture.RootPath}/Docs/b.txt");
@@ -249,6 +250,7 @@ public sealed class GivenALocalChangeDetector : IDisposable
     public async Task when_a_rule_is_deeper_than_a_non_included_parent_then_only_the_included_folder_is_scanned()
     {
         fixture.Include("Docs/Work");
+        fixture.Remote.Folder("Other");
         _ = fixture.Write("Docs/Work/plan.txt", "plan");
         _ = fixture.Write("Docs/skipped.txt", "no");
         _ = fixture.Write("Other/skipped.txt", "no");
@@ -334,7 +336,7 @@ public sealed class GivenALocalChangeDetector : IDisposable
 
         var set = await fixture.ScanAsync(CancellationToken);
 
-        (set.Summary.Deleted, fixture.Baseline.LargestPageReturned <= 5000, fixture.Baseline.Pages >= 3).ShouldBe((12000, true, true));
+        (set.Summary.Deleted, set.Holds.Single().Missing, fixture.Baseline.LargestPageReturned <= 5000, fixture.Baseline.Pages >= 3).ShouldBe((0, 12000, true, true));
     }
 
     [Fact]

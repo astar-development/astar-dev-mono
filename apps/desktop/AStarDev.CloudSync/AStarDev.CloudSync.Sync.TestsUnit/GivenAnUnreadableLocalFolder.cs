@@ -5,7 +5,7 @@ namespace AStarDev.CloudSync.Sync.TestsUnit;
 
 public sealed class GivenAnUnreadableLocalFolder : IDisposable
 {
-    private readonly LocalScanFixture fixture = new();
+    private readonly LocalScanFixture fixture = new(windows: true);
 
     private static CancellationToken CancellationToken => TestContext.Current.CancellationToken;
 
@@ -18,7 +18,7 @@ public sealed class GivenAnUnreadableLocalFolder : IDisposable
         _ = fixture.SyncedFolder("Docs/Locked", "item-locked");
         _ = fixture.Synced("Docs/Locked/kept.txt", "kept", "item-kept");
         _ = fixture.Synced("Docs/Locked/gone.txt", "gone", "item-gone");
-        fixture.FileSystem.File.Delete($"{LocalScanFixture.RootPath}/Docs/Locked/gone.txt");
+        fixture.FileSystem.File.Delete($"{fixture.Root}/Docs/Locked/gone.txt");
         fixture.Deny("Docs/Locked");
 
         var set = await fixture.ScanAsync(CancellationToken);

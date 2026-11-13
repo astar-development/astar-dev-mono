@@ -12,20 +12,57 @@ internal sealed class LocalDeletionFinder(ISyncBaselineReader baselineReader, IS
     private const int PageSize = 5000;
     private const char Separator = '/';
 
-    internal async Task<IReadOnlyList<LocalChange>> FindAsync(AccountId accountId, IDirectoryInfo root, IReadOnlyList<SelectionRule> rules, CancellationToken cancellationToken)
+    internal async Task<DeletionScan> FindAsync(AccountId accountId, IDirectoryInfo root, IReadOnlyList<SelectionRule> rules, IReadOnlySet<string> blocked, CancellationToken cancellationToken)
     {
-        var deleted = new List<LocalChange>();
+        var pending = new List<PendingDeletion>();
+        var unreadable = new List<LocalChange>();
+        var totals = new Dictionary<SyncPairId, int>();
         var after = Option.None<RelativeSyncPath>();
         while (true)
         {
             var page = (await baselineReader.GetUnderAsync(accountId, default, after, PageSize, cancellationToken).ConfigureAwait(false)).OrThrow();
-            deleted.AddRange(page.Where(entry => IsTracked(entry, rules) && IsMissing(root, entry)).Select(entry => LocalChangeFactory.CreateDeleted(entry.Path, entry.ItemId)));
+            foreach (var entry in page)
+                Classify(entry, root, rules, blocked, pending, unreadable, totals);
+
             cancellationToken.ThrowIfCancellationRequested();
             if (page.Count < PageSize)
-                return deleted;
+                return new DeletionScan(unreadable, pending, totals);
 
             after = Option.Some(page[^1].Path);
         }
+    }
+
+    private void Classify(SyncBaselineEntry entry, IDirectoryInfo root, IReadOnlyList<SelectionRule> rules, IReadOnlySet<string> blocked, List<PendingDeletion> pending, List<LocalChange> unreadable, Dictionary<SyncPairId, int> totals)
+    {
+        var path = entry.Path.Value ?? string.Empty;
+        var folder = entry.Kind is SyncBaselineKind.Folder ? path : ParentOf(path);
+        if (SyncSkipFilter.IsSkipped(entry.Path) || !LocalRelativePathFactory.Create(folder).Match(valid => evaluator.IsIncluded(valid, rules), _ => false))
+            return;
+
+        var pair = PairOf(entry.AccountId, folder, rules);
+        totals[pair] = totals.GetValueOrDefault(pair) + 1;
+        if (IsBlocked(path, blocked))
+            unreadable.Add(LocalChangeFactory.CreateUnreadable(entry.Path));
+        else if (IsMissing(root, entry))
+            pending.Add(new PendingDeletion(entry.Path, entry.ItemId, pair));
+    }
+
+    private static bool IsBlocked(string path, IReadOnlySet<string> blocked) => blocked.Count > 0 && Prefixes(path).Any(blocked.Contains);
+
+    private static IEnumerable<string> Prefixes(string path)
+    {
+        for (var cut = path.IndexOf(Separator); cut >= 0; cut = path.IndexOf(Separator, cut + 1))
+            yield return path[..cut];
+
+        yield return path;
+    }
+
+    private static SyncPairId PairOf(AccountId accountId, string folder, IReadOnlyList<SelectionRule> rules)
+    {
+        var path = LocalRelativePathFactory.Create(folder).Match(valid => valid, _ => default);
+        var topMost = rules.Where(rule => rule.Kind is SelectionRuleKind.Include && SelectionPaths.IsAncestorOrSelf(rule.Path, path)).MinBy(rule => SelectionPaths.Depth(rule.Path));
+
+        return SyncPairIdFactory.CreateForRule(accountId, topMost?.Path ?? default);
     }
 
     private static bool IsMissing(IDirectoryInfo root, SyncBaselineEntry entry) => !Try.Run(() => IsPresent(root.FileSystem, root.FullName, (entry.Path.Value ?? string.Empty).Split(Separator), entry.Kind is SyncBaselineKind.Folder)).Match(present => present, _ => true);
@@ -53,12 +90,4 @@ internal sealed class LocalDeletionFinder(ISyncBaselineReader baselineReader, IS
     }
 
     private static string ParentOf(string path) => path.LastIndexOf(Separator) is var cut and >= 0 ? path[..cut] : string.Empty;
-
-    private bool IsTracked(SyncBaselineEntry entry, IReadOnlyList<SelectionRule> rules)
-    {
-        var path = entry.Path.Value ?? string.Empty;
-        var folder = entry.Kind is SyncBaselineKind.Folder ? path : ParentOf(path);
-
-        return !SyncSkipFilter.IsSkipped(entry.Path) && LocalRelativePathFactory.Create(folder).Match(valid => evaluator.IsIncluded(valid, rules), _ => false);
-    }
 }

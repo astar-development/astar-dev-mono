@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.IO.Abstractions;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.FunctionalParadigm;
 using AStarDev.LoggingExtensions;
@@ -8,13 +9,13 @@ namespace AStarDev.CloudSync.Sync;
 
 /// <inheritdoc />
 /// <param name="roots">Reads the account's sync root.</param>
-/// <param name="ruleReader">Reads the account's selection rules.</param>
 /// <param name="baselineWriter">Refreshes the time of touched-only files.</param>
 /// <param name="walker">Walks the sync root.</param>
 /// <param name="comparer">Compares each scanned item with the baseline.</param>
-/// <param name="deletions">Finds baseline items that are gone.</param>
+/// <param name="deletions">Finds baseline items that are gone and applies the mass-deletion guard.</param>
+/// <param name="newFolders">Reads the rules and gives new local folders their default rule.</param>
 /// <param name="logger">Reports counts and elapsed time only, never a path.</param>
-internal sealed class LocalChangeDetector(ISyncRootReader roots, ISelectionRuleReader ruleReader, ISyncBaselineWriter baselineWriter, LocalTreeWalker walker, LocalChangeComparer comparer, LocalDeletionFinder deletions, ILogger<LocalChangeDetector> logger) : ILocalChangeDetector
+internal sealed class LocalChangeDetector(ISyncRootReader roots, ISyncBaselineWriter baselineWriter, LocalTreeWalker walker, LocalChangeComparer comparer, LocalDeletionGuard deletions, NewFolderRules newFolders, ILogger<LocalChangeDetector> logger) : ILocalChangeDetector
 {
     private const string Location = nameof(LocalChangeDetector);
     private const int RefreshChunkSize = 500;
@@ -33,12 +34,14 @@ internal sealed class LocalChangeDetector(ISyncRootReader roots, ISelectionRuleR
     private async Task<Result<LocalChangeSet, LocalScanFailure>> ScanRootAsync(AccountId accountId, SyncRoot root, long started, CancellationToken cancellationToken)
     {
         root.Directory.Refresh();
-        if (!root.Directory.Exists)
+        if (!root.Directory.Exists || !IsListable(root.Directory))
             return Result.Failure<LocalChangeSet, LocalScanFailure>(LocalScanFailureFactory.CreateRootUnavailable());
 
         return await Try.RunAsync(() => ScanAsync(accountId, root, started, cancellationToken), cancellationToken)
             .MatchAsync(set => Result.Success<LocalChangeSet, LocalScanFailure>(set), Failed).ConfigureAwait(false);
     }
+
+    private static bool IsListable(IDirectoryInfo directory) => Try.Run(() => directory.EnumerateFileSystemInfos().Any()).Match(_ => true, _ => false);
 
     private Result<LocalChangeSet, LocalScanFailure> Failed(Exception exception)
     {
@@ -63,24 +66,27 @@ internal sealed class LocalChangeDetector(ISyncRootReader roots, ISelectionRuleR
 
     private async Task<LocalChangeSet> ScanAsync(AccountId accountId, SyncRoot root, long started, CancellationToken cancellationToken)
     {
-        var rules = (await ruleReader.GetAsync(accountId, cancellationToken).ConfigureAwait(false)).OrThrow();
+        var rules = await newFolders.PrepareAsync(accountId, root.Directory, cancellationToken).ConfigureAwait(false);
         var changes = new List<LocalChange>();
         var touched = new List<SyncBaselineEntry>();
+        var blocked = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var hashed = 0;
         foreach (var item in walker.Walk(root.Directory, rules, cancellationToken))
         {
+            _ = item.Info.Match(_ => false, () => blocked.Add(item.Path.Value ?? string.Empty));
             var comparison = await comparer.CompareAsync(accountId, item, cancellationToken).ConfigureAwait(false);
             _ = comparison.Change.Match(change => { changes.Add(change); return true; }, () => false);
             _ = comparison.Touched.Match(entry => { touched.Add(entry); return true; }, () => false);
             hashed += comparison.Hashed ? 1 : 0;
         }
 
-        changes.AddRange(await deletions.FindAsync(accountId, root.Directory, rules, cancellationToken).ConfigureAwait(false));
+        var guarded = await deletions.FindAsync(accountId, root.Directory, rules, blocked, cancellationToken).ConfigureAwait(false);
+        changes.AddRange(guarded.Changes);
         foreach (var chunk in touched.Chunk(RefreshChunkSize))
             await RefreshAsync(accountId, chunk, cancellationToken).ConfigureAwait(false);
 
-        var set = LocalChangeSetFactory.Create(changes, touched.Count, hashed);
-        var message = $"The local scan found {set.Summary.Added} added, {set.Summary.Modified} modified, {set.Summary.Deleted} deleted, {set.Summary.Deferred} deferred and {set.Summary.Unreadable} unreadable items and hashed {set.Summary.Hashed} files in {Stopwatch.GetElapsedTime(started).TotalMilliseconds:0} ms.";
+        var set = LocalChangeSetFactory.Create(changes, guarded.Holds, touched.Count, hashed);
+        var message = $"The local scan found {set.Summary.Added} added, {set.Summary.Modified} modified, {set.Summary.Deleted} deleted, {set.Summary.Deferred} deferred and {set.Summary.Unreadable} unreadable items, held the deletions of {set.Holds.Count} pairs and hashed {set.Summary.Hashed} files in {Stopwatch.GetElapsedTime(started).TotalMilliseconds:0} ms.";
         LogMessage.Information(logger, Location, message);
 
         return set;

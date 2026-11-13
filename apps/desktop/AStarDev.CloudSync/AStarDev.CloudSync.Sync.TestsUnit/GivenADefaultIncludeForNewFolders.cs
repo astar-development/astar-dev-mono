@@ -161,7 +161,7 @@ public sealed class GivenADefaultIncludeForNewFolders : IDisposable
         _ = await fixture.ScanAsync(CancellationToken);
         _ = await fixture.ScanAsync(CancellationToken);
 
-        (fixture.RuleWriter.Calls, Included()).ShouldBe((1, ["Photos"]));
+        (fixture.RuleWriter.Calls, string.Join(';', Included())).ShouldBe((1, "Photos"));
     }
 
     [Fact]
@@ -176,15 +176,15 @@ public sealed class GivenADefaultIncludeForNewFolders : IDisposable
     }
 
     [Fact]
-    public async Task when_a_new_folder_cannot_be_listed_then_it_gets_no_rule_and_the_scan_goes_on()
+    public async Task when_an_exclude_rule_sits_below_an_uncovered_folder_then_that_folder_gets_no_rule_so_the_exclude_is_kept()
     {
-        fixture.Include("Docs");
-        fixture.Folder("Locked");
-        fixture.Deny("Locked");
-        _ = fixture.Write("Docs/new.txt", "hello");
+        fixture.SetRules(SelectionTestRules.Exclude("Photos/Private"));
+        _ = fixture.Write("Photos/Private/a.txt", "secret");
+        _ = fixture.Write("Photos/Public/b.jpg", "pic");
+        _ = fixture.Write("Music/c.mp3", "tune");
 
-        var set = await fixture.ScanAsync(CancellationToken);
+        _ = await fixture.ScanAsync(CancellationToken);
 
-        (Included().Length, LocalScanFixture.Describe(set)).ShouldBe((1, "Added:Docs/new.txt:File"));
+        Included().ShouldBe(["Music", "Photos/Public"], ignoreOrder: true);
     }
 }
