@@ -19,11 +19,15 @@ internal static class GraphErrorMapper
         _ => (ProviderErrorFactory.CreateUnexpected(), 0, NoCode),
     };
 
-    private static ProviderError FromStatus(int status, Option<TimeSpan> retryAfter) => status switch
+    internal static ProviderError FromStatus(int status, Option<TimeSpan> retryAfter) => status switch
     {
         (int)HttpStatusCode.Unauthorized => ProviderErrorFactory.CreateAuthenticationRequired(),
         (int)HttpStatusCode.Forbidden => ProviderErrorFactory.CreateAccessDenied(),
         (int)HttpStatusCode.NotFound => ProviderErrorFactory.CreateNotFound(),
+        (int)HttpStatusCode.Conflict => ProviderErrorFactory.CreateNameConflict(),
+        (int)HttpStatusCode.PreconditionFailed => ProviderErrorFactory.CreatePreconditionFailed(),
+        (int)HttpStatusCode.RequestEntityTooLarge => ProviderErrorFactory.CreateFileTooLarge(),
+        (int)HttpStatusCode.InsufficientStorage => ProviderErrorFactory.CreateQuotaExceeded(),
         (int)HttpStatusCode.TooManyRequests or (int)HttpStatusCode.ServiceUnavailable => ProviderErrorFactory.CreateThrottled(retryAfter),
         >= 500 => ProviderErrorFactory.CreateTransient(),
         _ => ProviderErrorFactory.CreateUnexpected(),

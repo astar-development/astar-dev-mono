@@ -120,10 +120,13 @@ internal sealed class UploadPlanner(ISyncSelectionEvaluator evaluator) : IUpload
 
         return entry.Kind switch
         {
-            SyncBaselineKind.File file => snapshot.Kind is RemoteItemKind.File current && current.CTag == file.CTag ? Remove(deleted, snapshot.Id, file.ETag, conflict) : conflict,
+            SyncBaselineKind.File file => snapshot.Kind is RemoteItemKind.File current && current.CTag == file.CTag ? RemoveByContent(deleted, snapshot.Id, file.CTag, conflict) : conflict,
             _ => snapshot.Kind is RemoteItemKind.Folder && !HasUnseenChange(deleted.Path, baseline, remote) ? Remove(deleted, snapshot.Id, snapshot.ETag, conflict) : conflict,
         };
     }
+
+    private static Option<UploadPlanItem> RemoveByContent(LocalChange.Deleted deleted, RemoteItemId itemId, ContentTag cTag, Option<UploadPlanItem> conflict) =>
+        RemovePreconditionFactory.CreateMustMatchContent(cTag).Match(precondition => Some(UploadPlanItemFactory.CreateRemoveRemote(deleted.Path, itemId, precondition)), _ => conflict);
 
     private static Option<UploadPlanItem> Remove(LocalChange.Deleted deleted, RemoteItemId itemId, EntityTag eTag, Option<UploadPlanItem> conflict) =>
         RemovePreconditionFactory.CreateMustMatch(eTag).Match(precondition => Some(UploadPlanItemFactory.CreateRemoveRemote(deleted.Path, itemId, precondition)), _ => conflict);

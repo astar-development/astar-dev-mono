@@ -77,6 +77,7 @@ public sealed class UploadPassFixture : IDisposable
         var roots = new FixedSyncRootReader { Root = HasRoot ? Option.Some(FileSystem.DirectoryInfo.New("/sync")) : Option.None<System.IO.Abstractions.IDirectoryInfo>() };
         provider = new ServiceCollection()
             .AddLogging(logging => logging.ClearProviders().AddProvider(Logs))
+            .AddCloudSync()
             .AddSingleton<IAccountStore>(accounts)
             .AddSingleton<ISyncRootReader>(roots)
             .AddSingleton<ISelectionRuleReader>(new FixedSelectionRuleReader(Rules))
@@ -90,7 +91,6 @@ public sealed class UploadPassFixture : IDisposable
             .AddKeyedSingleton<IRemoteFolderCreator>(oneDrive, Folders)
             .AddKeyedSingleton<IRemoteItemRemover>(oneDrive, Remover)
             .AddKeyedSingleton<IRemoteNamePolicy>(oneDrive, Names)
-            .AddCloudSync()
             .BuildServiceProvider();
 
         return this;

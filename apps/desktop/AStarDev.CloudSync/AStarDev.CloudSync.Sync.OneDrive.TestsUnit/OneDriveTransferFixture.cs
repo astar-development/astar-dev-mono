@@ -62,6 +62,7 @@ public sealed class OneDriveTransferFixture : IDisposable
 
     public System.IO.Abstractions.IFileInfo File(string name, byte[] content)
     {
+        _ = FileSystem.Directory.CreateDirectory("/sync");
         FileSystem.File.WriteAllBytes($"/sync/{name}", content);
 
         return FileSystem.FileInfo.New($"/sync/{name}");

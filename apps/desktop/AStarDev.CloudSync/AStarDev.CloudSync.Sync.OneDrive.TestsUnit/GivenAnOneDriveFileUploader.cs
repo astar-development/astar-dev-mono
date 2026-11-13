@@ -384,5 +384,21 @@ public sealed class GivenAnOneDriveFileUploader : IDisposable
         messages.ShouldNotContain("secret-name");
     }
 
+    [Fact]
+    public async Task when_the_provider_keeps_accepting_a_fragment_without_moving_forward_then_the_upload_gives_up_with_a_transient_error()
+    {
+        _ = await BuiltAsync();
+        fixture.Graph.Respond = request => request.Method.Method switch
+        {
+            "POST" => RecordingGraphHandler.Json(HttpStatusCode.OK, SessionJson),
+            _ => RecordingGraphHandler.Json(HttpStatusCode.Accepted, "{\"nextExpectedRanges\":[\"0-\"]}"),
+        };
+
+        var result = await UploadAsync(Into("folder-1"), fixture.File("a.txt", Bytes(5)), MustNotExist);
+
+        Describe(result).ShouldBe("Transient");
+        fixture.Graph.Requests.Count.ShouldBeLessThan(12);
+    }
+
     public void Dispose() => fixture.Dispose();
 }
