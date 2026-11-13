@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync.Sync.Sqlite;
 
-/// <summary>Keeps the accounts' sync roots in the sync tables. A save reads every root, checks the candidate and writes it inside one immediate transaction, so two crossing changes never both succeed.</summary>
+/// <summary>Keeps the accounts' sync roots in the sync tables. A save reads every root, checks the candidate and writes it inside one immediate transaction, so two crossing changes never both succeed. Changing an account's root clears that account's baseline in the same transaction (#1520), so the next pass is a first sync and an empty new root never reads as everything deleted.</summary>
 /// <param name="dbContextFactory">Creates a database context per operation.</param>
 /// <param name="policy">Decides whether a candidate crosses another account's root.</param>
 /// <param name="homeFolder">The folder an account must not sync into.</param>
@@ -62,6 +62,9 @@ internal sealed class SqliteSyncRootStore(IDbContextFactory<SyncDbContext> dbCon
         return await checkedRoot.MatchAsync(
                 async accepted =>
                 {
+                    if (entities.Any(entity => entity.AccountId == accountId.Value && !string.Equals(entity.Path, accepted.Directory.FullName, StringComparison.Ordinal)))
+                        _ = await dbContext.SyncBaseline.Where(entry => entry.AccountId == accountId.Value).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+
                     _ = Upsert(dbContext, entities, accountId, accepted);
                     _ = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
                     await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
