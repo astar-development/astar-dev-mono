@@ -20,6 +20,11 @@ public static class QuarantineSnapshotFactory
     /// <param name="entries">The stored path states.</param>
     public static QuarantineSnapshot CreateResyncing(IEnumerable<KeyValuePair<RelativeSyncPath, PathQuarantineState>> entries) => Build(entries, PathQuarantineStateFactory.CreateResyncInProgress());
 
+    /// <summary>Creates a snapshot that keeps the basis' <see cref="QuarantineSnapshot.Baseline"/> and stored states and adds more states. A stronger stored state beats a clear one; between two non-clear states the basis' entry is kept.</summary>
+    /// <param name="basis">The snapshot to extend.</param>
+    /// <param name="entries">The states to add.</param>
+    public static QuarantineSnapshot Extend(QuarantineSnapshot basis, IEnumerable<KeyValuePair<RelativeSyncPath, PathQuarantineState>> entries) => Build(basis.Entries.Concat(entries ?? []), basis.Baseline);
+
     /// <summary>Creates a snapshot with no stored states.</summary>
     public static QuarantineSnapshot CreateEmpty() => Create([]);
 }
