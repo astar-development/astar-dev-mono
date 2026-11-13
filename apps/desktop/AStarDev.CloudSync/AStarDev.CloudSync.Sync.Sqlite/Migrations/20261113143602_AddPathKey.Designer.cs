@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
 {
     [DbContext(typeof(SyncDbContext))]
-    [Migration("20261113142423_AddPathKey")]
+    [Migration("20261113143602_AddPathKey")]
     partial class AddPathKey
     {
         /// <inheritdoc />
@@ -24,6 +24,9 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
                 {
                     b.Property<Guid>("AccountId")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset?>("CaughtUpAt")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Cursor")
