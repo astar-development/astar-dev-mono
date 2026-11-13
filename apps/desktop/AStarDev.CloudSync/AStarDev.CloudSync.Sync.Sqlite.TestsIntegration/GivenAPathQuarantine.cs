@@ -97,6 +97,17 @@ public sealed class GivenAPathQuarantine : IAsyncLifetime
         states.ShouldAllBe(state => state is PathQuarantineState.ResyncInProgress);
     }
 
+    [Fact]
+    public async Task when_the_token_is_already_cancelled_then_the_read_never_reports_clear()
+    {
+        using var source = new CancellationTokenSource();
+        await source.CancelAsync();
+
+        var outcome = await Record.ExceptionAsync(async () => (await Quarantine.ReadAsync(FirstAccount, source.Token)).Match(_ => throw new InvalidOperationException("A cancelled read must not succeed."), error => error));
+
+        (outcome is null || outcome is OperationCanceledException).ShouldBeTrue();
+    }
+
     private static RelativeSyncPath SyncPaths(string value) => RelativeSyncPathFactory.Create(value).Match(path => path, _ => throw new InvalidOperationException("The test path must be valid."));
 
     private async Task<PathQuarantineState> StateOf(AccountId account, string path)

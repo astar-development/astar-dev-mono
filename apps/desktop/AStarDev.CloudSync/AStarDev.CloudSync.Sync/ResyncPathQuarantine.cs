@@ -7,6 +7,6 @@ namespace AStarDev.CloudSync.Sync;
 public sealed class ResyncPathQuarantine(IRemoteIndexReader indexReader) : IPathQuarantine
 {
     /// <inheritdoc />
-    public Task<Result<QuarantineSnapshot, ErrorResponse>> ReadAsync(AccountId accountId, CancellationToken cancellationToken) =>
-        indexReader.GetResyncPassAsync(accountId, cancellationToken).MatchAsync(pass => Result.Success<QuarantineSnapshot, ErrorResponse>(pass.Match(_ => QuarantineSnapshotFactory.CreateResyncing([]), QuarantineSnapshotFactory.CreateEmpty)), Result.Failure<QuarantineSnapshot, ErrorResponse>);
+    public async Task<Result<QuarantineSnapshot, ErrorResponse>> ReadAsync(AccountId accountId, CancellationToken cancellationToken) =>
+        await indexReader.GetResyncPassAsync(accountId, cancellationToken).MatchAsync(pass => Result.Success<QuarantineSnapshot, ErrorResponse>(pass.Match(_ => QuarantineSnapshotFactory.CreateResyncing([]), QuarantineSnapshotFactory.CreateEmpty)), Result.Failure<QuarantineSnapshot, ErrorResponse>).ConfigureAwait(false);
 }

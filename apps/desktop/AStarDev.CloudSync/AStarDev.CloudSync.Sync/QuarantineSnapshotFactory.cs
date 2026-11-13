@@ -16,7 +16,7 @@ public static class QuarantineSnapshotFactory
         return new QuarantineSnapshot(byPath.AsReadOnly(), baseline);
     }
 
-    /// <summary>Creates a snapshot for an account whose resync is running: every path with no stronger stored state, and not skipped, reads as <see cref="PathQuarantineState.ResyncInProgress"/>.</summary>
+    /// <summary>Creates a snapshot for an account whose resync is running: every path with no stronger stored state, and not skipped, reads as <see cref="PathQuarantineState.ResyncInProgress"/>. Entries are merged as in <see cref="Create"/>.</summary>
     /// <param name="entries">The stored path states.</param>
     public static QuarantineSnapshot CreateResyncing(IEnumerable<KeyValuePair<RelativeSyncPath, PathQuarantineState>> entries) => Build(entries, PathQuarantineStateFactory.CreateResyncInProgress());
 

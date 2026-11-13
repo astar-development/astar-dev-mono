@@ -113,7 +113,7 @@ public class GivenAQuarantineSnapshot
     }
 
     [Fact]
-    public void when_the_snapshot_is_resyncing_then_no_path_is_allowed_a_sync_action()
+    public void when_a_resyncing_snapshot_is_given_no_entries_then_no_path_is_allowed_a_sync_action()
     {
         var snapshot = QuarantineSnapshotFactory.CreateResyncing(null!);
 
