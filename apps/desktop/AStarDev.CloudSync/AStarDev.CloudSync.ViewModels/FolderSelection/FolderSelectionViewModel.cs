@@ -12,7 +12,7 @@ public sealed class FolderSelectionViewModel : LocalizedObservableObject, IFolde
 {
     private readonly IFolderTreeSource tree;
     private readonly ISelectionRuleReader rules;
-    private readonly ISelectionRuleWriter writer;
+    private readonly ILeasedSelectionRuleWriter writer;
     private readonly ISyncSelectionEvaluator evaluator;
     private readonly ISyncPairReader pairReader;
     private readonly IAccountStore accounts;
@@ -35,7 +35,7 @@ public sealed class FolderSelectionViewModel : LocalizedObservableObject, IFolde
     /// <param name="pairReader">Tells which pairs have synced.</param>
     /// <param name="accounts">Lists the accounts to choose from and names the chosen one.</param>
     /// <param name="localization">Supplies the text.</param>
-    public FolderSelectionViewModel(IFolderTreeSource tree, ISelectionRuleReader rules, ISelectionRuleWriter writer, ISyncSelectionEvaluator evaluator, ISyncPairReader pairReader, IAccountStore accounts, ILocalizationService localization) : base(localization)
+    public FolderSelectionViewModel(IFolderTreeSource tree, ISelectionRuleReader rules, ILeasedSelectionRuleWriter writer, ISyncSelectionEvaluator evaluator, ISyncPairReader pairReader, IAccountStore accounts, ILocalizationService localization) : base(localization)
     {
         this.tree = tree;
         this.rules = rules;

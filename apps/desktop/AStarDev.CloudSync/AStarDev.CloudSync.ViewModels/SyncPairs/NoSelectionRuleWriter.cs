@@ -4,7 +4,7 @@ using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.ViewModels.SyncPairs;
 
-internal sealed class NoSelectionRuleWriter : ISelectionRuleWriter
+internal sealed class NoSelectionRuleWriter : ILeasedSelectionRuleWriter
 {
     private NoSelectionRuleWriter()
     {

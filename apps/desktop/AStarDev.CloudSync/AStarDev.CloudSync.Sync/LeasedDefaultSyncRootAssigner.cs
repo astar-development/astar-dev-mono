@@ -9,6 +9,18 @@ namespace AStarDev.CloudSync.Sync;
 internal sealed class LeasedDefaultSyncRootAssigner(AccountLeaseWaiter leases, DefaultSyncRootAssigner assigner) : IDefaultSyncRootAssigner
 {
     /// <inheritdoc />
-    public Task<Result<SyncRoot, SyncRootRejection>> AssignAsync(AccountId accountId, AccountRegistration registration, CancellationToken cancellationToken) =>
-        throw new NotImplementedException($"{leases}{assigner}{accountId}{registration}{cancellationToken}");
+    public async Task<Result<SyncRoot, SyncRootRejection>> AssignAsync(AccountId accountId, AccountRegistration registration, CancellationToken cancellationToken)
+    {
+        var lease = await leases.AcquireAsync(accountId, cancellationToken).ConfigureAwait(false);
+
+        return await lease.MatchAsync(held => AssignHoldingAsync(held, accountId, registration, cancellationToken), () => Result.Failure<SyncRoot, SyncRootRejection>(SyncRootRejectionFactory.CreateSyncStillRunning())).ConfigureAwait(false);
+    }
+
+    private async Task<Result<SyncRoot, SyncRootRejection>> AssignHoldingAsync(SyncLease lease, AccountId accountId, AccountRegistration registration, CancellationToken cancellationToken)
+    {
+        using (lease)
+        {
+            return await assigner.AssignAsync(accountId, registration, cancellationToken).ConfigureAwait(false);
+        }
+    }
 }
