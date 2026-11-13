@@ -21,6 +21,7 @@ internal sealed class SyncDbContext(DbContextOptions<SyncDbContext> options) : D
 
     public DbSet<RemoteCursorEntity> RemoteCursors => Set<RemoteCursorEntity>();
 
+    /// <summary>The accounts' sync baselines.</summary>
     public DbSet<SyncBaselineEntity> SyncBaseline => Set<SyncBaselineEntity>();
 
     /// <inheritdoc />

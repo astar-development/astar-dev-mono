@@ -14,6 +14,7 @@ internal sealed class SqliteSyncBaselineStore(IDbContextFactory<SyncDbContext> d
 {
     private const string Location = nameof(SqliteSyncBaselineStore);
     private const int ChunkSize = 500;
+    private const int MaxPageSize = 5000;
     private const char Separator = '/';
 
     /// <inheritdoc />
@@ -23,7 +24,7 @@ internal sealed class SqliteSyncBaselineStore(IDbContextFactory<SyncDbContext> d
 
     /// <inheritdoc />
     public Task<Result<IReadOnlyList<SyncBaselineEntry>, ErrorResponse>> GetUnderAsync(AccountId accountId, RelativeSyncPath under, Option<RelativeSyncPath> after, int limit, CancellationToken cancellationToken) =>
-        Try.RunAsync(() => ReadPageAsync(accountId, under.Value ?? string.Empty, after.Match(path => (string?)path.Value, () => null), Math.Max(limit, 1), cancellationToken), cancellationToken)
+        Try.RunAsync(() => ReadPageAsync(accountId, under.Value ?? string.Empty, after.Match(path => (string?)path.Value, () => null), Math.Clamp(limit, 1, MaxPageSize), cancellationToken), cancellationToken)
             .MatchAsync(page => Result.Success<IReadOnlyList<SyncBaselineEntry>, ErrorResponse>(page), exception => Failed<IReadOnlyList<SyncBaselineEntry>>(exception, "The baseline could not be read."));
 
     /// <inheritdoc />
@@ -41,22 +42,16 @@ internal sealed class SqliteSyncBaselineStore(IDbContextFactory<SyncDbContext> d
         Try.RunAsync(() => DeleteAccountAsync(accountId, cancellationToken), cancellationToken)
             .MatchAsync(Result.Success<Unit, ErrorResponse>, exception => Failed<Unit>(exception, "The account's baseline could not be removed."));
 
-    private static IEnumerable<SyncBaselineEntry> ToEntry(SyncBaselineEntity entity) =>
-        RelativeSyncPathFactory.Create(entity.Path).Match(
-            path => RemoteItemIdFactory.Create(entity.RemoteItemId).Match(itemId => KindOf(entity).Select(kind => SyncBaselineEntryFactory.Create(AccountIdFactory.Create(entity.AccountId), path, itemId, kind)), _ => []),
-            _ => []);
+    private static SyncBaselineEntry ToEntry(SyncBaselineEntity entity) =>
+        SyncBaselineEntryFactory.Create(AccountIdFactory.Create(entity.AccountId), Valid(RelativeSyncPathFactory.Create(entity.Path)), Valid(RemoteItemIdFactory.Create(entity.RemoteItemId)), KindOf(entity));
 
-    private static SyncBaselineKind[] KindOf(SyncBaselineEntity entity)
-    {
-        if (entity.IsFolder)
-            return [SyncBaselineKindFactory.CreateFolder()];
+    private static SyncBaselineKind KindOf(SyncBaselineEntity entity) => entity.IsFolder
+        ? SyncBaselineKindFactory.CreateFolder()
+        : SyncBaselineKindFactory.CreateFile(entity.Size ?? throw Corrupt(), entity.LastWriteUtc ?? throw Corrupt(), Valid(ContentHashFactory.Create(entity.Hash)), Valid(ContentTagFactory.Create(entity.CTag)), Valid(EntityTagFactory.Create(entity.ETag)));
 
-        return ContentHashFactory.Create(entity.Hash).Match(
-            hash => ContentTagFactory.Create(entity.CTag).Match(
-                cTag => EntityTagFactory.Create(entity.ETag).Match(eTag => new[] { SyncBaselineKindFactory.CreateFile(entity.Size ?? 0, entity.LastWriteUtc ?? DateTimeOffset.UnixEpoch, hash, cTag, eTag) }, _ => Array.Empty<SyncBaselineKind>()),
-                _ => []),
-            _ => []);
-    }
+    private static T Valid<T>(Result<T, ErrorResponse> value) => value.Match(valid => valid, _ => throw Corrupt());
+
+    private static InvalidDataException Corrupt() => new("A stored baseline row is invalid.");
 
     private static SyncBaselineEntity ToEntity(AccountId accountId, SyncBaselineEntry entry)
     {
@@ -95,7 +90,7 @@ internal sealed class SqliteSyncBaselineStore(IDbContextFactory<SyncDbContext> d
         var key = path.Value ?? string.Empty;
         var entity = await dbContext.SyncBaseline.AsNoTracking().Where(item => item.AccountId == accountId.Value && item.Path == key).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
 
-        return entity is null ? Option.None<SyncBaselineEntry>() : ToEntry(entity).Select(entry => Option.Some(entry)).FirstOrDefault(Option.None<SyncBaselineEntry>());
+        return entity is null ? Option.None<SyncBaselineEntry>() : Option.Some(ToEntry(entity));
     }
 
     private async Task<IReadOnlyList<SyncBaselineEntry>> ReadPageAsync(AccountId accountId, string under, string? after, int limit, CancellationToken cancellationToken)
@@ -113,7 +108,7 @@ internal sealed class SqliteSyncBaselineStore(IDbContextFactory<SyncDbContext> d
 
         var entities = await query.OrderBy(item => item.Path).Take(limit).ToListAsync(cancellationToken).ConfigureAwait(false);
 
-        return [.. entities.SelectMany(ToEntry)];
+        return [.. entities.Select(ToEntry)];
     }
 
     private async Task<Unit> SaveAsync(AccountId accountId, IReadOnlyList<SyncBaselineEntry> entries, CancellationToken cancellationToken)
@@ -126,9 +121,12 @@ internal sealed class SqliteSyncBaselineStore(IDbContextFactory<SyncDbContext> d
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using var transaction = await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken).ConfigureAwait(false);
         foreach (var chunk in latest.Values.Chunk(ChunkSize))
+        {
             await SaveChunkAsync(dbContext, accountId, chunk, cancellationToken).ConfigureAwait(false);
+            _ = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            dbContext.ChangeTracker.Clear();
+        }
 
-        _ = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
 
         return Unit.Instance;

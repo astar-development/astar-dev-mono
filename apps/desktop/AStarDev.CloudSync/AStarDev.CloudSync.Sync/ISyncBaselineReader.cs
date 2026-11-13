@@ -17,8 +17,8 @@ public interface ISyncBaselineReader
     /// <param name="accountId">The account.</param>
     /// <param name="under">The folder; the item itself and everything below it. The empty path reads the whole account.</param>
     /// <param name="after">Skip every path up to and including this one; none for the first page.</param>
-    /// <param name="limit">The most entries to return; below one it becomes one.</param>
+    /// <param name="limit">The most entries to return; below one it becomes one and above 5000 it becomes 5000.</param>
     /// <param name="cancellationToken">Cancels the read.</param>
-    /// <returns>The page, or the error that stopped the read. A failure is never an empty page.</returns>
+    /// <returns>The page, or the error that stopped the read. A failure is never an empty or short page: a stored row that is invalid fails the whole read.</returns>
     Task<Result<IReadOnlyList<SyncBaselineEntry>, ErrorResponse>> GetUnderAsync(AccountId accountId, RelativeSyncPath under, Option<RelativeSyncPath> after, int limit, CancellationToken cancellationToken);
 }
