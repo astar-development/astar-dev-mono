@@ -40,7 +40,7 @@ public sealed class GivenARemoteIndexStore : IAsyncLifetime
     {
         var applied = await Apply(FirstAccount, More("c1", Folder("a", "root-id", "Docs"), File("a1", "a", "one.txt")));
 
-        (Describe(applied), await CursorOf(FirstAccount)).ShouldBe((["Added:a", "Added:a1"], "c1"));
+        (Describe(applied), await CursorOf(FirstAccount)).ShouldBe(("Added:a,Added:a1", "c1"));
     }
 
     [Fact]
@@ -51,7 +51,7 @@ public sealed class GivenARemoteIndexStore : IAsyncLifetime
 
         var again = await Database.IndexWriter.ApplyPageAsync(FirstAccount, page, CancellationToken);
 
-        (Describe(again), (await Children(FirstAccount, Option.Some(Id("a")))).Count).ShouldBe(([], 1));
+        (Describe(again), (await Children(FirstAccount, Option.Some(Id("a")))).Count).ShouldBe(("", 1));
     }
 
     [Fact]
@@ -59,7 +59,7 @@ public sealed class GivenARemoteIndexStore : IAsyncLifetime
     {
         var applied = await Apply(FirstAccount, More("c1", File("f", "root-id", "old.txt"), File("f", "root-id", "new.txt")));
 
-        (Describe(applied), (await Item(FirstAccount, "f")).Match(found => found.Name, () => string.Empty)).ShouldBe((["Added:f"], "new.txt"));
+        (Describe(applied), (await Item(FirstAccount, "f")).Match(found => found.Name, () => string.Empty)).ShouldBe(("Added:f", "new.txt"));
     }
 
     [Fact]
@@ -70,7 +70,7 @@ public sealed class GivenARemoteIndexStore : IAsyncLifetime
 
         var applied = await Apply(FirstAccount, More("c2", Folder("a", "root-id", "Papers")));
 
-        (before, Describe(applied), await PathOf(FirstAccount, "f")).ShouldBe(("Docs/Work/one.txt", ["Moved:a"], "Papers/Work/one.txt"));
+        (before, Describe(applied), await PathOf(FirstAccount, "f")).ShouldBe(("Docs/Work/one.txt", "Moved:a", "Papers/Work/one.txt"));
     }
 
     [Fact]
@@ -91,7 +91,7 @@ public sealed class GivenARemoteIndexStore : IAsyncLifetime
 
         var applied = await Apply(FirstAccount, More("c2", File("f", "root-id", "one.txt", cTag: "c-1", eTag: "e-2")));
 
-        (Describe(applied), (await Item(FirstAccount, "f")).Match(found => found.ETag.Value, () => string.Empty)).ShouldBe(([], "e-2"));
+        (Describe(applied), (await Item(FirstAccount, "f")).Match(found => found.ETag.Value, () => string.Empty)).ShouldBe(("", "e-2"));
     }
 
     [Theory]
@@ -103,7 +103,7 @@ public sealed class GivenARemoteIndexStore : IAsyncLifetime
 
         var applied = await Apply(FirstAccount, More("c2", File("f", "root-id", "one.txt", cTag: cTag, hash: hash, eTag: "e-2")));
 
-        Describe(applied).ShouldBe(["Modified:f"]);
+        Describe(applied).ShouldBe("Modified:f");
     }
 
     [Fact]
@@ -114,7 +114,7 @@ public sealed class GivenARemoteIndexStore : IAsyncLifetime
         var applied = await Apply(FirstAccount, More("c2", Gone("f", "a")));
 
         var children = await Children(FirstAccount, Option.Some(Id("a")));
-        (Describe(applied), (await Item(FirstAccount, "f")).Match(found => found.Kind is RemoteItemKind.Deleted, () => false), children.Count).ShouldBe((["Deleted:f"], true, 0));
+        (Describe(applied), (await Item(FirstAccount, "f")).Match(found => found.Kind is RemoteItemKind.Deleted, () => false), children.Count).ShouldBe(("Deleted:f", true, 0));
     }
 
     [Fact]
@@ -124,7 +124,7 @@ public sealed class GivenARemoteIndexStore : IAsyncLifetime
 
         var applied = await Apply(FirstAccount, More("c2", Gone("a", "root-id")));
 
-        (Describe(applied).Order().ToList(), (await Children(FirstAccount, Option.None<RemoteItemId>())).Select(found => found.Id.Value).ToList()).ShouldBe((["Deleted:a", "Deleted:b", "Deleted:f", "Deleted:g"], ["other"]));
+        (DescribeSorted(applied), string.Join(',', (await Children(FirstAccount, Option.None<RemoteItemId>())).Select(found => found.Id.Value))).ShouldBe(("Deleted:a,Deleted:b,Deleted:f,Deleted:g", "other"));
     }
 
     [Fact]
@@ -134,7 +134,7 @@ public sealed class GivenARemoteIndexStore : IAsyncLifetime
 
         var applied = await Apply(FirstAccount, More("c2", Gone("a", "root-id"), File("f", "b", "one.txt")));
 
-        (Describe(applied).Order().ToList(), (await Item(FirstAccount, "f")).Match(found => found.Kind is RemoteItemKind.File, () => false)).ShouldBe((["Deleted:a", "Moved:f"], true));
+        (DescribeSorted(applied), (await Item(FirstAccount, "f")).Match(found => found.Kind is RemoteItemKind.File, () => false)).ShouldBe(("Deleted:a,Moved:f", true));
     }
 
     [Fact]
@@ -145,7 +145,7 @@ public sealed class GivenARemoteIndexStore : IAsyncLifetime
 
         var applied = await Apply(FirstAccount, More("c3", File("f", "root-id", "one.txt")));
 
-        (Describe(applied), (await Children(FirstAccount, Option.None<RemoteItemId>())).Count).ShouldBe((["Added:f"], 1));
+        (Describe(applied), (await Children(FirstAccount, Option.None<RemoteItemId>())).Count).ShouldBe(("Added:f", 1));
     }
 
     [Fact]
@@ -207,7 +207,7 @@ public sealed class GivenARemoteIndexStore : IAsyncLifetime
 
         var retried = await Database.IndexWriter.ApplyPageAsync(FirstAccount, page, CancellationToken);
 
-        (failed.Match(_ => true, _ => false), Describe(retried), await CursorOf(FirstAccount)).ShouldBe((false, ["Added:f"], "c1"));
+        (failed.Match(_ => true, _ => false), Describe(retried), await CursorOf(FirstAccount)).ShouldBe((false, "Added:f", "c1"));
     }
 
     [Fact]
@@ -244,7 +244,7 @@ public sealed class GivenARemoteIndexStore : IAsyncLifetime
         var completed = await Database.IndexWriter.CompleteResyncAsync(FirstAccount, CancellationToken);
 
         var running = await Database.IndexReader.GetResyncPassAsync(FirstAccount, CancellationToken);
-        (pass.Match(_ => true, _ => false), Describe(completed), running.Match(found => found.Match(_ => true, () => false), _ => true), (await Children(FirstAccount, Option.None<RemoteItemId>())).Select(found => found.Id.Value).ToList()).ShouldBe((true, ["Deleted:gone"], false, ["keep"]));
+        (pass.Match(_ => true, _ => false), Describe(completed), running.Match(found => found.Match(_ => true, () => false), _ => true), string.Join(',', (await Children(FirstAccount, Option.None<RemoteItemId>())).Select(found => found.Id.Value))).ShouldBe((true, "Deleted:gone", false, "keep"));
     }
 
     [Fact]
@@ -267,7 +267,7 @@ public sealed class GivenARemoteIndexStore : IAsyncLifetime
 
         var completed = await Database.IndexWriter.CompleteResyncAsync(FirstAccount, CancellationToken);
 
-        (Describe(completed), (await Children(FirstAccount, Option.None<RemoteItemId>())).Count).ShouldBe(([], 1));
+        (Describe(completed), (await Children(FirstAccount, Option.None<RemoteItemId>())).Count).ShouldBe(("", 1));
     }
 
     [Fact]
@@ -307,7 +307,11 @@ public sealed class GivenARemoteIndexStore : IAsyncLifetime
 
     private static RemoteChangePage Caught(string cursor, params RemoteItemSnapshot[] items) => RemoteChangePageFactory.Create(items, PageContinuationFactory.CreateCaughtUp(Cursor(cursor)));
 
-    private static List<string> Describe(Result<RemoteIndexDelta, ErrorResponse> result) => result.Match(
+    private static string Describe(Result<RemoteIndexDelta, ErrorResponse> result) => string.Join(',', Changes(result));
+
+    private static string DescribeSorted(Result<RemoteIndexDelta, ErrorResponse> result) => string.Join(',', Changes(result).Order(StringComparer.Ordinal));
+
+    private static IEnumerable<string> Changes(Result<RemoteIndexDelta, ErrorResponse> result) => result.Match(
         delta => delta.Changes.Select(change => change switch
         {
             RemoteChange.Added added => $"Added:{added.Item.Id.Value}",
@@ -315,7 +319,7 @@ public sealed class GivenARemoteIndexStore : IAsyncLifetime
             RemoteChange.Moved moved => $"Moved:{moved.Item.Id.Value}",
             RemoteChange.Deleted deleted => $"Deleted:{deleted.Id.Value}",
             _ => "unknown",
-        }).ToList(),
+        }),
         error => [$"error:{error.Message}"]);
 
     private Task<Result<RemoteIndexDelta, ErrorResponse>> Apply(AccountId account, RemoteChangePage page) => Database.IndexWriter.ApplyPageAsync(account, page, CancellationToken);
