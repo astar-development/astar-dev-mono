@@ -262,7 +262,7 @@ public sealed class GivenASyncBaselineStore : IAsyncLifetime
         await using var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = Database.DatabasePath }.ToString());
         await connection.OpenAsync(CancellationToken);
         await using var command = connection.CreateCommand();
-        command.CommandText = "INSERT INTO SyncBaseline (AccountId, Path, RemoteItemId, IsFolder) VALUES ($account, $path, 'corrupt', 0)";
+        command.CommandText = "INSERT INTO SyncBaseline (AccountId, Path, PathKey, RemoteItemId, IsFolder) VALUES ($account, $path, upper($path), 'corrupt', 0)";
         _ = command.Parameters.AddWithValue("$account", FirstAccount.Value.ToString().ToUpperInvariant());
         _ = command.Parameters.AddWithValue("$path", path);
         _ = await command.ExecuteNonQueryAsync(CancellationToken);
@@ -280,5 +280,37 @@ public sealed class GivenASyncBaselineStore : IAsyncLifetime
         var read = await Database.BaselineReader.GetUnderAsync(account, under.Length == 0 ? default : Path(under), after, limit, CancellationToken);
 
         return read.Match(page => page, _ => throw new InvalidOperationException("The read must succeed."));
+    }
+
+    [Fact]
+    public async Task when_an_entry_is_saved_again_in_another_non_ascii_casing_then_the_row_is_updated_not_duplicated()
+    {
+        _ = await Database.BaselineWriter.UpsertAsync(FirstAccount, [FileEntry(FirstAccount, "Docs/\u00c9t\u00e9.txt", "item-1", hash: "h1")], CancellationToken);
+        _ = await Database.BaselineWriter.UpsertAsync(FirstAccount, [FileEntry(FirstAccount, "docs/\u00e9T\u00c9.TXT", "item-1", hash: "h2")], CancellationToken);
+
+        var page = await Page(FirstAccount, "", Option.None<RelativeSyncPath>(), 100);
+
+        page.Select(entry => ((SyncBaselineKind.File)entry.Kind).Hash.Value).ShouldBe(["h2"]);
+    }
+
+    [Fact]
+    public async Task when_a_non_ascii_path_is_read_in_another_casing_then_the_entry_is_found_and_listed_under_its_folder()
+    {
+        _ = await Database.BaselineWriter.UpsertAsync(FirstAccount, [FolderEntry(FirstAccount, "\u00c9coles", "folder-1"), FileEntry(FirstAccount, "\u00c9coles/\u00c9l\u00e8ve.txt", "item-1")], CancellationToken);
+
+        var found = await Database.BaselineReader.GetAsync(FirstAccount, Path("\u00e9coles/\u00e9L\u00c8VE.txt"), CancellationToken);
+        var under = await Page(FirstAccount, "\u00e9COLES", Option.None<RelativeSyncPath>(), 100);
+
+        (found.Match(option => option.Match(_ => true, () => false), _ => false), under.Count).ShouldBe((true, 2));
+    }
+
+    [Fact]
+    public async Task when_a_non_ascii_path_is_removed_in_another_casing_then_the_entry_is_gone()
+    {
+        _ = await Database.BaselineWriter.UpsertAsync(FirstAccount, [FileEntry(FirstAccount, "\u00c9t\u00e9.txt", "item-1")], CancellationToken);
+
+        _ = await Database.BaselineWriter.RemoveAsync(FirstAccount, [Path("\u00e9T\u00c9.TXT")], CancellationToken);
+
+        (await Page(FirstAccount, "", Option.None<RelativeSyncPath>(), 100)).ShouldBeEmpty();
     }
 }

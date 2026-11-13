@@ -164,4 +164,15 @@ public sealed class GivenASelectionRuleStore : IAsyncLifetime
     private static SelectionChange Exclude(string path) => SelectionChangeFactory.CreateExcludeFolder(Path(path), Option.None<RemoteItemId>());
 
     private Task<Result<Unit, ErrorResponse>> Apply(AccountId accountId, params SelectionChange[] changes) => Database.RuleWriter.ApplyAsync(accountId, changes, CancellationToken);
+
+    [Fact]
+    public async Task when_a_rule_is_set_again_in_another_non_ascii_casing_then_one_rule_remains()
+    {
+        _ = await Apply(FirstAccount, Include("\u00c9t\u00e9"));
+        _ = await Apply(FirstAccount, Exclude("\u00e9T\u00c9"));
+
+        var rules = (await Database.Rules.GetAsync(FirstAccount, CancellationToken)).Match(found => found, _ => []);
+
+        rules.Select(rule => rule.Kind).ShouldBe([SelectionRuleKindFactory.CreateExclude()]);
+    }
 }

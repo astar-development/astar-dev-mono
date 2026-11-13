@@ -199,4 +199,14 @@ public sealed class GivenASyncRootStore : IAsyncLifetime
         (await Database.BaselineReader.GetUnderAsync(accountId, default, Option.None<RelativeSyncPath>(), 100, CancellationToken)).Match(page => page.Count, _ => -1);
 
     private static RelativeSyncPath RelativePath(string value) => RelativeSyncPathFactory.Create(value).Match(path => path, _ => throw new InvalidOperationException("The test path must be valid."));
+
+    [Fact]
+    public async Task when_a_root_differs_from_another_accounts_root_only_in_non_ascii_casing_then_it_is_rejected()
+    {
+        _ = await Database.Writer.SetAsync(FirstAccount, Database.Folder("/home/jbarden/CloudSync/\u00c9t\u00e9"), CancellationToken);
+
+        var set = await Database.Writer.SetAsync(SecondAccount, Database.Folder("/home/jbarden/CloudSync/\u00e9T\u00c9"), CancellationToken);
+
+        set.Match(_ => "saved", _ => "rejected").ShouldBe("rejected");
+    }
 }
