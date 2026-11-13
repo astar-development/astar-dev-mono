@@ -14,7 +14,7 @@ public sealed class SyncPairViewModel : LocalizedObservableObject
     private readonly SyncPair pair;
     private readonly CloudAccount account;
     private readonly TimeProvider timeProvider;
-    private readonly ISelectionRuleWriter ruleWriter;
+    private readonly ILeasedSelectionRuleWriter ruleWriter;
     private bool failed;
 
     /// <summary>Creates the view model without a way to change the pair's direction (previews and tests that do not use it).</summary>
@@ -33,7 +33,7 @@ public sealed class SyncPairViewModel : LocalizedObservableObject
     /// <param name="reload">Reloads the overview once the new direction is saved.</param>
     /// <param name="localization">Supplies the text and culture.</param>
     /// <param name="timeProvider">Supplies the current time for relative times.</param>
-    public SyncPairViewModel(SyncPair pair, CloudAccount account, ISelectionRuleWriter ruleWriter, Func<CancellationToken, Task> reload, ILocalizationService localization, TimeProvider timeProvider) : base(localization)
+    public SyncPairViewModel(SyncPair pair, CloudAccount account, ILeasedSelectionRuleWriter ruleWriter, Func<CancellationToken, Task> reload, ILocalizationService localization, TimeProvider timeProvider) : base(localization)
     {
         this.pair = pair;
         this.account = account;

@@ -1,6 +1,7 @@
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.TestHelpers.Accounts;
 using AStarDev.CloudSync.TestHelpers.Common;
+using AStarDev.FunctionalParadigm;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
@@ -11,10 +12,11 @@ public sealed class AccountServices : IDisposable
 {
     private readonly ServiceProvider provider;
 
-    public AccountServices(IAccountStore? store = null)
+    public AccountServices(IAccountStore? store = null, WriteGate? gate = null)
     {
         Store = store ?? new InMemoryAccountStore();
         SyncRoots = new InMemorySyncRootStore(new SyncRootPolicy());
+        Rules = new FakeSelectionRuleWriter();
         SignOut = new FakeProviderSignOut(Steps);
         Cache = new FakeRemovalParticipant(Steps, "token-cache");
         Sync = new FakeRemovalParticipant(Steps, "sync-data");
@@ -22,7 +24,11 @@ public sealed class AccountServices : IDisposable
             .AddLogging(logging => logging.ClearProviders().AddProvider(Logs))
             .AddSingleton<TimeProvider>(Time)
             .AddSingleton(Store)
-            .AddSingleton<ISyncRootWriter>(SyncRoots)
+            .AddSingleton<ISyncRootReader>(SyncRoots)
+            .AddSingleton<ISyncRootWriter>(gate is null ? SyncRoots : new GatedSyncRootWriter(SyncRoots, gate))
+            .AddSingleton<ISelectionRuleWriter>(gate is null ? Rules : new GatedSelectionRuleWriter(Rules, gate))
+            .AddSingleton<ISyncRootPolicy>(new SyncRootPolicy())
+            .AddSingleton<IHomeFolder>(new TestHomeFolder(Option.Some(FileSystem.DirectoryInfo.New("/home/jbarden"))))
             .AddKeyedSingleton<IProviderSignOut>(CloudProviderFactory.CreateOneDrive(), SignOut)
             .AddKeyedSingleton<IAccountReauthenticator>(CloudProviderFactory.CreateOneDrive(), Reauthenticator)
             .AddKeyedSingleton<IAccountSignInProbe>(CloudProviderFactory.CreateOneDrive(), Probe)
@@ -35,6 +41,8 @@ public sealed class AccountServices : IDisposable
     public List<string> Steps { get; } = [];
 
     public InMemorySyncRootStore SyncRoots { get; }
+
+    public FakeSelectionRuleWriter Rules { get; }
 
     public Testably.Abstractions.Testing.MockFileSystem FileSystem { get; } = new(options => options.SimulatingOperatingSystem(Testably.Abstractions.Testing.SimulationMode.Linux));
 
@@ -53,6 +61,10 @@ public sealed class AccountServices : IDisposable
     public FakeTimeProvider Time { get; } = new(new DateTimeOffset(2026, 11, 9, 9, 0, 0, TimeSpan.Zero));
 
     public RecordingLoggerProvider Logs { get; } = new();
+
+    public ILeasedSelectionRuleWriter LeasedRules => provider.GetRequiredService<ILeasedSelectionRuleWriter>();
+
+    public IDefaultSyncRootAssigner RootAssigner => provider.GetRequiredService<IDefaultSyncRootAssigner>();
 
     public IAccountActions Actions => provider.GetRequiredService<IAccountActions>();
 

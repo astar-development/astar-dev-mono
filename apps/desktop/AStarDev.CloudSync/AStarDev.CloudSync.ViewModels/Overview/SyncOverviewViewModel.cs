@@ -21,7 +21,7 @@ namespace AStarDev.CloudSync.ViewModels.Overview;
 /// <param name="localization">Supplies the text and culture.</param>
 /// <param name="timeProvider">Supplies the current time for relative times.</param>
 /// <param name="logger">Reports an overview that cannot be read.</param>
-public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ISyncActions syncActions, IAccountCommands accountCommands, ISelectionRuleWriter ruleWriter, ILocalizationService localization, TimeProvider timeProvider, ILogger<SyncOverviewViewModel> logger) : LocalizedObservableObject(localization)
+public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ISyncActions syncActions, IAccountCommands accountCommands, ILeasedSelectionRuleWriter ruleWriter, ILocalizationService localization, TimeProvider timeProvider, ILogger<SyncOverviewViewModel> logger) : LocalizedObservableObject(localization)
 {
     /// <summary>Builds the overview without account actions (previews and tests that do not use them).</summary>
     /// <param name="source">Reads the overview.</param>

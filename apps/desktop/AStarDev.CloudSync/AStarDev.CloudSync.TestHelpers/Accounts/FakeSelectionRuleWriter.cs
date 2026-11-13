@@ -4,7 +4,7 @@ using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.TestHelpers.Accounts;
 
-public sealed class FakeSelectionRuleWriter : ISelectionRuleWriter
+public sealed class FakeSelectionRuleWriter : ISelectionRuleWriter, ILeasedSelectionRuleWriter
 {
     private readonly List<IReadOnlyList<SelectionChange>> applied = [];
 
