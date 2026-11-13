@@ -43,6 +43,12 @@ public sealed class TemporarySyncDatabase : IAsyncDisposable
 
     public IAccountRemovalParticipant IndexParticipant => serviceProvider.GetServices<IAccountRemovalParticipant>().First(participant => participant.GetType().Name == "SqliteRemoteIndexStore");
 
+    public ISyncBaselineReader BaselineReader => serviceProvider.GetRequiredService<ISyncBaselineReader>();
+
+    public ISyncBaselineWriter BaselineWriter => serviceProvider.GetRequiredService<ISyncBaselineWriter>();
+
+    public IAccountRemovalParticipant BaselineParticipant => serviceProvider.GetServices<IAccountRemovalParticipant>().First(participant => participant.GetType().Name == "SqliteSyncBaselineStore");
+
     public ISyncRootReader Reader => serviceProvider.GetRequiredService<ISyncRootReader>();
 
     public ISyncRootWriter Writer => serviceProvider.GetRequiredService<ISyncRootWriter>();

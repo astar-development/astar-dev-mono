@@ -190,6 +190,42 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
                     b.ToTable("SyncAttentionPaths", (string)null);
                 });
 
+            modelBuilder.Entity("AStarDev.CloudSync.Sync.Sqlite.SyncBaselineEntity", b =>
+                {
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Path")
+                        .HasColumnType("TEXT")
+                        .UseCollation("NOCASE");
+
+                    b.Property<string>("CTag")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ETag")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Hash")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsFolder")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTimeOffset?>("LastWriteUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RemoteItemId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<long?>("Size")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("AccountId", "Path");
+
+                    b.ToTable("SyncBaseline", (string)null);
+                });
+
             modelBuilder.Entity("AStarDev.CloudSync.Sync.Sqlite.SyncRootEntity", b =>
                 {
                     b.Property<Guid>("AccountId")
