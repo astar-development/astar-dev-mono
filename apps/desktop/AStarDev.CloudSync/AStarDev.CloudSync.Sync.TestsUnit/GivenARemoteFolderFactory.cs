@@ -1,3 +1,5 @@
+using AStarDev.FunctionalParadigm;
+
 namespace AStarDev.CloudSync.Sync.TestsUnit;
 
 public class GivenARemoteFolderFactory
@@ -24,6 +26,25 @@ public class GivenARemoteFolderFactory
         var folder = RemoteFolderFactory.Create(RemoteIds.Of("folder-1"), "Jane Doe Tax Returns", RemoteIds.Of("root"), RemoteFolderChildrenFactory.CreateNoChildFolders());
 
         folder.ToString().ShouldNotContain("Jane");
+    }
+
+    [Fact]
+    public void when_a_folder_is_created_without_a_version_then_it_has_none()
+    {
+        var folder = RemoteFolderFactory.Create(RemoteIds.Of("folder-1"), "Documents", RemoteIds.Of("root"), RemoteFolderChildrenFactory.CreateNoChildFolders());
+
+        folder.Version.Match(_ => true, () => false).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void when_a_folder_is_created_with_a_version_then_it_carries_the_entity_tag_and_modified_time()
+    {
+        var modified = new DateTimeOffset(2026, 11, 14, 8, 0, 0, TimeSpan.Zero);
+
+        var folder = RemoteFolderFactory.Create(RemoteIds.Of("folder-1"), "  Documents ", RemoteIds.Of("root"), RemoteFolderChildrenFactory.CreateNoChildFolders(), RemoteFolderVersionFactory.Create(new EntityTag("fe1"), modified));
+
+        folder.Name.ShouldBe("Documents");
+        folder.Version.Match(version => (version.ETag.Value, version.LastModified), () => ("none", DateTimeOffset.MinValue)).ShouldBe(("fe1", modified));
     }
 
     [Theory]

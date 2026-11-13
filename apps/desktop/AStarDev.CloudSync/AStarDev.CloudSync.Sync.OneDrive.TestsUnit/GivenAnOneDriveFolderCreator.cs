@@ -11,9 +11,11 @@ public sealed class GivenAnOneDriveFolderCreator : IDisposable
 
     private static Option<RemoteItemId> Parent(string id) => RemoteItemIdFactory.Create(id).Match(Option.Some, _ => Option.None<RemoteItemId>());
 
-    private static string FolderJson(string id, string name, string parent) => "{\"id\":\"" + id + "\",\"name\":\"" + name + "\",\"parentReference\":{\"id\":\"" + parent + "\"},\"folder\":{\"childCount\":0}}";
+    private static string FolderJson(string id, string name, string parent, string eTag = "fe1") => "{\"id\":\"" + id + "\",\"name\":\"" + name + "\",\"eTag\":\"" + eTag + "\",\"lastModifiedDateTime\":\"2026-11-14T08:00:00Z\",\"parentReference\":{\"id\":\"" + parent + "\"},\"folder\":{\"childCount\":0}}";
 
     private static string Describe(Result<RemoteFolder, ProviderError> result) => result.Match(folder => $"ok {folder.Id.Value} {folder.Name} {folder.ParentId.Value}", error => error.GetType().Name);
+
+    private static string VersionOf(Result<RemoteFolder, ProviderError> result) => result.Match(folder => folder.Version.Match(version => $"{version.ETag.Value} {version.LastModified:O}", () => "no version"), error => error.GetType().Name);
 
     [Fact]
     public async Task when_a_folder_is_created_then_the_post_asks_to_fail_on_a_name_clash_and_the_new_folder_is_returned()
@@ -58,6 +60,45 @@ public sealed class GivenAnOneDriveFolderCreator : IDisposable
         Describe(result).ShouldBe("ok existing New p1");
         fixture.Graph.Requests[1].Method.ShouldBe(HttpMethod.Get);
         fixture.Graph.Requests[1].Url.AbsolutePath.ShouldBe($"{OneDriveTransferFixture.Items}p1:/New");
+    }
+
+    [Fact]
+    public async Task when_a_folder_is_created_then_the_entity_tag_and_modified_time_of_the_response_are_returned()
+    {
+        _ = await fixture.BuildAsync(CancellationToken);
+        fixture.Graph.Respond = _ => RecordingGraphHandler.Json(HttpStatusCode.Created, FolderJson("f1", "New", "p1", "created-tag"));
+
+        var result = await fixture.Folders.EnsureFolderAsync(fixture.Account, Parent("p1"), "New", CancellationToken);
+
+        VersionOf(result).ShouldBe("created-tag 2026-11-14T08:00:00.0000000+00:00");
+    }
+
+    [Fact]
+    public async Task when_the_folder_already_exists_then_the_entity_tag_of_the_looked_up_folder_is_returned()
+    {
+        _ = await fixture.BuildAsync(CancellationToken);
+        fixture.Graph.Respond = request => request.Method == HttpMethod.Post
+            ? RecordingGraphHandler.Json(HttpStatusCode.Conflict, "{\"error\":{\"code\":\"nameAlreadyExists\"}}")
+            : RecordingGraphHandler.Json(HttpStatusCode.OK, FolderJson("existing", "New", "p1", "existing-tag"));
+
+        var result = await fixture.Folders.EnsureFolderAsync(fixture.Account, Parent("p1"), "New", CancellationToken);
+
+        VersionOf(result).ShouldBe("existing-tag 2026-11-14T08:00:00.0000000+00:00");
+    }
+
+    [Theory]
+    [InlineData("{\"id\":\"f1\",\"name\":\"New\",\"lastModifiedDateTime\":\"2026-11-14T08:00:00Z\",\"parentReference\":{\"id\":\"p1\"},\"folder\":{\"childCount\":0}}")]
+    [InlineData("{\"id\":\"f1\",\"name\":\"New\",\"eTag\":\" \",\"lastModifiedDateTime\":\"2026-11-14T08:00:00Z\",\"parentReference\":{\"id\":\"p1\"},\"folder\":{\"childCount\":0}}")]
+    [InlineData("{\"id\":\"f1\",\"name\":\"New\",\"eTag\":\"fe1\",\"parentReference\":{\"id\":\"p1\"},\"folder\":{\"childCount\":0}}")]
+    [InlineData("{\"id\":\"f1\",\"name\":\"New\",\"eTag\":\"fe1\",\"lastModifiedDateTime\":\"yesterday\",\"parentReference\":{\"id\":\"p1\"},\"folder\":{\"childCount\":0}}")]
+    public async Task when_the_response_has_no_usable_entity_tag_or_modified_time_then_the_creator_fails_and_never_makes_one_up(string json)
+    {
+        _ = await fixture.BuildAsync(CancellationToken);
+        fixture.Graph.Respond = _ => RecordingGraphHandler.Json(HttpStatusCode.Created, json);
+
+        var result = await fixture.Folders.EnsureFolderAsync(fixture.Account, Parent("p1"), "New", CancellationToken);
+
+        Describe(result).ShouldBe("Unexpected");
     }
 
     [Fact]

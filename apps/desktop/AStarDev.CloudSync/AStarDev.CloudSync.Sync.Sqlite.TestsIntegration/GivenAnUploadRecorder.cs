@@ -44,6 +44,24 @@ public sealed class GivenAnUploadRecorder : IAsyncLifetime
     }
 
     [Fact]
+    public async Task when_a_created_folder_is_recorded_then_its_baseline_row_and_remote_index_row_both_exist_and_the_next_delta_sees_no_change()
+    {
+        _ = await Database.IndexWriter.ApplyPageAsync(Account, Caught("c0", Folder("docs", "root", "Docs")), CancellationToken);
+        var baselineRow = SyncBaselineEntryFactory.Create(Account, SyncPaths.Of("Docs/New"), Id("new-folder"), SyncBaselineKindFactory.CreateFolder());
+        var indexRow = RemoteItemSnapshotFactory.Create(Id("new-folder"), Option.Some(Id("docs")), "New", RemoteItemKindFactory.CreateFolder(), WrittenAt, ETag("fe-new"));
+
+        var recorded = await Database.UploadRecorder.RecordAsync(Account, baselineRow, indexRow, CancellationToken);
+
+        recorded.Match(_ => true, _ => false).ShouldBeTrue();
+        var baseline = await Database.BaselineReader.GetAsync(Account, SyncPaths.Of("Docs/New"), CancellationToken);
+        baseline.Match(option => option.Match(entry => entry.Kind is SyncBaselineKind.Folder, () => false), _ => false).ShouldBeTrue();
+        var remote = await Database.IndexReader.GetAsync(Account, Id("new-folder"), CancellationToken);
+        remote.Match(option => option.Match(item => item.ETag.Value, () => "none"), _ => "failed").ShouldBe("fe-new");
+        var echo = await Database.IndexWriter.ApplyPageAsync(Account, Caught("c1", indexRow), CancellationToken);
+        echo.Match(delta => delta.Changes.Count, _ => -1).ShouldBe(0);
+    }
+
+    [Fact]
     public async Task when_the_next_delta_returns_the_item_we_just_uploaded_then_the_index_sees_no_change()
     {
         _ = await Database.IndexWriter.ApplyPageAsync(Account, Caught("c0", Folder("docs", "root", "Docs")), CancellationToken);
