@@ -84,7 +84,7 @@ internal sealed class DownloadExecutor(DownloadFileStep fileStep, ILocalFileOper
     {
         foreach (var chunk in downloads.Chunk(options.BaselineChunkSize))
         {
-            var flushed = Result.Success<Unit, ErrorResponse>(Unit.Instance);
+            Result<Unit, ErrorResponse> flushed;
             try
             {
                 await Parallel.ForEachAsync(chunk, new ParallelOptions { MaxDegreeOfParallelism = options.MaxConcurrentDownloads, CancellationToken = cancellationToken }, (item, token) => DownloadOneAsync(item, run, token)).ConfigureAwait(false);

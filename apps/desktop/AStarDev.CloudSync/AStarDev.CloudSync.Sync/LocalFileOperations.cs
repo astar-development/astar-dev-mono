@@ -68,8 +68,10 @@ internal sealed class LocalFileOperations(TimeProvider timeProvider) : ILocalFil
 
     private async Task<Result<Unit, LocalOperationFailure>> WithRetryAsync(Func<Exceptional<Unit>> operation, CancellationToken cancellationToken)
     {
-        for (var attempt = 1; ; attempt++)
+        var attempt = 0;
+        while (true)
         {
+            attempt++;
             var failure = operation().Match(_ => Option.None<LocalOperationFailure>(), error => Option.Some(Map(error)));
             if (failure.Match(found => found is not LocalOperationFailure.Locked || attempt == MaxAttempts, () => true))
                 return failure.Match(Result.Failure<Unit, LocalOperationFailure>, () => Result.Success<Unit, LocalOperationFailure>(Unit.Instance));
