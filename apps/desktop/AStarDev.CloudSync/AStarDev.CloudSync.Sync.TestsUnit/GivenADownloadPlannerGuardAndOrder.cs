@@ -99,12 +99,11 @@ public class GivenADownloadPlannerGuardAndOrder
     }
 
     [Fact]
-    public void when_two_items_differ_only_in_case_then_one_item_is_planned_and_a_conflict_wins()
+    public void when_two_items_differ_only_in_case_then_one_item_is_planned()
     {
         var scenario = new DownloadScenario().RemoteFile("Docs/Report.txt", "a", "c1").RemoteFile("Docs/REPORT.txt", "b", "c1").LocalAdded("Docs/report.txt");
 
-        scenario.Describe().Count.ShouldBe(1);
-        scenario.Describe()[0].ShouldStartWith("conflict");
+        scenario.Describe().Select(line => line[..^"Report.txt".Length].ToUpperInvariant()).ShouldBe(["CONFLICT BOTHADDED DOCS/"]);
     }
 
     [Fact]
