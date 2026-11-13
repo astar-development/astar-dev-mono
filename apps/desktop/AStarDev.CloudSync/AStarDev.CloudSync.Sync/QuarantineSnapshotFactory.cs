@@ -14,6 +14,10 @@ public static class QuarantineSnapshotFactory
         return new QuarantineSnapshot(byPath.AsReadOnly());
     }
 
+    /// <summary>Creates a snapshot for an account whose resync is running: every path with no stronger stored state, and not skipped, reads as <see cref="PathQuarantineState.ResyncInProgress"/>.</summary>
+    /// <param name="entries">The stored path states.</param>
+    public static QuarantineSnapshot CreateResyncing(IEnumerable<KeyValuePair<RelativeSyncPath, PathQuarantineState>> entries) => throw new NotImplementedException($"{nameof(entries)} are not yet read.");
+
     /// <summary>Creates a snapshot with no stored states.</summary>
     public static QuarantineSnapshot CreateEmpty() => Create([]);
 }

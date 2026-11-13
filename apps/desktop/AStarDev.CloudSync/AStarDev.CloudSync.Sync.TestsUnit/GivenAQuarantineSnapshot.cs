@@ -77,6 +77,49 @@ public class GivenAQuarantineSnapshot
         snapshot.StateOf(default).ShouldBe(PathQuarantineStateFactory.CreateSkipped());
     }
 
+    [Theory]
+    [InlineData("Documents/Report.docx")]
+    [InlineData("documents/REPORT.docx")]
+    [InlineData("Photos")]
+    public void when_the_snapshot_is_resyncing_then_a_path_with_no_entry_is_resync_in_progress(string value)
+    {
+        var snapshot = QuarantineSnapshotFactory.CreateResyncing([]);
+
+        snapshot.StateOf(SyncPaths.Of(value)).ShouldBe(PathQuarantineStateFactory.CreateResyncInProgress());
+    }
+
+    [Fact]
+    public void when_the_snapshot_is_resyncing_then_a_skipped_path_stays_skipped()
+    {
+        var snapshot = QuarantineSnapshotFactory.CreateResyncing([]);
+
+        snapshot.StateOf(SyncPaths.Of(".obsidian/workspace.json")).ShouldBe(PathQuarantineStateFactory.CreateSkipped());
+    }
+
+    [Fact]
+    public void when_the_snapshot_is_resyncing_then_a_stored_conflict_still_wins_for_the_path_and_its_children()
+    {
+        var snapshot = QuarantineSnapshotFactory.CreateResyncing([KeyValuePair.Create(SyncPaths.Of("Photos"), PathQuarantineStateFactory.CreateConflicted())]);
+
+        (snapshot.StateOf(SyncPaths.Of("photos/Beach.jpg")), snapshot.StateOf(SyncPaths.Of("Docs/A.txt"))).ShouldBe((PathQuarantineStateFactory.CreateConflicted(), PathQuarantineStateFactory.CreateResyncInProgress()));
+    }
+
+    [Fact]
+    public void when_the_snapshot_is_resyncing_and_a_clear_entry_is_stored_then_the_path_is_resync_in_progress()
+    {
+        var snapshot = QuarantineSnapshotFactory.CreateResyncing([KeyValuePair.Create(SyncPaths.Of("Docs/A.txt"), PathQuarantineStateFactory.CreateClear())]);
+
+        snapshot.StateOf(SyncPaths.Of("docs/a.TXT")).ShouldBe(PathQuarantineStateFactory.CreateResyncInProgress());
+    }
+
+    [Fact]
+    public void when_the_snapshot_is_resyncing_then_no_path_is_allowed_a_sync_action()
+    {
+        var snapshot = QuarantineSnapshotFactory.CreateResyncing(null!);
+
+        snapshot.StateOf(SyncPaths.Of("Docs/A.txt")).AllowsSyncAction().ShouldBeFalse();
+    }
+
     [Fact]
     public void when_no_entries_are_given_then_the_snapshot_is_empty()
     {
