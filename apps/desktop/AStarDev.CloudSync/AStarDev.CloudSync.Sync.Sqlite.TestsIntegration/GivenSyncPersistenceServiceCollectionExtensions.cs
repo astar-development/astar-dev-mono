@@ -1,3 +1,4 @@
+using AStarDev.CloudSync.Accounts;
 using System.IO.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Testably.Abstractions.Testing;
@@ -22,5 +23,14 @@ public class GivenSyncPersistenceServiceCollectionExtensions
         var services = new ServiceCollection().AddSyncPersistence(_ => new MockFileSystem().FileInfo.New("/data/cloudsync.db"));
 
         services.Where(descriptor => descriptor.ServiceType == typeof(IRemoteIndexReader) || descriptor.ServiceType == typeof(IRemoteIndexWriter)).Select(descriptor => descriptor.Lifetime).ShouldBe([ServiceLifetime.Singleton, ServiceLifetime.Singleton]);
+    }
+
+    [Fact]
+    public void when_the_module_is_added_then_the_pause_reader_and_writer_are_registered_as_singletons_and_the_store_takes_part_in_account_removal()
+    {
+        var services = new ServiceCollection().AddSyncPersistence(_ => new MockFileSystem().FileInfo.New("/data/cloudsync.db"));
+
+        services.Where(descriptor => descriptor.ServiceType == typeof(IAccountPauseReader) || descriptor.ServiceType == typeof(IAccountPauseWriter)).Select(descriptor => descriptor.Lifetime).ShouldBe([ServiceLifetime.Singleton, ServiceLifetime.Singleton]);
+        services.Count(descriptor => descriptor.ServiceType == typeof(IAccountRemovalParticipant)).ShouldBeGreaterThanOrEqualTo(6);
     }
 }

@@ -63,6 +63,12 @@ public sealed class TemporarySyncDatabase : IAsyncDisposable
 
     public ISelectionRuleWriter RuleWriter => serviceProvider.GetRequiredService<ISelectionRuleWriter>();
 
+    public IAccountPauseReader PauseReader => serviceProvider.GetRequiredService<IAccountPauseReader>();
+
+    public IAccountPauseWriter PauseWriter => serviceProvider.GetRequiredService<IAccountPauseWriter>();
+
+    public IAccountRemovalParticipant PauseParticipant => serviceProvider.GetServices<IAccountRemovalParticipant>().First(participant => participant.GetType().Name == "SqliteAccountPauseStore");
+
     public ICloudSyncDatabase Database => serviceProvider.GetRequiredService<ICloudSyncDatabase>();
 
     public IAccountStore AccountStore => serviceProvider.GetRequiredService<IAccountStore>();
