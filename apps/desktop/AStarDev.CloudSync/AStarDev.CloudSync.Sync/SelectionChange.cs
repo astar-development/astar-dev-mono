@@ -60,4 +60,16 @@ public abstract record SelectionChange
         /// <summary>The Direction.</summary>
         public SyncDirection Direction { get; }
     }
+
+    /// <summary>Move the rules of several folders at once after they were renamed or moved remotely. All moves are decided together: a target held by a rule that stays, or already taken by another moved rule, is a clash, and the existing rule wins.</summary>
+    public sealed record RelocateFolders : SelectionChange
+    {
+        internal RelocateFolders(IReadOnlyList<FolderMove> moves)
+        {
+            Moves = moves;
+        }
+
+        /// <summary>The moves.</summary>
+        public IReadOnlyList<FolderMove> Moves { get; }
+    }
 }

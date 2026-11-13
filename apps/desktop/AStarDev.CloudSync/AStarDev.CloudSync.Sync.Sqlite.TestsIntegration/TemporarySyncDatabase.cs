@@ -35,6 +35,8 @@ public sealed class TemporarySyncDatabase : IAsyncDisposable
 
     public RecordingLoggerProvider Logs { get; }
 
+    public IServiceProvider Services => serviceProvider;
+
     public IRemoteIndexReader IndexReader => serviceProvider.GetRequiredService<IRemoteIndexReader>();
 
     public IRemoteIndexWriter IndexWriter => serviceProvider.GetRequiredService<IRemoteIndexWriter>();
@@ -57,27 +59,28 @@ public sealed class TemporarySyncDatabase : IAsyncDisposable
 
     public IAccountStore AccountStore => serviceProvider.GetRequiredService<IAccountStore>();
 
-    public static TemporarySyncDatabase CreateUnmigrated()
+    public static TemporarySyncDatabase CreateUnmigrated(Action<IServiceCollection>? configure = null)
     {
         var testFolder = new RealFileSystem().Directory.CreateDirectory(Path.GetTempPath().CombinePath($"cloudsync-sync-tests-{Guid.NewGuid():N}"));
         var databaseFile = testFolder.FileSystem.FileInfo.New(testFolder.FullName.CombinePath("data").CombinePath("cloudsync.db"));
         var logs = new RecordingLoggerProvider();
         var fileSystem = new MockFileSystem(options => options.SimulatingOperatingSystem(SimulationMode.Linux));
         _ = fileSystem.Directory.CreateDirectory(Home);
-        var serviceProvider = new ServiceCollection()
+        var services = new ServiceCollection()
             .AddLogging(logging => logging.ClearProviders().AddProvider(logs))
             .AddSingleton<IFileSystem>(fileSystem)
             .AddSingleton<IHomeFolder>(new TestHomeFolder(fileSystem.DirectoryInfo.New(Home)))
             .AddCloudSyncPersistence(_ => databaseFile)
-            .AddSyncPersistence(_ => databaseFile)
-            .BuildServiceProvider();
+            .AddSyncPersistence(_ => databaseFile);
+        configure?.Invoke(services);
+        var serviceProvider = services.BuildServiceProvider();
 
         return new TemporarySyncDatabase(serviceProvider, testFolder, fileSystem, databaseFile.FullName, logs);
     }
 
-    public static async Task<TemporarySyncDatabase> CreateMigratedAsync(CancellationToken cancellationToken)
+    public static async Task<TemporarySyncDatabase> CreateMigratedAsync(CancellationToken cancellationToken, Action<IServiceCollection>? configure = null)
     {
-        var database = CreateUnmigrated();
+        var database = CreateUnmigrated(configure);
         var migrated = await database.Database.MigrateAsync(cancellationToken);
 
         if (migrated.Match(_ => true, _ => false))

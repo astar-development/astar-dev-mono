@@ -89,4 +89,70 @@ public class GivenASelectionRulePlanner
 
         rules.ShouldBe([Exclude("Docs"), Include("Docs2")]);
     }
+
+    [Fact]
+    public void when_a_folder_is_relocated_then_its_rule_moves_to_the_new_path_and_keeps_its_kind_and_remote_id()
+    {
+        var rules = SelectionRulePlanner.Apply(Account, [Include("Docs", SyncDirectionFactory.CreateUploadOnly(), "remote-1"), Exclude("Other")], [Relocate(("docs", "Papers"))]);
+
+        rules.ShouldBe([Exclude("Other"), Include("Papers", SyncDirectionFactory.CreateUploadOnly(), "remote-1")]);
+    }
+
+    [Fact]
+    public void when_the_new_path_is_held_by_a_rule_that_stays_then_the_existing_rule_wins_and_the_moved_rule_is_dropped()
+    {
+        var rules = SelectionRulePlanner.Apply(Account, [Include("Docs", remoteId: "remote-1"), Exclude("papers")], [Relocate(("Docs", "Papers"))]);
+
+        rules.ShouldBe([Exclude("papers")]);
+    }
+
+    [Fact]
+    public void when_no_rule_sits_at_the_old_path_then_a_relocation_changes_nothing()
+    {
+        var rules = SelectionRulePlanner.Apply(Account, [Include("Docs")], [Relocate(("Music", "Songs"))]);
+
+        rules.ShouldBe([Include("Docs")]);
+    }
+
+    [Fact]
+    public void when_a_folder_is_relocated_then_the_rules_below_it_are_left_for_their_own_relocation()
+    {
+        var rules = SelectionRulePlanner.Apply(Account, [Include("Docs"), Exclude("Docs/Private")], [Relocate(("Docs", "Papers"))]);
+
+        rules.ShouldBe([Exclude("Docs/Private"), Include("Papers")]);
+    }
+
+    [Fact]
+    public void when_two_folders_swap_paths_then_both_rules_follow_their_folders()
+    {
+        var rules = SelectionRulePlanner.Apply(Account, [Include("A", remoteId: "a"), Exclude("B", "b")], [Relocate(("A", "B"), ("B", "A"))]);
+
+        rules.ShouldBe([Exclude("A", "b"), Include("B", remoteId: "a")]);
+    }
+
+    [Fact]
+    public void when_one_folder_moves_onto_the_old_path_of_another_that_moves_on_then_neither_rule_is_dropped()
+    {
+        var rules = SelectionRulePlanner.Apply(Account, [Include("A", remoteId: "a"), Exclude("B", "b")], [Relocate(("A", "B"), ("B", "C"))]);
+
+        rules.ShouldBe([Include("B", remoteId: "a"), Exclude("C", "b")]);
+    }
+
+    [Fact]
+    public void when_two_moves_aim_at_one_path_then_the_first_by_path_wins_and_the_other_is_dropped()
+    {
+        var rules = SelectionRulePlanner.Apply(Account, [Include("A", remoteId: "a"), Exclude("B", "b")], [Relocate(("A", "X"), ("B", "x"))]);
+
+        rules.ShouldBe([Include("X", remoteId: "a")]);
+    }
+
+    [Fact]
+    public void when_a_move_keeps_the_same_path_ignoring_case_then_the_rule_is_unchanged()
+    {
+        var rules = SelectionRulePlanner.Apply(Account, [Include("Docs")], [Relocate(("Docs", "docs"))]);
+
+        rules.ShouldBe([Include("Docs")]);
+    }
+
+    private static SelectionChange Relocate(params (string Old, string New)[] moves) => SelectionChangeFactory.CreateRelocateFolders(moves.Select(move => FolderMoveFactory.Create(Path(move.Old), Path(move.New))));
 }
