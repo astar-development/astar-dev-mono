@@ -37,6 +37,8 @@ public sealed class SyncRunServices : IDisposable
 
     public ISyncCancelAction Cancel => provider.GetRequiredService<ISyncCancelAction>();
 
+    public ISyncRunStatusSource Status => provider.GetRequiredService<ISyncRunStatusSource>();
+
     public IAccountSyncLock SyncLock => provider.GetRequiredService<IAccountSyncLock>();
 
     public IAccountSignInStates States => provider.GetRequiredService<IAccountSignInStates>();

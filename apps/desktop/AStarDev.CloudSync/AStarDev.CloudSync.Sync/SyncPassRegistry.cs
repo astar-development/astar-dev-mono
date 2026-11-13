@@ -6,7 +6,7 @@ namespace AStarDev.CloudSync.Sync;
 
 /// <summary>Knows the sync runs in progress: the <see cref="ISyncActivitySource"/> and the <see cref="ISyncCancelAction"/>. The runner tells it when a run starts and ends.</summary>
 /// <param name="timeProvider">Stamps the start of a run.</param>
-internal sealed class SyncPassRegistry(TimeProvider timeProvider) : ISyncActivitySource, ISyncCancelAction
+internal sealed class SyncPassRegistry(TimeProvider timeProvider) : ISyncActivitySource, ISyncCancelAction, ISyncRunStatusSource
 {
     private readonly ConcurrentDictionary<AccountId, RunningPass> running = new();
 
@@ -19,6 +19,12 @@ internal sealed class SyncPassRegistry(TimeProvider timeProvider) : ISyncActivit
     /// <inheritdoc />
     public AccountSyncActivity ActivityOf(AccountId accountId) =>
         running.TryGetValue(accountId, out var pass) ? AccountSyncActivityFactory.CreateRunning(pass.Trigger, pass.StartedAt) : AccountSyncActivityFactory.CreateIdle();
+
+    /// <inheritdoc />
+    public SyncStatus StatusOf(AccountId accountId) => throw new NotImplementedException($"{accountId}");
+
+    /// <inheritdoc />
+    public Option<DateTimeOffset> LastSyncOf(AccountId accountId) => throw new NotImplementedException($"{accountId}");
 
     /// <inheritdoc />
     public Task CancelAsync(AccountId accountId, CancellationToken cancellationToken)
