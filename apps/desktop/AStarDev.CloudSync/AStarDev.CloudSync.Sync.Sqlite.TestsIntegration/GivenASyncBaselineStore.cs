@@ -83,7 +83,7 @@ public sealed class GivenASyncBaselineStore : IAsyncLifetime
 
         var page = await Page(FirstAccount, "PHOTOS", Option.None<RelativeSyncPath>(), 100);
 
-        page.Select(entry => entry.ItemId.Value).ShouldBe(["p", "pa", "pb"]);
+        page.Select(entry => entry.ItemId.Value).ShouldBe(["p", "pb", "pa"]);
     }
 
     [Fact]
@@ -106,7 +106,7 @@ public sealed class GivenASyncBaselineStore : IAsyncLifetime
             after = Option.Some(page[^1].Path);
         }
 
-        (pages, seen).ShouldBe((3, entries.Select(entry => entry.ItemId.Value).ToList()));
+        (pages, string.Join(',', seen)).ShouldBe((3, string.Join(',', entries.Select(entry => entry.ItemId.Value))));
     }
 
     [Fact]

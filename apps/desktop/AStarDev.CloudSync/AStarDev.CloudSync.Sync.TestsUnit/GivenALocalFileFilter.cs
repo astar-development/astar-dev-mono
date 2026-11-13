@@ -27,6 +27,7 @@ public class GivenALocalFileFilter
     public void when_the_file_has_the_hidden_attribute_then_it_is_skipped_as_hidden()
     {
         var windows = new MockFileSystem(options => options.SimulatingOperatingSystem(SimulationMode.Windows));
+        _ = windows.Directory.CreateDirectory("C:\\root");
         windows.File.WriteAllText("C:\\root\\cache.bin", "x");
         var file = windows.FileInfo.New("C:\\root\\cache.bin");
         file.Attributes |= FileAttributes.Hidden;
