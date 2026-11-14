@@ -28,6 +28,43 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
                     b.ToTable("AccountPauses", (string)null);
                 });
 
+            modelBuilder.Entity("AStarDev.CloudSync.Sync.Sqlite.ActivityLogEntity", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("Bytes")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("FileCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("FileName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("OccurredAtUtcTicks")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid?>("SyncPairId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OccurredAtUtcTicks");
+
+                    b.HasIndex("AccountId", "Id");
+
+                    b.ToTable("ActivityLog", (string)null);
+                });
+
             modelBuilder.Entity("AStarDev.CloudSync.Sync.Sqlite.RemoteCursorEntity", b =>
                 {
                     b.Property<Guid>("AccountId")
