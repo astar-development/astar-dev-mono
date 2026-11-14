@@ -10,7 +10,9 @@ public sealed class FakeSyncActivitySource : ISyncActivitySource
 
     public event EventHandler<SyncPassFinishedEventArgs>? PassFinished;
 
-    public AccountSyncActivity ActivityOf(AccountId accountId) => AccountSyncActivityFactory.CreateIdle();
+    public HashSet<AccountId> Running { get; } = [];
+
+    public AccountSyncActivity ActivityOf(AccountId accountId) => Running.Contains(accountId) ? AccountSyncActivityFactory.CreateRunning(SyncTriggerFactory.CreateManual(), DateTimeOffset.UnixEpoch) : AccountSyncActivityFactory.CreateIdle();
 
     public void RaiseStarted(AccountId accountId) => PassStarted?.Invoke(this, new SyncPassStartedEventArgs(accountId, SyncTriggerFactory.CreateManual(), DateTimeOffset.UnixEpoch));
 
