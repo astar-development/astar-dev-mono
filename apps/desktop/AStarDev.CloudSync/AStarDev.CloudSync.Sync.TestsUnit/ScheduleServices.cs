@@ -32,6 +32,7 @@ public sealed class ScheduleServices : IDisposable
             .AddSingleton<ISyncActivitySource>(Activity)
             .AddSingleton<ISyncPassRunner>(Runner)
             .AddCloudSync()
+            .AddSingleton<INetworkMonitor>(Network)
             .AddSingleton<ISyncPassRunner>(Runner)
             .AddSingleton<ISyncActivitySource>(Activity)
             .AddSingleton<ISyncRootReader>(Roots)
@@ -58,6 +59,8 @@ public sealed class ScheduleServices : IDisposable
     public FakeSyncRootReader Roots { get; } = new();
 
     public ScheduleActivity Activity { get; } = new();
+
+    public FakeNetworkMonitor Network { get; } = new();
 
     public RecordingRunner Runner { get; } = new();
 
