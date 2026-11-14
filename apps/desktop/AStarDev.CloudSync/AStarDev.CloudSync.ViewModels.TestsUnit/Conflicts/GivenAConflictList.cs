@@ -328,6 +328,64 @@ public class GivenAConflictList
     }
 
     [Fact]
+    public async Task when_the_resolver_times_out_then_the_conflict_shows_an_error_and_is_not_left_idle()
+    {
+        var fixture = new Fixture();
+        fixture.Reader.Add(Photos.Id, AttentionItems.CreateConflict(Photos.Id, "a.jpg"));
+        fixture.Resolver.Outcome = (_, _, _, _) => throw new TaskCanceledException();
+        await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
+
+        await fixture.List.Groups.Single().Items.Single().Options[0].Command.ExecuteAsync(null);
+
+        fixture.List.Groups.Single().Items.Single().ErrorText.ShouldBe("Something went wrong, so nothing was resolved. The details have been logged.");
+    }
+
+    [Fact]
+    public async Task when_reading_times_out_then_the_load_fails_instead_of_keeping_the_stale_list()
+    {
+        var fixture = new Fixture();
+        fixture.Reader.Throws = _ => new TaskCanceledException();
+
+        await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
+
+        fixture.List.LoadState.ShouldBeOfType<SyncOverviewLoadState.Failed>();
+    }
+
+    [Fact]
+    public async Task when_skip_fails_then_the_conflict_shows_the_error_and_is_not_marked_skipped()
+    {
+        var fixture = new Fixture();
+        var conflict = (SyncAttentionItem.Conflict)AttentionItems.CreateConflict(Photos.Id, "a.jpg");
+        fixture.Reader.Add(Photos.Id, conflict);
+        fixture.Resolver.Outcome = (_, _, _, _) => Task.FromResult(Result.Success<ResolutionSummary, ErrorResponse>(ResolutionSummaryFactory.Create(0, [FailedResolutionFactory.Create(conflict.Id, ResolutionFailureFactory.CreateNotOpen())], 0)));
+        await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
+
+        await fixture.List.Groups.Single().Items.Single().Options[3].Command.ExecuteAsync(null);
+
+        var item = fixture.List.Groups.Single().Items.Single();
+        item.HasError.ShouldBeTrue();
+        item.IsSkipped.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task when_a_conflict_with_a_remembered_error_leaves_the_queue_then_a_new_conflict_has_no_error()
+    {
+        var fixture = new Fixture();
+        var conflict = (SyncAttentionItem.Conflict)AttentionItems.CreateConflict(Photos.Id, "a.jpg");
+        fixture.Reader.Add(Photos.Id, conflict);
+        fixture.Resolver.Outcome = (_, _, _, _) => Task.FromResult(Result.Failure<ResolutionSummary, ErrorResponse>(new ErrorResponse(BusyMessage)));
+        await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
+        await fixture.List.Groups.Single().Items.Single().Options[0].Command.ExecuteAsync(null);
+        fixture.Reader.Remove(conflict.Id);
+        await fixture.List.RefreshCommand.ExecuteAsync(null);
+
+        fixture.Reader.Add(Photos.Id, conflict);
+        await fixture.List.RefreshCommand.ExecuteAsync(null);
+
+        fixture.List.Groups.Single().Items.Single().HasError.ShouldBeFalse();
+    }
+
+    [Fact]
     public async Task when_two_buttons_are_pressed_at_once_then_the_resolver_runs_once_and_the_buttons_are_disabled_meanwhile()
     {
         var fixture = new Fixture();
