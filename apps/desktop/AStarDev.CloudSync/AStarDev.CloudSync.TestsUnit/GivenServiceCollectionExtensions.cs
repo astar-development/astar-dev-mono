@@ -130,6 +130,14 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
+    public void when_application_services_are_added_then_the_conflict_resolution_services_resolve_as_singletons()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        (provider.GetRequiredService<IConflictResolver>() == provider.GetRequiredService<IConflictResolver>(), provider.GetRequiredService<IHeldDeletionDecider>() == provider.GetRequiredService<IHeldDeletionDecider>(), provider.GetRequiredService<IConflictResolutionPlanner>().GetType(), provider.GetRequiredService<IKeepBothNamer>().GetType()).ShouldBe((true, true, typeof(ConflictResolutionPlanner), typeof(KeepBothNamer)));
+    }
+
+    [Fact]
     public void when_application_services_are_added_then_one_sync_lock_and_one_throttle_gate_are_shared()
     {
         using var provider = CreateServices().BuildServiceProvider();
