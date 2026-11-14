@@ -15,7 +15,7 @@ internal sealed class LocalTrash(TimeProvider timeProvider, LocalTrashOptions op
     private const char StampSeparator = '-';
     private const string ParentSegment = "..";
 
-    internal static bool Contains(RelativeSyncPath path) => path.Value.Split('/')[0].Equals(FolderName, StringComparison.OrdinalIgnoreCase);
+    internal static bool Contains(RelativeSyncPath path) => path.Value.Equals(FolderName, StringComparison.OrdinalIgnoreCase) || path.Value.StartsWith(FolderName + '/', StringComparison.OrdinalIgnoreCase);
 
     internal void Move(IDirectoryInfo root, IFileSystemInfo item)
     {

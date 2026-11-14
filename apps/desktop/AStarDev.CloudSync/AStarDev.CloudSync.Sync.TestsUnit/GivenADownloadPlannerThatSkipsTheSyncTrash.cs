@@ -61,4 +61,28 @@ public class GivenADownloadPlannerThatSkipsTheSyncTrash
 
         scenario.Describe().ShouldBe(["download Docs/a.txt"]);
     }
+
+    [Fact]
+    public void when_a_synced_item_now_appears_only_in_the_sync_trash_then_the_unchanged_local_copy_is_deleted()
+    {
+        var scenario = Scenario().BaselineFile("Docs/a.txt", "a", "c1").BaselineFile("Docs/b.txt", "b", "c1").BaselineFile("Docs/c.txt", "c", "c1").BaselineFile("Docs/d.txt", "d", "c1").RemoteFile("Docs/b.txt", "b", "c1").RemoteFile("Docs/c.txt", "c", "c1").RemoteFile("Docs/d.txt", "d", "c1").RemoteFile(".sync-trash/20261113120000000-abc/a.txt", "a", "c1");
+
+        scenario.Describe().ShouldBe(["delete Docs/a.txt"]);
+    }
+
+    [Fact]
+    public void when_a_synced_item_now_appears_only_in_the_sync_trash_and_was_modified_locally_then_it_goes_to_conflicts()
+    {
+        var scenario = Scenario().BaselineFile("Docs/a.txt", "a", "c1").RemoteFile(".sync-trash/20261113120000000-abc/a.txt", "a", "c1").LocalModified("Docs/a.txt");
+
+        scenario.Describe().ShouldBe(["conflict LocalModifiedRemoteDeleted Docs/a.txt"]);
+    }
+
+    [Fact]
+    public void when_a_baseline_row_sits_under_the_sync_trash_then_it_is_never_deleted_or_downloaded()
+    {
+        var scenario = Scenario().BaselineFile(".sync-trash/20261113120000000-abc/a.txt", "a", "c1").RemoteFile(".sync-trash/20261113120000000-abc/a.txt", "a", "c2");
+
+        scenario.Describe().ShouldBeEmpty();
+    }
 }
