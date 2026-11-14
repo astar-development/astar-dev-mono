@@ -39,7 +39,24 @@ public sealed class GivenAnUploadPassForRemovals : IDisposable
         var result = await fixture.RunAsync(CancellationToken);
 
         Outcomes(result).ShouldBe(["SentToConflicts Docs/a.txt"]);
+        result.Match(summary => summary.Outcomes.OfType<UploadItemOutcome.SentToConflicts>().Single().Kind, _ => throw new InvalidOperationException()).ShouldBe(ConflictKindFactory.CreateRemoteChangedDuringTransfer());
         fixture.Baseline.Has("Docs/a.txt").ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task when_the_provider_answers_precondition_failed_for_a_delete_then_the_kind_comes_from_the_classifier_with_a_precondition_signal()
+    {
+        var classifier = new RecordingConflictClassifier(ConflictKindFactory.CreateMoveTargetTaken());
+        fixture.Classifier = classifier;
+        fixture.Remote.Folder("Docs", "remote-docs");
+        fixture.Remote.File("Docs/a.txt", "r1", "c1");
+        fixture.Remover.Outcome = Result.Failure<Unit, ProviderError>(ProviderErrorFactory.CreatePreconditionFailed());
+        _ = await fixture.BaselineFile("Docs/a.txt", "r1", "c1").DeletedItem("Docs/a.txt", "r1").BuildAsync(CancellationToken);
+
+        var result = await fixture.RunAsync(CancellationToken);
+
+        result.Match(summary => summary.Outcomes.OfType<UploadItemOutcome.SentToConflicts>().Single().Kind, _ => throw new InvalidOperationException()).ShouldBe(ConflictKindFactory.CreateMoveTargetTaken());
+        classifier.Signals.ShouldHaveSingleItem().ShouldBeOfType<ConflictSignal.PreconditionFailed>();
     }
 
     [Fact]

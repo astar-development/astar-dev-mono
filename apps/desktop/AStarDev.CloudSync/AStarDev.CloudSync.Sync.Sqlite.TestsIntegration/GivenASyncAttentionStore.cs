@@ -101,6 +101,20 @@ public sealed class GivenASyncAttentionStore : IAsyncLifetime
     }
 
     [Fact]
+    public async Task when_the_database_is_closed_and_reopened_then_the_held_deletions_and_conflicts_are_still_there()
+    {
+        var id = new HeldDeletionId(Guid.NewGuid());
+        var held = SyncAttentionItemFactory.CreateHeldDeletions(id, FirstAccount, Pair, DeletionDirectionFactory.CreateDeleteRemote(), [SyncPaths.Of("b.txt"), SyncPaths.Of("A.txt")], Moment);
+        _ = await Writer.RecordAsync([held, Conflict(FirstAccount, "Docs/A.txt")], CancellationToken);
+
+        await Database.RestartAsync();
+
+        var items = await Open(FirstAccount);
+        var restored = items.OfType<SyncAttentionItem.HeldDeletions>().ShouldHaveSingleItem();
+        (items.Count, restored.Id, restored.PairId, restored.Direction, string.Join(',', restored.Paths.Select(path => path.Value))).ShouldBe((2, id, Pair, DeletionDirectionFactory.CreateDeleteRemote(), "A.txt,b.txt"));
+    }
+
+    [Fact]
     public async Task when_deletions_are_held_again_for_the_same_pair_and_direction_then_the_paths_are_replaced_and_not_appended()
     {
         _ = await Writer.RecordAsync([Held(FirstAccount, DeletionDirectionFactory.CreateDeleteLocal(), "a.txt", "b.txt")], CancellationToken);

@@ -16,6 +16,7 @@ public sealed class DownloadScenario
     private readonly List<KeyValuePair<RelativeSyncPath, PathQuarantineState>> quarantine = [];
     private readonly List<RelativeSyncPath> missing = [];
     private QuarantineSnapshot? resyncing;
+    private IConflictClassifier classifier = new ConflictClassifier();
 
     public static RelativeSyncPath At(string value) => new(value);
 
@@ -97,6 +98,13 @@ public sealed class DownloadScenario
         return this;
     }
 
+    public DownloadScenario ClassifiedBy(IConflictClassifier replacement)
+    {
+        classifier = replacement;
+
+        return this;
+    }
+
     public DownloadScenario Resyncing()
     {
         resyncing = QuarantineSnapshotFactory.CreateResyncing([]);
@@ -113,7 +121,7 @@ public sealed class DownloadScenario
 
     public DownloadPlan Plan()
     {
-        using var provider = new ServiceCollection().AddCloudSync().BuildServiceProvider();
+        using var provider = new ServiceCollection().AddCloudSync().AddSingleton(classifier).BuildServiceProvider();
         var snapshot = resyncing is null ? QuarantineSnapshotFactory.Create(quarantine) : QuarantineSnapshotFactory.Extend(resyncing, quarantine);
 
         return provider.GetRequiredService<IDownloadPlanner>().Plan(DownloadPlanRequestFactory.Create(remote, baseline, LocalChangeSetFactory.Create(local, 0, 0), rules, snapshot, missing));

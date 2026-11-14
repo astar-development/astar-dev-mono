@@ -175,7 +175,29 @@ public sealed class GivenADownloadPass
         var summary = Summary(await fixture.RunAsync(CancellationToken));
 
         summary.SentToConflicts.ShouldBe(1);
+        summary.Conflicts.ShouldHaveSingleItem().Kind.ShouldBe(ConflictKindFactory.CreateRemoteChangedDuringTransfer());
         fixture.FileSystem.File.ReadAllText("/sync/root/Docs/a.txt").ShouldBe("new local");
+    }
+
+    [Fact]
+    public async Task when_the_target_changes_during_the_download_then_the_kind_comes_from_the_classifier_with_a_precondition_signal()
+    {
+        var classifier = new RecordingConflictClassifier(ConflictKindFactory.CreateMoveTargetTaken());
+        using var fixture = await CreateAsync(CancellationToken, classifier: classifier);
+        fixture.Docs();
+        fixture.Remote.File("Docs/a.txt", "a", "c2", 5);
+        fixture.Downloader.Content["a"] = Hello;
+        fixture.Downloader.OnDownload = (_, _) =>
+        {
+            _ = fixture.Write("Docs/a.txt", "new local");
+
+            return Task.CompletedTask;
+        };
+
+        var summary = Summary(await fixture.RunAsync(CancellationToken));
+
+        summary.Conflicts.ShouldHaveSingleItem().Kind.ShouldBe(ConflictKindFactory.CreateMoveTargetTaken());
+        classifier.Signals.ShouldHaveSingleItem().ShouldBeOfType<ConflictSignal.PreconditionFailed>();
     }
 
     [Fact]
