@@ -538,6 +538,9 @@ public sealed class GivenAConflictResolver : IDisposable
         await gate.Entered.WaitAsync(CancellationToken);
         var passes = Enumerable.Range(0, 20).Select(_ => Task.Run(() => run.SyncLock.TryAcquire(run.Account) is SyncLockAttempt.Acquired acquired ? Interlocked.Increment(ref passesStarted) + Release(acquired) : 0, CancellationToken)).ToList();
         _ = await Task.WhenAll(passes);
+        while (resolutions.Count(resolution => resolution.IsCompleted) < 19)
+            await Task.Delay(5, CancellationToken);
+
         gate.Release();
 
         var results = await Task.WhenAll(resolutions);
