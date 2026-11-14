@@ -159,6 +159,31 @@ public sealed class GivenADownloadPass
     }
 
     [Fact]
+    public async Task when_a_path_is_conflicted_after_the_first_pass_then_the_second_pass_does_not_download_or_touch_it()
+    {
+        using var fixture = await CreateAsync(CancellationToken);
+        fixture.Docs();
+        _ = fixture.Synced("Docs/a.txt", "hello", "a");
+        fixture.Remote.File("Docs/a.txt", "a", "c2", 5);
+        fixture.Downloader.Content["a"] = Hello;
+        fixture.Downloader.OnDownload = (_, _) =>
+        {
+            fixture.FileSystem.File.WriteAllText("/sync/root/Docs/a.txt", "my edit");
+
+            return Task.CompletedTask;
+        };
+        _ = Summary(await fixture.RunAsync(CancellationToken));
+        fixture.Quarantine.Snapshot = QuarantineSnapshotFactory.Create([new KeyValuePair<RelativeSyncPath, PathQuarantineState>(new RelativeSyncPath("Docs/a.txt"), PathQuarantineStateFactory.CreateConflicted())]);
+        var callsAfterFirstPass = fixture.Downloader.Calls.Count;
+
+        var second = Summary(await fixture.RunAsync(CancellationToken));
+
+        second.Downloaded.ShouldBe(0);
+        fixture.Downloader.Calls.Count.ShouldBe(callsAfterFirstPass);
+        fixture.FileSystem.File.ReadAllText("/sync/root/Docs/a.txt").ShouldBe("my edit");
+    }
+
+    [Fact]
     public async Task when_a_new_file_appears_locally_during_the_download_then_it_is_left_alone_and_sent_to_conflicts()
     {
         using var fixture = await CreateAsync(CancellationToken);
