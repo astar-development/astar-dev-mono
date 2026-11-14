@@ -15,6 +15,7 @@ using AStarDev.CloudSync.Theming;
 using AStarDev.CloudSync.ViewModels;
 using AStarDev.CloudSync.ViewModels.Accounts;
 using AStarDev.CloudSync.ViewModels.Common;
+using AStarDev.CloudSync.ViewModels.Conflicts;
 using AStarDev.CloudSync.ViewModels.DisplaySettings;
 using AStarDev.CloudSync.ViewModels.FolderSelection;
 using AStarDev.CloudSync.ViewModels.Layouts;
@@ -88,6 +89,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<TrashRetentionSettingsViewModel>()
             .AddSingleton<DisplaySettingsViewModel>()
             .AddSingleton<SyncOverviewViewModel>()
+            .AddSingleton<ConflictListViewModel>()
             .AddSingleton<LayoutBViewModel>()
             .AddSingleton<LayoutAViewModel>()
             .AddSingleton<LayoutCViewModel>()

@@ -1,4 +1,98 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="AStarDev.CloudSync.Conflicts.ConflictListView">
+             xmlns:conflicts="using:AStarDev.CloudSync.Conflicts"
+             xmlns:vmConflicts="using:AStarDev.CloudSync.ViewModels.Conflicts"
+             x:Class="AStarDev.CloudSync.Conflicts.ConflictListView"
+             x:DataType="vmConflicts:ConflictListViewModel"
+             VerticalContentAlignment="Stretch"
+             HorizontalContentAlignment="Stretch"
+             Foreground="{DynamicResource CloudSyncTextPrimaryBrush}">
+    <Border Background="{DynamicResource CloudSyncSurfaceBrush}"
+            BorderBrush="{DynamicResource CloudSyncBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="8"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch">
+        <Grid RowDefinitions="Auto,*"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch">
+
+            <Grid Grid.Row="0"
+                  ColumnDefinitions="*,Auto,Auto,Auto"
+                  ColumnSpacing="8"
+                  Margin="24,20,24,12">
+                <TextBlock Grid.Column="0"
+                           Text="{Binding TitleText}"
+                           FontSize="18"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <TextBlock Classes="muted" Text="{Binding FilterLabelText}" VerticalAlignment="Center" />
+                    <ComboBox ItemsSource="{Binding Filters}"
+                              SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"
+                              AutomationProperties.Name="{Binding FilterLabelText}"
+                              MinWidth="220">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="vmConflicts:ConflictKindFilterViewModel">
+                                <TextBlock Text="{Binding Text}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </StackPanel>
+                <Button Grid.Column="2"
+                        Classes="secondary"
+                        Content="{Binding RefreshText}"
+                        Command="{Binding RefreshCommand}"
+                        AutomationProperties.Name="{Binding RefreshText}" />
+                <Button Grid.Column="3"
+                        Classes="secondary"
+                        Content="{Binding CloseText}"
+                        Command="{Binding CloseCommand}"
+                        AutomationProperties.Name="{Binding CloseText}" />
+            </Grid>
+
+            <ScrollViewer Grid.Row="1"
+                          Name="ConflictScroll"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          MinHeight="0"
+                          Padding="24,0,24,20">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="{Binding LoadErrorText}"
+                               TextWrapping="Wrap"
+                               Foreground="{DynamicResource CloudSyncWarnBrush}"
+                               IsVisible="{Binding LoadErrorText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                    <TextBlock Text="{Binding EmptyText}"
+                               TextWrapping="Wrap"
+                               IsVisible="{Binding IsEmpty}" />
+                    <ItemsControl ItemsSource="{Binding Groups}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Spacing="16" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vmConflicts:ConflictAccountGroupViewModel">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="{Binding HeaderText}" FontWeight="SemiBold" />
+                                    <ItemsControl ItemsSource="{Binding Items}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Spacing="8" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vmConflicts:ConflictItemViewModel">
+                                                <conflicts:ConflictCard />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Border>
 </UserControl>

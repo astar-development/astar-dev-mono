@@ -33,7 +33,7 @@ public class GivenTheConflictListSnapshots
         var photos = AttentionItems.Account("Photos");
         var work = AttentionItems.Account("Work");
         var reader = new FakeAttentionReader();
-        reader.Add(photos.Id, AttentionItems.CreateConflict(photos.Id, "Camera/holiday-042.jpg"), AttentionItems.CreateConflict(photos.Id, "Camera/holiday-043.jpg", ConflictKindFactory.CreateBothAdded()));
+        reader.Add(photos.Id, AttentionItems.CreateConflict(photos.Id, "Camera/holiday-042.jpg"), AttentionItems.CreateConflict(photos.Id, "Camera/holiday-043.jpg", ConflictKindFactory.CreateBothAdded(), SideSnapshotFactory.CreateAbsent(), AttentionItems.Present()));
         reader.Add(work.Id, AttentionItems.CreateConflict(work.Id, "Docs/budget.xlsx", ConflictKindFactory.CreateLocalModifiedRemoteDeleted(), AttentionItems.Present(), SideSnapshotFactory.CreateAbsent()), AttentionItems.CreateConflict(work.Id, "Docs/plan.docx", ConflictKindFactory.CreateLocalDeletedRemoteModified(), SideSnapshotFactory.CreateAbsent(), AttentionItems.Present()));
         var window = await CreateWindowAsync(reader, new FakeConflictResolver(), photos, work);
 

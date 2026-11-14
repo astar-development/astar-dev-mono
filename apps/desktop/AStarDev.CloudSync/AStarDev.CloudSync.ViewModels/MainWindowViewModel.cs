@@ -36,6 +36,7 @@ public sealed class MainWindowViewModel : LocalizedObservableObject
         SyncRestart = syncRestart;
         ConflictList = conflictList;
         syncRestart.PropertyChanged += OnSyncRestartChanged;
+        conflictList.PropertyChanged += OnConflictListChanged;
         accountDialog.PropertyChanged += OnDialogChanged;
         folderSelection.PropertyChanged += OnFolderSelectionChanged;
         addAccount.PropertyChanged += OnDialogChanged;
@@ -73,7 +74,7 @@ public sealed class MainWindowViewModel : LocalizedObservableObject
     public ConflictListViewModel ConflictList { get; }
 
     /// <summary>Whether a modal dialog is open, so the layout behind it is disabled.</summary>
-    public bool IsDialogOpen => AddAccount.IsOpen || AccountDialog.IsOpen || FolderSelection.IsOpen || SyncRestart.IsOpen;
+    public bool IsDialogOpen => AddAccount.IsOpen || AccountDialog.IsOpen || FolderSelection.IsOpen || SyncRestart.IsOpen || ConflictList.IsOpen;
 
     /// <summary>The view model of the layout to show. Each layout keeps its own state, so switching back restores it.</summary>
     public object CurrentLayout => DisplaySettings.CurrentLayout switch
@@ -92,6 +93,12 @@ public sealed class MainWindowViewModel : LocalizedObservableObject
     private void OnFolderSelectionChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(FolderSelectionViewModel.IsOpen))
+            OnPropertyChanged(nameof(IsDialogOpen));
+    }
+
+    private void OnConflictListChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ConflictListViewModel.IsOpen))
             OnPropertyChanged(nameof(IsDialogOpen));
     }
 

@@ -1,0 +1,46 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmConflicts="using:AStarDev.CloudSync.ViewModels.Conflicts"
+             x:Class="AStarDev.CloudSync.Conflicts.ConflictCard"
+             x:DataType="vmConflicts:ConflictItemViewModel"
+             Foreground="{DynamicResource CloudSyncTextPrimaryBrush}"
+             VerticalAlignment="Top">
+    <Border Classes="conflict-card">
+        <StackPanel Spacing="8">
+            <StackPanel Spacing="2">
+                <TextBlock Text="{Binding PathText}" FontWeight="Medium" TextWrapping="Wrap" />
+                <TextBlock Classes="muted" Text="{Binding KindText}" />
+                <TextBlock Classes="muted" Text="{Binding DetectedText}" />
+            </StackPanel>
+            <ItemsControl ItemsSource="{Binding Options}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel ItemSpacing="6" LineSpacing="6" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vmConflicts:ConflictStrategyOptionViewModel">
+                        <Button Content="{Binding Text}"
+                                Command="{Binding Command}"
+                                AutomationProperties.Name="{Binding AutomationName}"
+                                ToolTip.Tip="{Binding DisabledReasonText}"
+                                ToolTip.ShowOnDisabled="True" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBlock Classes="muted"
+                       Text="{Binding UnavailableText}"
+                       TextWrapping="Wrap"
+                       IsVisible="{Binding UnavailableText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            <TextBlock Classes="muted"
+                       Text="{Binding SkippedText}"
+                       TextWrapping="Wrap"
+                       IsVisible="{Binding IsSkipped}" />
+            <TextBlock Text="{Binding ErrorText}"
+                       TextWrapping="Wrap"
+                       FontWeight="Medium"
+                       Foreground="{DynamicResource CloudSyncWarnBrush}"
+                       IsVisible="{Binding HasError}" />
+        </StackPanel>
+    </Border>
+</UserControl>
