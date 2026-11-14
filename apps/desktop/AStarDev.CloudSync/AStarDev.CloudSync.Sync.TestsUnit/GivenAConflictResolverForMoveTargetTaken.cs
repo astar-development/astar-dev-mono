@@ -71,6 +71,18 @@ public sealed class GivenAConflictResolverForMoveTargetTaken : IDisposable
     }
 
     [Fact]
+    public async Task when_local_wins_and_the_baseline_row_cannot_be_dropped_then_the_remote_is_not_renamed_so_a_retry_cannot_rename_twice()
+    {
+        var (run, id) = await StartAsync();
+        _ = run.Synced(Target, "older", "id-b");
+        run.Baseline.RemoveFails = true;
+
+        var summary = await Summary(run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateLocalWins(), CancellationToken));
+
+        (summary.Failed.Single().Reason, run.Renamer.Calls.Count, run.Attention.ClosedConflicts.Count).ShouldBe((ResolutionFailureFactory.CreateNotRecorded(), 0, 0));
+    }
+
+    [Fact]
     public async Task when_local_wins_then_the_baseline_row_of_the_moved_item_is_kept_so_the_next_pass_follows_the_rename()
     {
         var (run, id) = await StartAsync();
