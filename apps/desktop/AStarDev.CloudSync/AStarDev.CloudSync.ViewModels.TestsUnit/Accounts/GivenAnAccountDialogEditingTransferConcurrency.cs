@@ -47,7 +47,8 @@ public class GivenAnAccountDialogEditingTransferConcurrency
 
         await dialog.IncreaseTransferConcurrencyCommand.ExecuteAsync(null);
 
-        (concurrency.Saved, dialog.TransferConcurrencyText).ShouldBe(([(account.Id, 5)], Text("AccountDialog.Transfers.Current", "5")));
+        concurrency.Saved.ShouldBe([(account.Id, 5)]);
+        dialog.TransferConcurrencyText.ShouldBe(Text("AccountDialog.Transfers.Current", "5"));
     }
 
     [Fact]

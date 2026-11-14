@@ -13,11 +13,15 @@ namespace AStarDev.CloudSync.ViewModels.Accounts;
 /// <param name="syncRoots">Reads an account's current sync folder.</param>
 /// <param name="accounts">Names the account a rejected folder clashes with.</param>
 /// <param name="folderPicker">Lets the user choose a folder.</param>
+/// <param name="concurrencyReader">Reads how many transfers an account runs at once.</param>
+/// <param name="concurrencyWriter">Saves how many transfers an account runs at once.</param>
 /// <param name="localization">Supplies the text.</param>
-public sealed class AccountDialogViewModel(IAccountActions actions, ISyncRootReader syncRoots, IAccountStore accounts, IFolderPicker folderPicker, ILocalizationService localization) : LocalizedObservableObject(localization), IAccountCommands
+public sealed class AccountDialogViewModel(IAccountActions actions, ISyncRootReader syncRoots, IAccountStore accounts, IFolderPicker folderPicker, ITransferConcurrencyReader concurrencyReader, ITransferConcurrencyWriter concurrencyWriter, ILocalizationService localization) : LocalizedObservableObject(localization), IAccountCommands
 {
     private TaskCompletionSource closed = new();
     private Option<AccountViewModel> pendingRemoval = Option.None<AccountViewModel>();
+    private int transferConcurrency = TransferConcurrencyFactory.Default;
+    private string transferConcurrencyMessage = string.Empty;
 
     /// <summary>What the dialog shows.</summary>
     public AccountDialogStep Step { get; private set; } = AccountDialogStepFactory.CreateClosed();
@@ -53,6 +57,30 @@ public sealed class AccountDialogViewModel(IAccountActions actions, ISyncRootRea
 
     /// <summary>The last change failure, or empty.</summary>
     public string SyncFolderMessageText => Step is AccountDialogStep.SyncFolder folder ? folder.MessageText : string.Empty;
+
+    /// <summary>The line that shows how many transfers the account runs at once.</summary>
+    public string TransferConcurrencyText => Localization.GetLocal("AccountDialog.Transfers.Current", transferConcurrency.ToString("N0", Localization.CurrentCulture));
+
+    /// <summary>The help text that explains the trade-off of a higher or lower number.</summary>
+    public string TransferConcurrencyHelpText => Localization.GetLocal("AccountDialog.Transfers.Help");
+
+    /// <summary>Why the setting could not be saved, or empty.</summary>
+    public string TransferConcurrencyMessageText => transferConcurrencyMessage;
+
+    /// <summary>Whether a save failure shows.</summary>
+    public bool HasTransferConcurrencyMessage => transferConcurrencyMessage.Length > 0;
+
+    /// <summary>The label of the button that lowers the number.</summary>
+    public string FewerTransfersText => Localization.GetLocal("AccountDialog.Transfers.Fewer");
+
+    /// <summary>The label of the button that raises the number.</summary>
+    public string MoreTransfersText => Localization.GetLocal("AccountDialog.Transfers.More");
+
+    /// <summary>Raises the number of transfers at once by one, up to the maximum, and saves it. It applies from the account's next sync.</summary>
+    public IAsyncRelayCommand IncreaseTransferConcurrencyCommand => field ??= new AsyncRelayCommand(cancellationToken => ChangeTransferConcurrencyAsync(1, cancellationToken), () => CanChangeTransferConcurrency(1));
+
+    /// <summary>Lowers the number of transfers at once by one, down to the minimum, and saves it. It applies from the account's next sync.</summary>
+    public IAsyncRelayCommand DecreaseTransferConcurrencyCommand => field ??= new AsyncRelayCommand(cancellationToken => ChangeTransferConcurrencyAsync(-1, cancellationToken), () => CanChangeTransferConcurrency(-1));
 
     /// <summary>Whether a change failure shows.</summary>
     public bool HasSyncFolderMessage => SyncFolderMessageText.Length > 0;
@@ -137,8 +165,41 @@ public sealed class AccountDialogViewModel(IAccountActions actions, ISyncRootRea
         closed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         SetStep(AccountDialogStepFactory.CreateSyncFolder(account, string.Empty, string.Empty));
         var currentText = await CurrentFolderTextAsync(account.Id, cancellationToken);
+        transferConcurrency = await concurrencyReader.GetAsync(account.Id, cancellationToken).MatchAsync(found => found.Value, _ => TransferConcurrencyFactory.Default);
+        transferConcurrencyMessage = string.Empty;
+        NotifyTransferConcurrency();
         _ = ShowSyncFolder(account, currentText, string.Empty);
         await closed.Task.WaitAsync(cancellationToken);
+    }
+
+    private bool CanChangeTransferConcurrency(int delta) => Step is AccountDialogStep.SyncFolder && TransferConcurrencyFactory.Create(transferConcurrency + delta).Value != transferConcurrency;
+
+    private async Task ChangeTransferConcurrencyAsync(int delta, CancellationToken cancellationToken)
+    {
+        if (Step is not AccountDialogStep.SyncFolder folder)
+            return;
+
+        var next = TransferConcurrencyFactory.Create(transferConcurrency + delta);
+        _ = await concurrencyWriter.SetAsync(folder.Account.Id, next, cancellationToken)
+            .MatchAsync(_ => SetTransferConcurrency(next.Value, string.Empty), _ => SetTransferConcurrency(transferConcurrency, Localization.GetLocal("AccountDialog.Transfers.SaveFailed")));
+    }
+
+    private Unit SetTransferConcurrency(int value, string message)
+    {
+        transferConcurrency = value;
+        transferConcurrencyMessage = message;
+        NotifyTransferConcurrency();
+
+        return Unit.Instance;
+    }
+
+    private void NotifyTransferConcurrency()
+    {
+        OnPropertyChanged(nameof(TransferConcurrencyText));
+        OnPropertyChanged(nameof(TransferConcurrencyMessageText));
+        OnPropertyChanged(nameof(HasTransferConcurrencyMessage));
+        IncreaseTransferConcurrencyCommand.NotifyCanExecuteChanged();
+        DecreaseTransferConcurrencyCommand.NotifyCanExecuteChanged();
     }
 
     private bool CanChooseSyncFolder() => Step is AccountDialogStep.SyncFolder { Account.Status.IsSyncing: false };

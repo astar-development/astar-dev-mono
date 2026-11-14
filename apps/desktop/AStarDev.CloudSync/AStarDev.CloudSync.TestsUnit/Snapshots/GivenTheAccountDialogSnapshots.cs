@@ -74,6 +74,6 @@ public class GivenTheAccountDialogSnapshots
             }
         };
 
-        Snapshot.ShouldMatchBaseline(window, theme == "dark" ? ThemeVariant.Dark : ThemeVariant.Light, $"control-account-dialog-{step}-{theme}", 520, 300);
+        Snapshot.ShouldMatchBaseline(window, theme == "dark" ? ThemeVariant.Dark : ThemeVariant.Light, $"control-account-dialog-{step}-{theme}", 520, 520);
     }
 }
