@@ -158,7 +158,7 @@ public class GivenAConflictListView
     [AvaloniaFact]
     public async Task when_a_conflict_has_an_error_then_the_error_text_shows_on_it()
     {
-        var resolver = new FakeConflictResolver { Outcome = (_, _, _, _) => Task.FromResult(Result.Failure<ResolutionSummary, ErrorResponse>(new ErrorResponse("busy"))) };
+        var resolver = new FakeConflictResolver { Outcome = (_, _, _, _) => Task.FromResult(Result.Failure<ResolutionSummary, ConflictRefusal>(ConflictRefusalFactory.CreateBusy())) };
         var (window, list) = await ShowAsync(0, 800, resolver, AttentionItems.CreateConflict(Account.Id, "a.jpg"));
         var item = list.Groups.Single().Items.Single();
 

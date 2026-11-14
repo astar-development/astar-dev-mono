@@ -11,8 +11,6 @@ namespace AStarDev.CloudSync.ViewModels.TestsUnit.Conflicts;
 
 public class GivenAConflictList
 {
-    private const string BusyMessage = "A sync pass is running for this account. Try again when it has finished.";
-
     private static readonly CloudAccount Photos = AttentionItems.Account("Photos");
     private static readonly CloudAccount Work = AttentionItems.Account("Work");
 
@@ -167,7 +165,7 @@ public class GivenAConflictList
             foreach (var id in ids)
                 fixture.Reader.Remove(id);
 
-            return Task.FromResult(Result.Success<ResolutionSummary, ErrorResponse>(ResolutionSummaryFactory.Create(ids.Count, [], 0)));
+            return Task.FromResult(Result.Success<ResolutionSummary, ConflictRefusal>(ResolutionSummaryFactory.Create(ids.Count, [], 0)));
         };
         await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
 
@@ -191,7 +189,7 @@ public class GivenAConflictList
             foreach (var id in ids)
                 fixture.Reader.Remove(id);
 
-            return Task.FromResult(Result.Success<ResolutionSummary, ErrorResponse>(ResolutionSummaryFactory.Create(1, [], 0)));
+            return Task.FromResult(Result.Success<ResolutionSummary, ConflictRefusal>(ResolutionSummaryFactory.Create(1, [], 0)));
         };
         await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
 
@@ -206,7 +204,7 @@ public class GivenAConflictList
         var fixture = new Fixture();
         var conflict = (SyncAttentionItem.Conflict)AttentionItems.CreateConflict(Photos.Id, "a.jpg");
         fixture.Reader.Add(Photos.Id, conflict);
-        fixture.Resolver.Outcome = (_, _, _, _) => Task.FromResult(Result.Success<ResolutionSummary, ErrorResponse>(ResolutionSummaryFactory.Create(0, [FailedResolutionFactory.Create(conflict.Id, ResolutionFailureFactory.CreateTransfer(ProviderErrorFactory.CreateTransient()))], 0)));
+        fixture.Resolver.Outcome = (_, _, _, _) => Task.FromResult(Result.Success<ResolutionSummary, ConflictRefusal>(ResolutionSummaryFactory.Create(0, [FailedResolutionFactory.Create(conflict.Id, ResolutionFailureFactory.CreateTransfer(ProviderErrorFactory.CreateTransient()))], 0)));
         await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
 
         await fixture.List.Groups.Single().Items.Single().Options[0].Command.ExecuteAsync(null);
@@ -235,7 +233,23 @@ public class GivenAConflictList
         var fixture = new Fixture();
         var conflict = (SyncAttentionItem.Conflict)AttentionItems.CreateConflict(Photos.Id, "a.jpg");
         fixture.Reader.Add(Photos.Id, conflict);
-        fixture.Resolver.Outcome = (_, _, _, _) => Task.FromResult(Result.Success<ResolutionSummary, ErrorResponse>(ResolutionSummaryFactory.Create(0, [FailedResolutionFactory.Create(conflict.Id, Failure(reason))], 0)));
+        fixture.Resolver.Outcome = (_, _, _, _) => Task.FromResult(Result.Success<ResolutionSummary, ConflictRefusal>(ResolutionSummaryFactory.Create(0, [FailedResolutionFactory.Create(conflict.Id, Failure(reason))], 0)));
+        await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
+
+        await fixture.List.Groups.Single().Items.Single().Options[0].Command.ExecuteAsync(null);
+
+        fixture.List.Groups.Single().Items.Single().ErrorText.ShouldBe(expected);
+    }
+
+    [Theory]
+    [InlineData("Busy", "A sync is running for this account. Try again when it has finished.")]
+    [InlineData("Draining", "Sync is paused for an update or an account removal. Try again later.")]
+    [InlineData("QueueUnreadable", "The conflicts could not be read, so nothing was resolved. Try again.")]
+    public async Task when_the_call_is_refused_then_the_conflict_stays_listed_with_the_text_for_that_refusal(string refusal, string expected)
+    {
+        var fixture = new Fixture();
+        fixture.Reader.Add(Photos.Id, AttentionItems.CreateConflict(Photos.Id, "a.jpg"));
+        fixture.Resolver.Outcome = (_, _, _, _) => Task.FromResult(Result.Failure<ResolutionSummary, ConflictRefusal>(Refusal(refusal)));
         await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
 
         await fixture.List.Groups.Single().Items.Single().Options[0].Command.ExecuteAsync(null);
@@ -244,25 +258,12 @@ public class GivenAConflictList
     }
 
     [Fact]
-    public async Task when_the_account_is_busy_then_the_refusal_is_shown_on_the_conflict_which_stays_listed()
-    {
-        var fixture = new Fixture();
-        fixture.Reader.Add(Photos.Id, AttentionItems.CreateConflict(Photos.Id, "a.jpg"));
-        fixture.Resolver.Outcome = (_, _, _, _) => Task.FromResult(Result.Failure<ResolutionSummary, ErrorResponse>(new ErrorResponse(BusyMessage)));
-        await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
-
-        await fixture.List.Groups.Single().Items.Single().Options[0].Command.ExecuteAsync(null);
-
-        fixture.List.Groups.Single().Items.Single().ErrorText.ShouldBe("Could not resolve this now. A sync may be running for this account, or sync is paused for an update. Try again when it has finished.");
-    }
-
-    [Fact]
     public async Task when_a_later_attempt_succeeds_then_the_error_is_gone_with_the_conflict()
     {
         var fixture = new Fixture();
         var conflict = (SyncAttentionItem.Conflict)AttentionItems.CreateConflict(Photos.Id, "a.jpg");
         fixture.Reader.Add(Photos.Id, conflict);
-        fixture.Resolver.Outcome = (_, _, _, _) => Task.FromResult(Result.Failure<ResolutionSummary, ErrorResponse>(new ErrorResponse(BusyMessage)));
+        fixture.Resolver.Outcome = (_, _, _, _) => Task.FromResult(Result.Failure<ResolutionSummary, ConflictRefusal>(ConflictRefusalFactory.CreateBusy()));
         await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
         await fixture.List.Groups.Single().Items.Single().Options[0].Command.ExecuteAsync(null);
         fixture.Resolver.Outcome = (_, ids, _, _) =>
@@ -270,7 +271,7 @@ public class GivenAConflictList
             foreach (var id in ids)
                 fixture.Reader.Remove(id);
 
-            return Task.FromResult(Result.Success<ResolutionSummary, ErrorResponse>(ResolutionSummaryFactory.Create(1, [], 0)));
+            return Task.FromResult(Result.Success<ResolutionSummary, ConflictRefusal>(ResolutionSummaryFactory.Create(1, [], 0)));
         };
 
         await fixture.List.Groups.Single().Items.Single().Options[0].Command.ExecuteAsync(null);
@@ -323,7 +324,7 @@ public class GivenAConflictList
             started.SetResult();
             await Task.Delay(Timeout.Infinite, cancellationToken);
 
-            return Result.Success<ResolutionSummary, ErrorResponse>(ResolutionSummaryFactory.Create(0, [], 0));
+            return Result.Success<ResolutionSummary, ConflictRefusal>(ResolutionSummaryFactory.Create(0, [], 0));
         };
         await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
 
@@ -368,7 +369,7 @@ public class GivenAConflictList
         var fixture = new Fixture();
         var conflict = (SyncAttentionItem.Conflict)AttentionItems.CreateConflict(Photos.Id, "a.jpg");
         fixture.Reader.Add(Photos.Id, conflict);
-        fixture.Resolver.Outcome = (_, _, _, _) => Task.FromResult(Result.Success<ResolutionSummary, ErrorResponse>(ResolutionSummaryFactory.Create(0, [FailedResolutionFactory.Create(conflict.Id, ResolutionFailureFactory.CreateNotOpen())], 0)));
+        fixture.Resolver.Outcome = (_, _, _, _) => Task.FromResult(Result.Success<ResolutionSummary, ConflictRefusal>(ResolutionSummaryFactory.Create(0, [FailedResolutionFactory.Create(conflict.Id, ResolutionFailureFactory.CreateNotOpen())], 0)));
         await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
 
         await fixture.List.Groups.Single().Items.Single().Options[3].Command.ExecuteAsync(null);
@@ -384,7 +385,7 @@ public class GivenAConflictList
         var fixture = new Fixture();
         var conflict = (SyncAttentionItem.Conflict)AttentionItems.CreateConflict(Photos.Id, "a.jpg");
         fixture.Reader.Add(Photos.Id, conflict);
-        fixture.Resolver.Outcome = (_, _, _, _) => Task.FromResult(Result.Failure<ResolutionSummary, ErrorResponse>(new ErrorResponse(BusyMessage)));
+        fixture.Resolver.Outcome = (_, _, _, _) => Task.FromResult(Result.Failure<ResolutionSummary, ConflictRefusal>(ConflictRefusalFactory.CreateBusy()));
         await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
         await fixture.List.Groups.Single().Items.Single().Options[0].Command.ExecuteAsync(null);
         fixture.Reader.Remove(conflict.Id);
@@ -401,7 +402,7 @@ public class GivenAConflictList
     {
         var fixture = new Fixture();
         fixture.Reader.Add(Photos.Id, AttentionItems.CreateConflict(Photos.Id, "a.jpg"));
-        var release = new TaskCompletionSource<Result<ResolutionSummary, ErrorResponse>>();
+        var release = new TaskCompletionSource<Result<ResolutionSummary, ConflictRefusal>>();
         fixture.Resolver.Outcome = (_, _, _, _) => release.Task;
         await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
         var item = fixture.List.Groups.Single().Items.Single();
@@ -412,7 +413,7 @@ public class GivenAConflictList
         item.IsBusy.ShouldBeTrue();
         item.Options.ShouldAllBe(option => !option.Command.CanExecute(null));
         fixture.Resolver.Calls.Count.ShouldBe(1);
-        release.SetResult(Result.Success<ResolutionSummary, ErrorResponse>(ResolutionSummaryFactory.Create(1, [], 0)));
+        release.SetResult(Result.Success<ResolutionSummary, ConflictRefusal>(ResolutionSummaryFactory.Create(1, [], 0)));
         await Task.WhenAll(first, second);
         fixture.Resolver.Calls.Count.ShouldBe(1);
     }
@@ -509,6 +510,13 @@ public class GivenAConflictList
 
         texts.ShouldBe(["Needs your attention", "Review conflicts", "Close", "Refresh", "Show"]);
     }
+
+    private static ConflictRefusal Refusal(string refusal) => refusal switch
+    {
+        "Busy" => ConflictRefusalFactory.CreateBusy(),
+        "Draining" => ConflictRefusalFactory.CreateDraining(),
+        _ => ConflictRefusalFactory.CreateQueueUnreadable(),
+    };
 
     private static ResolutionFailure Failure(string reason) => reason switch
     {

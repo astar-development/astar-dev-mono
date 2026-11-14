@@ -425,14 +425,14 @@ public sealed class GivenAConflictResolver : IDisposable
     }
 
     [Fact]
-    public async Task when_the_queue_cannot_be_read_then_the_call_fails_with_an_error()
+    public async Task when_the_queue_cannot_be_read_then_the_call_is_refused_as_queue_unreadable()
     {
         var run = await StartAsync();
         run.Attention.ReadFails = true;
 
-        var result = await run.Resolver.ResolveAsync(run.Account, [new ConflictId(Guid.NewGuid())], ConflictStrategyFactory.CreateLocalWins(), CancellationToken);
+        var refusal = await Refusal(run.Resolver.ResolveAsync(run.Account, [new ConflictId(Guid.NewGuid())], ConflictStrategyFactory.CreateLocalWins(), CancellationToken));
 
-        result.Match(_ => "ok", error => error.Message).ShouldNotBe("ok");
+        refusal.ShouldBe(ConflictRefusalFactory.CreateQueueUnreadable());
     }
 
     [Fact]
@@ -444,21 +444,21 @@ public sealed class GivenAConflictResolver : IDisposable
         var id = run.Conflict("Docs/a.txt", ConflictKindFactory.CreateBothModified());
         using var pass = ((SyncLockAttempt.Acquired)run.SyncLock.TryAcquire(run.Account)).Lease;
 
-        var result = await run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateLocalWins(), CancellationToken);
+        var refusal = await Refusal(run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateLocalWins(), CancellationToken));
 
-        (result.Match(_ => "ok", _ => "refused"), run.Uploader.Calls.Count, run.Attention.ClosedConflicts.Count).ShouldBe(("refused", 0, 0));
+        (refusal, run.Uploader.Calls.Count, run.Attention.ClosedConflicts.Count).ShouldBe((ConflictRefusalFactory.CreateBusy(), 0, 0));
     }
 
     [Fact]
-    public async Task when_the_lock_is_draining_then_the_call_is_refused()
+    public async Task when_the_lock_is_draining_then_the_call_is_refused_as_draining()
     {
         var run = await StartAsync();
         var id = run.Conflict("Docs/a.txt", ConflictKindFactory.CreateBothModified());
         using var drain = await run.SyncLock.DrainAsync(CancellationToken);
 
-        var result = await run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateLocalWins(), CancellationToken);
+        var refusal = await Refusal(run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateLocalWins(), CancellationToken));
 
-        result.Match(_ => "ok", error => error.Message).ShouldNotBe("ok");
+        refusal.ShouldBe(ConflictRefusalFactory.CreateDraining());
     }
 
     [Fact]
@@ -556,8 +556,11 @@ public sealed class GivenAConflictResolver : IDisposable
         return 0;
     }
 
-    private static async Task<ResolutionSummary> Summary(Task<Result<ResolutionSummary, ErrorResponse>> call) =>
-        (await call).Match(summary => summary, error => throw new InvalidOperationException($"The call failed: {error.Message}"));
+    private static async Task<ResolutionSummary> Summary(Task<Result<ResolutionSummary, ConflictRefusal>> call) =>
+        (await call).Match(summary => summary, refusal => throw new InvalidOperationException($"The call was refused: {refusal.GetType().Name}"));
+
+    private static async Task<ConflictRefusal> Refusal(Task<Result<ResolutionSummary, ConflictRefusal>> call) =>
+        (await call).Match(_ => throw new InvalidOperationException("The call was not refused."), refusal => refusal);
 
     private async Task<ResolutionFixture> StartAsync()
     {

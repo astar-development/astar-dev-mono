@@ -11,6 +11,6 @@ public interface IConflictResolver
     /// <param name="ids">The conflicts to resolve.</param>
     /// <param name="strategy">The strategy to apply.</param>
     /// <param name="cancellationToken">Cancels the call.</param>
-    /// <returns>What was resolved, failed and skipped, or an error when the call was refused because a sync pass is running or the queue could not be read.</returns>
-    Task<Result<ResolutionSummary, ErrorResponse>> ResolveAsync(AccountId accountId, IReadOnlyList<ConflictId> ids, ConflictStrategy strategy, CancellationToken cancellationToken);
+    /// <returns>What was resolved, failed and skipped, or the <see cref="ConflictRefusal"/> when the call was refused because a sync pass is running, sync is paused or the queue could not be read.</returns>
+    Task<Result<ResolutionSummary, ConflictRefusal>> ResolveAsync(AccountId accountId, IReadOnlyList<ConflictId> ids, ConflictStrategy strategy, CancellationToken cancellationToken);
 }
