@@ -28,6 +28,12 @@ public sealed class FakeAttentionReader : ISyncAttentionReader
             list.RemoveAll(item => item is SyncAttentionItem.Conflict conflict && conflict.Id == id);
     }
 
+    public void RemoveHeld(HeldDeletionId id)
+    {
+        foreach (var list in items.Values)
+            list.RemoveAll(item => item is SyncAttentionItem.HeldDeletions held && held.Id == id);
+    }
+
     public Task<Result<IReadOnlyList<SyncAttentionItem>, ErrorResponse>> GetOpenAsync(AccountId accountId, CancellationToken cancellationToken)
     {
         Reads++;

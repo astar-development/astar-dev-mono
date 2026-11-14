@@ -8,6 +8,8 @@ internal static class ConflictTexts
 
     internal const string UnexpectedKey = "Conflict.Error.Unexpected";
 
+    internal const string HeldNotSettledKey = "Held.Error.NotSettled";
+
     internal static string KindKey(ConflictKind kind) => kind switch
     {
         ConflictKind.BothModified => "Conflict.Kind.BothModified",

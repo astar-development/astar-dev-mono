@@ -1,5 +1,6 @@
 using AStarDev.CloudSync.Conflicts;
 using AStarDev.CloudSync.Sync;
+using AStarDev.CloudSync.TestHelpers.Accounts;
 using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.CloudSync.TestHelpers.Conflicts;
 using AStarDev.CloudSync.TestHelpers.Overview;
@@ -57,6 +58,44 @@ public class GivenTheConflictListSnapshots
         await list.Groups.Single().Items[0].Options[0].Command.ExecuteAsync(null);
 
         Snapshot.ShouldMatchBaseline(window, Theme(theme), $"conflict-list-failed-{theme}");
+    }
+
+    [AvaloniaTheory]
+    [InlineData("dark")]
+    [InlineData("light")]
+    public async Task when_several_items_are_selected_then_the_list_matches_the_baseline(string theme)
+    {
+        Assert.SkipUnless(OperatingSystem.IsLinux(), Snapshot.LinuxOnlyReason);
+        var photos = AttentionItems.Account("Photos");
+        var reader = new FakeAttentionReader();
+        reader.Add(photos.Id, AttentionItems.CreateConflict(photos.Id, "Camera/holiday-042.jpg", ConflictKindFactory.CreateBothAdded()), AttentionItems.CreateConflict(photos.Id, "Camera/holiday-043.jpg", ConflictKindFactory.CreateBothAdded()), AttentionItems.CreateConflict(photos.Id, "Camera/holiday-044.jpg", ConflictKindFactory.CreateBothAdded()));
+        var window = await CreateWindowAsync(reader, new FakeConflictResolver(), photos);
+        var list = (AStarDev.CloudSync.ViewModels.Conflicts.ConflictListViewModel)((ConflictListView)window.Content!).DataContext!;
+        list.SelectedFilter = list.Filters.Single(filter => filter.Text == "Added on both sides");
+        list.Groups.Single().Items[0].IsSelected = true;
+        list.Groups.Single().Items[1].IsSelected = true;
+
+        Snapshot.ShouldMatchBaseline(window, Theme(theme), $"conflict-list-selected-{theme}");
+    }
+
+    [AvaloniaTheory]
+    [InlineData("dark")]
+    [InlineData("light")]
+    public async Task when_deletions_are_held_then_the_list_matches_the_baseline(string theme)
+    {
+        Assert.SkipUnless(OperatingSystem.IsLinux(), Snapshot.LinuxOnlyReason);
+        var photos = AttentionItems.Account("Photos");
+        var reader = new FakeAttentionReader();
+        var cameraRoll = new SyncPairId(Guid.NewGuid());
+        reader.Add(photos.Id, AttentionItems.CreateHeld(photos.Id, cameraRoll, DeletionDirectionFactory.CreateDeleteLocal(), "Camera/holiday-042.jpg", "Camera/holiday-043.jpg", "Camera/holiday-044.jpg"), AttentionItems.CreateHeld(photos.Id, new SyncPairId(Guid.NewGuid()), DeletionDirectionFactory.CreateDeleteRemote(), "Docs/budget.xlsx"));
+        reader.Add(photos.Id, AttentionItems.CreateConflict(photos.Id, "Camera/holiday-045.jpg"));
+        var pairs = new FakeSyncPairReader { Pairs = _ => Result.Success<IReadOnlyList<SyncPair>, ErrorResponse>([AttentionItems.Pair(photos.Id, cameraRoll, "Camera roll")]) };
+        var list = TestData.CreateConflictList(new FixedAccountsSource(photos), reader, new FakeConflictResolver(), new FakeHeldDeletionDecider(), pairs);
+        await list.LoadAsync(TestContext.Current.CancellationToken);
+        list.HeldDeletions[0].ToggleCommand.Execute(null);
+        var window = new Window { Content = new ConflictListView { DataContext = list } };
+
+        Snapshot.ShouldMatchBaseline(window, Theme(theme), $"conflict-list-held-{theme}");
     }
 
     private static ThemeVariant Theme(string theme) => theme == "dark" ? ThemeVariant.Dark : ThemeVariant.Light;

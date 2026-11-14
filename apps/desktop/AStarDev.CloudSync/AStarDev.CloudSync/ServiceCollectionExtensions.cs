@@ -89,6 +89,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<TrashRetentionSettingsViewModel>()
             .AddSingleton<DisplaySettingsViewModel>()
             .AddSingleton<SyncOverviewViewModel>()
+            .AddSingleton<ConflictListSources>()
             .AddSingleton<ConflictListViewModel>()
             .AddSingleton<LayoutBViewModel>()
             .AddSingleton<LayoutAViewModel>()

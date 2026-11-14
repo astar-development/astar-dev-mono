@@ -6,7 +6,12 @@
              Foreground="{DynamicResource CloudSyncTextPrimaryBrush}"
              VerticalAlignment="Top">
     <Border Classes="conflict-card">
-        <StackPanel Spacing="8">
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+        <CheckBox Grid.Column="0"
+                  IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                  AutomationProperties.Name="{Binding SelectAutomationName}"
+                  VerticalAlignment="Top" />
+        <StackPanel Grid.Column="1" Spacing="8">
             <StackPanel Spacing="2">
                 <TextBlock Text="{Binding PathText}" FontWeight="Medium" TextWrapping="Wrap" />
                 <TextBlock Classes="muted" Text="{Binding KindText}" />
@@ -42,5 +47,6 @@
                        Foreground="{DynamicResource CloudSyncWarnBrush}"
                        IsVisible="{Binding HasError}" />
         </StackPanel>
+        </Grid>
     </Border>
 </UserControl>

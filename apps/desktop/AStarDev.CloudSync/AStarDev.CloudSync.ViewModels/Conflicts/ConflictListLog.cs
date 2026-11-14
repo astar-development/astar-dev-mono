@@ -15,4 +15,10 @@ internal static partial class ConflictListLog
 
     [LoggerMessage(EventId = 5323, Level = LogLevel.Warning, Message = "A conflict resolution was refused: the account is busy or sync is paused.")]
     public static partial void ResolveRefused(ILogger logger);
+
+    [LoggerMessage(EventId = 5324, Level = LogLevel.Warning, Message = "A held deletion set was not settled: the account is busy, sync is paused or a step failed.")]
+    public static partial void HeldNotSettled(ILogger logger);
+
+    [LoggerMessage(EventId = 5325, Level = LogLevel.Error, Message = "Settling a held deletion set failed unexpectedly ({ErrorType}).")]
+    public static partial void HeldThrew(ILogger logger, string errorType);
 }

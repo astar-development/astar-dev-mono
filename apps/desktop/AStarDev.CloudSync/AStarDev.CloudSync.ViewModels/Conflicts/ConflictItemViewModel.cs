@@ -14,13 +14,15 @@ public sealed class ConflictItemViewModel : LocalizedObservableObject
     private int busy;
     private Option<string> errorKey;
     private readonly bool skipped;
+    private bool isSelected;
 
-    internal ConflictItemViewModel(SyncAttentionItem.Conflict conflict, IConflictResolutionPlanner planner, Func<ConflictItemViewModel, ConflictStrategy, CancellationToken, Task> resolve, Option<string> errorKey, bool skipped, ILocalizationService localization) : base(localization)
+    internal ConflictItemViewModel(SyncAttentionItem.Conflict conflict, IConflictResolutionPlanner planner, Func<ConflictItemViewModel, ConflictStrategy, CancellationToken, Task> resolve, Option<string> errorKey, bool skipped, bool isSelected, ILocalizationService localization) : base(localization)
     {
         this.conflict = conflict;
         this.resolve = resolve;
         this.errorKey = errorKey;
         this.skipped = skipped;
+        this.isSelected = isSelected;
         Options =
         [
             CreateOption(planner, ConflictStrategyFactory.CreateLocalWins()),
@@ -65,6 +67,16 @@ public sealed class ConflictItemViewModel : LocalizedObservableObject
 
     /// <summary>Whether the user skipped the conflict in this session.</summary>
     public bool IsSkipped => skipped;
+
+    /// <summary>Whether the conflict is ticked for a bulk apply.</summary>
+    public bool IsSelected
+    {
+        get => isSelected;
+        set => SetProperty(ref isSelected, value);
+    }
+
+    /// <summary>The accessible name of the tick box, which names the file.</summary>
+    public string SelectAutomationName => Localization.GetLocal("Conflict.Select.AutomationName", PathText);
 
     /// <summary>The text shown for a skipped conflict.</summary>
     public string SkippedText => Localization.GetLocal("Conflict.Skipped");
