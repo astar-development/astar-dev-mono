@@ -43,6 +43,9 @@ internal sealed class SyncDbContext(DbContextOptions<SyncDbContext> options) : D
     /// <summary>The run journal, newest 100 runs per account.</summary>
     public DbSet<SyncRunEntity> SyncRuns => Set<SyncRunEntity>();
 
+    /// <summary>The saved upload sessions of large files, one per account and local path.</summary>
+    public DbSet<UploadSessionEntity> UploadSessions => Set<UploadSessionEntity>();
+
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -58,5 +61,6 @@ internal sealed class SyncDbContext(DbContextOptions<SyncDbContext> options) : D
         modelBuilder.ApplyConfiguration(new TrashRetentionEntityConfiguration());
         modelBuilder.ApplyConfiguration(new ActivityLogEntityConfiguration());
         modelBuilder.ApplyConfiguration(new SyncRunEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new UploadSessionEntityConfiguration());
     }
 }

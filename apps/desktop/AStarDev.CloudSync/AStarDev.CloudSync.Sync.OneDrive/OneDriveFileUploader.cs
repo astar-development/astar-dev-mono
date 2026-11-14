@@ -12,12 +12,15 @@ namespace AStarDev.CloudSync.Sync.OneDrive;
 
 /// <inheritdoc />
 /// <param name="http">Sends the requests through the account throttle gate.</param>
+/// <param name="sessions">Keeps the session of a large upload so it can continue after a restart.</param>
+/// <param name="timeProvider">Tells whether a saved session has expired.</param>
 /// <param name="logger">Reports counts and status codes only, never names or URLs.</param>
-internal sealed class OneDriveFileUploader(OneDriveTransferHttp http, ILogger<OneDriveFileUploader> logger) : IRemoteFileUploader
+internal sealed class OneDriveFileUploader(OneDriveTransferHttp http, IUploadSessionStore sessions, TimeProvider timeProvider, ILogger<OneDriveFileUploader> logger) : IRemoteFileUploader
 {
     private const int FragmentBytes = 10 * 1024 * 1024;
     private const int MaxAttempts = 5;
     private const int MaxRestarts = 2;
+    private static readonly TimeSpan ExpiryMargin = TimeSpan.FromMinutes(5);
 
     /// <inheritdoc />
     public async Task<Result<UploadedFile, ProviderError>> UploadAsync(AccountId accountId, UploadTarget target, IFileInfo source, UploadPrecondition precondition, IProgress<TransferProgress> progress, CancellationToken cancellationToken)
@@ -87,6 +90,19 @@ internal sealed class OneDriveFileUploader(OneDriveTransferHttp http, ILogger<On
 
         return !source.Exists || source.Length != length || source.LastWriteTimeUtc != lastWriteUtc;
     }
+
+    private static bool IsLarge(Transfer transfer) => transfer.Length > UploadSessionLimits.PersistedAboveBytes;
+
+    private static string TargetOf(Transfer transfer) => transfer.Target switch
+    {
+        UploadTarget.ReplacingItem replacing => $"replace:{replacing.ItemId.Value}:{TagOf(transfer.Precondition).Match(tag => tag, () => string.Empty)}",
+        UploadTarget.NewFileIn created => $"new:{created.Parent.Match(parent => parent.Value, () => "root")}/{transfer.Source.Name}",
+        _ => "other",
+    };
+
+    private static Option<DateTimeOffset> ExpiryOf(string json) =>
+        Try.Run(() => JsonDocument.Parse(json)).Match(document => StringOf(document.RootElement, "expirationDateTime"), _ => Option.None<string>())
+            .Match(text => DateTimeOffset.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var parsed) ? Option.Some(parsed) : Option.None<DateTimeOffset>(), () => Option.None<DateTimeOffset>());
 
     private static Option<string> TagOf(UploadPrecondition precondition) => precondition is UploadPrecondition.MustMatch match ? Option.Some(match.CTag.Value) : Option.None<string>();
 
@@ -162,9 +178,125 @@ internal sealed class OneDriveFileUploader(OneDriveTransferHttp http, ILogger<On
 
     private async Task<Result<UploadedFile, ProviderError>> UploadInFragmentsAsync(Transfer transfer, TransferCredentials credentials, CancellationToken cancellationToken)
     {
-        var created = await CreateSessionAsync(transfer, credentials, cancellationToken).ConfigureAwait(false);
+        var created = await EnsureSessionAsync(transfer, credentials, cancellationToken).ConfigureAwait(false);
 
         return await created.Match(_ => SendFragmentsAsync(transfer, credentials, cancellationToken), error => Task.FromResult(Result.Failure<UploadedFile, ProviderError>(error))).ConfigureAwait(false);
+    }
+
+    private async Task<Result<Unit, ProviderError>> EnsureSessionAsync(Transfer transfer, TransferCredentials credentials, CancellationToken cancellationToken)
+    {
+        var resumed = await ResumeSavedAsync(transfer, cancellationToken).ConfigureAwait(false);
+
+        return await resumed.Match(
+            _ => transfer.Session.Match(_ => Task.FromResult(resumed), () => CreateSessionAsync(transfer, credentials, cancellationToken)),
+            _ => Task.FromResult(resumed)).ConfigureAwait(false);
+    }
+
+    private async Task<Result<Unit, ProviderError>> ResumeSavedAsync(Transfer transfer, CancellationToken cancellationToken)
+    {
+        var none = Result.Success<Unit, ProviderError>(Unit.Instance);
+        if (!IsLarge(transfer))
+            return none;
+
+        var saved = await sessions.GetAsync(transfer.AccountId, transfer.Source, cancellationToken).ConfigureAwait(false);
+
+        return await saved.Match(
+            found => found.Match(session => ResumeFromAsync(transfer, session, cancellationToken), () => Task.FromResult(none)),
+            _ =>
+            {
+                OneDriveTransferLog.SessionStoreFailed(logger);
+
+                return Task.FromResult(none);
+            }).ConfigureAwait(false);
+    }
+
+    private async Task<Result<Unit, ProviderError>> ResumeFromAsync(Transfer transfer, UploadSession saved, CancellationToken cancellationToken)
+    {
+        if (!Reusable(transfer, saved))
+            return await DiscardAsync(transfer, saved, cancellationToken).ConfigureAwait(false);
+
+        using var status = OneDriveTransferHttp.Anonymous(HttpMethod.Get, saved.Url);
+        var sent = await http.SendAsync(transfer.AccountId, status, cancellationToken).ConfigureAwait(false);
+
+        return await sent.Match(response => ReadSavedStatusAsync(transfer, saved, response, cancellationToken), error => Task.FromResult(Result.Failure<Unit, ProviderError>(error))).ConfigureAwait(false);
+    }
+
+    private bool Reusable(Transfer transfer, UploadSession saved) =>
+        timeProvider.GetUtcNow() + ExpiryMargin < saved.ExpiresAt && saved.SourceLength == transfer.Length && saved.SourceWriteUtc == transfer.LastWriteUtc && saved.Target == TargetOf(transfer);
+
+    private async Task<Result<Unit, ProviderError>> ReadSavedStatusAsync(Transfer transfer, UploadSession saved, HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        using var owned = response;
+        if (response.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.Gone)
+            return await ForgetGoneAsync(transfer, cancellationToken).ConfigureAwait(false);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var (error, statusCode, code) = await http.ErrorOfAsync(response, cancellationToken).ConfigureAwait(false);
+            OneDriveTransferLog.CallFailed(logger, statusCode, code);
+
+            return Result.Failure<Unit, ProviderError>(error);
+        }
+
+        var next = NextOffset(await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
+
+        return await next.Match(
+            offset => offset < transfer.Length ? Task.FromResult(Resumed(transfer, saved, offset)) : DiscardAsync(transfer, saved, cancellationToken),
+            () => DiscardAsync(transfer, saved, cancellationToken)).ConfigureAwait(false);
+    }
+
+    private Result<Unit, ProviderError> Resumed(Transfer transfer, UploadSession saved, long offset)
+    {
+        transfer.Session = Option.Some(saved.Url);
+        transfer.ExpiresAt = Option.Some(saved.ExpiresAt);
+        transfer.Offset = offset;
+        transfer.HashedUpTo = 0;
+        _ = transfer.Hash.GetHashAndReset();
+        OneDriveTransferLog.UploadResumed(logger, offset, 0);
+
+        return Result.Success<Unit, ProviderError>(Unit.Instance);
+    }
+
+    private async Task<Result<Unit, ProviderError>> ForgetGoneAsync(Transfer transfer, CancellationToken cancellationToken)
+    {
+        OneDriveTransferLog.SessionRestarted(logger);
+        await ForgetAsync(transfer, cancellationToken).ConfigureAwait(false);
+
+        return Result.Success<Unit, ProviderError>(Unit.Instance);
+    }
+
+    private async Task<Result<Unit, ProviderError>> DiscardAsync(Transfer transfer, UploadSession saved, CancellationToken cancellationToken)
+    {
+        OneDriveTransferLog.SessionDiscarded(logger);
+        await DeleteAsync(transfer.AccountId, saved.Url, cancellationToken).ConfigureAwait(false);
+        await ForgetAsync(transfer, cancellationToken).ConfigureAwait(false);
+
+        return Result.Success<Unit, ProviderError>(Unit.Instance);
+    }
+
+    private async Task ForgetAsync(Transfer transfer, CancellationToken cancellationToken)
+    {
+        if (!IsLarge(transfer))
+            return;
+
+        var removed = await sessions.RemoveAsync(transfer.AccountId, transfer.Source, cancellationToken).ConfigureAwait(false);
+        _ = removed.Match(_ => Unit.Instance, _ => LogStoreFailed());
+    }
+
+    private async Task SaveProgressAsync(Transfer transfer, CancellationToken cancellationToken)
+    {
+        if (!IsLarge(transfer) || transfer.Session is not Option<Uri>.Some { Value: var url } || transfer.ExpiresAt is not Option<DateTimeOffset>.Some { Value: var expires })
+            return;
+
+        var saved = await sessions.SaveAsync(transfer.AccountId, transfer.Source, UploadSessionFactory.Create(url, expires, transfer.Length, transfer.LastWriteUtc, transfer.Offset, TargetOf(transfer)), cancellationToken).ConfigureAwait(false);
+        _ = saved.Match(_ => Unit.Instance, _ => LogStoreFailed());
+    }
+
+    private Unit LogStoreFailed()
+    {
+        OneDriveTransferLog.SessionStoreFailed(logger);
+
+        return Unit.Instance;
     }
 
     private async Task<Result<Unit, ProviderError>> CreateSessionAsync(Transfer transfer, TransferCredentials credentials, CancellationToken cancellationToken)
@@ -209,9 +341,11 @@ internal sealed class OneDriveFileUploader(OneDriveTransferHttp http, ILogger<On
             return Result.Failure<Unit, ProviderError>(ProviderErrorFactory.CreateUnexpected());
 
         transfer.Session = Option.Some(session);
+        transfer.ExpiresAt = ExpiryOf(json);
         transfer.Offset = 0;
         transfer.HashedUpTo = 0;
         transfer.Hash.GetHashAndReset();
+        await SaveProgressAsync(transfer, cancellationToken).ConfigureAwait(false);
 
         return Result.Success<Unit, ProviderError>(Unit.Instance);
     }
@@ -291,6 +425,7 @@ internal sealed class OneDriveFileUploader(OneDriveTransferHttp http, ILogger<On
 
     private async Task<Result<UploadedFile, ProviderError>> CompleteAsync(Transfer transfer, HttpResponseMessage response, CancellationToken cancellationToken)
     {
+        await ForgetAsync(transfer, cancellationToken).ConfigureAwait(false);
         var hash = transfer.HashedUpTo == transfer.Length ? HexOf(transfer.Hash) : await HashAgainAsync(transfer, cancellationToken).ConfigureAwait(false);
         OneDriveTransferLog.UploadCompleted(logger, transfer.Length, transfer.Fragments + 1);
 
@@ -304,14 +439,16 @@ internal sealed class OneDriveFileUploader(OneDriveTransferHttp http, ILogger<On
         return Convert.ToHexStringLower(await SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false));
     }
 
-    private static async Task<Option<Result<UploadedFile, ProviderError>>> AdvanceAsync(Transfer transfer, HttpResponseMessage response, CancellationToken cancellationToken)
+    private async Task<Option<Result<UploadedFile, ProviderError>>> AdvanceAsync(Transfer transfer, HttpResponseMessage response, CancellationToken cancellationToken)
     {
         var next = NextOffset(await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
         transfer.Fragments++;
-
-        return next.Match(
+        var advanced = next.Match(
             offset => Advanced(transfer, offset),
             () => Option.Some(Result.Failure<UploadedFile, ProviderError>(ProviderErrorFactory.CreateUnexpected())));
+        await SaveProgressAsync(transfer, cancellationToken).ConfigureAwait(false);
+
+        return advanced;
     }
 
     private static Option<Result<UploadedFile, ProviderError>> Advanced(Transfer transfer, long offset)
@@ -396,6 +533,7 @@ internal sealed class OneDriveFileUploader(OneDriveTransferHttp http, ILogger<On
     private async Task DeleteSessionAsync(Transfer transfer, CancellationToken cancellationToken)
     {
         await transfer.Session.Match(session => DeleteAsync(transfer.AccountId, session, cancellationToken), () => Task.CompletedTask).ConfigureAwait(false);
+        await ForgetAsync(transfer, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task DeleteAsync(AccountId accountId, Uri session, CancellationToken cancellationToken)
@@ -417,6 +555,8 @@ internal sealed class OneDriveFileUploader(OneDriveTransferHttp http, ILogger<On
         internal IProgress<TransferProgress> Progress { get; } = progress;
 
         internal Option<Uri> Session { get; set; } = Option.None<Uri>();
+
+        internal Option<DateTimeOffset> ExpiresAt { get; set; } = Option.None<DateTimeOffset>();
 
         internal long Length { get; set; }
 
