@@ -1,4 +1,4 @@
-using System.Text.Json;
+using System.Text;
 using System.Text.Json.Nodes;
 
 namespace AStarDev.CloudSync.Accounts.OneDrive;
@@ -17,7 +17,7 @@ internal static class MsalCacheBlobMerger
         foreach (var section in ParseOrEmpty(incoming))
             merged[section.Key] = MergeSection(merged[section.Key], section.Value);
 
-        return JsonSerializer.SerializeToUtf8Bytes(merged);
+        return Encoding.UTF8.GetBytes(merged.ToJsonString());
     }
 
     private static JsonNode? MergeSection(JsonNode? target, JsonNode? source)
