@@ -19,6 +19,10 @@ internal sealed class UploadPassInputs(ISyncRootReader roots, ISelectionRuleRead
         Lifted(roots.GetAsync(accountId, cancellationToken))
             .BindAsync(root => RootDirectory(root).Match(directory => LoadWithRootAsync(accountId, directory, changes, cancellationToken), failure => Task.FromResult(Result.Failure<UploadPassInput, UploadPassFailure>(failure))));
 
+    internal Task<Result<UploadPassInput, UploadPassFailure>> LoadForPathsAsync(AccountId accountId, IReadOnlyList<RelativeSyncPath> paths, CancellationToken cancellationToken) =>
+        Lifted(roots.GetAsync(accountId, cancellationToken))
+            .BindAsync(root => RootDirectory(root).Match(directory => ReadIndexesAsync(accountId, directory, LocalChangeSetFactory.Create(paths.Select(LocalChangeFactory.CreateDeferred), paths.Count, 0), [], cancellationToken), failure => Task.FromResult(Result.Failure<UploadPassInput, UploadPassFailure>(failure))));
+
     private static Unit Remember(Dictionary<RelativeSyncPath, SyncBaselineEntry> known, SyncBaselineEntry entry)
     {
         known[entry.Path] = entry;
