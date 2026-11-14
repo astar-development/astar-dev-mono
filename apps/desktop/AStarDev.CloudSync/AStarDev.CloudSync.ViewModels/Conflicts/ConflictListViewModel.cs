@@ -197,8 +197,7 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
     public async Task LoadAsync(CancellationToken cancellationToken)
     {
         var load = Interlocked.Increment(ref loadsStarted);
-        _ = await RunAsync(() => ReadAsync(cancellationToken), cancellationToken)
-            .MatchAsync(result => IsLatest(load) ? result.Match(Show, NotRead) : Unit.Instance, exception => IsLatest(load) ? ReadThrew(exception) : Unit.Instance);
+        _ = await RunAsync(() => ReadAsync(cancellationToken), result => IsLatest(load) ? result.Match(Show, NotRead) : Unit.Instance, exception => IsLatest(load) ? ReadThrew(exception) : Unit.Instance, cancellationToken);
     }
 
     private Task OpenAsync(CancellationToken cancellationToken)
@@ -215,12 +214,13 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
         OnPropertyChanged(nameof(IsOpen));
     }
 
-    private static async Task<Exceptional<T>> RunAsync<T>(Func<Task<T>> operation, CancellationToken cancellationToken)
+    private static async Task<TResult> RunAsync<T, TResult>(Func<Task<T>> operation, Func<T, TResult> onResult, Func<Exception, TResult> onThrown, CancellationToken cancellationToken)
     {
         var attempt = Try.RunAsync(operation, cancellationToken);
-        await ((Task)attempt).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+        await ((Task)attempt).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing | ConfigureAwaitOptions.ContinueOnCapturedContext);
+        Exceptional<T> settled = attempt.IsCanceled && !cancellationToken.IsCancellationRequested ? new Failure<T>(new TimeoutException()) : await attempt;
 
-        return attempt.IsCanceled && !cancellationToken.IsCancellationRequested ? new Failure<T>(new TimeoutException()) : await attempt;
+        return settled.Match(onResult, onThrown);
     }
 
     private bool IsLatest(int load) => load == Volatile.Read(ref loadsStarted);
@@ -429,8 +429,7 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
     {
         IReadOnlyList<ConflictId> ids = [.. items.Select(item => item.Id)];
 
-        await await RunAsync(() => resolver.ResolveAsync(accountId, ids, strategy, cancellationToken), cancellationToken)
-            .MatchAsync(result => result.Match(summary => Recorded(ids, strategy, summary), refusal => RefuseAllAsync(items, refusal)), exception => ThrewAllAsync(items, exception));
+        await await RunAsync(() => resolver.ResolveAsync(accountId, ids, strategy, cancellationToken), result => result.Match(summary => Recorded(ids, strategy, summary), refusal => RefuseAllAsync(items, refusal)), exception => ThrewAllAsync(items, exception), cancellationToken);
     }
 
     private Task Recorded(IReadOnlyList<ConflictId> ids, ConflictStrategy strategy, ResolutionSummary summary)
@@ -475,8 +474,7 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
     private Task RestoreHeldAsync(HeldDeletionItemViewModel item, CancellationToken cancellationToken) => SettleHeldAsync(item, () => heldDecider.RestoreAsync(item.AccountId, item.Id, cancellationToken), cancellationToken);
 
     private async Task SettleHeldAsync(HeldDeletionItemViewModel item, Func<Task<Result<Unit, ErrorResponse>>> settle, CancellationToken cancellationToken) =>
-        await await RunAsync(settle, cancellationToken)
-            .MatchAsync(result => result.Match(_ => HeldSettledAsync(item, cancellationToken), _ => HeldNotSettledAsync(item)), exception => HeldThrewAsync(item, exception));
+        await await RunAsync(settle, result => result.Match(_ => HeldSettledAsync(item, cancellationToken), _ => HeldNotSettledAsync(item)), exception => HeldThrewAsync(item, exception), cancellationToken);
 
     private Task HeldSettledAsync(HeldDeletionItemViewModel item, CancellationToken cancellationToken)
     {
@@ -515,8 +513,7 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
     }
 
     private async Task ResolveAsync(ConflictItemViewModel item, ConflictStrategy strategy, CancellationToken cancellationToken) =>
-        await await RunAsync(() => resolver.ResolveAsync(item.AccountId, [item.Id], strategy, cancellationToken), cancellationToken)
-            .MatchAsync(result => result.Match(summary => SettleAsync(item, strategy, summary, cancellationToken), refusal => RefuseAsync(item, refusal)), exception => ThrewAsync(item, exception));
+        await await RunAsync(() => resolver.ResolveAsync(item.AccountId, [item.Id], strategy, cancellationToken), result => result.Match(summary => SettleAsync(item, strategy, summary, cancellationToken), refusal => RefuseAsync(item, refusal)), exception => ThrewAsync(item, exception), cancellationToken);
 
     private Task SettleAsync(ConflictItemViewModel item, ConflictStrategy strategy, ResolutionSummary summary, CancellationToken cancellationToken)
     {
