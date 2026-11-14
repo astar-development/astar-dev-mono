@@ -271,6 +271,19 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
                         });
                 });
 
+            modelBuilder.Entity("AStarDev.CloudSync.Sync.Sqlite.SyncScheduleEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("IntervalMinutes")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SyncSchedule", (string)null);
+                });
+
             modelBuilder.Entity("AStarDev.CloudSync.Sync.Sqlite.SyncAttentionPathEntity", b =>
                 {
                     b.HasOne("AStarDev.CloudSync.Sync.Sqlite.SyncAttentionEntity", null)
