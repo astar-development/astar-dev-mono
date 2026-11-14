@@ -43,6 +43,18 @@ public abstract record ActivityKind
         public int FileCount { get; }
     }
 
+    /// <summary>Files were deleted, locally or remotely.</summary>
+    public sealed record Deleted : ActivityKind
+    {
+        internal Deleted(int fileCount)
+        {
+            FileCount = fileCount;
+        }
+
+        /// <summary>The number of files deleted.</summary>
+        public int FileCount { get; }
+    }
+
     /// <summary>A file changed on both sides.</summary>
     public sealed record ConflictDetected : ActivityKind
     {

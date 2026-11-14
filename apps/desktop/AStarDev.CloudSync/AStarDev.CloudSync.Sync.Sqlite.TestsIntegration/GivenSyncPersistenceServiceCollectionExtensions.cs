@@ -26,6 +26,15 @@ public class GivenSyncPersistenceServiceCollectionExtensions
     }
 
     [Fact]
+    public void when_the_module_is_added_then_the_activity_log_reader_and_writer_are_registered_as_singletons_over_one_store()
+    {
+        var services = new ServiceCollection().AddSyncPersistence(_ => new MockFileSystem().FileInfo.New("/data/cloudsync.db"));
+
+        services.Where(descriptor => descriptor.ServiceType == typeof(IActivityLogReader) || descriptor.ServiceType == typeof(IActivityLogWriter)).Select(descriptor => descriptor.Lifetime).ShouldBe([ServiceLifetime.Singleton, ServiceLifetime.Singleton]);
+        services.Count(descriptor => descriptor.ServiceType == typeof(IAccountRemovalParticipant)).ShouldBeGreaterThanOrEqualTo(7);
+    }
+
+    [Fact]
     public void when_the_module_is_added_then_the_pause_reader_and_writer_are_registered_as_singletons_and_the_store_takes_part_in_account_removal()
     {
         var services = new ServiceCollection().AddSyncPersistence(_ => new MockFileSystem().FileInfo.New("/data/cloudsync.db"));

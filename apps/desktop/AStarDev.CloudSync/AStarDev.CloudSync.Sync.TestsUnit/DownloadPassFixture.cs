@@ -36,6 +36,7 @@ public sealed class DownloadPassFixture : IDisposable
             .AddSingleton<ISyncAttentionReader>(Attention)
             .AddSingleton<ISyncAttentionCloser>(Attention)
             .AddSingleton<IRemoteIndexReader>(Remote)
+            .AddSingleton<IActivityLogWriter>(new RecordingActivityLogWriter())
             .AddKeyedSingleton<IRemoteFileDownloader>(CloudProviderFactory.CreateOneDrive(), Downloader)
             .AddCloudSync()
             .AddSingleton<IRemoteIndexUpdater>(Steps)

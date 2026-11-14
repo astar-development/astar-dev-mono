@@ -18,6 +18,7 @@ public class GivenOverviewServiceCollectionExtensions
             .AddSingleton<ISyncPairReader>(new FakeSyncPairReader())
             .AddSingleton<ISyncRunStatusSource>(new FakeSyncRunStatusSource())
             .AddSingleton<IAccountPauseReader>(new FakeAccountPauseReader())
+            .AddSingleton<IActivityLogReader>(new FakeActivityLogReader())
             .AddSyncOverview()
             .BuildServiceProvider();
 
