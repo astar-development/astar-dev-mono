@@ -14,6 +14,22 @@ public class GivenACloudAccountFactory
     }
 
     [Fact]
+    public void when_the_text_is_missing_then_it_is_normalised_to_empty()
+    {
+        var account = CloudAccountFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), null!, null!, CloudProviderFactory.CreateOneDrive(), StorageUsageFactory.Create(1, 2), 1, 2, SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
+
+        (account.DisplayName, account.Email).ShouldBe((string.Empty, string.Empty));
+    }
+
+    [Fact]
+    public void when_no_sign_in_state_is_given_then_the_account_is_signed_in()
+    {
+        var account = CloudAccountFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), "Work", "work@example.com", CloudProviderFactory.CreateOneDrive(), StorageUsageFactory.Create(1, 2), 1, 2, SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
+
+        account.SignIn.ShouldBe(AccountSignInStateFactory.CreateSignedIn());
+    }
+
+    [Fact]
     public void when_the_option_counts_are_negative_then_they_are_normalised_to_zero()
     {
         var account = Create(Option.Some(-3), Option.Some(-4));
