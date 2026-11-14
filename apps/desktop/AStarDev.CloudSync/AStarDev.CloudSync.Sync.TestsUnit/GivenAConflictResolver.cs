@@ -27,6 +27,58 @@ public sealed class GivenAConflictResolver : IDisposable
     }
 
     [Fact]
+    public async Task when_local_wins_and_the_conflict_recorded_a_cloud_ctag_then_the_if_match_uses_the_ctag_the_user_saw()
+    {
+        var run = await StartAsync();
+        run.Local("Docs/a.txt", "mine");
+        run.Remote.File("Docs/a.txt", "id-a", "c-seen", 4);
+        var id = run.Conflict("Docs/a.txt", ConflictKindFactory.CreateBothModified(), seenCTag: "c-seen");
+
+        _ = await Summary(run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateLocalWins(), CancellationToken));
+
+        run.Uploader.Calls.Single().Precondition.ShouldBe(ResolutionFixture.UploadMustMatch("c-seen"));
+    }
+
+    [Fact]
+    public async Task when_the_cloud_file_changed_since_the_user_saw_it_then_local_wins_is_refused_as_remote_changed_before_any_upload()
+    {
+        var run = await StartAsync();
+        run.Local("Docs/a.txt", "mine");
+        run.Remote.File("Docs/a.txt", "id-a", "c-newer", 4);
+        var id = run.Conflict("Docs/a.txt", ConflictKindFactory.CreateBothModified(), seenCTag: "c-seen");
+
+        var summary = await Summary(run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateLocalWins(), CancellationToken));
+
+        (summary.Failed.Single().Reason, run.Uploader.Calls.Count, run.Attention.ClosedConflicts.Count).ShouldBe((ResolutionFailureFactory.CreateRemoteChanged(), 0, 0));
+    }
+
+    [Fact]
+    public async Task when_the_cloud_file_changed_since_the_user_saw_it_then_remote_wins_is_refused_and_the_local_file_is_kept()
+    {
+        var run = await StartAsync();
+        run.Local("Docs/a.txt", "mine");
+        run.Remote.File("Docs/a.txt", "id-a", "c-newer", 6);
+        run.Downloader.Content["id-a"] = "theirs"u8.ToArray();
+        var id = run.Conflict("Docs/a.txt", ConflictKindFactory.CreateBothModified(), seenCTag: "c-seen");
+
+        var summary = await Summary(run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateRemoteWins(), CancellationToken));
+
+        (summary.Failed.Single().Reason, run.FileSystem.File.ReadAllText(ResolutionFixture.FullPath("Docs/a.txt")), run.Downloader.Calls.Count).ShouldBe((ResolutionFailureFactory.CreateRemoteChanged(), "mine", 0));
+    }
+
+    [Fact]
+    public async Task when_the_cloud_file_changed_since_the_user_saw_it_then_removing_it_is_refused()
+    {
+        var run = await StartAsync();
+        run.Remote.File("Docs/a.txt", "id-a", "c-newer", 4);
+        var id = run.Conflict("Docs/a.txt", ConflictKindFactory.CreateLocalDeletedRemoteModified(), local: SideSnapshotFactory.CreateAbsent(), seenCTag: "c-seen");
+
+        var summary = await Summary(run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateLocalWins(), CancellationToken));
+
+        (summary.Failed.Single().Reason, run.Remover.Calls.Count).ShouldBe((ResolutionFailureFactory.CreateRemoteChanged(), 0));
+    }
+
+    [Fact]
     public async Task when_the_upload_hits_a_412_then_the_conflict_stays_open_as_remote_changed()
     {
         var run = await StartAsync();

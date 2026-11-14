@@ -146,6 +146,18 @@ public sealed class GivenAHeldDeletionDecider : IDisposable
     }
 
     [Fact]
+    public async Task when_a_cloud_deletion_is_restored_but_the_local_copy_is_gone_then_the_set_stays_open()
+    {
+        var run = await StartAsync();
+        run.Remote.Folder("Docs");
+        var id = run.Hold(DeletionDirectionFactory.CreateDeleteLocal(), "Docs/gone.txt");
+
+        var result = await run.Decider.RestoreAsync(run.Account, id, CancellationToken);
+
+        (result.Match(_ => "ok", _ => "failed"), run.Attention.Closed.Count, run.Uploader.Calls.Count).ShouldBe(("failed", 0, 0));
+    }
+
+    [Fact]
     public async Task when_the_set_is_not_in_the_queue_then_the_call_fails()
     {
         var run = await StartAsync();

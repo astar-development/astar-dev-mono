@@ -133,10 +133,10 @@ public sealed class ResolutionFixture : IDisposable
         return entry;
     }
 
-    public ConflictId Conflict(string relative, ConflictKind kind, SideSnapshot? local = null, SideSnapshot? remote = null)
+    public ConflictId Conflict(string relative, ConflictKind kind, SideSnapshot? local = null, SideSnapshot? remote = null, string? seenCTag = null)
     {
         var id = new ConflictId(Guid.NewGuid());
-        Attention.Seed(SyncAttentionItemFactory.CreateConflict(id, Account, Path(relative), kind, local ?? ConflictFindings.Present(), remote ?? ConflictFindings.Present(), Start));
+        Attention.Seed(SyncAttentionItemFactory.CreateConflict(id, Account, Path(relative), kind, local ?? ConflictFindings.Present(), remote ?? (seenCTag is null ? ConflictFindings.Present() : SideSnapshotFactory.CreatePresent(10, Start, Option.None<ContentHash>(), Option.Some(RemoteIds.CTag(seenCTag)))), Start));
 
         return id;
     }
