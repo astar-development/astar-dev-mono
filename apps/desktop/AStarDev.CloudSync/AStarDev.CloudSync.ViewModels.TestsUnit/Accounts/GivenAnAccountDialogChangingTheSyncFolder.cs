@@ -282,7 +282,7 @@ public class GivenAnAccountDialogChangingTheSyncFolder
     private static CloudAccount Syncing() => WithStatus(SyncStatusFactory.CreateSyncing(40), Option.Some(TestData.Now));
 
     private static CloudAccount WithStatus(SyncStatus status, Option<DateTimeOffset> lastSync) =>
-        CloudAccountFactory.Create(AccountIdFactory.Create(Guid.Parse("6f7e8d9c-0b1a-4c3d-9e8f-7a6b5c4d3e2f")), "Personal", "personal@example.com", CloudProviderFactory.CreateOneDrive(), StorageUsageFactory.Create(1, 2), 4, 1_204, status, lastSync, AccountSignInStateFactory.CreateSignedIn());
+        CloudAccountFactory.Create(CloudAccountIdentityFactory.Create(AccountIdFactory.Create(Guid.Parse("6f7e8d9c-0b1a-4c3d-9e8f-7a6b5c4d3e2f")), "Personal", "personal@example.com", CloudProviderFactory.CreateOneDrive()), StorageUsageFactory.Create(1, 2), 4, 1_204, status, lastSync, AccountSignInStateFactory.CreateSignedIn());
 
     private static SyncRootRejection Rejection(string name) => name switch
     {

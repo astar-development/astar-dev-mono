@@ -63,7 +63,7 @@ public class GivenAnAccountWithAFailedSync
     public void when_a_failed_account_also_needs_sign_in_then_there_is_no_failure_message()
     {
         var failed = TestData.CreateAccount(SyncStatusFactory.CreateFailed(SyncFailureReasonFactory.CreateUnexpected()), Option.None<DateTimeOffset>());
-        var signedOut = CloudAccountFactory.Create(failed.Id, "Work", "work@example.com", failed.Provider, failed.Storage, 1, 1, failed.Status, Option.None<DateTimeOffset>(), AccountSignInStateFactory.CreateSignInRequired());
+        var signedOut = CloudAccountFactory.Create(CloudAccountIdentityFactory.Create(failed.Id, "Work", "work@example.com", failed.Provider), failed.Storage, 1, 1, failed.Status, Option.None<DateTimeOffset>(), AccountSignInStateFactory.CreateSignInRequired());
         var account = TestData.CreateAccountViewModel(signedOut, new RecordingAccountCommands());
 
         (account.HasFailure, account.LayoutAFailureText, account.NeedsSignIn).ShouldBe((false, string.Empty, true));

@@ -49,7 +49,7 @@ public class GivenASyncOverviewViewModel
     [Fact]
     public async Task when_loaded_with_one_of_each_then_the_summary_tile_labels_are_singular()
     {
-        var account = CloudAccountFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), "Work", "work@example.com", CloudProviderFactory.CreateOneDrive(), StorageUsageFactory.Create(1, 2), 1, 1, SyncStatusFactory.CreateHasConflicts(1), Option.None<DateTimeOffset>());
+        var account = CloudAccountFactory.Create(CloudAccountIdentityFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), "Work", "work@example.com", CloudProviderFactory.CreateOneDrive()), StorageUsageFactory.Create(1, 2), 1, 1, SyncStatusFactory.CreateHasConflicts(1), Option.None<DateTimeOffset>());
         var conflict = SyncConflictFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), "report.docx", TestData.Now);
         var viewModel = await CreateLoadedViewModelAsync(SyncOverviewFactory.Create([account], [], [], [conflict], [], 0, Option.None<DateTimeOffset>()));
 
@@ -59,8 +59,8 @@ public class GivenASyncOverviewViewModel
     [Fact]
     public async Task when_loaded_with_more_than_one_of_each_then_the_summary_tile_labels_are_plural()
     {
-        var work = CloudAccountFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), "Work", "work@example.com", CloudProviderFactory.CreateOneDrive(), StorageUsageFactory.Create(1, 2), 2, 5, SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
-        var personal = CloudAccountFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), "Personal", "personal@example.com", CloudProviderFactory.CreateOneDrive(), StorageUsageFactory.Create(1, 2), 3, 5, SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
+        var work = CloudAccountFactory.Create(CloudAccountIdentityFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), "Work", "work@example.com", CloudProviderFactory.CreateOneDrive()), StorageUsageFactory.Create(1, 2), 2, 5, SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
+        var personal = CloudAccountFactory.Create(CloudAccountIdentityFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), "Personal", "personal@example.com", CloudProviderFactory.CreateOneDrive()), StorageUsageFactory.Create(1, 2), 3, 5, SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
         var firstConflict = SyncConflictFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), "report.docx", TestData.Now);
         var secondConflict = SyncConflictFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), "budget.xlsx", TestData.Now);
         var viewModel = await CreateLoadedViewModelAsync(SyncOverviewFactory.Create([work, personal], [], [], [firstConflict, secondConflict], [], 0, Option.None<DateTimeOffset>()));
@@ -88,8 +88,8 @@ public class GivenASyncOverviewViewModel
     [Fact]
     public async Task when_every_account_has_a_folder_count_then_the_folders_synced_tile_is_their_sum()
     {
-        var first = CloudAccountFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), "Work", "work@example.com", CloudProviderFactory.CreateOneDrive(), StorageUsageFactory.Create(1, 2), 4, 1, SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
-        var second = CloudAccountFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), "Home", "home@example.com", CloudProviderFactory.CreateOneDrive(), StorageUsageFactory.Create(1, 2), 3, 1, SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
+        var first = CloudAccountFactory.Create(CloudAccountIdentityFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), "Work", "work@example.com", CloudProviderFactory.CreateOneDrive()), StorageUsageFactory.Create(1, 2), 4, 1, SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
+        var second = CloudAccountFactory.Create(CloudAccountIdentityFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), "Home", "home@example.com", CloudProviderFactory.CreateOneDrive()), StorageUsageFactory.Create(1, 2), 3, 1, SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
         var viewModel = await CreateLoadedViewModelAsync(SyncOverviewFactory.Create([first, second], [], [], [], [], 0, Option.None<DateTimeOffset>()));
 
         viewModel.Stats[2].Value.ShouldBe("7");
