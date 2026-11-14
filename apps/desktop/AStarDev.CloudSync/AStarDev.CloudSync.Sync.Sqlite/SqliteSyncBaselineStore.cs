@@ -29,7 +29,21 @@ internal sealed class SqliteSyncBaselineStore(IDbContextFactory<SyncDbContext> d
 
     /// <inheritdoc />
     public Task<Result<BaselineCounts, ErrorResponse>> CountAsync(AccountId accountId, CancellationToken cancellationToken) =>
-        throw new NotImplementedException($"{nameof(CountAsync)} {accountId} {cancellationToken}");
+        Try.RunAsync(() => CountRowsAsync(accountId, cancellationToken), cancellationToken)
+            .MatchAsync(Result.Success<BaselineCounts, ErrorResponse>, exception => Failed<BaselineCounts>(exception, "The baseline could not be counted."));
+
+    private async Task<BaselineCounts> CountRowsAsync(AccountId accountId, CancellationToken cancellationToken)
+    {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        var groups = await dbContext.SyncBaseline.AsNoTracking()
+            .Where(item => item.AccountId == accountId.Value)
+            .GroupBy(item => item.IsFolder)
+            .Select(group => new { IsFolder = group.Key, Count = group.Count() })
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        return BaselineCountsFactory.Create(groups.Where(group => group.IsFolder).Sum(group => group.Count), groups.Where(group => !group.IsFolder).Sum(group => group.Count));
+    }
 
     /// <inheritdoc />
     public Task<Result<Unit, ErrorResponse>> UpsertAsync(AccountId accountId, IReadOnlyList<SyncBaselineEntry> entries, CancellationToken cancellationToken) =>

@@ -48,12 +48,27 @@ internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps st
             var running = StepsAsync(accountId, pass.Token);
             await ((Task)running).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
             outcome = running.IsCompletedSuccessfully ? await running.ConfigureAwait(false) : Abandoned(running);
+            await RefreshQuotaAsync(accountId, outcome, pass.Token).ConfigureAwait(false);
         }
 
         registry.End(pass, outcome);
         LogEnd(trigger, outcome, timeProvider.GetElapsedTime(started));
 
         return outcome;
+    }
+
+    private static bool NeedsNoQuotaRefresh(Result<SyncPassSummary, SyncPassFailure> outcome) => outcome.Match(_ => false, failure => failure is SyncPassFailure.Cancelled or SyncPassFailure.AuthenticationRequired);
+
+    private async Task RefreshQuotaAsync(AccountId accountId, Result<SyncPassSummary, SyncPassFailure> outcome, CancellationToken cancellationToken)
+    {
+        if (cancellationToken.IsCancellationRequested || NeedsNoQuotaRefresh(outcome))
+            return;
+
+        var refreshing = Task.Run(() => steps.Quota.RefreshAsync(accountId, cancellationToken), cancellationToken);
+        await ((Task)refreshing).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+
+        if (refreshing.Exception?.GetBaseException() is { } exception)
+            LogMessage.Warning(logger, Location, $"The storage quota refresh threw {exception.GetType().Name}.");
     }
 
     private Result<SyncPassSummary, SyncPassFailure> Abandoned(Task running)
