@@ -18,9 +18,11 @@ public sealed class ResolutionFixture : IDisposable
 
     private readonly ServiceProvider provider;
 
-    private ResolutionFixture(AccountId account, InMemoryAccountStore accounts)
+    private ResolutionFixture(AccountId account, InMemoryAccountStore accounts, IReadOnlyList<SelectionRule> rules)
     {
         Account = account;
+        RuleReader.Listing = Result.Success<IReadOnlyList<SelectionRule>, ErrorResponse>(rules);
+        RuleWriter = new ApplyingRuleWriter(RuleReader);
         FileSystem = new MockFileSystem(options => options.SimulatingOperatingSystem(SimulationMode.Linux));
         Roots.Root = Option.Some(FileSystem.Directory.CreateDirectory(Root));
         Recorder = new FakeUploadRecorder(Baseline);
@@ -32,7 +34,8 @@ public sealed class ResolutionFixture : IDisposable
             .AddCloudSync()
             .AddSingleton<IAccountStore>(accounts)
             .AddSingleton<ISyncRootReader>(Roots)
-            .AddSingleton<ISelectionRuleReader>(new FixedSelectionRuleReader([]))
+            .AddSingleton<ISelectionRuleReader>(RuleReader)
+            .AddSingleton<ISelectionRuleWriter>(RuleWriter)
             .AddSingleton<IPathQuarantine>(new FixedPathQuarantine(QuarantineSnapshotFactory.CreateEmpty()))
             .AddSingleton<ISyncBaselineReader>(Baseline)
             .AddSingleton<ISyncBaselineWriter>(Baseline)
@@ -55,6 +58,10 @@ public sealed class ResolutionFixture : IDisposable
     public AccountId Account { get; }
 
     public MockFileSystem FileSystem { get; }
+
+    public ScriptedRuleReader RuleReader { get; } = new();
+
+    public ApplyingRuleWriter RuleWriter { get; }
 
     public FakeTimeProvider Time { get; } = new(Start);
 
@@ -90,14 +97,18 @@ public sealed class ResolutionFixture : IDisposable
 
     public IHeldDeletionDecider Decider => provider.GetRequiredService<IHeldDeletionDecider>();
 
+    public ILocalChangeDetector Detector => provider.GetRequiredService<ILocalChangeDetector>();
+
+    public IUploadPass Uploads => provider.GetRequiredService<IUploadPass>();
+
     public IAccountSyncLock SyncLock => provider.GetRequiredService<IAccountSyncLock>();
 
-    public static async Task<ResolutionFixture> CreateAsync(CancellationToken cancellationToken)
+    public static async Task<ResolutionFixture> CreateAsync(CancellationToken cancellationToken, IReadOnlyList<SelectionRule>? rules = null)
     {
         var accounts = new InMemoryAccountStore();
         var added = (AccountAddOutcome.Added)await accounts.AddAsync(AccountFixtures.Registration("00000000-0000-0000-a1b2-c3d4e5f60718.9188040d-6c67-4c5b-b112-36a304b66dad"), cancellationToken);
 
-        return new ResolutionFixture(added.AccountId, accounts);
+        return new ResolutionFixture(added.AccountId, accounts, rules ?? []);
     }
 
     public static UploadPrecondition UploadMustMatch(string cTag) => UploadPreconditionFactory.CreateMustMatch(RemoteIds.CTag(cTag)).Match(precondition => precondition, _ => throw new InvalidOperationException("The test cTag must be valid."));
