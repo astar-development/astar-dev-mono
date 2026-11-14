@@ -10,7 +10,7 @@ namespace AStarDev.CloudSync.Sync.Sqlite;
 /// <summary>Keeps an account's sync baseline in SQLite (#1399). A save runs in one serializable transaction, so concurrent saves for the same path leave one row.</summary>
 /// <param name="dbContextFactory">Creates a context per operation.</param>
 /// <param name="logger">Reports reads and writes that fail, by exception type only.</param>
-internal sealed class SqliteSyncBaselineStore(IDbContextFactory<SyncDbContext> dbContextFactory, ILogger<SqliteSyncBaselineStore> logger) : ISyncBaselineReader, ISyncBaselineWriter, IAccountRemovalParticipant
+internal sealed class SqliteSyncBaselineStore(IDbContextFactory<SyncDbContext> dbContextFactory, ILogger<SqliteSyncBaselineStore> logger) : ISyncBaselineReader, ISyncBaselineWriter, ISyncBaselineCounter, IAccountRemovalParticipant
 {
     private const string Location = nameof(SqliteSyncBaselineStore);
     private const int ChunkSize = 500;
@@ -26,6 +26,10 @@ internal sealed class SqliteSyncBaselineStore(IDbContextFactory<SyncDbContext> d
     public Task<Result<IReadOnlyList<SyncBaselineEntry>, ErrorResponse>> GetUnderAsync(AccountId accountId, RelativeSyncPath under, Option<RelativeSyncPath> after, int limit, CancellationToken cancellationToken) =>
         Try.RunAsync(() => ReadPageAsync(accountId, under.Value ?? string.Empty, after.Match(path => (string?)path.Value, () => null), Math.Clamp(limit, 1, MaxPageSize), cancellationToken), cancellationToken)
             .MatchAsync(page => Result.Success<IReadOnlyList<SyncBaselineEntry>, ErrorResponse>(page), exception => Failed<IReadOnlyList<SyncBaselineEntry>>(exception, "The baseline could not be read."));
+
+    /// <inheritdoc />
+    public Task<Result<BaselineCounts, ErrorResponse>> CountAsync(AccountId accountId, CancellationToken cancellationToken) =>
+        throw new NotImplementedException($"{nameof(CountAsync)} {accountId} {cancellationToken}");
 
     /// <inheritdoc />
     public Task<Result<Unit, ErrorResponse>> UpsertAsync(AccountId accountId, IReadOnlyList<SyncBaselineEntry> entries, CancellationToken cancellationToken) =>

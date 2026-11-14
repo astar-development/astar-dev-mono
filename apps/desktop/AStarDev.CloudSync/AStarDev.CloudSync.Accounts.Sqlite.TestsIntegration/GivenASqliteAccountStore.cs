@@ -66,6 +66,17 @@ public sealed class GivenASqliteAccountStore : GivenAnAccountStore
         found.Match(_ => true, _ => false).ShouldBeFalse();
     }
 
+    [Fact]
+    public async Task when_the_storage_cannot_be_saved_then_the_update_fails_and_an_error_is_logged_without_account_details()
+    {
+        await using var unmigrated = TemporaryCloudSyncDatabase.CreateUnmigrated();
+
+        var result = await unmigrated.AccountStore.UpdateStorageAsync(AccountIdFactory.Create(Guid.NewGuid()), StorageUsageFactory.Create(1, 2), CancellationToken);
+
+        result.Match(_ => true, _ => false).ShouldBeFalse();
+        unmigrated.Logger.Entries.ShouldContain(entry => entry.Level == LogLevel.Error && entry.Exception == null);
+    }
+
     private static ProviderAccountKey Key() => ProviderAccountKeyFactory.Create(HomeAccountIdentifier).Match(key => key, _ => throw new InvalidOperationException("The test key must be valid."));
 
     private static AccountRegistration Registration() => AccountRegistrationFactory.Create(Key(), CloudProviderFactory.CreateOneDrive(), "Personal", "personal@example.com", new DriveId("8A3F2C1D0E9B7A65"), StorageUsageFactory.Create(1_024, 5_368_709_120));

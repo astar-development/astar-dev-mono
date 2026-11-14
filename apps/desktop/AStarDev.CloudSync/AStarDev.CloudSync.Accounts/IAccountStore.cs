@@ -27,4 +27,11 @@ public interface IAccountStore
     /// <param name="cancellationToken">Cancels the delete.</param>
     /// <returns><see cref="Unit"/> once the account is gone, or the error that stopped the delete.</returns>
     Task<Result<Unit, ErrorResponse>> RemoveAsync(AccountId accountId, CancellationToken cancellationToken);
+
+    /// <summary>Saves the account's latest storage usage after a quota refresh and leaves every other field alone. Updating an account that does not exist succeeds and changes nothing, so a refresh racing a removal is safe.</summary>
+    /// <param name="accountId">The account.</param>
+    /// <param name="storage">The storage usage the provider reported.</param>
+    /// <param name="cancellationToken">Cancels the update.</param>
+    /// <returns><see cref="Unit"/> once saved, or the error that stopped the update.</returns>
+    Task<Result<Unit, ErrorResponse>> UpdateStorageAsync(AccountId accountId, StorageUsage storage, CancellationToken cancellationToken);
 }

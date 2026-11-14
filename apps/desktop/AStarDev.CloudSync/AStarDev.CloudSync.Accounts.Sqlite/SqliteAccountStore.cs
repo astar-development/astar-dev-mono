@@ -43,6 +43,10 @@ internal sealed class SqliteAccountStore(IDbContextFactory<CloudSyncDbContext> d
         Try.RunAsync(() => DeleteAsync(accountId, cancellationToken), cancellationToken)
             .MatchAsync(Result.Success<Unit, ErrorResponse>, exception => ReadFailed<Unit>(exception, "Could not remove the account.", "The account could not be removed."));
 
+    /// <inheritdoc />
+    public Task<Result<Unit, ErrorResponse>> UpdateStorageAsync(AccountId accountId, StorageUsage storage, CancellationToken cancellationToken) =>
+        throw new NotImplementedException($"{nameof(UpdateStorageAsync)} {accountId} {storage} {cancellationToken}");
+
     private async Task<Unit> DeleteAsync(AccountId accountId, CancellationToken cancellationToken)
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
