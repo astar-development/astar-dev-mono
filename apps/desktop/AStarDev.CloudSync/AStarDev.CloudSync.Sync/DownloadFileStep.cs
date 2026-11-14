@@ -10,7 +10,8 @@ namespace AStarDev.CloudSync.Sync;
 /// <param name="hasher">Hashes the finished file.</param>
 /// <param name="disk">Reads the free space.</param>
 /// <param name="options">The free-space margin.</param>
-internal sealed class DownloadFileStep(IProviderCapability<IRemoteFileDownloader> downloaders, ILocalFileOperations files, IContentHasher hasher, IDiskSpaceProbe disk, DownloadPassOptions options)
+/// <param name="classifier">Decides the conflict kind when the target changed during the download.</param>
+internal sealed class DownloadFileStep(IProviderCapability<IRemoteFileDownloader> downloaders, ILocalFileOperations files, IContentHasher hasher, IDiskSpaceProbe disk, DownloadPassOptions options, IConflictClassifier classifier)
 {
     internal async Task<(DownloadItemOutcome Outcome, Option<SyncBaselineEntry> Entry)> RunAsync(AccountId accountId, IDirectoryInfo root, DownloadPlanItem.DownloadFile plan, Option<SyncBaselineEntry> baseline, IProgress<TransferProgress> progress, CancellationToken cancellationToken)
     {
@@ -45,17 +46,25 @@ internal sealed class DownloadFileStep(IProviderCapability<IRemoteFileDownloader
             : SideSnapshotFactory.CreateAbsent();
     }
 
-    private static Option<ConflictKind> TargetChanged(IFileInfo target, Option<SyncBaselineEntry> baseline)
+    private static bool IsTargetChanged(IFileInfo target, Option<SyncBaselineEntry> baseline)
     {
         target.Refresh();
         if (!target.Exists)
-            return Option.None<ConflictKind>();
+            return false;
 
         var writtenAt = new DateTimeOffset(target.LastWriteTimeUtc, TimeSpan.Zero);
 
-        return baseline.Match(
-            entry => entry.Kind is SyncBaselineKind.File synced && synced.Size == target.Length && synced.LastWriteUtc == writtenAt ? Option.None<ConflictKind>() : Option.Some(ConflictKindFactory.CreateBothModified()),
-            () => Option.Some(ConflictKindFactory.CreateBothAdded()));
+        return baseline.Match(entry => !(entry.Kind is SyncBaselineKind.File synced && synced.Size == target.Length && synced.LastWriteUtc == writtenAt), () => true);
+    }
+
+    private (DownloadItemOutcome Outcome, Option<SyncBaselineEntry> Entry) TargetChangedConflict(DownloadAttempt attempt)
+    {
+        var local = LocalSnapshotOf(attempt.Target);
+        var remote = ConflictSides.Remote(attempt.Plan.Item);
+        var evidence = ConflictEvidenceFactory.Create(local, remote, Option.None<ConflictBaseline>(), ConflictSignalFactory.CreatePreconditionFailed());
+        var kind = classifier.Classify(evidence).Match(found => found, ConflictKindFactory.CreateRemoteChangedDuringTransfer);
+
+        return (DownloadItemOutcomeFactory.CreateSentToConflicts(ConflictFindingFactory.Create(attempt.Plan.Path, kind, local, remote)), Option.None<SyncBaselineEntry>());
     }
 
     private static void Discard(IFileInfo temp) => _ = Try.Run(() =>
@@ -91,9 +100,8 @@ internal sealed class DownloadFileStep(IProviderCapability<IRemoteFileDownloader
         if (!attempt.Temp.Exists || attempt.Temp.Length != attempt.Size)
             return Failed(DownloadFailureFactory.CreateProvider(ProviderErrorFactory.CreateTransient()));
 
-        var changed = TargetChanged(attempt.Target, attempt.Baseline);
-        if (changed.Match(_ => true, () => false))
-            return changed.Match(kind => (DownloadItemOutcomeFactory.CreateSentToConflicts(ConflictFindingFactory.Create(attempt.Plan.Path, kind, LocalSnapshotOf(attempt.Target), ConflictSides.Remote(attempt.Plan.Item))), Option.None<SyncBaselineEntry>()), () => Failed(DownloadFailureFactory.CreateLocal(LocalOperationFailureFactory.CreateUnexpected())));
+        if (IsTargetChanged(attempt.Target, attempt.Baseline))
+            return TargetChangedConflict(attempt);
 
         return await files.ReplaceAsync(attempt.Temp, attempt.Target, attempt.Plan.Item.LastModified, cancellationToken)
             .MatchAsync(_ => HashAsync(attempt, downloaded, cancellationToken), failure => Task.FromResult(Failed(DownloadFailureFactory.CreateLocal(failure))))
