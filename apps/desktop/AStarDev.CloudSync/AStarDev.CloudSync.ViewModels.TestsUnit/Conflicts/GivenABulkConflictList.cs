@@ -201,20 +201,23 @@ public class GivenABulkConflictList
         items[1].IsSkipped.ShouldBeFalse();
     }
 
-    [Fact]
-    public async Task when_a_bulk_apply_is_refused_then_every_ticked_item_shows_the_refusal_and_stays_open()
+    [Theory]
+    [InlineData("Busy", "A sync is running for this account. Try again when it has finished.")]
+    [InlineData("Draining", "Sync is paused for an update or an account removal. Try again later.")]
+    [InlineData("QueueUnreadable", "The conflicts could not be read, so nothing was resolved. Try again.")]
+    public async Task when_a_bulk_apply_is_refused_then_every_ticked_item_shows_the_refusal_and_stays_open(string refusal, string expected)
     {
         var fixture = new ConflictListFixture();
         fixture.Reader.Add(Photos.Id, AttentionItems.CreateConflict(Photos.Id, "a.jpg"), AttentionItems.CreateConflict(Photos.Id, "b.jpg"));
-        fixture.Resolver.Outcome = (_, _, _, _) => Task.FromResult(Result.Failure<ResolutionSummary, ConflictRefusal>(ConflictRefusalFactory.CreateDraining()));
+        fixture.Resolver.Outcome = (_, _, _, _) => Task.FromResult(Result.Failure<ResolutionSummary, ConflictRefusal>(Refusal(refusal)));
         await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
         fixture.List.SelectAllCommand.Execute(null);
 
         await fixture.List.BulkOptions[0].Command.ExecuteAsync(null);
 
         var items = fixture.List.Groups.Single().Items;
-        items.ShouldAllBe(item => item.HasError && item.ErrorText == "Sync is paused for an update or an account removal. Try again later.");
-        fixture.List.BulkErrorText.ShouldBe("Sync is paused for an update or an account removal. Try again later.");
+        items.ShouldAllBe(item => item.HasError && item.ErrorText == expected);
+        fixture.List.BulkErrorText.ShouldBe(expected);
     }
 
     [Fact]
@@ -359,4 +362,11 @@ public class GivenABulkConflictList
         fixture.Resolver.Calls.Skip(0).Any(call => call.Ids.Count == 1 && call.Ids[0] == other.Id).ShouldBeTrue();
         fixture.Resolver.Calls.Count(call => call.Ids.Contains(busy.Id)).ShouldBe(1);
     }
+
+    private static ConflictRefusal Refusal(string refusal) => refusal switch
+    {
+        "Busy" => ConflictRefusalFactory.CreateBusy(),
+        "Draining" => ConflictRefusalFactory.CreateDraining(),
+        _ => ConflictRefusalFactory.CreateQueueUnreadable(),
+    };
 }
