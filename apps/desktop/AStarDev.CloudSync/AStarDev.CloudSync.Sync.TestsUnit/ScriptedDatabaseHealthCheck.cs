@@ -12,9 +12,14 @@ public sealed class ScriptedDatabaseHealthCheck : IDatabaseHealthCheck
 
     public Option<WriteGate> Gate { get; set; } = Option.None<WriteGate>();
 
+    public bool Throws { get; set; }
+
     public async Task<Result<Unit, DatabaseHealthFailure>> CheckAsync(CancellationToken cancellationToken)
     {
         _ = Interlocked.Increment(ref calls);
+        if (Throws)
+            throw new InvalidOperationException("the check blew up");
+
         await Gate.Match(held => held.PassAsync().WaitAsync(cancellationToken), () => Task.CompletedTask);
 
         return Answer;

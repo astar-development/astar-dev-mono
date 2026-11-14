@@ -40,7 +40,7 @@ internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps st
     private Result<SyncPassSummary, SyncPassFailure> Refused(SyncTrigger trigger)
     {
         var message = $"The {trigger.GetType().Name} sync run was refused: the database failed its integrity check.";
-        LogMessage.Warning(logger, Location, message);
+        LogMessage.Information(logger, Location, message);
 
         return Stopped<SyncPassSummary>(SyncPassFailureFactory.CreateDatabaseUnavailable());
     }

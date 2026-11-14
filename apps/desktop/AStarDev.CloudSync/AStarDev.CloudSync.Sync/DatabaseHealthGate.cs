@@ -42,7 +42,7 @@ internal sealed class DatabaseHealthGate(IDatabaseHealthCheck check) : IDatabase
 
     private async Task<bool> RunCheckAsync(CancellationToken cancellationToken)
     {
-        var checking = check.CheckAsync(cancellationToken);
+        var checking = Task.Run(() => check.CheckAsync(cancellationToken), cancellationToken);
         await ((Task)checking).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
         if (checking.IsCanceled)
             return false;

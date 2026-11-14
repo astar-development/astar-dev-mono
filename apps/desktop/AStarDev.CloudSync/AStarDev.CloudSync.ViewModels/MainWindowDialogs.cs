@@ -24,6 +24,6 @@ public sealed class MainWindowDialogs(AddAccountViewModel addAccount, AccountDia
     /// <summary>The ConflictList.</summary>
     public ConflictListViewModel ConflictList { get; } = conflictList;
 
-    /// <summary>The DatabaseHealth.</summary>
+    /// <summary>The banner shown while the database integrity check has failed.</summary>
     public DatabaseHealthBannerViewModel DatabaseHealth { get; } = databaseHealth;
 }

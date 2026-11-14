@@ -101,4 +101,16 @@ public sealed class GivenADatabaseHealthGate
 
         raised.ShouldBe(1);
     }
+
+    [Fact]
+    public async Task when_the_check_throws_then_the_status_is_failed_unreadable_and_later_callers_are_not_blocked()
+    {
+        check.Throws = true;
+        var gate = CreateGate();
+
+        var first = await gate.CheckAsync(CancellationToken);
+        var second = await gate.CheckAsync(CancellationToken).WaitAsync(Limit, CancellationToken);
+
+        (first, second).ShouldBe((DatabaseHealthStatusFactory.CreateFailed(DatabaseHealthFailureFactory.CreateUnreadable()), DatabaseHealthStatusFactory.CreateFailed(DatabaseHealthFailureFactory.CreateUnreadable())));
+    }
 }

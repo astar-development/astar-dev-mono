@@ -34,7 +34,6 @@ internal sealed class InterruptedSyncRecovery(ISyncRunJournal journal, IActivity
     {
         SyncPassFailure.AuthenticationRequired => RecoveryOutcomeFactory.CreateNotPossible(accountId, RecoveryBlockerFactory.CreateSignInRequired()),
         SyncPassFailure.RootUnavailable => RecoveryOutcomeFactory.CreateNotPossible(accountId, RecoveryBlockerFactory.CreateSyncFolderMissing()),
-        SyncPassFailure.DatabaseUnavailable => RecoveryOutcomeFactory.CreateNotPossible(accountId, RecoveryBlockerFactory.CreateDatabaseUnreadable()),
         _ => RecoveryOutcomeFactory.CreateNotResumed(accountId, failure),
     };
 
