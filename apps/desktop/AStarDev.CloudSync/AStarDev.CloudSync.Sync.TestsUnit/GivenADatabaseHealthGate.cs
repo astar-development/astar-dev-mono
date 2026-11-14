@@ -113,4 +113,51 @@ public sealed class GivenADatabaseHealthGate
 
         (first, second).ShouldBe((DatabaseHealthStatusFactory.CreateFailed(DatabaseHealthFailureFactory.CreateUnreadable()), DatabaseHealthStatusFactory.CreateFailed(DatabaseHealthFailureFactory.CreateUnreadable())));
     }
+
+    [Fact]
+    public async Task when_the_first_check_is_unreadable_and_the_second_passes_then_the_status_is_healthy()
+    {
+        check.Queued.Enqueue(Result.Failure<Unit, DatabaseHealthFailure>(DatabaseHealthFailureFactory.CreateUnreadable()));
+        var gate = CreateGate();
+
+        var status = await gate.CheckAsync(CancellationToken);
+
+        (status, check.Calls).ShouldBe((DatabaseHealthStatusFactory.CreateHealthy(), 2));
+    }
+
+    [Fact]
+    public async Task when_the_check_stays_unreadable_then_the_status_is_failed_after_one_retry()
+    {
+        check.Answer = Result.Failure<Unit, DatabaseHealthFailure>(DatabaseHealthFailureFactory.CreateUnreadable());
+        var gate = CreateGate();
+
+        var status = await gate.CheckAsync(CancellationToken);
+
+        (status, check.Calls).ShouldBe((DatabaseHealthStatusFactory.CreateFailed(DatabaseHealthFailureFactory.CreateUnreadable()), 2));
+    }
+
+    [Fact]
+    public async Task when_the_check_reports_damage_then_it_is_not_retried()
+    {
+        check.Answer = Result.Failure<Unit, DatabaseHealthFailure>(DatabaseHealthFailureFactory.CreateDamaged());
+        var gate = CreateGate();
+
+        var status = await gate.CheckAsync(CancellationToken);
+
+        (status, check.Calls).ShouldBe((DatabaseHealthStatusFactory.CreateFailed(DatabaseHealthFailureFactory.CreateDamaged()), 1));
+    }
+
+    [Fact]
+    public async Task when_many_callers_ask_during_a_transient_lock_then_all_get_healthy_and_the_failure_is_never_seen()
+    {
+        check.Queued.Enqueue(Result.Failure<Unit, DatabaseHealthFailure>(DatabaseHealthFailureFactory.CreateUnreadable()));
+        var gate = CreateGate();
+        var seen = new System.Collections.Concurrent.ConcurrentBag<DatabaseHealthStatus>();
+        gate.Changed += (_, _) => seen.Add(gate.Status);
+
+        var callers = Enumerable.Range(0, 20).Select(_ => Task.Run(() => gate.CheckAsync(CancellationToken), CancellationToken)).ToArray();
+        var answers = await Task.WhenAll(callers).WaitAsync(Limit, CancellationToken);
+
+        (answers.Distinct().Single(), seen.Distinct().Single(), check.Calls).ShouldBe((DatabaseHealthStatusFactory.CreateHealthy(), DatabaseHealthStatusFactory.CreateHealthy(), 2));
+    }
 }

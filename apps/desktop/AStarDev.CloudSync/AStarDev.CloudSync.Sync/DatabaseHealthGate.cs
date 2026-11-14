@@ -40,10 +40,23 @@ internal sealed class DatabaseHealthGate(IDatabaseHealthCheck check) : IDatabase
     private static DatabaseHealthStatus StatusOf(Result<Unit, DatabaseHealthFailure> answer) =>
         answer.Match(_ => DatabaseHealthStatusFactory.CreateHealthy(), DatabaseHealthStatusFactory.CreateFailed);
 
-    private async Task<bool> RunCheckAsync(CancellationToken cancellationToken)
+    private static bool IsTransient(Task<Result<Unit, DatabaseHealthFailure>> attempt) =>
+        !attempt.IsCompletedSuccessfully || attempt.Result.Match(_ => false, failure => failure is DatabaseHealthFailure.Unreadable);
+
+    private async Task<Task<Result<Unit, DatabaseHealthFailure>>> AttemptAsync(CancellationToken cancellationToken)
     {
         var checking = Task.Run(() => check.CheckAsync(cancellationToken), cancellationToken);
         await ((Task)checking).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+
+        return checking;
+    }
+
+    private async Task<bool> RunCheckAsync(CancellationToken cancellationToken)
+    {
+        var checking = await AttemptAsync(cancellationToken).ConfigureAwait(false);
+        if (!checking.IsCanceled && IsTransient(checking))
+            checking = await AttemptAsync(cancellationToken).ConfigureAwait(false);
+
         if (checking.IsCanceled)
             return false;
 

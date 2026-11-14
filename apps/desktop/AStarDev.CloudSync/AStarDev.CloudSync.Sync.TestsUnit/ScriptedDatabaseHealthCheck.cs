@@ -14,6 +14,8 @@ public sealed class ScriptedDatabaseHealthCheck : IDatabaseHealthCheck
 
     public bool Throws { get; set; }
 
+    public Queue<Result<Unit, DatabaseHealthFailure>> Queued { get; } = new();
+
     public async Task<Result<Unit, DatabaseHealthFailure>> CheckAsync(CancellationToken cancellationToken)
     {
         _ = Interlocked.Increment(ref calls);
@@ -22,6 +24,7 @@ public sealed class ScriptedDatabaseHealthCheck : IDatabaseHealthCheck
 
         await Gate.Match(held => held.PassAsync().WaitAsync(cancellationToken), () => Task.CompletedTask);
 
-        return Answer;
+        lock (Queued)
+            return Queued.TryDequeue(out var next) ? next : Answer;
     }
 }
