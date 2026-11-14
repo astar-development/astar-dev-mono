@@ -126,6 +126,64 @@ public class GivenAnOverlayDialog
         window.FocusManager!.GetFocusedElement().ShouldNotBeSameAs(opener);
     }
 
+    [AvaloniaTheory]
+    [InlineData("AddAccount")]
+    [InlineData("AccountDialog")]
+    [InlineData("FolderSelection")]
+    [InlineData("SyncRestart")]
+    [InlineData("ConflictList")]
+    public async Task when_the_dialog_closes_and_the_opener_is_hidden_then_focus_goes_to_a_visible_control_outside_the_dialog(string key)
+    {
+        var (window, view, vm, overlay, opener) = await ShowAsync(key);
+        opener.Focus();
+        await overlay.Open(vm);
+        Dispatcher.UIThread.RunJobs();
+        opener.IsVisible = false;
+
+        overlay.Close(vm);
+        Dispatcher.UIThread.RunJobs();
+
+        window.FocusManager!.GetFocusedElement().ShouldBeOfType<Button>().ShouldSatisfyAllConditions(button => button.ShouldNotBeSameAs(opener), button => button.IsEffectivelyVisible.ShouldBeTrue(), button => button.GetVisualAncestors().Contains(view).ShouldBeFalse());
+    }
+
+    [AvaloniaTheory]
+    [InlineData("AddAccount")]
+    [InlineData("AccountDialog")]
+    [InlineData("FolderSelection")]
+    [InlineData("SyncRestart")]
+    [InlineData("ConflictList")]
+    public async Task when_the_dialog_closes_and_the_opener_is_disabled_then_focus_goes_to_an_enabled_control_outside_the_dialog(string key)
+    {
+        var (window, view, vm, overlay, opener) = await ShowAsync(key);
+        opener.Focus();
+        await overlay.Open(vm);
+        Dispatcher.UIThread.RunJobs();
+        opener.IsEnabled = false;
+
+        overlay.Close(vm);
+        Dispatcher.UIThread.RunJobs();
+
+        window.FocusManager!.GetFocusedElement().ShouldBeOfType<Button>().ShouldSatisfyAllConditions(button => button.ShouldNotBeSameAs(opener), button => button.IsEffectivelyEnabled.ShouldBeTrue(), button => button.GetVisualAncestors().Contains(view).ShouldBeFalse());
+    }
+
+    [AvaloniaFact]
+    public async Task when_a_chained_dialog_closes_over_a_hidden_opener_then_focus_does_not_fall_onto_another_open_dialog()
+    {
+        var (window, _, vm, overlay, opener) = await ShowAsync("ConflictList");
+        opener.Focus();
+        await overlay.Open(vm);
+        Dispatcher.UIThread.RunJobs();
+        var other = new Button { Content = "Other" };
+        ((Panel)window.Content!).Children.Add(other);
+        other.Focus();
+        opener.IsVisible = false;
+
+        overlay.Close(vm);
+        Dispatcher.UIThread.RunJobs();
+
+        window.FocusManager!.GetFocusedElement().ShouldBeSameAs(other);
+    }
+
     [AvaloniaFact]
     public async Task when_the_sync_restart_question_opens_from_another_thread_then_focus_moves_inside_it()
     {
