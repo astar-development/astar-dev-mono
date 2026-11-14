@@ -66,6 +66,9 @@ public static class SyncServiceCollectionExtensions
             .AddSingleton<ISyncRunStatusSource>(provider => provider.GetRequiredService<SyncPassRegistry>())
             .AddSingleton<SyncPassSteps>()
             .AddSingleton<ISyncPassRunner, SyncPassRunner>()
-            .AddSingleton<ISyncNowAction, SyncNowAction>();
+            .AddSingleton<ISyncNowAction, SyncNowAction>()
+            .AddSingleton<IStaggerPolicy, StaggerPolicy>()
+            .AddSingleton(SyncSchedulerOptionsFactory.CreateDefault())
+            .AddSingleton<ISyncScheduler, SyncScheduler>();
     }
 }
