@@ -1,6 +1,7 @@
 using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.CloudSync.TestHelpers.Ui;
+using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.ViewModels.TestsUnit.Accounts;
 
@@ -45,7 +46,7 @@ public class GivenAnAccountWithAFailedSync
     [Fact]
     public void when_the_account_is_up_to_date_then_there_is_no_failure_and_every_message_is_empty()
     {
-        var account = TestData.CreateAccountViewModel(TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), AStarDev.FunctionalParadigm.Option.None<DateTimeOffset>()), new RecordingAccountCommands());
+        var account = TestData.CreateAccountViewModel(TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>()), new RecordingAccountCommands());
 
         (account.HasFailure, account.LayoutAFailureText, account.LayoutBFailureText, account.LayoutCFailureText).ShouldBe((false, string.Empty, string.Empty, string.Empty));
     }
@@ -56,6 +57,16 @@ public class GivenAnAccountWithAFailedSync
         var account = TestData.CreateAccountViewModel(TestData.CreateAccountNeedingSignIn(), new RecordingAccountCommands());
 
         (account.HasFailure, account.LayoutAFailureText).ShouldBe((false, string.Empty));
+    }
+
+    [Fact]
+    public void when_a_failed_account_also_needs_sign_in_then_there_is_no_failure_message()
+    {
+        var failed = TestData.CreateAccount(SyncStatusFactory.CreateFailed(SyncFailureReasonFactory.CreateUnexpected()), Option.None<DateTimeOffset>());
+        var signedOut = CloudAccountFactory.Create(failed.Id, "Work", "work@example.com", failed.Provider, failed.Storage, 1, 1, failed.Status, Option.None<DateTimeOffset>(), AccountSignInStateFactory.CreateSignInRequired());
+        var account = TestData.CreateAccountViewModel(signedOut, new RecordingAccountCommands());
+
+        (account.HasFailure, account.LayoutAFailureText, account.NeedsSignIn).ShouldBe((false, string.Empty, true));
     }
 
     [Fact]
