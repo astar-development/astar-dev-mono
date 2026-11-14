@@ -2,6 +2,7 @@ using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.ViewModels.Activity;
 using AStarDev.CloudSync.ViewModels.Common;
+using AStarDev.FunctionalParadigm;
 using AStarDev.Localization;
 using CommunityToolkit.Mvvm.Input;
 
@@ -61,20 +62,20 @@ public sealed class AccountViewModel : LocalizedObservableObject
     /// <summary>The account's storage usage.</summary>
     public StorageViewModel Storage { get; }
 
-    /// <summary>The number of synced folders.</summary>
-    public int FolderCount => account.FolderCount;
+    /// <summary>The number of synced folders, or none when unknown.</summary>
+    public Option<int> FolderCount => account.FolderCount;
 
-    /// <summary>The number of synced files.</summary>
-    public int FileCount => account.FileCount;
+    /// <summary>The number of synced files, or none when unknown.</summary>
+    public Option<int> FileCount => account.FileCount;
 
     /// <summary>The number of open conflicts.</summary>
     public int ConflictCount => account.Status is SyncStatus.HasConflicts conflicts ? conflicts.Count : 0;
 
-    /// <summary>The number of synced folders, formatted for the culture.</summary>
-    public string FoldersText => account.FolderCount.ToString("N0", Localization.CurrentCulture);
+    /// <summary>The number of synced folders, formatted for the culture, or an em dash when unknown.</summary>
+    public string FoldersText => CountText.Format(account.FolderCount, Localization);
 
-    /// <summary>The number of synced files, formatted for the culture.</summary>
-    public string FilesText => account.FileCount.ToString("N0", Localization.CurrentCulture);
+    /// <summary>The number of synced files, formatted for the culture, or an em dash when unknown.</summary>
+    public string FilesText => CountText.Format(account.FileCount, Localization);
 
     /// <summary>The number of open conflicts, formatted for the culture.</summary>
     public string ConflictsText => ConflictCount.ToString("N0", Localization.CurrentCulture);

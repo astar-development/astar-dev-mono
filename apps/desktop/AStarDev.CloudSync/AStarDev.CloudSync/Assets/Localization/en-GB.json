@@ -123,6 +123,7 @@
   "LayoutA.Card.SyncNow": "Sync now",
   "LayoutA.Card.Cancel": "Cancel",
   "LayoutA.Card.Storage": "Storage",
+  "Count.Unknown": "\u2014",
   "LayoutA.Card.Folders.One": "folder",
   "LayoutA.Card.Folders.Many": "folders",
   "LayoutA.Card.Files.One": "file",

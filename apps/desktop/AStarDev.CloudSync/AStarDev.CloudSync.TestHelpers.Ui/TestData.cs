@@ -69,6 +69,8 @@ public static class TestData
 
     public static AccountDialogViewModel CreateAccountDialog(FakeAccountActions actions, FakeSyncRootReader syncRoots, IAccountStore accounts, FakeFolderPicker folderPicker) => new(actions, syncRoots, accounts, folderPicker, CreateLocalization());
 
+    public static CloudAccount CreateAccountWithUnknownCounts() => CloudAccountFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), "Work", "work@example.com", CloudProviderFactory.CreateOneDrive(), StorageUsageFactory.Create(782_643_000_000, 1_099_511_627_776), Option.None<int>(), Option.None<int>(), SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>(), AccountSignInStateFactory.CreateSignedIn());
+
     public static CloudAccount CreateAccountNeedingSignIn() => CloudAccountFactory.Create(AccountIdFactory.Create(Guid.Parse("6f7e8d9c-0b1a-4c3d-9e8f-7a6b5c4d3e2f")), "Personal", "personal@example.com", CloudProviderFactory.CreateOneDrive(), StorageUsageFactory.Create(12_884_901_888, 1_099_511_627_776), 4, 1_204, SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>(), AccountSignInStateFactory.CreateSignInRequired());
 
     public static AccountViewModel CreateAccountWithFailedSync(SyncFailureReason reason) => CreateAccountViewModel(CreateAccount(SyncStatusFactory.CreateFailed(reason), Option.None<DateTimeOffset>()), NoAccountCommands.Instance);

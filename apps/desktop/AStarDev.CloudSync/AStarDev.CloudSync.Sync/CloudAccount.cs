@@ -14,8 +14,8 @@ public sealed record CloudAccount
         string email,
         CloudProvider provider,
         StorageUsage storage,
-        int folderCount,
-        int fileCount,
+        Option<int> folderCount,
+        Option<int> fileCount,
         SyncStatus status,
         Option<DateTimeOffset> lastSync,
         AccountSignInState signIn)
@@ -50,11 +50,11 @@ public sealed record CloudAccount
     /// <summary>Cloud storage used and available.</summary>
     public StorageUsage Storage { get; }
 
-    /// <summary>Folders being synced.</summary>
-    public int FolderCount { get; }
+    /// <summary>Folders being synced; none when the count could not be read.</summary>
+    public Option<int> FolderCount { get; }
 
-    /// <summary>Files being synced.</summary>
-    public int FileCount { get; }
+    /// <summary>Files being synced; none when the count could not be read.</summary>
+    public Option<int> FileCount { get; }
 
     /// <summary>The account's sync status.</summary>
     public SyncStatus Status { get; }
