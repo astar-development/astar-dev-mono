@@ -20,6 +20,8 @@ namespace AStarDev.CloudSync;
 public partial class App : Application, IDisposable
 {
     private ServiceProvider? services;
+    private readonly CancellationTokenSource shutdown = new();
+    private Task recovery = Task.CompletedTask;
     private bool disposed;
 
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
@@ -32,7 +34,7 @@ public partial class App : Application, IDisposable
         {
             var guard = services.GetRequiredService<ISingleInstanceGuard>();
             var options = services.GetRequiredService<SingleInstanceOptions>();
-            var claim = Task.Run(() => guard.ClaimAsync(options, CancellationToken.None)).GetAwaiter().GetResult();
+            var claim = Task.Run(() => guard.ClaimAsync(options, CancellationToken.None), CancellationToken.None).GetAwaiter().GetResult();
             if (claim is InstanceClaim.HandedOff or InstanceClaim.NotAnswered)
                 ExitAsSecondInstance();
 
@@ -43,12 +45,12 @@ public partial class App : Application, IDisposable
             _ = services.GetRequiredService<SignInStateOverviewReloader>();
             _ = services.GetRequiredService<SyncScheduleSettingsViewModel>().LoadAsync(CancellationToken.None);
             _ = services.GetRequiredService<TrashRetentionSettingsViewModel>().LoadAsync(CancellationToken.None);
-            _ = Task.Run(() => services.GetRequiredService<IInterruptedSyncRecovery>().RecoverAsync(CancellationToken.None), CancellationToken.None);
+            recovery = Task.Run(() => services.GetRequiredService<IInterruptedSyncRecovery>().RecoverAsync(shutdown.Token), shutdown.Token);
             _ = services.GetRequiredService<ISyncScheduler>().StartAsync(CancellationToken.None);
             _ = services.GetRequiredService<SyncRunOverviewReloader>();
             _ = Task.Run(() => services.GetRequiredService<ISignInStateRefresher>().RefreshAllAsync(CancellationToken.None), CancellationToken.None);
 
-            _ = services.GetRequiredService<IUpdateNotificationService>().CheckAndNotifyAsync();
+            _ = services.GetRequiredService<IUpdateNotificationService>().CheckAndNotifyAsync(shutdown.Token);
         }
 
         base.OnFrameworkInitializationCompleted();
@@ -72,9 +74,10 @@ public partial class App : Application, IDisposable
 
     private void ReleaseAfterServices(PrimaryInstance instance)
     {
+        shutdown.Cancel();
         StopScheduler();
         services?.Dispose();
-        Task.Run(() => instance.DisposeAsync().AsTask()).GetAwaiter().GetResult();
+        Task.Run(() => instance.DisposeAsync().AsTask(), CancellationToken.None).GetAwaiter().GetResult();
     }
 
     private void StopScheduler()
@@ -84,6 +87,7 @@ public partial class App : Application, IDisposable
 
         using var patience = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         Task.Run(() => services.GetRequiredService<ISyncScheduler>().StopAsync(patience.Token), CancellationToken.None).GetAwaiter().GetResult();
+        Task.Run(async () => await recovery.WaitAsync(patience.Token).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing), CancellationToken.None).GetAwaiter().GetResult();
     }
 
     private static void BringForward(Window window)
@@ -122,7 +126,10 @@ public partial class App : Application, IDisposable
 
         disposed = true;
 
-        if (disposing)
-            services?.Dispose();
+        if (!disposing)
+            return;
+
+        shutdown.Dispose();
+        services?.Dispose();
     }
 }

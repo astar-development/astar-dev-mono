@@ -36,4 +36,16 @@ public abstract record RecoveryOutcome
         /// <summary>Why the recovery pass did not finish.</summary>
         public SyncPassFailure Reason { get; }
     }
+
+    /// <summary>The interrupted run was marked, but no recovery pass was started because the account is paused or the paused accounts could not be read (#1616).</summary>
+    public sealed record Held : RecoveryOutcome
+    {
+        internal Held(AccountId accountId)
+        {
+            AccountId = accountId;
+        }
+
+        /// <summary>The account.</summary>
+        public AccountId AccountId { get; }
+    }
 }

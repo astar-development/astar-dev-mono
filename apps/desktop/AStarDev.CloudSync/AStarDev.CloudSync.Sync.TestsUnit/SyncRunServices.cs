@@ -26,6 +26,7 @@ public sealed class SyncRunServices : IDisposable
             .AddSingleton<IRemoteIndexReader>(Remote)
             .AddSingleton<IActivityLogWriter>(ActivityLog)
             .AddSingleton<ISyncRunJournal>(Journal)
+            .AddSingleton<IAccountPauseReader>(Paused)
             .AddCloudSync()
             .AddSingleton<IRemoteIndexUpdater>(Steps)
             .AddSingleton<ILocalChangeDetector>(Steps)
@@ -38,6 +39,8 @@ public sealed class SyncRunServices : IDisposable
     public AccountId Personal { get; } = AccountIdFactory.Create(Guid.Parse("11111111-1111-1111-1111-111111111111"));
 
     public AccountId Work { get; } = AccountIdFactory.Create(Guid.Parse("22222222-2222-2222-2222-222222222222"));
+
+    public FakeAccountPauseReader Paused { get; } = new();
 
     public ScriptedSyncSteps Steps { get; } = new();
 

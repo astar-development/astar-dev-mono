@@ -10,9 +10,10 @@ namespace AStarDev.CloudSync.Sync;
 /// <param name="activity">Tells the user a run was interrupted.</param>
 /// <param name="stagger">Spreads the recovery passes.</param>
 /// <param name="runner">Runs the recovery passes.</param>
+/// <param name="paused">Tells which accounts the user paused; their interrupted runs are marked but not resumed.</param>
 /// <param name="timeProvider">Supplies the clock and the delays.</param>
 /// <param name="logger">Reports what could not be read or written, and how many runs were interrupted, without account details.</param>
-internal sealed class InterruptedSyncRecovery(ISyncRunJournal journal, IActivityLogWriter activity, IStaggerPolicy stagger, ISyncPassRunner runner, TimeProvider timeProvider, ILogger<InterruptedSyncRecovery> logger) : IInterruptedSyncRecovery
+internal sealed class InterruptedSyncRecovery(ISyncRunJournal journal, IActivityLogWriter activity, IStaggerPolicy stagger, ISyncPassRunner runner, IAccountPauseReader paused, TimeProvider timeProvider, ILogger<InterruptedSyncRecovery> logger) : IInterruptedSyncRecovery
 {
     private const string Location = nameof(InterruptedSyncRecovery);
 
@@ -42,9 +43,20 @@ internal sealed class InterruptedSyncRecovery(ISyncRunJournal journal, IActivity
             _ = await journal.FinishAsync(run.Id, SyncRunOutcomeFactory.CreateInterrupted(), cancellationToken).MatchAsync(done => done, _ => Warn("An interrupted run could not be marked.")).ConfigureAwait(false);
 
         _ = await TellUserAsync(accounts, cancellationToken).ConfigureAwait(false);
-        var offsets = stagger.OffsetsFor(accounts, RecoveryStagger.Window);
+        var pausedIds = await paused.GetPausedAsync(cancellationToken).MatchAsync(found => found, _ => HoldAll(accounts)).ConfigureAwait(false);
+        var resumable = accounts.Where(account => !pausedIds.Contains(account)).ToList();
+        var offsets = stagger.OffsetsFor(resumable, RecoveryStagger.Window);
+        var held = accounts.Where(pausedIds.Contains).Select(RecoveryOutcomeFactory.CreateHeld);
+        var resumed = await Task.WhenAll(resumable.Select(account => ResumeAsync(account, offsets[account], cancellationToken))).ConfigureAwait(false);
 
-        return await Task.WhenAll(accounts.Select(account => ResumeAsync(account, offsets[account], cancellationToken))).ConfigureAwait(false);
+        return [.. held, .. resumed];
+    }
+
+    private List<AccountId> HoldAll(List<AccountId> accounts)
+    {
+        LogMessage.Warning(logger, Location, "The paused accounts could not be read, so no interrupted sync was resumed.");
+
+        return accounts;
     }
 
     private Task<Unit> TellUserAsync(List<AccountId> accounts, CancellationToken cancellationToken)
@@ -61,6 +73,10 @@ internal sealed class InterruptedSyncRecovery(ISyncRunJournal journal, IActivity
         await waiting.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
         if (waiting.IsCanceled)
             return RecoveryOutcomeFactory.CreateNotResumed(accountId, SyncPassFailureFactory.CreateCancelled());
+
+        var stillPaused = await paused.GetPausedAsync(cancellationToken).MatchAsync(found => found.Contains(accountId), _ => true).ConfigureAwait(false);
+        if (stillPaused)
+            return RecoveryOutcomeFactory.CreateHeld(accountId);
 
         return await Try.RunAsync(() => runner.RunAsync(accountId, SyncTriggerFactory.CreateRecovery(), cancellationToken), cancellationToken)
             .MatchAsync(result => Resumed(accountId, result), _ => RecoveryOutcomeFactory.CreateNotResumed(accountId, SyncPassFailureFactory.CreateUnexpected()))
