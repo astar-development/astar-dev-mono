@@ -71,6 +71,12 @@ public sealed class TemporarySyncDatabase : IAsyncDisposable
 
     public IAccountPauseWriter PauseWriter => serviceProvider.GetRequiredService<IAccountPauseWriter>();
 
+    public ITransferConcurrencyReader ConcurrencyReader => serviceProvider.GetRequiredService<ITransferConcurrencyReader>();
+
+    public ITransferConcurrencyWriter ConcurrencyWriter => serviceProvider.GetRequiredService<ITransferConcurrencyWriter>();
+
+    public IAccountRemovalParticipant ConcurrencyParticipant => serviceProvider.GetServices<IAccountRemovalParticipant>().First(participant => participant.GetType().Name == "SqliteTransferConcurrencyStore");
+
     public IAccountRemovalParticipant PauseParticipant => serviceProvider.GetServices<IAccountRemovalParticipant>().First(participant => participant.GetType().Name == "SqliteAccountPauseStore");
 
     public IActivityLogReader ActivityReader => serviceProvider.GetRequiredService<IActivityLogReader>();
