@@ -7,18 +7,13 @@ using Microsoft.Extensions.Logging;
 namespace AStarDev.CloudSync.Sync;
 
 /// <inheritdoc />
-/// <param name="accounts">Lists the accounts in the order they were added.</param>
-/// <param name="settings">Tells the schedule.</param>
+/// <param name="readers">What is read before a pass starts.</param>
 /// <param name="stagger">Spreads the accounts across the interval.</param>
-/// <param name="paused">Tells which accounts the user paused.</param>
-/// <param name="signIn">Tells which accounts need to sign in.</param>
-/// <param name="roots">Tells each account's sync root.</param>
-/// <param name="activity">Tells which accounts are syncing.</param>
 /// <param name="runner">Runs the passes.</param>
 /// <param name="options">Startup delay and check period.</param>
 /// <param name="timeProvider">Supplies the clock and the timer.</param>
 /// <param name="logger">Logs skipped accounts and the reason, without account details.</param>
-internal sealed class SyncScheduler(IAccountStore accounts, ISyncScheduleSettings settings, IStaggerPolicy stagger, IAccountPauseReader paused, IAccountSignInStates signIn, ISyncRootReader roots, ISyncActivitySource activity, ISyncPassRunner runner, SyncSchedulerOptions options, TimeProvider timeProvider, ILogger<SyncScheduler> logger) : ISyncScheduler, IDisposable
+internal sealed class SyncScheduler(SyncSchedulerReaders readers, IStaggerPolicy stagger, ISyncPassRunner runner, SyncSchedulerOptions options, TimeProvider timeProvider, ILogger<SyncScheduler> logger) : ISyncScheduler, IDisposable
 {
     private const string Location = nameof(SyncScheduler);
     private const string UnreadableMessage = "The accounts or the paused accounts could not be read, so no scheduled passes were started.";
@@ -73,7 +68,7 @@ internal sealed class SyncScheduler(IAccountStore accounts, ISyncScheduleSetting
 
         await stopping.DisposeAsync().ConfigureAwait(false);
         await cancelling.CancelAsync().ConfigureAwait(false);
-        await ((Task)Task.WhenAll(passes.Keys)).WaitAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+        await Task.WhenAll(passes.Keys).WaitAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
         cancelling.Dispose();
         due.Clear();
         _ = Interlocked.Exchange(ref checking, 0);
@@ -118,7 +113,7 @@ internal sealed class SyncScheduler(IAccountStore accounts, ISyncScheduleSetting
     }
 
     private Task<Unit> CheckAsync(CancellationToken token) =>
-        settings.GetAsync(token).MatchAsync(schedule => ApplyAsync(schedule, token), _ => Task.FromResult(Warn("The sync schedule could not be read, so no scheduled passes were started.")));
+        readers.Settings.GetAsync(token).MatchAsync(schedule => ApplyAsync(schedule, token), _ => Task.FromResult(Warn("The sync schedule could not be read, so no scheduled passes were started.")));
 
     private Task<Unit> ApplyAsync(SyncSchedule schedule, CancellationToken token)
     {
@@ -129,9 +124,9 @@ internal sealed class SyncScheduler(IAccountStore accounts, ISyncScheduleSetting
             return Task.FromResult(Unit.Instance);
         }
 
-        return accounts.GetAllAsync(token)
+        return readers.Accounts.GetAllAsync(token)
             .MatchAsync(
-                all => paused.GetPausedAsync(token).MatchAsync(pausedIds => StartDueAsync(every.Interval, all, pausedIds, token), _ => Task.FromResult(Warn(UnreadableMessage))),
+                all => readers.Paused.GetPausedAsync(token).MatchAsync(pausedIds => StartDueAsync(every.Interval, all, pausedIds, token), _ => Task.FromResult(Warn(UnreadableMessage))),
                 _ => Task.FromResult(Warn(UnreadableMessage)));
     }
 
@@ -145,11 +140,14 @@ internal sealed class SyncScheduler(IAccountStore accounts, ISyncScheduleSetting
         foreach (var accountId in ids.Distinct())
         {
             var first = anchor + options.StartupDelay + offsets[accountId];
-            var next = due.TryGetValue(accountId, out var known) ? known : (first > lastChecked ? first : FirstSlotAtOrAfter(first, interval, now));
-            due[accountId] = next;
+            var next = NextDue(accountId, first, interval, now);
 
             if (now < next)
+            {
+                due[accountId] = next;
+
                 continue;
+            }
 
             due[accountId] = FirstSlotAfter(first, interval, now);
             await StartOrSkipAsync(accountId, pausedIds, token).ConfigureAwait(false);
@@ -158,6 +156,14 @@ internal sealed class SyncScheduler(IAccountStore accounts, ISyncScheduleSetting
         lastChecked = now;
 
         return Unit.Instance;
+    }
+
+    private DateTimeOffset NextDue(AccountId accountId, DateTimeOffset first, TimeSpan interval, DateTimeOffset now)
+    {
+        if (due.TryGetValue(accountId, out var known))
+            return known;
+
+        return first > lastChecked ? first : FirstSlotAtOrAfter(first, interval, now);
     }
 
     private void ForgetStaleDueTimes(TimeSpan interval, List<AccountId> ids)
@@ -183,13 +189,13 @@ internal sealed class SyncScheduler(IAccountStore accounts, ISyncScheduleSetting
         if (pausedIds.Contains(accountId))
             return Option.Some("the account is paused.");
 
-        if (signIn.StateOf(accountId) is AccountSignInState.SignInRequired)
+        if (readers.SignIn.StateOf(accountId) is AccountSignInState.SignInRequired)
             return Option.Some("the account needs to sign in.");
 
-        if (activity.ActivityOf(accountId) is AccountSyncActivity.Running)
+        if (readers.Activity.ActivityOf(accountId) is AccountSyncActivity.Running)
             return Option.Some("the account is already syncing.");
 
-        return await roots.GetAsync(accountId, token).MatchAsync(RootReason, _ => Option.Some("the sync folder could not be read.")).ConfigureAwait(false);
+        return await readers.Roots.GetAsync(accountId, token).MatchAsync(RootReason, _ => Option.Some("the sync folder could not be read.")).ConfigureAwait(false);
     }
 
     private static Option<string> RootReason(Option<SyncRoot> root) =>

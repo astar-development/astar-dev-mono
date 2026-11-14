@@ -69,6 +69,7 @@ public static class SyncServiceCollectionExtensions
             .AddSingleton<ISyncNowAction, SyncNowAction>()
             .AddSingleton<IStaggerPolicy, StaggerPolicy>()
             .AddSingleton(SyncSchedulerOptionsFactory.CreateDefault())
+            .AddSingleton<SyncSchedulerReaders>()
             .AddSingleton<ISyncScheduler, SyncScheduler>();
     }
 }
