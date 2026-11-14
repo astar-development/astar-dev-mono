@@ -21,6 +21,22 @@ public abstract record RecoveryOutcome
         public AccountId AccountId { get; }
     }
 
+    /// <summary>The interrupted run was marked, but the recovery pass could not run until the user fixes <see cref="Blocker"/> (#1612).</summary>
+    public sealed record NotPossible : RecoveryOutcome
+    {
+        internal NotPossible(AccountId accountId, RecoveryBlocker blocker)
+        {
+            AccountId = accountId;
+            Blocker = blocker;
+        }
+
+        /// <summary>The account.</summary>
+        public AccountId AccountId { get; }
+
+        /// <summary>What has to be fixed first.</summary>
+        public RecoveryBlocker Blocker { get; }
+    }
+
     /// <summary>The interrupted run was marked, but the recovery pass did not finish.</summary>
     public sealed record NotResumed : RecoveryOutcome
     {

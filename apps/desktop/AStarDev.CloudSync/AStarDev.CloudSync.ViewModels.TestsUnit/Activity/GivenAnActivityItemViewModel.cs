@@ -20,7 +20,10 @@ public class GivenAnActivityItemViewModel
         { "deleted-many", "Deleted 5 files" },
         { "conflict", "Conflict: holiday-042.jpg" },
         { "authenticated", "Authenticated" },
-        { "interrupted", "The last sync of Captain Flint was interrupted. Resuming now." }
+        { "interrupted", "The last sync of Captain Flint was interrupted. Resuming now." },
+        { "blocked-sign-in", "The interrupted sync of Captain Flint could not resume: sign in again. It carries on by itself once you have." },
+        { "blocked-folder", "The interrupted sync of Captain Flint could not resume: its sync folder is missing. It carries on by itself once the folder is back." },
+        { "blocked-database", "The interrupted sync of Captain Flint could not resume: the CloudSync database could not be read. Nothing is synced until it is fixed." }
     };
 
     [Theory]
@@ -64,6 +67,9 @@ public class GivenAnActivityItemViewModel
         "deleted-many" => ActivityKindFactory.CreateDeleted(5),
         "conflict" => ActivityKindFactory.CreateConflictDetected("holiday-042.jpg"),
         "interrupted" => ActivityKindFactory.CreateSyncInterrupted(),
+        "blocked-sign-in" => ActivityKindFactory.CreateRecoveryBlocked(RecoveryBlockerFactory.CreateSignInRequired()),
+        "blocked-folder" => ActivityKindFactory.CreateRecoveryBlocked(RecoveryBlockerFactory.CreateSyncFolderMissing()),
+        "blocked-database" => ActivityKindFactory.CreateRecoveryBlocked(RecoveryBlockerFactory.CreateDatabaseUnreadable()),
         _ => ActivityKindFactory.CreateAuthenticated()
     };
 }

@@ -75,6 +75,18 @@ public abstract record ActivityKind
         }
     }
 
+    /// <summary>The interrupted sync could not be resumed until the user fixes <see cref="Blocker"/> (#1612).</summary>
+    public sealed record RecoveryBlocked : ActivityKind
+    {
+        internal RecoveryBlocked(RecoveryBlocker blocker)
+        {
+            Blocker = blocker;
+        }
+
+        /// <summary>What has to be fixed first.</summary>
+        public RecoveryBlocker Blocker { get; }
+    }
+
     /// <summary>The last sync was interrupted and a new one starts (#1610).</summary>
     public sealed record SyncInterrupted : ActivityKind
     {

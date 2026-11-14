@@ -21,6 +21,9 @@ public static class SyncPassFailureFactory
     /// <summary>Creates the <see cref="SyncPassFailure.Cancelled"/> case.</summary>
     public static SyncPassFailure CreateCancelled() => new SyncPassFailure.Cancelled();
 
+    /// <summary>Creates the <see cref="SyncPassFailure.DatabaseUnavailable"/> case.</summary>
+    public static SyncPassFailure CreateDatabaseUnavailable() => new SyncPassFailure.DatabaseUnavailable();
+
     /// <summary>Creates the <see cref="SyncPassFailure.Unexpected"/> case.</summary>
     public static SyncPassFailure CreateUnexpected() => new SyncPassFailure.Unexpected();
 }

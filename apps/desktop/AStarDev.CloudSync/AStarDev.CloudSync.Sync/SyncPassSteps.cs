@@ -7,8 +7,12 @@ namespace AStarDev.CloudSync.Sync;
 /// <param name="upload">Step 4: local to remote.</param>
 /// <param name="attention">Closes settled conflicts before the passes and records what they found.</param>
 /// <param name="after">What the run does after the four steps: the quota refresh, the activity log and the run journal.</param>
-internal sealed class SyncPassSteps(IRemoteIndexUpdater remoteIndex, ILocalChangeDetector localChanges, IDownloadPass download, IUploadPass upload, SyncPassAttention attention, SyncPassAftermath after)
+/// <param name="health">Stops every run while the database is damaged (#1612).</param>
+internal sealed class SyncPassSteps(IRemoteIndexUpdater remoteIndex, ILocalChangeDetector localChanges, IDownloadPass download, IUploadPass upload, SyncPassAttention attention, SyncPassAftermath after, IDatabaseHealthGate health)
 {
+    /// <summary>The database health check every run waits for before it starts.</summary>
+    public IDatabaseHealthGate Health { get; } = health;
+
     /// <summary>Step 1: brings the remote index up to date.</summary>
     public IRemoteIndexUpdater RemoteIndex { get; } = remoteIndex;
 

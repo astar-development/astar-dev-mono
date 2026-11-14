@@ -9,6 +9,11 @@ public static class RecoveryOutcomeFactory
     /// <param name="accountId">The account.</param>
     public static RecoveryOutcome CreateResumed(AccountId accountId) => new RecoveryOutcome.Resumed(accountId);
 
+    /// <summary>Creates the <see cref="RecoveryOutcome.NotPossible"/> case.</summary>
+    /// <param name="accountId">The account.</param>
+    /// <param name="blocker">What has to be fixed first.</param>
+    public static RecoveryOutcome CreateNotPossible(AccountId accountId, RecoveryBlocker blocker) => new RecoveryOutcome.NotPossible(accountId, blocker);
+
     /// <summary>Creates the <see cref="RecoveryOutcome.NotResumed"/> case.</summary>
     /// <param name="accountId">The account.</param>
     /// <param name="reason">Why the recovery pass did not finish.</param>
