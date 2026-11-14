@@ -88,6 +88,18 @@ public sealed class AccountViewModel : LocalizedObservableObject
     /// <summary>Whether the account must sign in again; the layouts show the Sign in action.</summary>
     public bool NeedsSignIn => Status.IsSignInRequired;
 
+    /// <summary>Whether the last run failed and the account does not need to sign in; the layouts then show their failure message.</summary>
+    public bool HasFailure => throw new NotImplementedException($"{nameof(HasFailure)}");
+
+    /// <summary>The failure message for layout A's account card; empty when there is no failure.</summary>
+    public string LayoutAFailureText => throw new NotImplementedException($"{nameof(LayoutAFailureText)}");
+
+    /// <summary>The failure message for layout B's account detail; empty when there is no failure.</summary>
+    public string LayoutBFailureText => throw new NotImplementedException($"{nameof(LayoutBFailureText)}");
+
+    /// <summary>The failure message for layout C's account strip; empty when there is no failure.</summary>
+    public string LayoutCFailureText => throw new NotImplementedException($"{nameof(LayoutCFailureText)}");
+
     /// <summary>The Sign in action's text.</summary>
     public string SignInText => Localization.GetLocal("Account.SignIn");
 
