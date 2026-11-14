@@ -50,11 +50,14 @@ public sealed class DownloadPassFixture : IDisposable
             .AddSingleton<IPathQuarantine>(Quarantine)
             .AddSingleton<IDiskSpaceProbe>(Disk)
             .AddSingleton(options ?? DownloadPassOptionsFactory.Create())
+            .AddSingleton<ITransferConcurrencyReader>(Concurrency)
             .AddSingleton<ITrashRetentionSettings>(TrashRetention)
             .BuildServiceProvider();
     }
 
     public AccountId Account { get; }
+
+    public FakeTransferConcurrencyReader Concurrency { get; } = new();
 
     public ScriptedSyncSteps Steps { get; } = new();
 

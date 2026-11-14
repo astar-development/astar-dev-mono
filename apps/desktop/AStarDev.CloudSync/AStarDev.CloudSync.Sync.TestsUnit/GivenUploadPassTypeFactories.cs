@@ -16,21 +16,6 @@ public class GivenUploadPassTypeFactories
     }
 
     [Fact]
-    public void when_the_default_options_are_created_then_eight_uploads_may_run_at_once()
-    {
-        UploadPassOptionsFactory.CreateDefault().MaxConcurrentUploads.ShouldBe(8);
-    }
-
-    [Theory]
-    [InlineData(0, 1)]
-    [InlineData(-4, 1)]
-    [InlineData(3, 3)]
-    public void when_options_are_created_with_a_concurrency_then_it_is_at_least_one(int requested, int expected)
-    {
-        UploadPassOptionsFactory.Create(requested).MaxConcurrentUploads.ShouldBe(expected);
-    }
-
-    [Fact]
     public void when_a_content_remove_precondition_is_created_then_it_keeps_the_tag_and_a_blank_tag_is_rejected()
     {
         var created = RemovePreconditionFactory.CreateMustMatchContent(new ContentTag("c1"));

@@ -5,7 +5,7 @@ using AStarDev.CloudSync.Accounts;
 
 namespace AStarDev.CloudSync.Sync;
 
-internal sealed class DownloadRun(AccountId accountId, IDirectoryInfo root, IReadOnlyDictionary<RelativeSyncPath, SyncBaselineEntry> byPath, BaselineBatch batch, PhaseTally tally)
+internal sealed class DownloadRun(AccountId accountId, IDirectoryInfo root, IReadOnlyDictionary<RelativeSyncPath, SyncBaselineEntry> byPath, BaselineBatch batch, PhaseTally tally, int concurrency)
 {
     internal AccountId AccountId { get; } = accountId;
 
@@ -16,6 +16,8 @@ internal sealed class DownloadRun(AccountId accountId, IDirectoryInfo root, IRea
     internal BaselineBatch Batch { get; } = batch;
 
     internal PhaseTally Tally { get; } = tally;
+
+    internal int Concurrency { get; } = concurrency;
 
     internal ConcurrentBag<DownloadItemOutcome> Outcomes { get; } = [];
 

@@ -1,21 +1,17 @@
 namespace AStarDev.CloudSync.Sync;
 
-/// <summary>The download pass settings (#1400). The concurrency becomes a per-account setting in #1404.</summary>
+/// <summary>What a download pass keeps free and how it batches baseline writes. How many files it downloads at once is the account's <see cref="TransferConcurrency"/>.</summary>
 public sealed record DownloadPassOptions
 {
-    internal DownloadPassOptions(int maxConcurrentDownloads, long freeSpaceMarginBytes, int baselineChunkSize)
+    internal DownloadPassOptions(long freeSpaceMarginBytes, int baselineChunkSize)
     {
-        MaxConcurrentDownloads = maxConcurrentDownloads;
         FreeSpaceMarginBytes = freeSpaceMarginBytes;
         BaselineChunkSize = baselineChunkSize;
     }
 
-    /// <summary>The most downloads that run at once for one account.</summary>
-    public int MaxConcurrentDownloads { get; }
-
-    /// <summary>The free space that must remain on the volume after a file is downloaded.</summary>
+    /// <summary>The free disk space a download must leave, in bytes.</summary>
     public long FreeSpaceMarginBytes { get; }
 
-    /// <summary>How many downloads run before their baseline rows are written in one batch.</summary>
+    /// <summary>How many files are downloaded before their baseline rows are written together.</summary>
     public int BaselineChunkSize { get; }
 }
