@@ -34,8 +34,9 @@ internal sealed class SqliteTrashRetentionStore(IDbContextFactory<SyncDbContext>
         return row is null ? LocalTrashOptionsFactory.Create() : LocalTrashOptionsFactory.CreateFromDays(row.Days);
     }
 
-    private async Task<LocalTrashOptions> WriteAsync(LocalTrashOptions options, CancellationToken cancellationToken)
+    private async Task<LocalTrashOptions> WriteAsync(LocalTrashOptions requested, CancellationToken cancellationToken)
     {
+        var options = LocalTrashOptionsFactory.CreateFromDays(ToDays(requested));
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using var transaction = await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken).ConfigureAwait(false);
         var row = await dbContext.TrashRetention.Where(entity => entity.Id == SingleRow).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);

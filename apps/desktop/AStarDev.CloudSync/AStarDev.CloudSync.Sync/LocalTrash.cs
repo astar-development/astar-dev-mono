@@ -36,9 +36,9 @@ internal sealed class LocalTrash(TimeProvider timeProvider, ITrashRetentionSetti
 
     internal async Task<int> PurgeAsync(IDirectoryInfo root, CancellationToken cancellationToken)
     {
-        var retention = await settings.GetAsync(cancellationToken).MatchAsync(options => options.Retention, _ => LocalTrashOptionsFactory.Create().Retention).ConfigureAwait(false);
+        var retention = await settings.GetAsync(cancellationToken).MatchAsync(options => Option.Some(options.Retention), _ => Option.None<TimeSpan>()).ConfigureAwait(false);
 
-        return Try.Run(() => PurgeExpired(root, retention)).Match(count => count, _ => 0);
+        return retention.Match(kept => Try.Run(() => PurgeExpired(root, kept)).Match(count => count, _ => 0), () => 0);
     }
 
     private static string FirstSegment(string relative, IPath path) => relative.Split([path.DirectorySeparatorChar, path.AltDirectorySeparatorChar])[0];
