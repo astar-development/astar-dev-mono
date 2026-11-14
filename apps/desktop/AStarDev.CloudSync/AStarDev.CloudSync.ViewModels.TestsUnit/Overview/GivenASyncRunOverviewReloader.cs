@@ -19,7 +19,7 @@ public class GivenASyncRunOverviewReloader
     {
         var source = new CountingOverviewSource();
         var activity = new FakeSyncActivitySource();
-        var overview = new SyncOverviewViewModel(source, new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         _ = new SyncRunOverviewReloader(activity, new FakeSyncProgressFeed(), overview, new ImmediateUiDispatcher());
 
         activity.RaiseStarted(Personal);
@@ -33,7 +33,7 @@ public class GivenASyncRunOverviewReloader
     {
         var source = new CountingOverviewSource();
         var feed = new FakeSyncProgressFeed();
-        var overview = new SyncOverviewViewModel(source, new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         _ = new SyncRunOverviewReloader(new FakeSyncActivitySource(), feed, overview, new ImmediateUiDispatcher());
 
         feed.Raise(Personal, SyncProgressFactory.Create(SyncPhaseFactory.CreateDownloading(), 50, 100));

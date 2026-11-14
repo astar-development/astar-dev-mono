@@ -29,7 +29,7 @@ public class GivenALayoutCViewModel
     public async Task when_the_add_account_dialog_closes_then_the_overview_is_read_again()
     {
         var source = new CountingSyncOverviewSource(await TestData.CreateOverviewAsync());
-        var overview = new SyncOverviewViewModel(source, new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         var layout = new LayoutCViewModel(overview, new RecordingSyncActions(), TestData.CreateLocalization());
 
         await layout.AddAccountCommand.ExecuteAsync(null);
@@ -85,8 +85,8 @@ public class GivenALayoutCViewModel
     {
         var account = TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
         var conflictedPair = SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), account.Id, "Photos", RelativePaths.Of("Photos"), Option.None<RemoteItemId>(), SyncDirectionFactory.CreateTwoWay(), SyncStatusFactory.CreateHasConflicts(1), 1, Option.None<DateTimeOffset>());
-        var overviewData = SyncOverviewFactory.Create([account], [conflictedPair], [], [SyncConflictFactory.Create(conflictedPair.Id, "photo.jpg", TestData.CreateTime().GetUtcNow())], [], 0, Option.None<DateTimeOffset>());
-        var overview = new SyncOverviewViewModel(new FixedSyncOverviewSource(overviewData), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var overviewData = SyncOverviewFactory.Create([account], [conflictedPair], [], [AttentionItems.CreateConflict(account.Id, "photo.jpg")], [], 0, Option.None<DateTimeOffset>());
+        var overview = new SyncOverviewViewModel(new FixedSyncOverviewSource(overviewData), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         await overview.LoadAsync(TestContext.Current.CancellationToken);
 
         var viewModel = new LayoutCViewModel(overview, new RecordingSyncActions(), TestData.CreateLocalization());
@@ -241,7 +241,7 @@ public class GivenALayoutCViewModel
     {
         var viewModel = new LayoutCViewModel(CreateUnloadedOverview(), new RecordingSyncActions(), TestData.CreateLocalization());
 
-        string[] texts = [viewModel.Title, viewModel.CommandSearchPlaceholder, viewModel.CommandSearchShortcut, viewModel.NewSyncPairText, viewModel.StatusLabel, viewModel.SortText, viewModel.NeedsAttentionText, viewModel.LiveActivityText, viewModel.LiveText, viewModel.AccountsText, viewModel.AddAccountText];
+        string[] texts = [viewModel.Title, viewModel.CommandSearchPlaceholder, viewModel.CommandSearchShortcut, viewModel.NewSyncPairText, viewModel.StatusLabel, viewModel.SortText, viewModel.LiveActivityText, viewModel.LiveText, viewModel.AccountsText, viewModel.AddAccountText];
 
         texts.ShouldAllBe(text => !string.IsNullOrWhiteSpace(text) && !text.StartsWith("LayoutC."));
     }
@@ -256,5 +256,5 @@ public class GivenALayoutCViewModel
         viewModel.Overview.ShouldBeSameAs(overview);
     }
 
-    private static SyncOverviewViewModel CreateUnloadedOverview() => new(new PlaceholderSyncOverviewSource(TestData.CreateTime()), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+    private static SyncOverviewViewModel CreateUnloadedOverview() => new(new PlaceholderSyncOverviewSource(TestData.CreateTime()), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
 }

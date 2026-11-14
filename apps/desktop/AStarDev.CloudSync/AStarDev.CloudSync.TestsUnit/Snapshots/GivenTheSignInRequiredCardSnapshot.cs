@@ -20,7 +20,7 @@ public class GivenTheSignInRequiredCardSnapshot
     public async Task when_an_account_needs_sign_in_then_layout_a_matches_the_baseline(string theme)
     {
         Assert.SkipUnless(OperatingSystem.IsLinux(), Snapshot.LinuxOnlyReason);
-        var overview = new SyncOverviewViewModel(new FixedOverviewSource(SyncOverviewFactory.Create([TestData.CreateAccountNeedingSignIn()], [], [], [], [], 0, Option.None<DateTimeOffset>())), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var overview = new SyncOverviewViewModel(new FixedOverviewSource(SyncOverviewFactory.Create([TestData.CreateAccountNeedingSignIn()], [], [], [], [], 0, Option.None<DateTimeOffset>())), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         await overview.LoadAsync(TestContext.Current.CancellationToken);
         var window = new Window { Content = new LayoutAView { DataContext = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateLocalization()) } };
 

@@ -8,5 +8,5 @@ namespace AStarDev.CloudSync.Overview;
 public static class SyncOverviewFactory
 {
     /// <summary>Creates an overview. Missing lists are normalised to empty lists and negative bytes moved today to zero, and a missing last checked time to none.</summary>
-    public static SyncOverview Create(IReadOnlyList<CloudAccount> accounts, IReadOnlyList<SyncPair> syncPairs, IReadOnlyList<ActivityEntry> activity, IReadOnlyList<SyncConflict> conflicts, IReadOnlyList<ThroughputSample> throughput, long bytesMovedToday, Option<DateTimeOffset> lastChecked) => new(accounts ?? [], syncPairs ?? [], activity ?? [], conflicts ?? [], throughput ?? [], Math.Max(bytesMovedToday, 0), lastChecked ?? Option.None<DateTimeOffset>());
+    public static SyncOverview Create(IReadOnlyList<CloudAccount> accounts, IReadOnlyList<SyncPair> syncPairs, IReadOnlyList<ActivityEntry> activity, IReadOnlyList<SyncAttentionItem> conflicts, IReadOnlyList<ThroughputSample> throughput, long bytesMovedToday, Option<DateTimeOffset> lastChecked) => new(accounts ?? [], syncPairs ?? [], activity ?? [], conflicts ?? [], throughput ?? [], Math.Max(bytesMovedToday, 0), lastChecked ?? Option.None<DateTimeOffset>());
 }

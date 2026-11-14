@@ -32,7 +32,7 @@ public class GivenTheFailedSyncSnapshots
 
     private static async Task<Window> CreateWindowAsync(string layout, CloudAccount account)
     {
-        var overview = new SyncOverviewViewModel(new FixedOverviewSource(SyncOverviewFactory.Create([account], [], [], [], [], 0, Option.None<DateTimeOffset>())), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var overview = new SyncOverviewViewModel(new FixedOverviewSource(SyncOverviewFactory.Create([account], [], [], [], [], 0, Option.None<DateTimeOffset>())), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         await overview.LoadAsync(TestContext.Current.CancellationToken);
         var actions = new RecordingSyncActions();
         var localization = TestData.CreateLocalization();

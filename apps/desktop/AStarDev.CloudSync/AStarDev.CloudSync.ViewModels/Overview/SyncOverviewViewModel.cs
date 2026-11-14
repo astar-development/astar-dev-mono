@@ -4,7 +4,6 @@ using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.ViewModels.Accounts;
 using AStarDev.CloudSync.ViewModels.Activity;
 using AStarDev.CloudSync.ViewModels.Common;
-using AStarDev.CloudSync.ViewModels.Conflicts;
 using AStarDev.CloudSync.ViewModels.SyncPairs;
 using AStarDev.FunctionalParadigm;
 using AStarDev.Localization;
@@ -15,21 +14,19 @@ namespace AStarDev.CloudSync.ViewModels.Overview;
 
 /// <summary>The data every main window layout binds to: accounts, sync pairs, activity, conflicts, summary figures and throughput.</summary>
 /// <param name="source">Supplies the overview data.</param>
-/// <param name="syncActions">Carries out the conflict resolutions the user picks.</param>
 /// <param name="accountCommands">Runs the account actions.</param>
 /// <param name="ruleWriter">Saves the direction a sync pair is changed to.</param>
 /// <param name="localization">Supplies the text and culture.</param>
 /// <param name="timeProvider">Supplies the current time for relative times.</param>
 /// <param name="logger">Reports an overview that cannot be read.</param>
-public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ISyncActions syncActions, IAccountCommands accountCommands, ILeasedSelectionRuleWriter ruleWriter, ILocalizationService localization, TimeProvider timeProvider, ILogger<SyncOverviewViewModel> logger) : LocalizedObservableObject(localization)
+public sealed class SyncOverviewViewModel(ISyncOverviewSource source, IAccountCommands accountCommands, ILeasedSelectionRuleWriter ruleWriter, ILocalizationService localization, TimeProvider timeProvider, ILogger<SyncOverviewViewModel> logger) : LocalizedObservableObject(localization)
 {
     /// <summary>Builds the overview without account actions (previews and tests that do not use them).</summary>
     /// <param name="source">Reads the overview.</param>
-    /// <param name="syncActions">Runs the sync actions.</param>
     /// <param name="localization">Supplies the text.</param>
     /// <param name="timeProvider">Formats relative times.</param>
     /// <param name="logger">Reports load failures.</param>
-    public SyncOverviewViewModel(ISyncOverviewSource source, ISyncActions syncActions, ILocalizationService localization, TimeProvider timeProvider, ILogger<SyncOverviewViewModel> logger) : this(source, syncActions, NoAccountCommands.Instance, NoSelectionRuleWriter.Instance, localization, timeProvider, logger)
+    public SyncOverviewViewModel(ISyncOverviewSource source, ILocalizationService localization, TimeProvider timeProvider, ILogger<SyncOverviewViewModel> logger) : this(source, NoAccountCommands.Instance, NoSelectionRuleWriter.Instance, localization, timeProvider, logger)
     {
     }
 
@@ -45,8 +42,8 @@ public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ISyncActio
     /// <summary>Recent activity across every account, newest first.</summary>
     public IReadOnlyList<ActivityItemViewModel> Activity { get; private set; } = [];
 
-    /// <summary>Conflicts waiting for the user.</summary>
-    public IReadOnlyList<ConflictViewModel> Conflicts { get; private set; } = [];
+    /// <summary>How many conflicts are waiting for the user.</summary>
+    public int ConflictCount => overview.Conflicts.Count;
 
     /// <summary>The summary figures: accounts, providers, folders synced, conflicts and overall status.</summary>
     public IReadOnlyList<StatTileViewModel> Stats { get; private set; } = [];
@@ -100,19 +97,17 @@ public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ISyncActio
     {
         overview = loaded;
         var accountsById = overview.Accounts.ToDictionary(account => account.Id);
-        var pairNamesById = overview.SyncPairs.ToDictionary(pair => pair.Id, pair => pair.Name);
-
+        
         Accounts = [.. overview.Accounts.Select(account => new AccountViewModel(account, overview.Activity, accountCommands, Localization, timeProvider))];
         SyncPairs = [.. overview.SyncPairs.Where(pair => accountsById.ContainsKey(pair.AccountId)).Select(pair => new SyncPairViewModel(pair, accountsById[pair.AccountId], ruleWriter, LoadAsync, Localization, timeProvider))];
         Activity = [.. overview.Activity.Where(entry => accountsById.ContainsKey(entry.AccountId)).OrderByDescending(entry => entry.OccurredAt).Select(entry => new ActivityItemViewModel(entry, accountsById[entry.AccountId].DisplayName, new ProviderViewModel(accountsById[entry.AccountId].Provider, Localization), Localization, timeProvider))];
-        Conflicts = [.. overview.Conflicts.Select(conflict => new ConflictViewModel(conflict, pairNamesById.GetValueOrDefault(conflict.SyncPairId, string.Empty), syncActions, Localization))];
         Stats = CreateStats();
         Throughput = new ThroughputViewModel(overview.Throughput, Localization);
 
         OnPropertyChanged(nameof(Accounts));
         OnPropertyChanged(nameof(SyncPairs));
         OnPropertyChanged(nameof(Activity));
-        OnPropertyChanged(nameof(Conflicts));
+        OnPropertyChanged(nameof(ConflictCount));
         OnPropertyChanged(nameof(Stats));
         OnPropertyChanged(nameof(Throughput));
         OnPropertyChanged(nameof(BytesMovedToday));

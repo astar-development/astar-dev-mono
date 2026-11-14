@@ -25,15 +25,6 @@ public class GivenASyncOverviewViewModel
     }
 
     [Fact]
-    public async Task when_loaded_then_the_conflicts_name_their_sync_pair()
-    {
-        var viewModel = await TestData.CreateLoadedOverviewViewModelAsync();
-
-        viewModel.Conflicts.ShouldNotBeEmpty();
-        viewModel.Conflicts.ShouldAllBe(conflict => conflict.Detail.StartsWith("Holiday photos"));
-    }
-
-    [Fact]
     public async Task when_loaded_then_the_summary_tiles_count_accounts_providers_folders_and_conflicts()
     {
         var overview = await TestData.CreateOverviewAsync();
@@ -50,7 +41,7 @@ public class GivenASyncOverviewViewModel
     public async Task when_loaded_with_one_of_each_then_the_summary_tile_labels_are_singular()
     {
         var account = CloudAccountFactory.Create(CloudAccountIdentityFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), "Work", "work@example.com", CloudProviderFactory.CreateOneDrive()), StorageUsageFactory.Create(1, 2), 1, 1, SyncStatusFactory.CreateHasConflicts(1), Option.None<DateTimeOffset>());
-        var conflict = SyncConflictFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), "report.docx", TestData.Now);
+        var conflict = AttentionItems.CreateConflict(account.Id, "report.docx");
         var viewModel = await CreateLoadedViewModelAsync(SyncOverviewFactory.Create([account], [], [], [conflict], [], 0, Option.None<DateTimeOffset>()));
 
         viewModel.Stats.Select(tile => tile.Label).ShouldBe(["account", "provider", "folder synced", "conflict", "overall status"]);
@@ -61,8 +52,8 @@ public class GivenASyncOverviewViewModel
     {
         var work = CloudAccountFactory.Create(CloudAccountIdentityFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), "Work", "work@example.com", CloudProviderFactory.CreateOneDrive()), StorageUsageFactory.Create(1, 2), 2, 5, SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
         var personal = CloudAccountFactory.Create(CloudAccountIdentityFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), "Personal", "personal@example.com", CloudProviderFactory.CreateOneDrive()), StorageUsageFactory.Create(1, 2), 3, 5, SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
-        var firstConflict = SyncConflictFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), "report.docx", TestData.Now);
-        var secondConflict = SyncConflictFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), "budget.xlsx", TestData.Now);
+        var firstConflict = AttentionItems.CreateConflict(work.Id, "report.docx");
+        var secondConflict = AttentionItems.CreateConflict(personal.Id, "budget.xlsx");
         var viewModel = await CreateLoadedViewModelAsync(SyncOverviewFactory.Create([work, personal], [], [], [firstConflict, secondConflict], [], 0, Option.None<DateTimeOffset>()));
 
         viewModel.Stats.Select(tile => tile.Label).Take(4).ShouldBe(["accounts", "provider", "folders synced", "conflicts"]);
@@ -123,7 +114,7 @@ public class GivenASyncOverviewViewModel
     public async Task when_loaded_without_conflicts_then_the_conflicts_tile_is_normal()
     {
         var overview = SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>())], [], [], [], [], 0, Option.None<DateTimeOffset>());
-        var viewModel = new SyncOverviewViewModel(new FixedSyncOverviewSource(overview), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var viewModel = new SyncOverviewViewModel(new FixedSyncOverviewSource(overview), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
 
         await viewModel.LoadAsync(TestContext.Current.CancellationToken);
 
@@ -135,7 +126,7 @@ public class GivenASyncOverviewViewModel
     public async Task when_any_account_needs_sign_in_then_the_overall_status_is_sign_in_required_even_while_another_syncs()
     {
         var overview = SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateSyncing(40), Option.None<DateTimeOffset>()), TestData.CreateAccountNeedingSignIn()], [], [], [], [], 0, Option.None<DateTimeOffset>());
-        var viewModel = new SyncOverviewViewModel(new FixedSyncOverviewSource(overview), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var viewModel = new SyncOverviewViewModel(new FixedSyncOverviewSource(overview), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
 
         await viewModel.LoadAsync(TestContext.Current.CancellationToken);
 
@@ -149,7 +140,7 @@ public class GivenASyncOverviewViewModel
         var newer = SyncOverviewFactory.Create([TestData.CreateAccountNeedingSignIn()], [], [], [], [], 0, Option.None<DateTimeOffset>());
         var stale = SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>()), TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>())], [], [], [], [], 0, Option.None<DateTimeOffset>());
         var source = new SequencedSyncOverviewSource([older.Task, Task.FromResult(Result.Success<SyncOverview, ErrorResponse>(newer))]);
-        var viewModel = new SyncOverviewViewModel(source, new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var viewModel = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
 
         var firstLoad = viewModel.LoadAsync(TestContext.Current.CancellationToken);
         await viewModel.LoadAsync(TestContext.Current.CancellationToken);
@@ -188,17 +179,16 @@ public class GivenASyncOverviewViewModel
     [Fact]
     public void when_not_yet_loaded_then_the_collections_are_empty()
     {
-        var viewModel = new SyncOverviewViewModel(new PlaceholderSyncOverviewSource(TestData.CreateTime()), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var viewModel = new SyncOverviewViewModel(new PlaceholderSyncOverviewSource(TestData.CreateTime()), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
 
         viewModel.Accounts.ShouldBeEmpty();
         viewModel.SyncPairs.ShouldBeEmpty();
-        viewModel.Conflicts.ShouldBeEmpty();
     }
 
     [Fact]
     public async Task when_loaded_then_property_changed_is_raised_for_the_collections()
     {
-        var viewModel = new SyncOverviewViewModel(new PlaceholderSyncOverviewSource(TestData.CreateTime()), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var viewModel = new SyncOverviewViewModel(new PlaceholderSyncOverviewSource(TestData.CreateTime()), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         var changed = new List<string?>();
         viewModel.PropertyChanged += (_, args) => changed.Add(args.PropertyName);
 
@@ -211,7 +201,7 @@ public class GivenASyncOverviewViewModel
     [Fact]
     public void when_not_yet_loaded_then_the_load_state_is_not_loaded_and_there_is_no_error_text()
     {
-        var viewModel = new SyncOverviewViewModel(new PlaceholderSyncOverviewSource(TestData.CreateTime()), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var viewModel = new SyncOverviewViewModel(new PlaceholderSyncOverviewSource(TestData.CreateTime()), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
 
         viewModel.LoadState.ShouldBeOfType<SyncOverviewLoadState.NotLoaded>();
         viewModel.LoadErrorText.ShouldBeEmpty();
@@ -229,7 +219,7 @@ public class GivenASyncOverviewViewModel
     [Fact]
     public async Task when_the_source_throws_then_loading_completes_and_the_load_state_is_failed()
     {
-        var viewModel = new SyncOverviewViewModel(new ThrowingSyncOverviewSource(new InvalidOperationException("provider unreachable")), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var viewModel = new SyncOverviewViewModel(new ThrowingSyncOverviewSource(new InvalidOperationException("provider unreachable")), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
 
         await Should.NotThrowAsync(() => viewModel.LoadAsync(TestContext.Current.CancellationToken));
 
@@ -240,7 +230,7 @@ public class GivenASyncOverviewViewModel
     [Fact]
     public async Task when_the_source_throws_then_the_localised_error_text_is_exposed()
     {
-        var viewModel = new SyncOverviewViewModel(new ThrowingSyncOverviewSource(new InvalidOperationException("provider unreachable")), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var viewModel = new SyncOverviewViewModel(new ThrowingSyncOverviewSource(new InvalidOperationException("provider unreachable")), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
 
         await viewModel.LoadAsync(TestContext.Current.CancellationToken);
 
@@ -252,7 +242,7 @@ public class GivenASyncOverviewViewModel
     {
         var failure = new InvalidOperationException("provider unreachable");
         var logger = new RecordingLogger<SyncOverviewViewModel>();
-        var viewModel = new SyncOverviewViewModel(new ThrowingSyncOverviewSource(failure), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), logger);
+        var viewModel = new SyncOverviewViewModel(new ThrowingSyncOverviewSource(failure), TestData.CreateLocalization(), TestData.CreateTime(), logger);
 
         await viewModel.LoadAsync(TestContext.Current.CancellationToken);
 
@@ -267,7 +257,7 @@ public class GivenASyncOverviewViewModel
     [Fact]
     public async Task when_the_source_throws_then_property_changed_is_raised_for_the_load_state_and_error_text()
     {
-        var viewModel = new SyncOverviewViewModel(new ThrowingSyncOverviewSource(new InvalidOperationException("provider unreachable")), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var viewModel = new SyncOverviewViewModel(new ThrowingSyncOverviewSource(new InvalidOperationException("provider unreachable")), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         var changed = new List<string?>();
         viewModel.PropertyChanged += (_, args) => changed.Add(args.PropertyName);
 
@@ -280,7 +270,7 @@ public class GivenASyncOverviewViewModel
     [Fact]
     public async Task when_loading_is_cancelled_then_the_cancellation_is_not_swallowed()
     {
-        var viewModel = new SyncOverviewViewModel(new ThrowingSyncOverviewSource(new OperationCanceledException()), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var viewModel = new SyncOverviewViewModel(new ThrowingSyncOverviewSource(new OperationCanceledException()), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
 
         await Should.ThrowAsync<OperationCanceledException>(() => viewModel.LoadAsync(TestContext.Current.CancellationToken));
     }
@@ -289,7 +279,7 @@ public class GivenASyncOverviewViewModel
     public async Task when_the_source_reports_a_failure_then_the_load_state_is_failed_and_an_error_without_the_failure_text_is_logged()
     {
         var logger = new RecordingLogger<SyncOverviewViewModel>();
-        var viewModel = new SyncOverviewViewModel(new FailingSyncOverviewSource("database /home/user/cloudsync.db is locked"), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), logger);
+        var viewModel = new SyncOverviewViewModel(new FailingSyncOverviewSource("database /home/user/cloudsync.db is locked"), TestData.CreateLocalization(), TestData.CreateTime(), logger);
 
         await viewModel.LoadAsync(TestContext.Current.CancellationToken);
 
@@ -302,7 +292,7 @@ public class GivenASyncOverviewViewModel
 
     private static async Task<SyncOverviewViewModel> CreateLoadedViewModelAsync(SyncOverview overview)
     {
-        var viewModel = new SyncOverviewViewModel(new FixedSyncOverviewSource(overview), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var viewModel = new SyncOverviewViewModel(new FixedSyncOverviewSource(overview), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         await viewModel.LoadAsync(TestContext.Current.CancellationToken);
 
         return viewModel;

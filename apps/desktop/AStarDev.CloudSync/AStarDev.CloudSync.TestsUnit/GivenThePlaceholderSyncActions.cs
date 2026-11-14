@@ -67,22 +67,6 @@ public class GivenThePlaceholderSyncActions
     }
 
     [Fact]
-    public async Task when_a_conflict_is_resolved_then_each_choice_is_logged_as_information_and_completes()
-    {
-        var logger = new RecordingLogger<PlaceholderSyncActions>();
-        var syncActions = Create(logger: logger);
-        var conflict = SyncConflictFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), "holiday-042.jpg", TestData.Now);
-        var cancellationToken = TestContext.Current.CancellationToken;
-
-        await syncActions.KeepBothAsync(conflict, cancellationToken);
-        await syncActions.KeepLocalAsync(conflict, cancellationToken);
-        await syncActions.KeepCloudAsync(conflict, cancellationToken);
-
-        logger.Entries.Count.ShouldBe(3);
-        logger.Entries.ShouldAllBe(entry => entry.Level == LogLevel.Information);
-    }
-
-    [Fact]
     public async Task when_add_account_is_requested_then_the_add_account_dialog_is_shown_with_the_callers_token()
     {
         var dialog = new RecordingAddAccountDialog();

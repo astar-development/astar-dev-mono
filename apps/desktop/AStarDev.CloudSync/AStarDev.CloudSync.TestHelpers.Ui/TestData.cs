@@ -43,7 +43,7 @@ public static class TestData
 
     public static async Task<SyncOverviewViewModel> CreateLoadedOverviewViewModelAsync()
     {
-        var viewModel = new SyncOverviewViewModel(new PlaceholderSyncOverviewSource(CreateTime()), new RecordingSyncActions(), CreateLocalization(), CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var viewModel = new SyncOverviewViewModel(new PlaceholderSyncOverviewSource(CreateTime()), CreateLocalization(), CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         await viewModel.LoadAsync(TestContext.Current.CancellationToken);
 
         return viewModel;

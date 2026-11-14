@@ -17,7 +17,7 @@ public class GivenASignInStateOverviewReloader
     {
         var source = new CountingOverviewSource();
         var states = new FakeAccountSignInStates();
-        var overview = new SyncOverviewViewModel(source, new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         _ = new SignInStateOverviewReloader(states, overview, new ImmediateUiDispatcher());
 
         states.Record(AccountIdFactory.Create(Guid.NewGuid()), AccountSignInStateFactory.CreateSignInRequired());

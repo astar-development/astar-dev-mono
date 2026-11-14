@@ -11,7 +11,7 @@ public sealed record SyncOverview
         IReadOnlyList<CloudAccount> accounts,
         IReadOnlyList<SyncPair> syncPairs,
         IReadOnlyList<ActivityEntry> activity,
-        IReadOnlyList<SyncConflict> conflicts,
+        IReadOnlyList<SyncAttentionItem> conflicts,
         IReadOnlyList<ThroughputSample> throughput,
         long bytesMovedToday,
         Option<DateTimeOffset> lastChecked)
@@ -35,7 +35,7 @@ public sealed record SyncOverview
     public IReadOnlyList<ActivityEntry> Activity { get; }
 
     /// <summary>Conflicts waiting for the user.</summary>
-    public IReadOnlyList<SyncConflict> Conflicts { get; }
+    public IReadOnlyList<SyncAttentionItem> Conflicts { get; }
 
     /// <summary>Recent transfer rates, oldest first.</summary>
     public IReadOnlyList<ThroughputSample> Throughput { get; }

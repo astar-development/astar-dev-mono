@@ -42,10 +42,10 @@ public sealed class PlaceholderSyncOverviewSource(TimeProvider timeProvider) : I
             ActivityEntryFactory.Create(photos.Id, Option.Some(holidayPhotos.Id), ActivityKindFactory.CreateConflictDetected("holiday-043.jpg"), now.AddHours(-30))
         ];
 
-        SyncConflict[] conflicts =
+        SyncAttentionItem[] conflicts =
         [
-            SyncConflictFactory.Create(holidayPhotos.Id, "holiday-042.jpg", now.AddHours(-30)),
-            SyncConflictFactory.Create(holidayPhotos.Id, "holiday-043.jpg", now.AddHours(-30))
+            AttentionItems.CreateConflict(photos.Id, "Camera/holiday-042.jpg"),
+            AttentionItems.CreateConflict(photos.Id, "Camera/holiday-043.jpg")
         ];
 
         var throughput = throughputBytesPerSecond.Select((rate, index) => ThroughputSampleFactory.Create(now.AddMinutes(-5 * (throughputBytesPerSecond.Length - 1 - index)), rate)).ToArray();
