@@ -28,7 +28,27 @@ public sealed class StatusViewModel(SyncStatus status, AccountSignInState signIn
         SyncStatus.HasConflicts { Count: 1 } => Localization.GetLocal("Status.Conflicts.One", 1),
         SyncStatus.HasConflicts conflicts => Localization.GetLocal("Status.Conflicts.Many", conflicts.Count),
         SyncStatus.Paused => Localization.GetLocal("Status.Paused"),
+        SyncStatus.Cancelled => Localization.GetLocal("Status.Cancelled"),
+        SyncStatus.Failed failed => Localization.GetLocal(FailureKey(failed.Reason)),
+        SyncStatus.NeedsAttention attention => AttentionText(attention),
         _ => Localization.GetLocal("Status.UpToDate")
+    };
+
+    private static string FailureKey(SyncFailureReason reason) => reason switch
+    {
+        SyncFailureReason.RootUnavailable => "Status.Failed.RootUnavailable",
+        SyncFailureReason.QuotaExceeded => "Status.Failed.QuotaExceeded",
+        SyncFailureReason.InsufficientDiskSpace => "Status.Failed.InsufficientDiskSpace",
+        _ => "Status.Failed.Unexpected"
+    };
+
+    private string AttentionText(SyncStatus.NeedsAttention attention) => attention switch
+    {
+        { Conflicts: > 0, HeldDeletions: > 0 } => Localization.GetLocal("Status.NeedsAttention.Both", attention.Conflicts, attention.HeldDeletions),
+        { Conflicts: 1 } => Localization.GetLocal("Status.Conflicts.One", 1),
+        { Conflicts: > 1 } => Localization.GetLocal("Status.Conflicts.Many", attention.Conflicts),
+        { HeldDeletions: 1 } => Localization.GetLocal("Status.Held.One", 1),
+        _ => Localization.GetLocal("Status.Held.Many", attention.HeldDeletions)
     };
 
     /// <summary>Whether syncing; selects the pill colour.</summary>
