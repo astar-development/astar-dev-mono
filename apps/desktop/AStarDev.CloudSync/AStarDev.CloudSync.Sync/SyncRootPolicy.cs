@@ -44,17 +44,8 @@ public sealed class SyncRootPolicy : ISyncRootPolicy
 
     private static NormalisedPath Normalise(IPath path, string value) => new(SyncRootPaths.Trim(path, path.GetFullPath(value)), path.DirectorySeparatorChar);
 
-    private static List<string> LinkTargetOf(IDirectoryInfo directory)
-    {
-        try
-        {
-            return directory.LinkTarget is null || directory.ResolveLinkTarget(true) is not { } target ? [] : [target.FullName];
-        }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
-        {
-            return [];
-        }
-    }
+    private static List<string> LinkTargetOf(IDirectoryInfo directory) =>
+        Try.Run(() => directory.LinkTarget is null || directory.ResolveLinkTarget(true) is not { } target ? [] : new List<string> { target.FullName }).Match(targets => targets, _ => []);
 
     private readonly record struct NormalisedPath(string Path, char Separator);
 }

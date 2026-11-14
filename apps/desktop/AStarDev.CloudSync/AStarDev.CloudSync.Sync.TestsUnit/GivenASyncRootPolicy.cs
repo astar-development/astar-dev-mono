@@ -117,6 +117,55 @@ public class GivenASyncRootPolicy
         result.Match(root => (object)root.Directory.FullName, rejection => rejection).ShouldBe(OneDrive);
     }
 
+    [Theory]
+    [InlineData(typeof(IOException))]
+    [InlineData(typeof(UnauthorizedAccessException))]
+    public void when_the_candidates_link_target_cannot_be_read_then_the_candidate_is_still_checked_by_its_own_path(Type failure)
+    {
+        _ = fileSystem.Directory.CreateDirectory(OneDrive);
+        var unreadable = UnreadableLinkFolder("/home/jbarden/CloudSync/OneDrive-Work", failure);
+
+        var result = new SyncRootPolicy().Check(SecondAccount, unreadable, [AccountSyncRootFactory.Create(FirstAccount, Root(OneDrive))]);
+
+        result.Match(root => root.Directory.FullName, rejection => rejection.ToString()).ShouldBe("/home/jbarden/CloudSync/OneDrive-Work");
+    }
+
+    [Theory]
+    [InlineData(typeof(IOException))]
+    [InlineData(typeof(UnauthorizedAccessException))]
+    public void when_the_candidates_link_target_cannot_be_read_then_a_clash_by_its_own_path_is_still_rejected(Type failure)
+    {
+        _ = fileSystem.Directory.CreateDirectory(OneDrive);
+        var unreadable = UnreadableLinkFolder(OneDrive, failure);
+
+        var result = new SyncRootPolicy().Check(SecondAccount, unreadable, [AccountSyncRootFactory.Create(FirstAccount, Root(OneDrive))]);
+
+        result.Match(root => (object)root, rejection => rejection).ShouldBe(SyncRootRejectionFactory.CreateSameAs(FirstAccount));
+    }
+
+    private IDirectoryInfo UnreadableLinkFolder(string path, Type failure)
+    {
+        var unreadableSystem = Substitute.For<IFileSystem>();
+        unreadableSystem.Path.Returns(fileSystem.Path);
+        var folder = Substitute.For<IDirectoryInfo>();
+        folder.FullName.Returns(path);
+        folder.FileSystem.Returns(unreadableSystem);
+        folder.LinkTarget.Returns(_ => throw (Exception)Activator.CreateInstance(failure)!);
+        var factory = Substitute.For<IDirectoryInfoFactory>();
+        factory.New(Arg.Any<string>()).Returns(call =>
+        {
+            var created = Substitute.For<IDirectoryInfo>();
+            created.FullName.Returns(call.Arg<string>());
+            created.FileSystem.Returns(unreadableSystem);
+            created.LinkTarget.Returns(_ => throw (Exception)Activator.CreateInstance(failure)!);
+
+            return created;
+        });
+        unreadableSystem.DirectoryInfo.Returns(factory);
+
+        return folder;
+    }
+
     private Result<SyncRoot, SyncRootRejection> Check(AccountId accountId, string candidate, params (AccountId Account, string Root)[] existing) =>
         new SyncRootPolicy().Check(accountId, fileSystem.DirectoryInfo.New(candidate), [.. existing.Select(entry => AccountSyncRootFactory.Create(entry.Account, Root(entry.Root)))]);
 

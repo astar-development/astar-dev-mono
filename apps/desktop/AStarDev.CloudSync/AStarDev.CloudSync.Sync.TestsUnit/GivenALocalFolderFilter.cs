@@ -65,5 +65,31 @@ public class GivenALocalFolderFilter
         Filter(folder).ShouldBe(LocalFolderVisibilityFactory.CreateVisible());
     }
 
+    [Theory]
+    [InlineData(typeof(IOException))]
+    [InlineData(typeof(UnauthorizedAccessException))]
+    public void when_the_attributes_cannot_be_read_then_the_folder_is_visible(Type failure)
+    {
+        var folder = Substitute.For<IDirectoryInfo>();
+        folder.Name.Returns("Docs");
+        folder.Attributes.Returns(_ => throw (Exception)Activator.CreateInstance(failure)!);
+        folder.LinkTarget.Returns((string?)null);
+
+        Filter(folder).ShouldBe(LocalFolderVisibilityFactory.CreateVisible());
+    }
+
+    [Theory]
+    [InlineData(typeof(IOException))]
+    [InlineData(typeof(UnauthorizedAccessException))]
+    public void when_the_link_target_cannot_be_read_then_the_folder_is_visible(Type failure)
+    {
+        var folder = Substitute.For<IDirectoryInfo>();
+        folder.Name.Returns("Docs");
+        folder.Attributes.Returns(FileAttributes.Directory);
+        folder.LinkTarget.Returns(_ => throw (Exception)Activator.CreateInstance(failure)!);
+
+        Filter(folder).ShouldBe(LocalFolderVisibilityFactory.CreateVisible());
+    }
+
     private static LocalFolderVisibility Filter(IDirectoryInfo folder) => new LocalFolderFilter().ShouldSkip(folder);
 }
