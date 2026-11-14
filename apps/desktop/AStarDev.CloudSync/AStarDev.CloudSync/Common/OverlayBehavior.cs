@@ -53,15 +53,15 @@ internal sealed class OverlayBehavior<TViewModel> where TViewModel : class, INot
 
     private void OnLoaded(object? sender, RoutedEventArgs e)
     {
-        host = TopLevel.GetTopLevel(view);
-        host?.AddHandler(InputElement.KeyDownEvent, OnKeyDown);
+        host = TopLevel.GetTopLevel(view)!;
+        host.AddHandler(InputElement.KeyDownEvent, OnKeyDown);
         Observe(view.DataContext as TViewModel);
         FocusInitial();
     }
 
     private void OnUnloaded(object? sender, RoutedEventArgs e)
     {
-        host?.RemoveHandler(InputElement.KeyDownEvent, OnKeyDown);
+        host!.RemoveHandler(InputElement.KeyDownEvent, OnKeyDown);
         host = null;
         Observe(null);
     }
