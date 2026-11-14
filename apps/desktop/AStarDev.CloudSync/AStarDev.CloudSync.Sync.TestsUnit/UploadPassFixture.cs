@@ -100,7 +100,6 @@ public sealed class UploadPassFixture : IDisposable
             .AddSingleton<ISyncBaselineWriter>(Baseline)
             .AddSingleton<IRemoteIndexReader>(Remote)
             .AddSingleton<IUploadRecorder>(Recorder)
-            .AddSingleton(UploadPassOptionsFactory.Create(MaxConcurrentUploads))
             .AddSingleton<ITransferConcurrencyReader>(Concurrency)
             .AddKeyedSingleton<IRemoteFileUploader>(oneDrive, Uploader)
             .AddKeyedSingleton<IRemoteFolderCreator>(oneDrive, Folders)

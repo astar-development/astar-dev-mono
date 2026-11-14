@@ -261,7 +261,8 @@ public sealed class GivenADownloadPassForFirstSyncLinks
     [Fact]
     public async Task when_twenty_files_both_sides_added_are_linked_in_one_pass_then_every_one_is_linked_and_stored_once()
     {
-        using var fixture = await CreateAsync(CancellationToken, DownloadPassOptionsFactory.Create(4, 0, 3));
+        using var fixture = await CreateAsync(CancellationToken, DownloadPassOptionsFactory.Create(0, 3));
+        fixture.Concurrency.Value = 4;
         fixture.Docs();
         List<LocalChange> added = [];
         foreach (var index in Enumerable.Range(0, 20))

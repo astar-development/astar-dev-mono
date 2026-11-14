@@ -11,10 +11,11 @@ namespace AStarDev.CloudSync.Sync;
 /// <param name="fileStep">Downloads one file.</param>
 /// <param name="files">Creates and moves local items and trashes the ones the remote deleted.</param>
 /// <param name="baselineWriter">Writes the baseline rows.</param>
-/// <param name="options">The concurrency and the batch size.</param>
+/// <param name="options">The free-space margin and the batch size.</param>
+/// <param name="limits">Tells how many transfers the account may run at once.</param>
 /// <param name="sink">Takes the bytes downloaded so far.</param>
 /// <param name="logger">Reports why the pass stopped, with no paths.</param>
-internal sealed class DownloadExecutor(DownloadFileStep fileStep, ILocalFileOperations files, ISyncBaselineWriter baselineWriter, DownloadPassOptions options, ISyncProgressSink sink, ILogger<DownloadExecutor> logger)
+internal sealed class DownloadExecutor(DownloadFileStep fileStep, ILocalFileOperations files, ISyncBaselineWriter baselineWriter, DownloadPassOptions options, TransferLimits limits, ISyncProgressSink sink, ILogger<DownloadExecutor> logger)
 {
     private const string Location = nameof(DownloadExecutor);
 
@@ -36,7 +37,8 @@ internal sealed class DownloadExecutor(DownloadFileStep fileStep, ILocalFileOper
 
         List<DownloadPlanItem.DownloadFile> downloads = [.. plan.Items.OfType<DownloadPlanItem.DownloadFile>()];
         var tally = new PhaseTally(accountId, SyncPhaseFactory.CreateDownloading(), downloads.Sum(SizeOf) + plan.Items.OfType<DownloadPlanItem.SendToConflicts>().Sum(conflict => FirstSyncLinker.BytesToHash(conflict.Finding, conflict.RemoteItem)), sink);
-        var run = new DownloadRun(accountId, root, byPath, batch, tally);
+        var concurrency = await limits.ForAsync(accountId, cancellationToken).ConfigureAwait(false);
+        var run = new DownloadRun(accountId, root, byPath, batch, tally, concurrency);
         var downloaded = await DownloadAllAsync(downloads, run, cancellationToken).ConfigureAwait(false);
 
         return await downloaded.BindAsync(done => FinishAsync(plan, run, [.. outcomes, .. done], cancellationToken)).ConfigureAwait(false);
@@ -94,7 +96,7 @@ internal sealed class DownloadExecutor(DownloadFileStep fileStep, ILocalFileOper
             Result<Unit, ErrorResponse> flushed;
             try
             {
-                await Parallel.ForEachAsync(chunk, new ParallelOptions { MaxDegreeOfParallelism = options.MaxConcurrentDownloads, CancellationToken = cancellationToken }, (item, token) => DownloadOneAsync(item, run, token)).ConfigureAwait(false);
+                await Parallel.ForEachAsync(chunk, new ParallelOptions { MaxDegreeOfParallelism = run.Concurrency, CancellationToken = cancellationToken }, (item, token) => DownloadOneAsync(item, run, token)).ConfigureAwait(false);
             }
             finally
             {
@@ -131,7 +133,7 @@ internal sealed class DownloadExecutor(DownloadFileStep fileStep, ILocalFileOper
     {
         List<DownloadItemOutcome> outcomes = [.. sofar];
         ConcurrentBag<DownloadItemOutcome> reported = [];
-        await Parallel.ForEachAsync(plan.Items.OfType<DownloadPlanItem.SendToConflicts>(), new ParallelOptions { MaxDegreeOfParallelism = options.MaxConcurrentDownloads, CancellationToken = cancellationToken }, async (conflict, token) => reported.Add(await ReportConflictAsync(run, conflict, token).ConfigureAwait(false))).ConfigureAwait(false);
+        await Parallel.ForEachAsync(plan.Items.OfType<DownloadPlanItem.SendToConflicts>(), new ParallelOptions { MaxDegreeOfParallelism = run.Concurrency, CancellationToken = cancellationToken }, async (conflict, token) => reported.Add(await ReportConflictAsync(run, conflict, token).ConfigureAwait(false))).ConfigureAwait(false);
         outcomes.AddRange(reported);
         foreach (var deletion in plan.Items.OfType<DownloadPlanItem.DeleteLocal>())
             outcomes.Add(await DeleteAsync(run.Root, deletion, run.ByPath, run.Batch, cancellationToken).ConfigureAwait(false));

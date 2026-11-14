@@ -11,23 +11,24 @@ namespace AStarDev.CloudSync.Sync;
 /// <param name="options">The concurrency limit.</param>
 /// <param name="sink">Takes the bytes uploaded so far.</param>
 /// <param name="classifier">Decides the conflict kind when the provider answers a failed precondition.</param>
-internal sealed class UploadItemExecutor(IUploadRecorder recorder, ISyncBaselineWriter baseline, UploadPassOptions options, ISyncProgressSink sink, IConflictClassifier classifier)
+internal sealed class UploadItemExecutor(IUploadRecorder recorder, ISyncBaselineWriter baseline, TransferLimits limits, ISyncProgressSink sink, IConflictClassifier classifier)
 {
     private const char Separator = '/';
 
     internal async Task<Result<IReadOnlyList<UploadItemOutcome>, UploadPassFailure>> ExecuteAsync(AccountId accountId, UploadPlan plan, UploadPassInput input, UploadProviders providers, CancellationToken cancellationToken)
     {
+        var concurrency = await limits.ForAsync(accountId, cancellationToken).ConfigureAwait(false);
         var tally = new PhaseTally(accountId, SyncPhaseFactory.CreateUploading(), plan.Items.Sum(SizeOf), sink);
         var run = new PassRun(accountId, input, providers, SeedFolders(input), tally);
         foreach (var item in plan.Items.Where(IsFolderStep))
             run.Outcomes.Add(await RunFolderStepAsync(run, item, cancellationToken).ConfigureAwait(false));
 
-        await Parallel.ForEachAsync(plan.Items.Where(IsUploadStep), new ParallelOptions { MaxDegreeOfParallelism = options.MaxConcurrentUploads, CancellationToken = cancellationToken }, (item, token) => new ValueTask(UploadStepAsync(run, item, token))).ConfigureAwait(false);
+        await Parallel.ForEachAsync(plan.Items.Where(IsUploadStep), new ParallelOptions { MaxDegreeOfParallelism = concurrency, CancellationToken = cancellationToken }, (item, token) => new ValueTask(UploadStepAsync(run, item, token))).ConfigureAwait(false);
 
         foreach (var item in plan.Items.Where(IsRemovalStep))
             run.Outcomes.Add(await RunRemovalStepAsync(run, item, cancellationToken).ConfigureAwait(false));
 
-        await Parallel.ForEachAsync(plan.Items.Where(IsReportedStep), new ParallelOptions { MaxDegreeOfParallelism = options.MaxConcurrentUploads, CancellationToken = cancellationToken }, async (item, token) => run.Outcomes.Add(await ReportedAsync(run, item, token).ConfigureAwait(false))).ConfigureAwait(false);
+        await Parallel.ForEachAsync(plan.Items.Where(IsReportedStep), new ParallelOptions { MaxDegreeOfParallelism = concurrency, CancellationToken = cancellationToken }, async (item, token) => run.Outcomes.Add(await ReportedAsync(run, item, token).ConfigureAwait(false))).ConfigureAwait(false);
 
         return run.Stop.Match(
             failure => Result.Failure<IReadOnlyList<UploadItemOutcome>, UploadPassFailure>(failure),
