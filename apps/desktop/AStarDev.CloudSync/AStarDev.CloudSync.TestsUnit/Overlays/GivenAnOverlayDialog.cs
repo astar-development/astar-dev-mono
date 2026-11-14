@@ -1,3 +1,4 @@
+using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.TestHelpers.Ui;
 using AStarDev.CloudSync.ViewModels;
 using Avalonia;
@@ -112,7 +113,7 @@ public class GivenAnOverlayDialog
     [InlineData("ConflictList")]
     public async Task when_the_dialog_closes_and_the_opener_is_gone_then_closing_does_not_fail(string key)
     {
-        var (_, _, vm, overlay, opener) = await ShowAsync(key);
+        var (window, _, vm, overlay, opener) = await ShowAsync(key);
         opener.Focus();
         await overlay.Open(vm);
         Dispatcher.UIThread.RunJobs();
@@ -122,6 +123,35 @@ public class GivenAnOverlayDialog
         Dispatcher.UIThread.RunJobs();
 
         overlay.IsOpen(vm).ShouldBeFalse();
+        window.FocusManager!.GetFocusedElement().ShouldNotBeSameAs(opener);
+    }
+
+    [AvaloniaFact]
+    public async Task when_the_sync_restart_question_opens_from_another_thread_then_focus_moves_inside_it()
+    {
+        var (window, view, vm, _, _) = await ShowAsync("SyncRestart");
+
+        Task.Run(() => { _ = vm.SyncRestart.AskAsync(AccountIdFactory.Create(Guid.NewGuid()), TestContext.Current.CancellationToken); }, TestContext.Current.CancellationToken).Wait(TestContext.Current.CancellationToken);
+        Dispatcher.UIThread.RunJobs();
+
+        InsideOf(window, view).ShouldBeTrue();
+    }
+
+    [AvaloniaFact]
+    public async Task when_another_dialog_opens_over_an_open_one_then_the_open_one_does_not_take_focus_back()
+    {
+        var (window, view, vm, overlay, _) = await ShowAsync("ConflictList");
+        await overlay.Open(vm);
+        Dispatcher.UIThread.RunJobs();
+        var other = new Button { Content = "Other" };
+        ((Panel)window.Content!).Children.Add(other);
+        other.Focus();
+
+        vm.ConflictList.SelectedFilter = vm.ConflictList.Filters[^1];
+        Dispatcher.UIThread.RunJobs();
+
+        window.FocusManager!.GetFocusedElement().ShouldBeSameAs(other);
+        InsideOf(window, view).ShouldBeFalse();
     }
 
     private static bool InsideOf(Window window, Control view) => window.FocusManager!.GetFocusedElement() is Visual focused && focused.GetVisualAncestors().Contains(view);

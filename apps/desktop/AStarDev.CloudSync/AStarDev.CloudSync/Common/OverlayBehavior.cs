@@ -67,6 +67,13 @@ internal sealed class OverlayBehavior<TViewModel> where TViewModel : class, INot
 
     private void OnViewModelChanged(object? sender, PropertyChangedEventArgs e)
     {
+        if (!Dispatcher.UIThread.CheckAccess())
+        {
+            Dispatcher.UIThread.Post(() => OnViewModelChanged(sender, e), DispatcherPriority.Input);
+
+            return;
+        }
+
         var open = observed is not null && isOpen(observed);
         if (open && !wasOpen)
         {
@@ -98,13 +105,20 @@ internal sealed class OverlayBehavior<TViewModel> where TViewModel : class, INot
 
     private bool IsInside(Visual visual) => ReferenceEquals(visual, view) || visual.GetVisualAncestors().Contains(view);
 
-    private void FocusInitial() => Defer(FocusIfLost);
+    private void FocusInitial() => Defer(() =>
+    {
+        if (view.IsEffectivelyVisible && !FocusIsUsableInside())
+            InitialTarget()?.Focus();
+    });
 
     private void FocusIfLost()
     {
-        if (view.IsEffectivelyVisible && !(FocusedElement() is InputElement { IsEffectivelyVisible: true } focused && IsInside(focused)))
+        var focused = FocusedElement();
+        if (view.IsEffectivelyVisible && (focused is null || (focused is Visual visual && IsInside(visual) && !FocusIsUsableInside())))
             InitialTarget()?.Focus();
     }
+
+    private bool FocusIsUsableInside() => FocusedElement() is InputElement { IsEffectivelyVisible: true, IsEffectivelyEnabled: true } focused && IsInside(focused);
 
     private Control? InitialTarget() => focusName is null
         ? view.GetVisualDescendants().OfType<Control>().FirstOrDefault(candidate => candidate.Focusable && candidate.IsTabStop && candidate.IsEffectivelyVisible && candidate.IsEffectivelyEnabled)
