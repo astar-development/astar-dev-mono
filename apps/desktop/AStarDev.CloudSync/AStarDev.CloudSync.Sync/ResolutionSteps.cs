@@ -10,14 +10,14 @@ namespace AStarDev.CloudSync.Sync;
 /// <param name="namer">Names the Keep Both copy.</param>
 /// <param name="time">Stamps the Keep Both name.</param>
 /// <param name="baseline">Removes the baseline row of a trashed file.</param>
-internal sealed class ResolutionSteps(ResolutionTransfers transfers, ILocalFileOperations files, IKeepBothNamer namer, TimeProvider time, ISyncBaselineWriter baseline)
+/// <param name="moves">Carries out the move target plans.</param>
+internal sealed class ResolutionSteps(ResolutionTransfers transfers, ILocalFileOperations files, IKeepBothNamer namer, TimeProvider time, ISyncBaselineWriter baseline, MoveTargetSteps moves)
 {
     private const char Separator = '/';
 
     internal Task<Result<Unit, ResolutionFailure>> RunAsync(AccountId accountId, SyncAttentionItem.Conflict conflict, ResolutionPlan plan, CancellationToken cancellationToken) => plan switch
     {
         ResolutionPlan.LeaveOpen => Task.FromResult(Done()),
-        ResolutionPlan.KeepLocalMoveRemoteAside or ResolutionPlan.ApplyRemoteMoveRenameLocal or ResolutionPlan.KeepBothAtMoveTarget => Task.FromResult(Failed(ResolutionFailureFactory.CreateUnsupported())),
         _ => transfers.LoadAsync(accountId, [conflict.Path], cancellationToken).BindAsync(context => RunLoadedAsync(context, conflict, plan, cancellationToken)),
     };
 
@@ -25,7 +25,7 @@ internal sealed class ResolutionSteps(ResolutionTransfers transfers, ILocalFileO
 
     private static Result<Unit, ResolutionFailure> Failed(ResolutionFailure failure) => Result.Failure<Unit, ResolutionFailure>(failure);
 
-    private static RelativeSyncPath SiblingPath(RelativeSyncPath path, string name) => new(path.Value[..(path.Value.LastIndexOf(Separator) + 1)] + name);
+    internal static RelativeSyncPath SiblingPath(RelativeSyncPath path, string name) => new(path.Value[..(path.Value.LastIndexOf(Separator) + 1)] + name);
 
     private static Option<ContentTag> SeenTag(SyncAttentionItem.Conflict conflict) => conflict.Remote is SideSnapshot.Present present ? present.Tag : Option.None<ContentTag>();
 
@@ -39,6 +39,9 @@ internal sealed class ResolutionSteps(ResolutionTransfers transfers, ILocalFileO
         ResolutionPlan.DeleteRemote => RemoveRemoteAsync(context, path, seen, cancellationToken),
         ResolutionPlan.TrashLocal => TrashAsync(context, path, cancellationToken),
         ResolutionPlan.KeepBothUploadAndDownload => KeepBothAsync(context, path, seen, cancellationToken),
+        ResolutionPlan.KeepLocalMoveRemoteAside => moves.RenameRemoteAsync(context, path, seen, cancellationToken),
+        ResolutionPlan.ApplyRemoteMoveRenameLocal => moves.RenameLocalAsync(context, path, seen, cancellationToken),
+        ResolutionPlan.KeepBothAtMoveTarget => moves.RenameLocalAndUploadAsync(context, path, seen, cancellationToken),
         _ => Task.FromResult(Failed(ResolutionFailureFactory.CreateUnsupported())),
     };
 
