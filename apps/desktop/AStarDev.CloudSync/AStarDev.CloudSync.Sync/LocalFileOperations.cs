@@ -5,7 +5,8 @@ namespace AStarDev.CloudSync.Sync;
 
 /// <inheritdoc />
 /// <param name="timeProvider">Times the wait between retries.</param>
-internal sealed class LocalFileOperations(TimeProvider timeProvider) : ILocalFileOperations
+/// <param name="trash">Moves removed items into the sync trash.</param>
+internal sealed class LocalFileOperations(TimeProvider timeProvider, LocalTrash trash) : ILocalFileOperations
 {
     private const int MaxAttempts = 3;
     private const int DiskFullWindows = unchecked((int)0x80070070);
@@ -24,7 +25,7 @@ internal sealed class LocalFileOperations(TimeProvider timeProvider) : ILocalFil
 
     /// <inheritdoc />
     public Task<Result<Unit, LocalOperationFailure>> TrashAsync(IDirectoryInfo root, IFileSystemInfo item, CancellationToken cancellationToken) =>
-        throw new NotImplementedException($"{nameof(root)} {nameof(item)} {nameof(cancellationToken)}");
+        WithRetryAsync(() => Do(() => trash.Move(root, item)), cancellationToken);
 
     /// <inheritdoc />
     public Task<Result<Unit, LocalOperationFailure>> ReplaceAsync(IFileInfo download, IFileInfo target, DateTimeOffset lastWriteUtc, CancellationToken cancellationToken) =>
@@ -37,7 +38,7 @@ internal sealed class LocalFileOperations(TimeProvider timeProvider) : ILocalFil
         return Unit.Instance;
     });
 
-    private static void MoveItem(IFileSystemInfo source, string targetPath)
+    internal static void MoveItem(IFileSystemInfo source, string targetPath)
     {
         var fileSystem = source.FileSystem;
         fileSystem.Directory.CreateDirectory(fileSystem.Path.GetDirectoryName(targetPath) ?? targetPath);

@@ -41,6 +41,7 @@ public static class SyncServiceCollectionExtensions
             .AddSingleton<IDownloadPlanner, DownloadPlanner>()
             .AddSingleton(DownloadPassOptionsFactory.Create())
             .AddSingleton(LocalTrashOptionsFactory.Create())
+            .AddSingleton<LocalTrash>()
             .AddSingleton<ILocalFileOperations, LocalFileOperations>()
             .AddSingleton<IDiskSpaceProbe, DiskSpaceProbe>()
             .AddSingleton<DownloadPlanLoader>()

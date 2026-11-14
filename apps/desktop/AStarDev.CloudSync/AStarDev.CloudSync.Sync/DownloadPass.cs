@@ -13,8 +13,9 @@ namespace AStarDev.CloudSync.Sync;
 /// <param name="planner">Plans the pass.</param>
 /// <param name="executor">Carries out the plan.</param>
 /// <param name="holds">Closes the held sets of pairs that recovered; the runner records the deletions the guard held.</param>
+/// <param name="trash">Removes the trash entries that outlived the retention when a pass starts.</param>
 /// <param name="logger">Reports the pass with counts and the hashed account id only.</param>
-internal sealed partial class DownloadPass(ISyncRootReader roots, DownloadPlanLoader loader, IDownloadPlanner planner, DownloadExecutor executor, DownloadHolds holds, ILogger<DownloadPass> logger) : IDownloadPass
+internal sealed partial class DownloadPass(ISyncRootReader roots, DownloadPlanLoader loader, IDownloadPlanner planner, DownloadExecutor executor, DownloadHolds holds, LocalTrash trash, ILogger<DownloadPass> logger) : IDownloadPass
 {
     private const string Location = nameof(DownloadPass);
 
@@ -48,6 +49,7 @@ internal sealed partial class DownloadPass(ISyncRootReader roots, DownloadPlanLo
             return RootUnavailable();
 
         var orphans = DeleteOrphans(root);
+        _ = trash.Purge(root);
         var summary = await loader.LoadAsync(accountId, root, localChanges, cancellationToken)
             .BindAsync(request => PlanAndRunAsync(accountId, root, request, cancellationToken))
             .ConfigureAwait(false);

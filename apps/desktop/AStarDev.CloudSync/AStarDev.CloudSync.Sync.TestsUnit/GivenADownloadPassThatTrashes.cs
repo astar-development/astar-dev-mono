@@ -45,6 +45,7 @@ public sealed class GivenADownloadPassThatTrashes
     {
         using var fixture = await DownloadPassFixture.CreateAsync(CancellationToken);
         fixture.Docs();
+        fixture.Remote.Folder("Docs");
         var now = fixture.Time.GetUtcNow();
         fixture.FileSystem.Directory.CreateDirectory($"{Trash}/{Stamp(now.AddDays(-31))}-aaaa");
         fixture.FileSystem.File.WriteAllText($"{Trash}/{Stamp(now.AddDays(-31))}-aaaa/old.txt", "old");
@@ -61,6 +62,7 @@ public sealed class GivenADownloadPassThatTrashes
     {
         using var fixture = await DownloadPassFixture.CreateAsync(CancellationToken, trashOptions: LocalTrashOptionsFactory.Create(TimeSpan.FromDays(2)));
         fixture.Docs();
+        fixture.Remote.Folder("Docs");
         var now = fixture.Time.GetUtcNow();
         fixture.FileSystem.Directory.CreateDirectory($"{Trash}/{Stamp(now.AddDays(-3))}-aaaa");
 
@@ -74,6 +76,7 @@ public sealed class GivenADownloadPassThatTrashes
     {
         using var fixture = await DownloadPassFixture.CreateAsync(CancellationToken);
         fixture.Docs();
+        fixture.Remote.Folder("Docs");
 
         _ = await fixture.RunAsync(CancellationToken);
 

@@ -63,7 +63,7 @@ public sealed class GivenALocalTrash : IDisposable
 
         Outcome(result).ShouldBe("ok");
         fileSystem.Directory.Exists("/root/Docs").ShouldBeFalse();
-        TrashedFiles(fileSystem, "/root").Select(path => path[path.IndexOf("/Docs/", StringComparison.Ordinal)..]).Order().ShouldBe(["/Docs/Sub/a.txt", "/Docs/b.txt"]);
+        TrashedFiles(fileSystem, "/root").Select(path => path[path.IndexOf("/Docs/", StringComparison.Ordinal)..]).Order(StringComparer.Ordinal).ShouldBe(["/Docs/Sub/a.txt", "/Docs/b.txt"]);
     }
 
     [Fact]
