@@ -49,11 +49,11 @@ internal sealed partial class DownloadPass(ISyncRootReader roots, DownloadPlanLo
             return RootUnavailable();
 
         var orphans = DeleteOrphans(root);
-        _ = trash.Purge(root);
+        var purged = trash.Purge(root);
         var summary = await loader.LoadAsync(accountId, root, localChanges, cancellationToken)
             .BindAsync(request => PlanAndRunAsync(accountId, root, request, cancellationToken))
             .ConfigureAwait(false);
-        LogPass(orphans, summary);
+        LogPass(orphans, purged, summary);
 
         return summary;
     }
@@ -73,11 +73,11 @@ internal sealed partial class DownloadPass(ISyncRootReader roots, DownloadPlanLo
         return Result.Failure<Unit, DownloadPassFailure>(DownloadPassFailureFactory.CreateUnexpected());
     }
 
-    private void LogPass(int orphans, Result<DownloadPassSummary, DownloadPassFailure> summary)
+    private void LogPass(int orphans, int purged, Result<DownloadPassSummary, DownloadPassFailure> summary)
     {
         var message = summary.Match(
-            done => $"The download pass finished: {done.Downloaded} downloaded ({done.Bytes} bytes), {done.FoldersCreated} folders created, {done.Moved} moved, {done.DeletedLocally} deleted, {done.HeldByGuard} held, {done.SentToConflicts} sent to conflicts, {done.Skipped} skipped, {done.Failed} failed, {orphans} orphan temp files removed.",
-            failure => $"The download pass stopped ({failure.GetType().Name}), {orphans} orphan temp files removed.");
+            done => $"The download pass finished: {done.Downloaded} downloaded ({done.Bytes} bytes), {done.FoldersCreated} folders created, {done.Moved} moved, {done.DeletedLocally} deleted, {done.HeldByGuard} held, {done.SentToConflicts} sent to conflicts, {done.Skipped} skipped, {done.Failed} failed, {orphans} orphan temp files removed, {purged} expired trash entries removed.",
+            failure => $"The download pass stopped ({failure.GetType().Name}), {orphans} orphan temp files removed, {purged} expired trash entries removed.");
         LogMessage.Information(logger, Location, message);
     }
 }
