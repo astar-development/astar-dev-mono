@@ -60,6 +60,7 @@ internal sealed partial class DownloadPass(ISyncRootReader roots, DownloadPlanLo
 
     private async Task<Result<DownloadPassSummary, DownloadPassFailure>> PlanAndRunAsync(AccountId accountId, IDirectoryInfo root, DownloadPlanRequest request, CancellationToken cancellationToken)
     {
+        LogTrashSkipped(request);
         var plan = planner.Plan(request);
         var recorded = await holds.SettleAsync(accountId, request, plan, cancellationToken).MatchAsync(Result.Success<Unit, DownloadPassFailure>, _ => HeldNotSettled()).ConfigureAwait(false);
 
@@ -71,6 +72,16 @@ internal sealed partial class DownloadPass(ISyncRootReader roots, DownloadPlanLo
         LogMessage.Warning(logger, Location, "The download pass could not close the held sets of recovered pairs.");
 
         return Result.Failure<Unit, DownloadPassFailure>(DownloadPassFailureFactory.CreateUnexpected());
+    }
+
+    private void LogTrashSkipped(DownloadPlanRequest request)
+    {
+        var skipped = request.Remote.Count(entry => LocalTrash.Contains(entry.Path));
+        if (skipped == 0)
+            return;
+
+        var message = $"The download pass skipped {skipped} remote items under the sync trash.";
+        LogMessage.Information(logger, Location, message);
     }
 
     private void LogPass(int orphans, int purged, Result<DownloadPassSummary, DownloadPassFailure> summary)
