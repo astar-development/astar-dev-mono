@@ -414,6 +414,7 @@
                                         <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="Medium" />
                                         <ProgressBar Classes="storage-bar" Value="{Binding Storage.Fraction}" AutomationProperties.Name="{Binding Storage.Text}" />
                                         <TextBlock Text="{Binding Status.Text}" FontSize="11" Foreground="{DynamicResource CloudSyncWarnBrush}" IsVisible="{Binding NeedsSignIn}" />
+                                        <TextBlock Text="{Binding LayoutCFailureText}" FontSize="11" Foreground="{DynamicResource CloudSyncWarnBrush}" IsVisible="{Binding HasFailure}" />
                                     </StackPanel>
                                     <Button Classes="primary" Content="{Binding SignInText}" Command="{Binding SignInCommand}" IsVisible="{Binding NeedsSignIn}" VerticalAlignment="Center" />
                                     <Button Classes="secondary" Content="{Binding ChangeSyncFolderText}" Command="{Binding ChangeSyncFolderCommand}" VerticalAlignment="Center" />
