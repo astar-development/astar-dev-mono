@@ -46,7 +46,13 @@ public sealed class UploadPassFixture : IDisposable
 
     public bool HasRoot { get; set; } = true;
 
-    public int MaxConcurrentUploads { get; set; } = 8;
+    public FakeTransferConcurrencyReader Concurrency { get; } = new();
+
+    public int MaxConcurrentUploads
+    {
+        get => Concurrency.Value;
+        set => Concurrency.Value = value;
+    }
 
     public AccountId Account { get; private set; }
 
@@ -95,6 +101,7 @@ public sealed class UploadPassFixture : IDisposable
             .AddSingleton<IRemoteIndexReader>(Remote)
             .AddSingleton<IUploadRecorder>(Recorder)
             .AddSingleton(UploadPassOptionsFactory.Create(MaxConcurrentUploads))
+            .AddSingleton<ITransferConcurrencyReader>(Concurrency)
             .AddKeyedSingleton<IRemoteFileUploader>(oneDrive, Uploader)
             .AddKeyedSingleton<IRemoteFolderCreator>(oneDrive, Folders)
             .AddKeyedSingleton<IRemoteItemRemover>(oneDrive, Remover)
