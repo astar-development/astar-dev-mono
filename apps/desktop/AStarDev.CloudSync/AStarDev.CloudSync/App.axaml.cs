@@ -20,6 +20,7 @@ namespace AStarDev.CloudSync;
 public partial class App : Application, IDisposable
 {
     private ServiceProvider? services;
+    private readonly CancellationTokenSource shutdown = new();
     private bool disposed;
 
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
@@ -43,7 +44,7 @@ public partial class App : Application, IDisposable
             _ = services.GetRequiredService<SignInStateOverviewReloader>();
             _ = services.GetRequiredService<SyncScheduleSettingsViewModel>().LoadAsync(CancellationToken.None);
             _ = services.GetRequiredService<TrashRetentionSettingsViewModel>().LoadAsync(CancellationToken.None);
-            _ = Task.Run(() => services.GetRequiredService<IInterruptedSyncRecovery>().RecoverAsync(CancellationToken.None), CancellationToken.None);
+            _ = Task.Run(() => services.GetRequiredService<IInterruptedSyncRecovery>().RecoverAsync(shutdown.Token), shutdown.Token);
             _ = services.GetRequiredService<ISyncScheduler>().StartAsync(CancellationToken.None);
             _ = services.GetRequiredService<SyncRunOverviewReloader>();
             _ = Task.Run(() => services.GetRequiredService<ISignInStateRefresher>().RefreshAllAsync(CancellationToken.None), CancellationToken.None);
@@ -72,6 +73,7 @@ public partial class App : Application, IDisposable
 
     private void ReleaseAfterServices(PrimaryInstance instance)
     {
+        shutdown.Cancel();
         StopScheduler();
         services?.Dispose();
         Task.Run(() => instance.DisposeAsync().AsTask()).GetAwaiter().GetResult();
@@ -122,7 +124,10 @@ public partial class App : Application, IDisposable
 
         disposed = true;
 
-        if (disposing)
-            services?.Dispose();
+        if (!disposing)
+            return;
+
+        shutdown.Dispose();
+        services?.Dispose();
     }
 }
