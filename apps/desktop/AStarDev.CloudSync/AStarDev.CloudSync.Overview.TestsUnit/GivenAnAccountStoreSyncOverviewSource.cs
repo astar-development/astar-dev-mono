@@ -136,6 +136,71 @@ public class GivenAnAccountStoreSyncOverviewSource
         overview.Accounts.ShouldHaveSingleItem().SignIn.ShouldBe(AccountSignInStateFactory.CreateSignedIn());
     }
 
+    [Fact]
+    public async Task when_an_account_ran_then_its_status_and_last_sync_come_from_the_run_status_source()
+    {
+        var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]) };
+        var runs = new FakeSyncRunStatusSource();
+        var finished = new DateTimeOffset(2026, 11, 14, 9, 0, 0, TimeSpan.Zero);
+        runs.Set(FlintId, SyncStatusFactory.CreateFailed(SyncFailureReasonFactory.CreateQuotaExceeded()), Option.Some(finished));
+
+        var overview = await LoadAsync(store, runs, new FakeAccountPauseReader());
+
+        overview.Accounts.ShouldHaveSingleItem().ShouldSatisfyAllConditions(
+            account => account.Status.ShouldBe(SyncStatusFactory.CreateFailed(SyncFailureReasonFactory.CreateQuotaExceeded())),
+            account => account.LastSync.ShouldBe(Option.Some(finished)));
+    }
+
+    [Fact]
+    public async Task when_an_account_is_paused_and_idle_then_its_status_is_paused()
+    {
+        var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]) };
+        var pauses = new FakeAccountPauseReader { Paused = Result.Success<IReadOnlyList<AccountId>, ErrorResponse>([FlintId]) };
+
+        var overview = await LoadAsync(store, new FakeSyncRunStatusSource(), pauses);
+
+        overview.Accounts.ShouldHaveSingleItem().Status.ShouldBe(SyncStatusFactory.CreatePaused());
+    }
+
+    [Fact]
+    public async Task when_a_paused_account_is_syncing_then_it_shows_syncing()
+    {
+        var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]) };
+        var runs = new FakeSyncRunStatusSource();
+        runs.Set(FlintId, SyncStatusFactory.CreateSyncing(0), Option.None<DateTimeOffset>());
+        var pauses = new FakeAccountPauseReader { Paused = Result.Success<IReadOnlyList<AccountId>, ErrorResponse>([FlintId]) };
+
+        var overview = await LoadAsync(store, runs, pauses);
+
+        overview.Accounts.ShouldHaveSingleItem().Status.ShouldBe(SyncStatusFactory.CreateSyncing(0));
+    }
+
+    [Fact]
+    public async Task when_a_paused_account_last_failed_then_the_failure_is_still_shown()
+    {
+        var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]) };
+        var runs = new FakeSyncRunStatusSource();
+        runs.Set(FlintId, SyncStatusFactory.CreateCancelled(), Option.None<DateTimeOffset>());
+        var pauses = new FakeAccountPauseReader { Paused = Result.Success<IReadOnlyList<AccountId>, ErrorResponse>([FlintId]) };
+
+        var overview = await LoadAsync(store, runs, pauses);
+
+        overview.Accounts.ShouldHaveSingleItem().Status.ShouldBe(SyncStatusFactory.CreateCancelled());
+    }
+
+    [Fact]
+    public async Task when_the_paused_accounts_cannot_be_read_then_the_overview_fails_with_that_error()
+    {
+        var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]) };
+        var pauses = new FakeAccountPauseReader { Paused = Result.Failure<IReadOnlyList<AccountId>, ErrorResponse>(new ErrorResponse("The paused accounts could not be read.")) };
+
+        var error = await CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), new FakeSyncPairReader(), new FakeSyncRunStatusSource(), pauses).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(_ => "loaded", failure => failure.Message);
+
+        error.ShouldBe("The paused accounts could not be read.");
+    }
+
+    private static Task<SyncOverview> LoadAsync(FakeAccountStore store, ISyncRunStatusSource runs, IAccountPauseReader pauses) => CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), new FakeSyncPairReader(), runs, pauses).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(overview => overview, failure => throw new InvalidOperationException(failure.Message));
+
     private static Task<SyncOverview> LoadAsync(FakeAccountStore store) => LoadAsync(store, new FakeAccountSignInStates());
 
     private static Task<SyncOverview> LoadAsync(FakeAccountStore store, FakeAccountSignInStates states) => CreateSource(new FakeCloudSyncDatabase(), store, states).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(overview => overview, failure => throw new InvalidOperationException(failure.Message));
@@ -144,12 +209,16 @@ public class GivenAnAccountStoreSyncOverviewSource
 
     private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store, IAccountSignInStates states) => CreateSource(database, store, states, new FakeSyncPairReader());
 
-    private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store, IAccountSignInStates states, ISyncPairReader pairReader) =>
+    private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store, IAccountSignInStates states, ISyncPairReader pairReader) => CreateSource(database, store, states, pairReader, new FakeSyncRunStatusSource(), new FakeAccountPauseReader());
+
+    private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store, IAccountSignInStates states, ISyncPairReader pairReader, ISyncRunStatusSource runStatuses, IAccountPauseReader pauseReader) =>
         new ServiceCollection()
             .AddSingleton(database)
             .AddSingleton(store)
             .AddSingleton(states)
             .AddSingleton(pairReader)
+            .AddSingleton(runStatuses)
+            .AddSingleton(pauseReader)
             .AddSyncOverview()
             .BuildServiceProvider()
             .GetRequiredService<ISyncOverviewSource>();

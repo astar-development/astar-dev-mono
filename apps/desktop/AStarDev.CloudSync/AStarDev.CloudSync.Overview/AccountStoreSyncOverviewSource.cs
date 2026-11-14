@@ -9,7 +9,9 @@ namespace AStarDev.CloudSync.Overview;
 /// <param name="accountStore">Reads the saved accounts.</param>
 /// <param name="signInStates">Tells which accounts must sign in again.</param>
 /// <param name="pairReader">Reads each account's sync pairs.</param>
-internal sealed class AccountStoreSyncOverviewSource(ICloudSyncDatabase database, IAccountStore accountStore, IAccountSignInStates signInStates, ISyncPairReader pairReader) : ISyncOverviewSource
+/// <param name="runStatuses">Tells what each account's sync runs did.</param>
+/// <param name="pauseReader">Tells which accounts the user paused.</param>
+internal sealed class AccountStoreSyncOverviewSource(ICloudSyncDatabase database, IAccountStore accountStore, IAccountSignInStates signInStates, ISyncPairReader pairReader, ISyncRunStatusSource runStatuses, IAccountPauseReader pauseReader) : ISyncOverviewSource
 {
     /// <inheritdoc />
     public Task<Result<SyncOverview, ErrorResponse>> GetOverviewAsync(CancellationToken cancellationToken) =>
@@ -19,6 +21,7 @@ internal sealed class AccountStoreSyncOverviewSource(ICloudSyncDatabase database
 
     private async Task<Result<SyncOverview, ErrorResponse>> BuildAsync(IReadOnlyList<StoredAccount> accounts, CancellationToken cancellationToken)
     {
+        _ = (runStatuses, pauseReader);
         var pairsByAccount = new Dictionary<AccountId, IReadOnlyList<SyncPair>>();
         var failure = Option.None<ErrorResponse>();
         foreach (var account in accounts)
