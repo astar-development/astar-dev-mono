@@ -13,7 +13,7 @@ public sealed class SyncRunOverviewReloader
     /// <param name="dispatcher">Runs the reload on the UI thread.</param>
     public SyncRunOverviewReloader(ISyncActivitySource activity, ISyncProgressFeed progress, SyncOverviewViewModel overview, IUiDispatcher dispatcher)
     {
-        _ = progress;
+        progress.ProgressChanged += (_, _) => Reload(overview, dispatcher);
         activity.PassStarted += (_, _) => Reload(overview, dispatcher);
         activity.PassFinished += (_, _) => Reload(overview, dispatcher);
     }
