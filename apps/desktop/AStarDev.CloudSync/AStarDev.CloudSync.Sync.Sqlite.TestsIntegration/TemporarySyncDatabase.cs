@@ -83,6 +83,10 @@ public sealed class TemporarySyncDatabase : IAsyncDisposable
 
     public IAccountRemovalParticipant JournalParticipant => serviceProvider.GetServices<IAccountRemovalParticipant>().First(participant => participant.GetType().Name == "SqliteSyncRunJournal");
 
+    public IUploadSessionStore UploadSessions => serviceProvider.GetRequiredService<IUploadSessionStore>();
+
+    public IAccountRemovalParticipant UploadSessionsParticipant => serviceProvider.GetServices<IAccountRemovalParticipant>().First(participant => participant.GetType().Name == "SqliteUploadSessionStore");
+
     public ISyncScheduleSettings ScheduleSettings => serviceProvider.GetRequiredService<ISyncScheduleSettings>();
 
     public ITrashRetentionSettings TrashRetentionSettings => serviceProvider.GetRequiredService<ITrashRetentionSettings>();

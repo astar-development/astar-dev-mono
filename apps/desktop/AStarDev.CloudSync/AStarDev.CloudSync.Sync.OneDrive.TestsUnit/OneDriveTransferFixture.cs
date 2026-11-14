@@ -25,6 +25,8 @@ public sealed class OneDriveTransferFixture : IDisposable
 
     public FakeAccessTokenSource Tokens { get; } = new();
 
+    public InMemoryUploadSessionStore UploadSessions { get; } = new();
+
     public IAccountThrottleGate Gate { get; } = Substitute.For<IAccountThrottleGate>();
 
     public RecordingLoggerProvider Logs { get; } = new();
@@ -46,6 +48,7 @@ public sealed class OneDriveTransferFixture : IDisposable
             .AddSingleton<IAccountStore>(accountStore)
             .AddSingleton<IAccessTokenSource>(Tokens)
             .AddSingleton(Gate)
+            .AddSingleton<IUploadSessionStore>(UploadSessions)
             .AddSingleton(new Microsoft.Kiota.Http.HttpClientLibrary.Middleware.Options.RetryHandlerOption { Delay = 0, MaxRetry = 1 })
             .AddOneDriveSync();
         _ = services.AddHttpClient(OneDriveSyncHttp.ClientName).ConfigurePrimaryHttpMessageHandler(() => Graph);
