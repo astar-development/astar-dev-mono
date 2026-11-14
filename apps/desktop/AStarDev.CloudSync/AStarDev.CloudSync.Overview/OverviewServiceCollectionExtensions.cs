@@ -8,5 +8,5 @@ public static class OverviewServiceCollectionExtensions
     /// <summary>Registers the <see cref="ISyncOverviewSource" /> that builds the overview from the saved accounts. Needs an <c>IAccountStore</c>, an <c>ICloudSyncDatabase</c> and an <c>IActivityLogReader</c>.</summary>
     /// <param name="services">The service collection to register the overview source with.</param>
     /// <returns>The <paramref name="services" /> collection to allow further chaining.</returns>
-    public static IServiceCollection AddSyncOverview(this IServiceCollection services) => services.AddSingleton<ISyncOverviewSource, AccountStoreSyncOverviewSource>();
+    public static IServiceCollection AddSyncOverview(this IServiceCollection services) => services.AddSingleton<SyncOverviewReaders>().AddSingleton<ISyncOverviewSource, AccountStoreSyncOverviewSource>();
 }
