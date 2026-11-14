@@ -58,8 +58,15 @@ internal sealed class ConflictResolver(IAccountSyncLock syncLock, ISyncAttention
     {
         var planned = planner.Plan(chosen, strategy);
         await planned.MatchAsync(
-            plan => plan is ResolutionPlan.LeaveOpen ? Task.FromResult(tally.Skipped += members.Count) : ApplyAsync(accountId, chosen, members, plan, strategy, tally, cancellationToken),
+            plan => plan is ResolutionPlan.LeaveOpen ? Task.FromResult(Skip(members, tally)) : ApplyAsync(accountId, chosen, members, plan, strategy, tally, cancellationToken),
             reason => Task.FromResult(Fail(members, ResolutionFailureFactory.CreateNotAllowed(reason), tally))).ConfigureAwait(false);
+    }
+
+    private static int Skip(IReadOnlyList<SyncAttentionItem.Conflict> members, Tally tally)
+    {
+        tally.Skipped += members.Count;
+
+        return tally.Skipped;
     }
 
     private static int Fail(IReadOnlyList<SyncAttentionItem.Conflict> members, ResolutionFailure reason, Tally tally)
@@ -79,14 +86,14 @@ internal sealed class ConflictResolver(IAccountSyncLock syncLock, ISyncAttention
 
     private async Task<int> CloseAllAsync(IReadOnlyList<SyncAttentionItem.Conflict> members, AttentionResolution resolution, Tally tally, CancellationToken cancellationToken)
     {
-        foreach (var member in members)
+        foreach (var memberId in members.Select(member => member.Id))
         {
-            var closed = await closer.CloseAsync(member.Id, resolution, cancellationToken).ConfigureAwait(false);
+            var closed = await closer.CloseAsync(memberId, resolution, cancellationToken).ConfigureAwait(false);
             _ = closed.Match(
                 _ => tally.Resolved++,
                 _ =>
                 {
-                    tally.Failed.Add(FailedResolutionFactory.Create(member.Id, ResolutionFailureFactory.CreateNotRecorded()));
+                    tally.Failed.Add(FailedResolutionFactory.Create(memberId, ResolutionFailureFactory.CreateNotRecorded()));
 
                     return tally.Resolved;
                 });

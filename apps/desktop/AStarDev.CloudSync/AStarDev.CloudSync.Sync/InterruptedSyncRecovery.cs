@@ -58,7 +58,7 @@ internal sealed class InterruptedSyncRecovery(ISyncRunJournal journal, IActivity
     private async Task<RecoveryOutcome> ResumeAsync(AccountId accountId, TimeSpan offset, CancellationToken cancellationToken)
     {
         var waiting = Task.Delay(offset, timeProvider, cancellationToken);
-        await ((Task)waiting).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+        await waiting.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
         if (waiting.IsCanceled)
             return RecoveryOutcomeFactory.CreateNotResumed(accountId, SyncPassFailureFactory.CreateCancelled());
 
