@@ -6,8 +6,11 @@ using AStarDev.CloudSync.TestHelpers.Overview;
 using AStarDev.CloudSync.TestHelpers.Ui;
 using AStarDev.CloudSync.ViewModels.Conflicts;
 using AStarDev.FunctionalParadigm;
+using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
+using Avalonia.Headless;
+using Avalonia.Input;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -87,6 +90,61 @@ public class GivenAConflictListView
         buttons.Single(button => button.Command == list.RefreshCommand).Content.ShouldBe("Refresh");
         buttons.Single(button => button.Command == list.CloseCommand).Content.ShouldBe("Close");
         AutomationProperties.GetName(buttons.Single(button => button.Command == list.CloseCommand)).ShouldBe("Close");
+    }
+
+    [AvaloniaFact]
+    public async Task when_shown_then_focus_moves_to_the_filter_inside_the_overlay()
+    {
+        var (window, _) = await ShowAsync(1, 800);
+
+        var filter = window.GetVisualDescendants().OfType<ComboBox>().Single();
+
+        window.FocusManager!.GetFocusedElement().ShouldBeSameAs(filter);
+    }
+
+    [AvaloniaFact]
+    public async Task when_escape_is_pressed_then_the_list_closes()
+    {
+        var (window, list) = await ShowAsync(1, 800);
+        await list.OpenCommand.ExecuteAsync(null);
+
+        window.KeyPressQwerty(PhysicalKey.Escape, RawInputModifiers.None);
+
+        list.IsOpen.ShouldBeFalse();
+    }
+
+    [AvaloniaFact]
+    public async Task when_tab_is_pressed_on_the_last_control_then_focus_stays_inside_the_overlay()
+    {
+        var (window, list) = await ShowAsync(1, 800);
+        var outside = new Button { Content = "Behind" };
+        var view = (ConflictListView)window.Content!;
+        window.Content = null;
+        window.Content = new StackPanel { Children = { view, outside } };
+        Dispatcher.UIThread.RunJobs();
+        var last = view.GetVisualDescendants().OfType<Button>().Last(button => button.IsEffectivelyEnabled);
+        last.Focus();
+
+        window.KeyPressQwerty(PhysicalKey.Tab, RawInputModifiers.None);
+
+        window.FocusManager!.GetFocusedElement().ShouldBeSameAs(window.GetVisualDescendants().OfType<ComboBox>().Single());
+    }
+
+    [AvaloniaFact]
+    public async Task when_shift_tab_is_pressed_on_the_first_control_then_focus_wraps_to_the_last_control_in_the_overlay()
+    {
+        var (window, _) = await ShowAsync(1, 800);
+        var view = (ConflictListView)window.Content!;
+        window.Content = null;
+        window.Content = new StackPanel { Children = { new Button { Content = "Before" }, view } };
+        Dispatcher.UIThread.RunJobs();
+        var filter = window.GetVisualDescendants().OfType<ComboBox>().Single();
+        filter.Focus();
+
+        window.KeyPressQwerty(PhysicalKey.Tab, RawInputModifiers.Shift);
+
+        var focused = window.FocusManager!.GetFocusedElement().ShouldBeOfType<Button>();
+        focused.GetVisualAncestors().ShouldContain(view);
     }
 
     [AvaloniaFact]

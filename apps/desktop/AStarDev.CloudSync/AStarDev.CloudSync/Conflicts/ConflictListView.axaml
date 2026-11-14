@@ -7,7 +7,8 @@
              VerticalContentAlignment="Stretch"
              HorizontalContentAlignment="Stretch"
              Foreground="{DynamicResource CloudSyncTextPrimaryBrush}">
-    <Border Background="{DynamicResource CloudSyncSurfaceBrush}"
+    <Border KeyboardNavigation.TabNavigation="Cycle"
+            Background="{DynamicResource CloudSyncSurfaceBrush}"
             BorderBrush="{DynamicResource CloudSyncBorderBrush}"
             BorderThickness="1"
             CornerRadius="8"
@@ -28,7 +29,8 @@
                            VerticalAlignment="Center" />
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                     <TextBlock Classes="muted" Text="{Binding FilterLabelText}" VerticalAlignment="Center" />
-                    <ComboBox ItemsSource="{Binding Filters}"
+                    <ComboBox Name="FilterBox"
+                              ItemsSource="{Binding Filters}"
                               SelectedItem="{Binding SelectedFilter, Mode=TwoWay}"
                               AutomationProperties.Name="{Binding FilterLabelText}"
                               MinWidth="220">
