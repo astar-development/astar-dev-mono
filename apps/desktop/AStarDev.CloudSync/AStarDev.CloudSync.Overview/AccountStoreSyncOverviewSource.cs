@@ -65,7 +65,7 @@ internal sealed class AccountStoreSyncOverviewSource(ICloudSyncDatabase database
 
                             return Option.None<ErrorResponse>();
                         },
-                        _ => DegradedCounts(accountId, countsByAccount));
+                        error => cancellationToken.IsCancellationRequested ? Option.Some(error) : DegradedCounts(accountId, countsByAccount));
             },
             error => Task.FromResult(Option.Some(error))).ConfigureAwait(false);
     }

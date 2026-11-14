@@ -115,6 +115,18 @@ public class GivenAnAccountStoreSyncOverviewSource
     }
 
     [Fact]
+    public async Task when_the_caller_cancels_during_the_count_then_the_overview_fails_instead_of_showing_zero_counts()
+    {
+        using var cancel = new CancellationTokenSource();
+        var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]) };
+        var counter = new FakeSyncBaselineCounter { Counts = _ => { cancel.Cancel(); return Result.Failure<BaselineCounts, ErrorResponse>(new ErrorResponse("The baseline could not be counted.")); } };
+
+        var outcome = await CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), new FakeSyncPairReader(), new FakeSyncRunStatusSource(), new FakeAccountPauseReader(), counter).GetOverviewAsync(cancel.Token).MatchAsync(_ => "loaded", failure => failure.Message);
+
+        outcome.ShouldBe("The baseline could not be counted.");
+    }
+
+    [Fact]
     public async Task when_the_sync_pairs_cannot_be_read_then_the_overview_fails_with_that_error_rather_than_showing_no_pairs()
     {
         var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]) };

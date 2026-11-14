@@ -77,7 +77,7 @@ internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps st
 
         if (waiting.Exception?.GetBaseException() is { } exception)
             LogMessage.Warning(logger, Location, $"The storage quota refresh threw {exception.GetType().Name}.");
-        else if (limit.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
+        else if (!waiting.IsCompletedSuccessfully && limit.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
             LogMessage.Information(logger, Location, "The storage quota refresh timed out.");
     }
 
