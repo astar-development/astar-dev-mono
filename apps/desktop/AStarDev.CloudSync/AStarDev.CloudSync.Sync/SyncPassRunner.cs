@@ -67,13 +67,26 @@ internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps st
         if (cancellationToken.IsCancellationRequested || NeedsNoQuotaRefresh(outcome))
             return;
 
-        using var limit = new CancellationTokenSource(QuotaTimeout, timeProvider);
-        using var bounded = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, limit.Token);
-        var refreshing = Task.Run(() => steps.Quota.RefreshAsync(accountId, bounded.Token), bounded.Token);
-        await ((Task)refreshing).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+        var limit = new CancellationTokenSource(QuotaTimeout, timeProvider);
+        var bounded = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, limit.Token);
+        var token = bounded.Token;
+        var refreshing = Task.Run(() => steps.Quota.RefreshAsync(accountId, token), token);
+        _ = ReleaseWhenDoneAsync(refreshing, limit, bounded);
+        var waiting = refreshing.WaitAsync(token);
+        await ((Task)waiting).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
 
-        if (refreshing.Exception?.GetBaseException() is { } exception)
+        if (waiting.Exception?.GetBaseException() is { } exception)
             LogMessage.Warning(logger, Location, $"The storage quota refresh threw {exception.GetType().Name}.");
+        else if (!waiting.IsCompletedSuccessfully && limit.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
+            LogMessage.Information(logger, Location, "The storage quota refresh timed out.");
+    }
+
+    private static async Task ReleaseWhenDoneAsync(Task refreshing, params IDisposable[] sources)
+    {
+        await refreshing.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+
+        foreach (var source in sources)
+            source.Dispose();
     }
 
     private Result<SyncPassSummary, SyncPassFailure> Abandoned(Task running)

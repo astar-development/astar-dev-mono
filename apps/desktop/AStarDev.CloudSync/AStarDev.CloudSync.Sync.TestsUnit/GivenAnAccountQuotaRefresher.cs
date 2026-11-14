@@ -57,7 +57,8 @@ public sealed class GivenAnAccountQuotaRefresher : IDisposable
         var result = await Refresher(failing).RefreshAsync(account.Id, CancellationToken);
 
         result.Match(_ => (object)"usage", error => error).ShouldBe(ProviderErrorFactory.CreateTransient());
-        logs.Logger.Entries.ShouldContain(entry => entry.Level == LogLevel.Warning);
+        logs.Logger.Messages.ShouldContain(message => message.Contains("could not be saved", StringComparison.Ordinal));
+        logs.Logger.Entries.ShouldAllBe(entry => entry.Level == LogLevel.Warning);
         logs.Logger.Messages.ShouldAllBe(message => !message.Contains(Email, StringComparison.Ordinal));
     }
 
