@@ -1,5 +1,6 @@
 using AStarDev.CloudSync.Accounts;
 using AStarDev.FunctionalParadigm;
+using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync.Sync.TestsUnit;
 
@@ -81,6 +82,54 @@ public sealed class GivenASyncPassRunnerThatRefreshesQuota : IDisposable
 
         Outcome(result).ShouldBe("ran");
         services.SyncLock.TryAcquire(Personal).ShouldBeOfType<SyncLockAttempt.Acquired>();
+    }
+
+    [Fact]
+    public async Task when_the_quota_read_times_out_then_an_information_message_without_details_is_logged()
+    {
+        services.Quota.Block = Option.Some(new TaskCompletionSource());
+        var running = services.Runner.RunAsync(Personal, Manual, CancellationToken);
+        while (services.Quota.Calls.Count == 0)
+            await Task.Delay(5, CancellationToken);
+
+        services.Time.Advance(TimeSpan.FromSeconds(16));
+        _ = await running.WaitAsync(Limit, CancellationToken);
+
+        services.Logs.Logger.Entries.Zip(services.Logs.Logger.Messages).ShouldContain(logged => logged.First.Level == LogLevel.Information && logged.Second.Contains("quota refresh timed out", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task when_the_user_cancels_during_the_quota_read_then_the_run_outcome_is_unchanged_and_no_timeout_is_logged()
+    {
+        services.Quota.Block = Option.Some(new TaskCompletionSource());
+        var running = services.Runner.RunAsync(Personal, Manual, CancellationToken);
+        while (services.Quota.Calls.Count == 0)
+            await Task.Delay(5, CancellationToken);
+
+        await services.Cancel.CancelAsync(Personal, CancellationToken).WaitAsync(Limit, CancellationToken);
+        var result = await running.WaitAsync(Limit, CancellationToken);
+
+        Outcome(result).ShouldBe("ran");
+        services.Logs.Logger.Messages.ShouldAllBe(message => !message.Contains("timed out", StringComparison.Ordinal));
+        services.SyncLock.TryAcquire(Personal).ShouldBeOfType<SyncLockAttempt.Acquired>();
+    }
+
+    [Fact]
+    public async Task when_the_quota_read_ignores_cancellation_then_the_pass_ends_at_the_timeout_and_the_late_refresher_never_meets_a_disposed_token_source()
+    {
+        var release = new TaskCompletionSource();
+        var lateFailure = new TaskCompletionSource<Exception?>();
+        services.Quota.Ignoring = Option.Some((release, lateFailure));
+        var running = services.Runner.RunAsync(Personal, Manual, CancellationToken);
+        while (services.Quota.Calls.Count == 0)
+            await Task.Delay(5, CancellationToken);
+
+        services.Time.Advance(TimeSpan.FromSeconds(16));
+        var result = await running.WaitAsync(Limit, CancellationToken);
+        release.SetResult();
+
+        Outcome(result).ShouldBe("ran");
+        (await lateFailure.Task.WaitAsync(Limit, CancellationToken)).ShouldBeNull();
     }
 
     [Fact]

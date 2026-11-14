@@ -90,14 +90,18 @@ public class GivenAnAccountStoreSyncOverviewSource
     }
 
     [Fact]
-    public async Task when_the_baseline_cannot_be_counted_then_the_overview_fails_with_that_error_rather_than_showing_zero_counts()
+    public async Task when_the_baseline_of_one_account_cannot_be_counted_then_it_shows_zero_the_others_keep_their_counts_and_the_warning_has_no_details()
     {
-        var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]) };
-        var counter = new FakeSyncBaselineCounter { Counts = _ => Result.Failure<BaselineCounts, ErrorResponse>(new ErrorResponse("The baseline could not be counted.")) };
+        var other = AccountIdFactory.Create(Guid.Parse("1f2e3d4c-5b6a-4798-8a9b-0c1d2e3f4a5b"));
+        var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint(), StoredAccountFactory.Create(other, StoredFlint().Registration)]) };
+        var counter = new FakeSyncBaselineCounter { Counts = accountId => accountId == FlintId ? Result.Failure<BaselineCounts, ErrorResponse>(new ErrorResponse("failed for " + FlintEmail)) : Result.Success<BaselineCounts, ErrorResponse>(BaselineCountsFactory.Create(3, 4)) };
+        using var logs = new RecordingLoggerProvider();
 
-        var error = await CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), new FakeSyncPairReader(), new FakeSyncRunStatusSource(), new FakeAccountPauseReader(), counter).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(_ => "loaded", failure => failure.Message);
+        var overview = await CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), new FakeSyncPairReader(), new FakeSyncRunStatusSource(), new FakeAccountPauseReader(), counter, new FakeActivityLogReader(), logs).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(loaded => loaded, failure => throw new InvalidOperationException(failure.Message));
 
-        error.ShouldBe("The baseline could not be counted.");
+        overview.Accounts.Select(account => (account.Id, account.FolderCount, account.FileCount)).ShouldBe([(FlintId, 0, 0), (other, 3, 4)]);
+        logs.Logger.Entries.Count(entry => entry.Level == LogLevel.Warning).ShouldBe(1);
+        logs.Logger.Messages.ShouldAllBe(message => !message.Contains(FlintEmail, StringComparison.Ordinal) && !message.Contains(FlintDisplayName, StringComparison.Ordinal) && !message.Contains(FlintAccountKey, StringComparison.Ordinal));
     }
 
     [Fact]

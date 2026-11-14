@@ -194,6 +194,30 @@ public sealed class GivenASyncBaselineStore : IAsyncLifetime
     }
 
     [Fact]
+    public async Task when_folders_and_files_are_saved_with_casing_variants_then_each_kind_is_counted_once_per_path()
+    {
+        _ = await Database.BaselineWriter.UpsertAsync(FirstAccount, [FolderEntry(FirstAccount, "Docs", "f1"), FileEntry(FirstAccount, "Docs/a.txt", "1")], CancellationToken);
+        _ = await Database.BaselineWriter.UpsertAsync(FirstAccount, [FolderEntry(FirstAccount, "DOCS", "f1"), FileEntry(FirstAccount, "DOCS/A.TXT", "1"), FileEntry(FirstAccount, "docs/b.txt", "2")], CancellationToken);
+
+        var counts = await Database.BaselineCounter.CountAsync(FirstAccount, CancellationToken);
+
+        counts.Match(found => (found.Folders, found.Files), _ => (-1, -1)).ShouldBe((1, 2));
+    }
+
+    [Fact]
+    public async Task when_the_baseline_is_large_then_the_counts_are_exact()
+    {
+        var folders = Enumerable.Range(0, 1_200).Select(index => FolderEntry(FirstAccount, $"Folder{index}", $"f{index}"));
+        var files = Enumerable.Range(0, 3_300).Select(index => FileEntry(FirstAccount, $"Folder{index % 1_200}/file{index}.txt", $"i{index}"));
+        _ = await Database.BaselineWriter.UpsertAsync(FirstAccount, [.. folders, .. files], CancellationToken);
+        _ = await Database.BaselineWriter.UpsertAsync(SecondAccount, [FileEntry(SecondAccount, "x.txt", "x")], CancellationToken);
+
+        var counts = await Database.BaselineCounter.CountAsync(FirstAccount, CancellationToken);
+
+        counts.Match(found => (found.Folders, found.Files), _ => (-1, -1)).ShouldBe((1_200, 3_300));
+    }
+
+    [Fact]
     public async Task when_the_baseline_is_counted_while_it_is_saved_to_then_every_count_succeeds_and_the_final_count_is_exact()
     {
         var saves = Enumerable.Range(0, 20).Select(index => Task.Run(() => Database.BaselineWriter.UpsertAsync(FirstAccount, [FileEntry(FirstAccount, $"Docs/{index}.txt", $"i{index}")], CancellationToken), CancellationToken));
