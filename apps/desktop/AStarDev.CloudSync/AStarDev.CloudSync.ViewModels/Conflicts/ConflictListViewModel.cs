@@ -13,9 +13,9 @@ namespace AStarDev.CloudSync.ViewModels.Conflicts;
 /// <summary>The attention-queue screen (#1608): the open conflicts grouped by account, filtered by kind, resolved one at a time.</summary>
 public sealed class ConflictListViewModel : LocalizedObservableObject
 {
-    private readonly ISyncOverviewSource overviewSource;
-    private readonly ISyncAttentionReader attentionReader;
+    private readonly ConflictListSources sources;
     private readonly IConflictResolver resolver;
+    private readonly IHeldDeletionDecider heldDecider;
     private readonly IConflictResolutionPlanner planner;
     private readonly ILogger<ConflictListViewModel> logger;
     private readonly ConcurrentDictionary<ConflictId, string> errorKeys = new();
@@ -26,17 +26,17 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
     private ConflictKindFilterViewModel selectedFilter;
 
     /// <summary>Creates the screen.</summary>
-    /// <param name="overviewSource">Supplies the accounts.</param>
-    /// <param name="attentionReader">Reads each account's open items.</param>
+    /// <param name="sources">Supplies the accounts, their open items and their sync pairs.</param>
     /// <param name="resolver">Resolves a conflict.</param>
+    /// <param name="heldDecider">Confirms or restores held deletions.</param>
     /// <param name="planner">Says which strategies apply to a conflict.</param>
     /// <param name="localization">Supplies the text.</param>
     /// <param name="logger">Reports reads and resolutions that failed, without paths.</param>
-    public ConflictListViewModel(ISyncOverviewSource overviewSource, ISyncAttentionReader attentionReader, IConflictResolver resolver, IConflictResolutionPlanner planner, ILocalizationService localization, ILogger<ConflictListViewModel> logger) : base(localization)
+    public ConflictListViewModel(ConflictListSources sources, IConflictResolver resolver, IHeldDeletionDecider heldDecider, IConflictResolutionPlanner planner, ILocalizationService localization, ILogger<ConflictListViewModel> logger) : base(localization)
     {
-        this.overviewSource = overviewSource;
-        this.attentionReader = attentionReader;
+        this.sources = sources;
         this.resolver = resolver;
+        this.heldDecider = heldDecider;
         this.planner = planner;
         this.logger = logger;
         Filters =
@@ -106,6 +106,51 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
     /// <summary>The label of the kind filter.</summary>
     public string FilterLabelText => Localization.GetLocal("Conflict.FilterLabel");
 
+    /// <summary>The held deletion sets, shown when every kind is shown.</summary>
+    public IReadOnlyList<HeldDeletionItemViewModel> HeldDeletions => throw new NotImplementedException($"{heldDecider}");
+
+    /// <summary>How many listed conflicts are ticked.</summary>
+    public int SelectedCount => throw new NotImplementedException($"{heldDecider}");
+
+    /// <summary>The ticked count in words.</summary>
+    public string SelectedText => throw new NotImplementedException($"{heldDecider}");
+
+    /// <summary>The text of the Select all button.</summary>
+    public string SelectAllText => throw new NotImplementedException($"{heldDecider}");
+
+    /// <summary>The text of the Clear selection button.</summary>
+    public string ClearSelectionText => throw new NotImplementedException($"{heldDecider}");
+
+    /// <summary>The label of the bulk strategy buttons.</summary>
+    public string BulkLabelText => throw new NotImplementedException($"{heldDecider}");
+
+    /// <summary>The heading of the held deletions section.</summary>
+    public string HeldTitleText => throw new NotImplementedException($"{heldDecider}");
+
+    /// <summary>The error of the last bulk apply; empty when there is none.</summary>
+    public string BulkErrorText => throw new NotImplementedException($"{heldDecider}");
+
+    /// <summary>Ticks every listed conflict.</summary>
+    public IRelayCommand SelectAllCommand => throw new NotImplementedException($"{heldDecider}");
+
+    /// <summary>Unticks every conflict.</summary>
+    public IRelayCommand ClearSelectionCommand => throw new NotImplementedException($"{heldDecider}");
+
+    /// <summary>One button per strategy; each applies its strategy to the ticked conflicts.</summary>
+    public IReadOnlyList<ConflictBulkOptionViewModel> BulkOptions => throw new NotImplementedException($"{heldDecider}");
+
+    /// <summary>The default strategy of the shown kind, or none when every kind is shown.</summary>
+    public Option<ConflictStrategy> DefaultStrategy => throw new NotImplementedException($"{heldDecider}");
+
+    /// <summary>The text of the button that applies the default strategy.</summary>
+    public string DefaultText => throw new NotImplementedException($"{heldDecider}");
+
+    /// <summary>The accessible name of the default strategy button.</summary>
+    public string DefaultAutomationName => throw new NotImplementedException($"{heldDecider}");
+
+    /// <summary>Applies the default strategy of the shown kind to the ticked conflicts.</summary>
+    public IAsyncRelayCommand DefaultCommand => throw new NotImplementedException($"{heldDecider}");
+
     /// <summary>Shows the screen and reads the queue.</summary>
     public IAsyncRelayCommand OpenCommand => field ??= new AsyncRelayCommand(OpenAsync);
 
@@ -149,7 +194,7 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
     private bool IsLatest(int load) => load == Volatile.Read(ref loadsStarted);
 
     private Task<Result<IReadOnlyList<AccountQueue>, ErrorResponse>> ReadAsync(CancellationToken cancellationToken) =>
-        overviewSource.GetOverviewAsync(cancellationToken).BindAsync(overview => ReadQueuesAsync(overview.Accounts, cancellationToken));
+        sources.Overview.GetOverviewAsync(cancellationToken).BindAsync(overview => ReadQueuesAsync(overview.Accounts, cancellationToken));
 
     private async Task<Result<IReadOnlyList<AccountQueue>, ErrorResponse>> ReadQueuesAsync(IReadOnlyList<CloudAccount> cloudAccounts, CancellationToken cancellationToken)
     {
@@ -168,7 +213,7 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
     }
 
     private Task<Option<ErrorResponse>> ReadAccountAsync(List<AccountQueue> queues, CloudAccount account, CancellationToken cancellationToken) =>
-        attentionReader.GetOpenAsync(account.Id, cancellationToken)
+        sources.Attention.GetOpenAsync(account.Id, cancellationToken)
             .MatchAsync(
                 items =>
                 {
@@ -239,7 +284,7 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
     private bool Passes(ConflictItemViewModel item) => selectedFilter.Kind.Match(kind => item.Kind == kind, () => true);
 
     private ConflictItemViewModel CreateItem(SyncAttentionItem.Conflict conflict) =>
-        new(conflict, planner, ResolveAsync, errorKeys.TryGetValue(conflict.Id, out var key) ? Option.Some(key) : Option.None<string>(), skipped.ContainsKey(conflict.Id), Localization);
+        new(conflict, planner, ResolveAsync, errorKeys.TryGetValue(conflict.Id, out var key) ? Option.Some(key) : Option.None<string>(), skipped.ContainsKey(conflict.Id), false, Localization);
 
     private async Task ResolveAsync(ConflictItemViewModel item, ConflictStrategy strategy, CancellationToken cancellationToken) =>
         await await RunAsync(() => resolver.ResolveAsync(item.AccountId, [item.Id], strategy, cancellationToken), cancellationToken)

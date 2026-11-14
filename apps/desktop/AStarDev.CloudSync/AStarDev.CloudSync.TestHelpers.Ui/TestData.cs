@@ -102,7 +102,9 @@ public static class TestData
 
     public static ConflictListViewModel CreateConflictList() => CreateConflictList(new FixedAccountsSource(), new FakeAttentionReader(), new FakeConflictResolver());
 
+    public static ConflictListViewModel CreateConflictList(ISyncOverviewSource accounts, FakeAttentionReader reader, FakeConflictResolver resolver, FakeHeldDeletionDecider decider, FakeSyncPairReader pairs) => new(new ConflictListSources(accounts, reader, pairs), resolver, decider, new ConflictResolutionPlanner(), CreateLocalization(), NullLogger<ConflictListViewModel>.Instance);
+
     public static ConflictListViewModel CreateConflictList(ISyncOverviewSource accounts, FakeAttentionReader reader, FakeConflictResolver resolver) => CreateConflictList(accounts, reader, resolver, NullLogger<ConflictListViewModel>.Instance);
 
-    public static ConflictListViewModel CreateConflictList(ISyncOverviewSource accounts, FakeAttentionReader reader, FakeConflictResolver resolver, ILogger<ConflictListViewModel> logger) => new(accounts, reader, resolver, new ConflictResolutionPlanner(), CreateLocalization(), logger);
+    public static ConflictListViewModel CreateConflictList(ISyncOverviewSource accounts, FakeAttentionReader reader, FakeConflictResolver resolver, ILogger<ConflictListViewModel> logger) => new(new ConflictListSources(accounts, reader, new FakeSyncPairReader()), resolver, new FakeHeldDeletionDecider(), new ConflictResolutionPlanner(), CreateLocalization(), logger);
 }

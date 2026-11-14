@@ -45,7 +45,7 @@ public class GivenAConflictList
     }
 
     [Fact]
-    public async Task when_the_queue_holds_held_deletions_then_they_are_not_listed()
+    public async Task when_the_queue_holds_held_deletions_then_they_are_not_in_the_conflict_groups()
     {
         var fixture = new Fixture();
         var held = SyncAttentionItemFactory.CreateHeldDeletions(new HeldDeletionId(Guid.NewGuid()), Photos.Id, new SyncPairId(Guid.NewGuid()), DeletionDirectionFactory.CreateDeleteLocal(), [AttentionItems.Path("a.txt")], TestData.Now);
@@ -54,7 +54,8 @@ public class GivenAConflictList
         await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
 
         fixture.List.Groups.ShouldBeEmpty();
-        fixture.List.IsEmpty.ShouldBeTrue();
+        fixture.List.HeldDeletions.Count.ShouldBe(1);
+        fixture.List.IsEmpty.ShouldBeFalse();
     }
 
     [Fact]
