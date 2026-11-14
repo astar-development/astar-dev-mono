@@ -73,6 +73,8 @@ public sealed class SyncRunServices : IDisposable
 
     public ISyncActivitySource Activity => provider.GetRequiredService<ISyncActivitySource>();
 
+    public ISyncNotificationPolicy Notifications => provider.GetRequiredService<ISyncNotificationPolicy>();
+
     public ISyncCancelAction Cancel => provider.GetRequiredService<ISyncCancelAction>();
 
     public ISyncNowAction SyncNow => provider.GetRequiredService<ISyncNowAction>();
