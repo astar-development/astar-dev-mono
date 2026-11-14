@@ -68,6 +68,56 @@ public sealed class GivenASyncPassRunnerThatLogsActivity : IDisposable
     }
 
     [Fact]
+    public async Task when_the_upload_fails_after_the_download_finished_then_the_download_is_still_logged()
+    {
+        Downloads(DownloadItemOutcomeFactory.CreateDownloaded(100), DownloadItemOutcomeFactory.CreateDeletedLocally());
+        services.Steps.Uploaded = Result.Failure<UploadPassSummary, UploadPassFailure>(UploadPassFailureFactory.CreateQuotaExceeded());
+
+        var result = await RunAsync();
+
+        Outcome(result).ShouldBeOfType<SyncPassFailure.QuotaExceeded>();
+        services.ActivityLog.Appended.Select(entry => entry.Kind).ShouldBe([ActivityKindFactory.CreateDownloaded(1), ActivityKindFactory.CreateDeleted(1)]);
+    }
+
+    [Fact]
+    public async Task when_the_upload_is_cancelled_after_the_download_finished_then_the_download_is_still_logged()
+    {
+        Downloads(DownloadItemOutcomeFactory.CreateDownloaded(100));
+        services.Steps.UploadThrows = Option.Some<Exception>(new OperationCanceledException());
+
+        var result = await RunAsync();
+
+        Outcome(result).ShouldBe(SyncPassFailureFactory.CreateCancelled());
+        services.ActivityLog.Appended.Select(entry => entry.Kind).ShouldBe([ActivityKindFactory.CreateDownloaded(1)]);
+    }
+
+    [Fact]
+    public async Task when_the_upload_throws_after_the_download_finished_then_the_download_is_still_logged()
+    {
+        Downloads(DownloadItemOutcomeFactory.CreateDownloaded(100));
+        services.Steps.UploadThrows = Option.Some<Exception>(new InvalidOperationException("jane@example.com"));
+
+        var result = await RunAsync();
+
+        Outcome(result).ShouldBeOfType<SyncPassFailure.Unexpected>();
+        services.ActivityLog.Appended.Select(entry => entry.Kind).ShouldBe([ActivityKindFactory.CreateDownloaded(1)]);
+        string.Join("\n", services.Logs.Logger.Messages).ShouldNotContain("jane@example.com");
+    }
+
+    [Fact]
+    public async Task when_the_run_is_cancelled_during_the_download_then_nothing_had_finished_and_nothing_is_appended()
+    {
+        using var source = new CancellationTokenSource();
+        Downloads(DownloadItemOutcomeFactory.CreateDownloaded(100));
+        services.Steps.OnDownload = source.Cancel;
+
+        var result = await services.Runner.RunAsync(Personal, Manual, source.Token);
+
+        Outcome(result).ShouldBe(SyncPassFailureFactory.CreateCancelled());
+        services.ActivityLog.Calls.ShouldBe(0);
+    }
+
+    [Fact]
     public async Task when_the_log_cannot_be_written_then_the_run_still_succeeds_and_a_warning_without_details_is_logged()
     {
         services.ActivityLog.Fails = true;

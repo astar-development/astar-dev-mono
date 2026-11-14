@@ -33,6 +33,8 @@ public sealed class ScriptedSyncSteps : IRemoteIndexUpdater, ILocalChangeDetecto
 
     public Option<Exception> DownloadThrows { get; set; } = Option.None<Exception>();
 
+    public Option<Exception> UploadThrows { get; set; } = Option.None<Exception>();
+
     public Action OnDownload { get; set; } = () => { };
 
     public Task<Result<RemoteUpdateSummary, ProviderError>> UpdateAsync(AccountId accountId, CancellationToken cancellationToken) => Task.FromResult(Record("index", Index));
@@ -57,7 +59,14 @@ public sealed class ScriptedSyncSteps : IRemoteIndexUpdater, ILocalChangeDetecto
         return outcome;
     }
 
-    Task<Result<UploadPassSummary, UploadPassFailure>> IUploadPass.RunAsync(AccountId accountId, LocalChangeSet changes, CancellationToken cancellationToken) => Task.FromResult(Record("upload", Uploaded));
+    async Task<Result<UploadPassSummary, UploadPassFailure>> IUploadPass.RunAsync(AccountId accountId, LocalChangeSet changes, CancellationToken cancellationToken)
+    {
+        var outcome = Record("upload", Uploaded);
+        await Task.Yield();
+        UploadThrows.Match(exception => throw exception, () => Unit.Instance);
+
+        return outcome;
+    }
 
     public async Task UntilDownloadsAsync(int count, CancellationToken cancellationToken)
     {

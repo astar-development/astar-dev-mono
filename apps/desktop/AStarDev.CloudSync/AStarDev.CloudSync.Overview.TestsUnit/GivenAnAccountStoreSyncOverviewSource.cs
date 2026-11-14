@@ -5,6 +5,7 @@ using AStarDev.CloudSync.TestHelpers.Accounts;
 using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.FunctionalParadigm;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync.Overview.TestsUnit;
 
@@ -136,14 +137,20 @@ public class GivenAnAccountStoreSyncOverviewSource
     }
 
     [Fact]
-    public async Task when_the_activity_log_cannot_be_read_then_the_overview_fails_with_that_error_rather_than_showing_no_activity()
+    public async Task when_the_activity_log_cannot_be_read_then_the_overview_still_loads_with_an_empty_feed_and_a_warning_free_of_details()
     {
         var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]) };
-        var reader = new FakeActivityLogReader { Entries = Result.Failure<IReadOnlyList<ActivityEntry>, ErrorResponse>(new ErrorResponse("The activity log could not be read.")) };
+        var reader = new FakeActivityLogReader { Entries = Result.Failure<IReadOnlyList<ActivityEntry>, ErrorResponse>(new ErrorResponse($"{FlintEmail} locked /home/jbarden/cloudsync.db")) };
+        using var logs = new RecordingLoggerProvider();
 
-        var error = await CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), new FakeSyncPairReader(), new FakeSyncRunStatusSource(), new FakeAccountPauseReader(), reader).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(_ => "loaded", failure => failure.Message);
+        var overview = await CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), new FakeSyncPairReader(), new FakeSyncRunStatusSource(), new FakeAccountPauseReader(), new FakeSyncBaselineCounter(), reader, logs).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(loaded => loaded, failure => throw new InvalidOperationException(failure.Message));
 
-        error.ShouldBe("The activity log could not be read.");
+        overview.Accounts.ShouldHaveSingleItem();
+        overview.Activity.ShouldBeEmpty();
+        logs.Logger.Entries.ShouldContain(entry => entry.Level == LogLevel.Warning);
+        string.Join("\n", logs.Logger.Messages).ShouldContain("activity");
+        string.Join("\n", logs.Logger.Messages).ShouldNotContain(FlintEmail);
+        string.Join("\n", logs.Logger.Messages).ShouldNotContain("/home/jbarden");
     }
 
     [Fact]
@@ -292,8 +299,9 @@ public class GivenAnAccountStoreSyncOverviewSource
     private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store, IAccountSignInStates states, ISyncPairReader pairReader, ISyncRunStatusSource runStatuses, IAccountPauseReader pauseReader, IActivityLogReader activityReader) =>
         CreateSource(database, store, states, pairReader, runStatuses, pauseReader, new FakeSyncBaselineCounter(), activityReader);
 
-    private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store, IAccountSignInStates states, ISyncPairReader pairReader, ISyncRunStatusSource runStatuses, IAccountPauseReader pauseReader, ISyncBaselineCounter counter, IActivityLogReader activityReader) =>
+    private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store, IAccountSignInStates states, ISyncPairReader pairReader, ISyncRunStatusSource runStatuses, IAccountPauseReader pauseReader, ISyncBaselineCounter counter, IActivityLogReader activityReader, RecordingLoggerProvider? logs = null) =>
         new ServiceCollection()
+            .AddLogging(logging => _ = logs is null ? logging.ClearProviders() : logging.ClearProviders().AddProvider(logs))
             .AddSingleton(counter)
             .AddSingleton(activityReader)
             .AddSingleton(database)
