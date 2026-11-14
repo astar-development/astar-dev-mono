@@ -34,7 +34,12 @@ internal sealed class LocalTrash(TimeProvider timeProvider, ITrashRetentionSetti
         LocalFileOperations.MoveItem(item, path.Join(root.FullName, FolderName, entry, relative));
     }
 
-    internal Task<int> PurgeAsync(IDirectoryInfo root, CancellationToken cancellationToken) => throw new NotImplementedException($"{root}{cancellationToken}{settings}");
+    internal async Task<int> PurgeAsync(IDirectoryInfo root, CancellationToken cancellationToken)
+    {
+        var retention = await settings.GetAsync(cancellationToken).MatchAsync(options => options.Retention, _ => LocalTrashOptionsFactory.Create().Retention).ConfigureAwait(false);
+
+        return Try.Run(() => PurgeExpired(root, retention)).Match(count => count, _ => 0);
+    }
 
     private static string FirstSegment(string relative, IPath path) => relative.Split([path.DirectorySeparatorChar, path.AltDirectorySeparatorChar])[0];
 

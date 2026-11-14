@@ -1,4 +1,5 @@
 using System.IO.Abstractions;
+using AStarDev.CloudSync.TestHelpers.Accounts;
 using AStarDev.FunctionalParadigm;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
@@ -13,7 +14,7 @@ public sealed class GivenALocalFileOperations : IDisposable
     private readonly FakeTimeProvider time = new(new DateTimeOffset(2026, 11, 13, 12, 0, 0, TimeSpan.Zero));
     private readonly ServiceProvider provider;
 
-    public GivenALocalFileOperations() => provider = new ServiceCollection().AddSingleton<System.TimeProvider>(time).AddCloudSync().BuildServiceProvider();
+    public GivenALocalFileOperations() => provider = new ServiceCollection().AddSingleton<System.TimeProvider>(time).AddSingleton<ITrashRetentionSettings>(new FakeTrashRetentionSettings()).AddCloudSync().BuildServiceProvider();
 
     private static CancellationToken CancellationToken => TestContext.Current.CancellationToken;
 

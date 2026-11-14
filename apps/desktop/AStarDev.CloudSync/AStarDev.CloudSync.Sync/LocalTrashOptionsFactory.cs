@@ -3,6 +3,8 @@ namespace AStarDev.CloudSync.Sync;
 /// <summary>Creates <see cref="LocalTrashOptions"/> values.</summary>
 public static class LocalTrashOptionsFactory
 {
+    private const int MaxDays = 365;
+
     private static readonly TimeSpan DefaultRetention = TimeSpan.FromDays(30);
 
     /// <summary>Creates the default: items stay 30 days.</summary>
@@ -17,5 +19,5 @@ public static class LocalTrashOptionsFactory
 
     /// <summary>Creates options from a number of days. A value below one day or above 365 days is not accepted and becomes the default.</summary>
     /// <param name="days">How many days a trashed item is kept.</param>
-    public static LocalTrashOptions CreateFromDays(int days) => throw new NotImplementedException($"{days}");
+    public static LocalTrashOptions CreateFromDays(int days) => days is >= 1 and <= MaxDays ? new(TimeSpan.FromDays(days)) : Create();
 }
