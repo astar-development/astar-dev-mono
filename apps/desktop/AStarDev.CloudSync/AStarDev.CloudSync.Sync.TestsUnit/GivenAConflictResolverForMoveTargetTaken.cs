@@ -184,8 +184,8 @@ public sealed class GivenAConflictResolverForMoveTargetTaken : IDisposable
         run.Logs.Logger.Messages.Where(message => message.Contains("new", StringComparison.OrdinalIgnoreCase) || message.Contains("old", StringComparison.OrdinalIgnoreCase) || message.Contains("Docs", StringComparison.Ordinal)).ShouldBeEmpty();
     }
 
-    private static async Task<ResolutionSummary> Summary(Task<Result<ResolutionSummary, ErrorResponse>> call) =>
-        (await call).Match(summary => summary, error => throw new InvalidOperationException($"The call failed: {error.Message}"));
+    private static async Task<ResolutionSummary> Summary(Task<Result<ResolutionSummary, ConflictRefusal>> call) =>
+        (await call).Match(summary => summary, refusal => throw new InvalidOperationException($"The call was refused: {refusal.GetType().Name}"));
 
     private async Task<(ResolutionFixture Run, ConflictId Id)> StartAsync(string seenCTag = "c-m")
     {
