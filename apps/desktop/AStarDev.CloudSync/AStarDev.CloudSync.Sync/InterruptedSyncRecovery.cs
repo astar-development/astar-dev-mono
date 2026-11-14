@@ -74,6 +74,10 @@ internal sealed class InterruptedSyncRecovery(ISyncRunJournal journal, IActivity
         if (waiting.IsCanceled)
             return RecoveryOutcomeFactory.CreateNotResumed(accountId, SyncPassFailureFactory.CreateCancelled());
 
+        var stillPaused = await paused.GetPausedAsync(cancellationToken).MatchAsync(found => found.Contains(accountId), _ => true).ConfigureAwait(false);
+        if (stillPaused)
+            return RecoveryOutcomeFactory.CreateHeld(accountId);
+
         return await Try.RunAsync(() => runner.RunAsync(accountId, SyncTriggerFactory.CreateRecovery(), cancellationToken), cancellationToken)
             .MatchAsync(result => Resumed(accountId, result), _ => RecoveryOutcomeFactory.CreateNotResumed(accountId, SyncPassFailureFactory.CreateUnexpected()))
             .ConfigureAwait(false);
