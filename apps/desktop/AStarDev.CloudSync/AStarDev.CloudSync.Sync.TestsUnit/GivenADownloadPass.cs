@@ -111,7 +111,7 @@ public sealed class GivenADownloadPass
     }
 
     [Fact]
-    public async Task when_a_pair_loses_more_than_a_quarter_and_at_least_fifty_items_then_nothing_is_deleted_and_the_deletions_are_recorded_as_held()
+    public async Task when_a_pair_loses_more_than_a_quarter_and_at_least_fifty_items_then_nothing_is_deleted_and_the_summary_reports_the_held_deletions()
     {
         using var fixture = await CreateAsync(CancellationToken);
         fixture.Docs();
@@ -131,26 +131,8 @@ public sealed class GivenADownloadPass
         summary.HeldByGuard.ShouldBe(60);
         summary.Downloaded.ShouldBe(1);
         fixture.FileSystem.Directory.GetFiles("/sync/root/Docs").Length.ShouldBe(101);
-        var held = fixture.Attention.Held.ShouldHaveSingleItem();
-        held.Direction.ShouldBeOfType<DeletionDirection.DeleteLocal>();
-        held.Paths.Count.ShouldBe(60);
-    }
-
-    [Fact]
-    public async Task when_the_held_deletions_cannot_be_recorded_then_the_pass_fails_and_deletes_nothing()
-    {
-        using var fixture = await CreateAsync(CancellationToken);
-        fixture.Docs();
-        for (var index = 0; index < 100; index++)
-            _ = fixture.Synced($"Docs/f{index:000}.txt", "x", $"id-{index}");
-
-        fixture.Remote.Folder("Docs");
-        fixture.Attention.Fails = true;
-
-        var result = await fixture.RunAsync(CancellationToken);
-
-        result.Match(_ => false, failure => failure is DownloadPassFailure.Unexpected).ShouldBeTrue();
-        fixture.FileSystem.Directory.GetFiles("/sync/root/Docs").Length.ShouldBe(100);
+        summary.Held.ShouldHaveSingleItem().Paths.Count.ShouldBe(60);
+        fixture.Attention.Calls.ShouldBe(0);
     }
 
     [Fact]

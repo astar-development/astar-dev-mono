@@ -3,28 +3,16 @@ using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.Sync;
 
-/// <summary>Keeps the attention queue in step with the download guard (#1400, #1551). The pairs a plan holds are saved as held sets of local deletions. An open set of local deletions whose pair the guard would no longer hold is closed, so its paths stop reading as held: the pair is planned again with those paths released, and the set is closed only when that plan does not hold the pair. Sets of remote deletions belong to the local scan and are never closed here. Nothing is closed while a resync is in progress, because deletions cannot be judged then.</summary>
-/// <param name="attentionWriter">Records the held sets.</param>
+/// <summary>Keeps the attention queue in step with the download guard (#1400, #1551). The sync pass runner saves the pairs a plan holds as held sets of local deletions (#1534). An open set of local deletions whose pair the guard would no longer hold is closed, so its paths stop reading as held: the pair is planned again with those paths released, and the set is closed only when that plan does not hold the pair. Sets of remote deletions belong to the local scan and are never closed here. Nothing is closed while a resync is in progress, because deletions cannot be judged then.</summary>
 /// <param name="attentionReader">Reads the open held sets.</param>
 /// <param name="attentionCloser">Closes the held set of a pair that has recovered.</param>
 /// <param name="planner">Judges whether a pair would still be held.</param>
-/// <param name="time">Stamps the held sets.</param>
-internal sealed class DownloadHolds(ISyncAttentionWriter attentionWriter, ISyncAttentionReader attentionReader, ISyncAttentionCloser attentionCloser, IDownloadPlanner planner, TimeProvider time)
+internal sealed class DownloadHolds(ISyncAttentionReader attentionReader, ISyncAttentionCloser attentionCloser, IDownloadPlanner planner)
 {
     internal Task<Result<Unit, ErrorResponse>> SettleAsync(AccountId accountId, DownloadPlanRequest request, DownloadPlan plan, CancellationToken cancellationToken) =>
-        RecordAsync(accountId, plan, cancellationToken).BindAsync(_ => CloseRecoveredAsync(accountId, request, plan, cancellationToken));
+        CloseRecoveredAsync(accountId, request, plan, cancellationToken);
 
     private static Result<Unit, ErrorResponse> Done() => Result.Success<Unit, ErrorResponse>(Unit.Instance);
-
-    private Task<Result<Unit, ErrorResponse>> RecordAsync(AccountId accountId, DownloadPlan plan, CancellationToken cancellationToken)
-    {
-        if (plan.Held.Count == 0)
-            return Task.FromResult(Done());
-
-        var items = plan.Held.Select(held => SyncAttentionItemFactory.CreateHeldDeletions(new HeldDeletionId(Guid.NewGuid()), accountId, held.PairId, DeletionDirectionFactory.CreateDeleteLocal(), held.Paths, time.GetUtcNow())).ToList();
-
-        return attentionWriter.RecordAsync(items, cancellationToken);
-    }
 
     private Task<Result<Unit, ErrorResponse>> CloseRecoveredAsync(AccountId accountId, DownloadPlanRequest request, DownloadPlan plan, CancellationToken cancellationToken) =>
         request.Quarantine.Baseline is PathQuarantineState.Clear

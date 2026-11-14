@@ -65,7 +65,8 @@ public sealed class GivenASyncPassRunnerThatWritesAttentionItems : IDisposable
 
         var recorded = services.Attention.Held.ShouldHaveSingleItem();
         recorded.Direction.ShouldBeOfType<DeletionDirection.DeleteLocal>();
-        (recorded.PairId, recorded.Paths.Select(path => path.Value)).ShouldBe((pair, ["Docs/a.txt", "Docs/b.txt"]));
+        recorded.PairId.ShouldBe(pair);
+        recorded.Paths.Select(path => path.Value).ShouldBe(["Docs/a.txt", "Docs/b.txt"]);
     }
 
     [Fact]

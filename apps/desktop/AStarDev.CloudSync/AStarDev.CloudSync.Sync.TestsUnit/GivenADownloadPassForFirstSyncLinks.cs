@@ -34,6 +34,20 @@ public sealed class GivenADownloadPassForFirstSyncLinks
     }
 
     [Fact]
+    public async Task when_a_longer_binary_file_matches_the_cloud_hash_then_it_is_linked()
+    {
+        using var fixture = await CreateAsync(CancellationToken);
+        fixture.Docs();
+        _ = fixture.Write("Docs/a.bin", string.Empty);
+        fixture.FileSystem.File.WriteAllBytes("/sync/root/Docs/a.bin", [.. Enumerable.Range(0, 768).Select(index => (byte)(index % 256))]);
+        fixture.Remote.File("Docs/a.bin", "a", "c1", 768, "rxAOGe1RimTF/e+k/m0O5nnSZT8=");
+
+        var summary = Summary(await fixture.RunAsync(Changes(AddedFile("Docs/a.bin", 768)), CancellationToken));
+
+        summary.LinkedExisting.ShouldBe(1);
+    }
+
+    [Fact]
     public async Task when_the_remote_file_has_no_hash_then_it_is_not_linked_and_goes_to_conflicts_as_both_added()
     {
         using var fixture = await CreateAsync(CancellationToken);

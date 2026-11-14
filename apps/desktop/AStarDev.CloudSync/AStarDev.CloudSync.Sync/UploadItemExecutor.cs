@@ -9,7 +9,7 @@ namespace AStarDev.CloudSync.Sync;
 /// <param name="recorder">Writes the baseline and remote index rows of an uploaded file or a created folder in one transaction.</param>
 /// <param name="baseline">Writes linked folders and deletion changes to the baseline.</param>
 /// <param name="options">The concurrency limit.</param>
-internal sealed class UploadItemExecutor(IUploadRecorder recorder, ISyncBaselineWriter baseline, UploadPassOptions options)
+internal sealed class UploadItemExecutor(IUploadRecorder recorder, ISyncBaselineWriter baseline, FirstSyncLinker linker, UploadPassOptions options)
 {
     private const char Separator = '/';
 
@@ -27,7 +27,7 @@ internal sealed class UploadItemExecutor(IUploadRecorder recorder, ISyncBaseline
             run.Outcomes.Add(await RunRemovalStepAsync(run, item, cancellationToken).ConfigureAwait(false));
 
         foreach (var item in plan.Items.Where(IsReportedStep))
-            run.Outcomes.Add(Reported(item));
+            run.Outcomes.Add(await ReportedAsync(run, item, cancellationToken).ConfigureAwait(false));
 
         return run.Stop.Match(
             failure => Result.Failure<IReadOnlyList<UploadItemOutcome>, UploadPassFailure>(failure),
@@ -74,13 +74,6 @@ internal sealed class UploadItemExecutor(IUploadRecorder recorder, ISyncBaseline
             parent => run.Folders.TryGetValue(parent, out var id) ? Result.Success<Option<RemoteItemId>, UploadItemOutcome>(Option.Some(id)) : Result.Failure<Option<RemoteItemId>, UploadItemOutcome>(UploadItemOutcomeFactory.CreateFailed(path, ProviderErrorFactory.CreateNotFound())),
             () => Result.Success<Option<RemoteItemId>, UploadItemOutcome>(Option.None<RemoteItemId>()));
 
-    private static UploadItemOutcome Reported(UploadPlanItem item) => item switch
-    {
-        UploadPlanItem.SendToConflicts conflict => UploadItemOutcomeFactory.CreateSentToConflicts(conflict.Finding),
-        UploadPlanItem.Rejected rejected => UploadItemOutcomeFactory.CreateRejected(rejected.Path, rejected.Reason),
-        _ => UploadItemOutcomeFactory.CreateFailed(item.Path, ProviderErrorFactory.CreateUnexpected()),
-    };
-
     private static ConflictFinding FindingFor(PassRun run, RelativeSyncPath path, ConflictKind kind)
     {
         var change = run.Input.Changes.Changes.FirstOrNone(candidate => candidate.Path == path);
@@ -102,6 +95,21 @@ internal sealed class UploadItemExecutor(IUploadRecorder recorder, ISyncBaseline
             ProviderError.SourceChanged => UploadItemOutcomeFactory.CreateDeferred(item.Path),
             _ => UploadItemOutcomeFactory.CreateFailed(item.Path, error),
         };
+    }
+
+    private async Task<UploadItemOutcome> ReportedAsync(PassRun run, UploadPlanItem item, CancellationToken cancellationToken)
+    {
+        if (item is UploadPlanItem.Rejected rejected)
+            return UploadItemOutcomeFactory.CreateRejected(rejected.Path, rejected.Reason);
+
+        if (item is not UploadPlanItem.SendToConflicts conflict)
+            return UploadItemOutcomeFactory.CreateFailed(item.Path, ProviderErrorFactory.CreateUnexpected());
+
+        var link = await linker.TryLinkAsync(run.AccountId, run.Input.Root, conflict.Finding, conflict.RemoteItem, cancellationToken).ConfigureAwait(false);
+
+        return await link.Match(
+            entry => baseline.UpsertAsync(run.AccountId, [entry], cancellationToken).MatchAsync(_ => UploadItemOutcomeFactory.CreateLinked(item.Path), _ => UploadItemOutcomeFactory.CreateFailed(item.Path, ProviderErrorFactory.CreateUnexpected())),
+            () => Task.FromResult(UploadItemOutcomeFactory.CreateSentToConflicts(conflict.Finding))).ConfigureAwait(false);
     }
 
     private async Task<UploadItemOutcome> RunFolderStepAsync(PassRun run, UploadPlanItem item, CancellationToken cancellationToken)

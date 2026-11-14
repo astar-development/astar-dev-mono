@@ -12,7 +12,7 @@ namespace AStarDev.CloudSync.Sync;
 /// <param name="baselineWriter">Writes the baseline rows.</param>
 /// <param name="options">The concurrency and the batch size.</param>
 /// <param name="logger">Reports why the pass stopped, with no paths.</param>
-internal sealed class DownloadExecutor(DownloadFileStep fileStep, ILocalFileOperations files, ISyncBaselineWriter baselineWriter, DownloadPassOptions options, ILogger<DownloadExecutor> logger)
+internal sealed class DownloadExecutor(DownloadFileStep fileStep, FirstSyncLinker linker, ILocalFileOperations files, ISyncBaselineWriter baselineWriter, DownloadPassOptions options, ILogger<DownloadExecutor> logger)
 {
     private const string Location = nameof(DownloadExecutor);
 
@@ -119,13 +119,28 @@ internal sealed class DownloadExecutor(DownloadFileStep fileStep, ILocalFileOper
     private async Task<Result<IReadOnlyList<DownloadItemOutcome>, DownloadPassFailure>> FinishAsync(AccountId accountId, IDirectoryInfo root, DownloadPlan plan, IReadOnlyDictionary<RelativeSyncPath, SyncBaselineEntry> byPath, BaselineBatch batch, IReadOnlyList<DownloadItemOutcome> sofar, CancellationToken cancellationToken)
     {
         List<DownloadItemOutcome> outcomes = [.. sofar];
-        outcomes.AddRange(plan.Items.OfType<DownloadPlanItem.SendToConflicts>().Select(item => DownloadItemOutcomeFactory.CreateSentToConflicts(item.Finding)));
+        foreach (var conflict in plan.Items.OfType<DownloadPlanItem.SendToConflicts>())
+            outcomes.Add(await ReportConflictAsync(accountId, root, conflict, batch, cancellationToken).ConfigureAwait(false));
+
         foreach (var deletion in plan.Items.OfType<DownloadPlanItem.DeleteLocal>())
             outcomes.Add(await DeleteAsync(root, deletion, byPath, batch, cancellationToken).ConfigureAwait(false));
 
         var flushed = await FlushAsync(accountId, batch, cancellationToken).ConfigureAwait(false);
 
         return flushed.Match(_ => Result.Success<IReadOnlyList<DownloadItemOutcome>, DownloadPassFailure>(outcomes), _ => Stopped());
+    }
+
+    private async Task<DownloadItemOutcome> ReportConflictAsync(AccountId accountId, IDirectoryInfo root, DownloadPlanItem.SendToConflicts conflict, BaselineBatch batch, CancellationToken cancellationToken)
+    {
+        var link = await linker.TryLinkAsync(accountId, root, conflict.Finding, conflict.RemoteItem, cancellationToken).ConfigureAwait(false);
+
+        return link.Match(
+            entry =>
+            {
+                batch.Upsert(entry);
+                return DownloadItemOutcomeFactory.CreateLinkedExisting();
+            },
+            () => DownloadItemOutcomeFactory.CreateSentToConflicts(conflict.Finding));
     }
 
     private Task<DownloadItemOutcome> DeleteAsync(IDirectoryInfo root, DownloadPlanItem.DeleteLocal item, IReadOnlyDictionary<RelativeSyncPath, SyncBaselineEntry> byPath, BaselineBatch batch, CancellationToken cancellationToken) =>
