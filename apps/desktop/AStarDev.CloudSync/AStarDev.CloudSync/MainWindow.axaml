@@ -21,6 +21,15 @@
                     BorderBrush="{DynamicResource CloudSyncWarnBrush}"
                     BorderThickness="0,0,0,1"
                     Padding="16,8"
+                    IsVisible="{Binding DatabaseHealth.Text, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                <TextBlock Text="{Binding DatabaseHealth.Text}"
+                           Foreground="{DynamicResource CloudSyncTextPrimaryBrush}"
+                           TextWrapping="Wrap" />
+            </Border>
+            <Border Background="{DynamicResource CloudSyncWarnSoftBrush}"
+                    BorderBrush="{DynamicResource CloudSyncWarnBrush}"
+                    BorderThickness="0,0,0,1"
+                    Padding="16,8"
                     IsVisible="{Binding LayoutA.Overview.LoadErrorText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
                 <TextBlock Text="{Binding LayoutA.Overview.LoadErrorText}"
                            Foreground="{DynamicResource CloudSyncTextPrimaryBrush}"

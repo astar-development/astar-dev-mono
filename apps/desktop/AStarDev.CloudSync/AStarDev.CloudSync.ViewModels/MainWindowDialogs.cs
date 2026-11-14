@@ -1,12 +1,13 @@
 using AStarDev.CloudSync.ViewModels.Accounts;
 using AStarDev.CloudSync.ViewModels.Conflicts;
 using AStarDev.CloudSync.ViewModels.FolderSelection;
+using AStarDev.CloudSync.ViewModels.Overview;
 using AStarDev.CloudSync.ViewModels.SyncRestart;
 
 namespace AStarDev.CloudSync.ViewModels;
 
 /// <summary>The dialogs and screens the main window shows over its layout.</summary>
-public sealed class MainWindowDialogs(AddAccountViewModel addAccount, AccountDialogViewModel accountDialog, FolderSelectionViewModel folderSelection, ConfirmSyncRestartViewModel syncRestart, ConflictListViewModel conflictList)
+public sealed class MainWindowDialogs(AddAccountViewModel addAccount, AccountDialogViewModel accountDialog, FolderSelectionViewModel folderSelection, ConfirmSyncRestartViewModel syncRestart, ConflictListViewModel conflictList, DatabaseHealthBannerViewModel databaseHealth)
 {
     /// <summary>The AddAccount.</summary>
     public AddAccountViewModel AddAccount { get; } = addAccount;
@@ -22,4 +23,7 @@ public sealed class MainWindowDialogs(AddAccountViewModel addAccount, AccountDia
 
     /// <summary>The ConflictList.</summary>
     public ConflictListViewModel ConflictList { get; } = conflictList;
+
+    /// <summary>The banner shown while the database integrity check has failed.</summary>
+    public DatabaseHealthBannerViewModel DatabaseHealth { get; } = databaseHealth;
 }

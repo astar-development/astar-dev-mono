@@ -76,6 +76,8 @@ public static class SyncServiceCollectionExtensions
             .AddSingleton<ISyncActivitySource>(provider => provider.GetRequiredService<SyncPassRegistry>())
             .AddSingleton<ISyncCancelAction>(provider => provider.GetRequiredService<SyncPassRegistry>())
             .AddSingleton<ISyncRunStatusSource>(provider => provider.GetRequiredService<SyncPassRegistry>())
+            .AddSingleton<IDatabaseHealthGate, DatabaseHealthGate>()
+            .AddSingleton<RecoveryChecks>()
             .AddSingleton<SyncPassAttention>()
             .AddSingleton<IAccountQuotaRefresher, AccountQuotaRefresher>()
             .AddSingleton<SyncPassActivity>()

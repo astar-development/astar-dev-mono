@@ -22,10 +22,27 @@ internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps st
     public async Task<Result<SyncPassSummary, SyncPassFailure>> RunAsync(AccountId accountId, SyncTrigger trigger, CancellationToken cancellationToken)
     {
         using var scope = SyncLogScope.Begin(logger, accountId);
+        var health = await steps.Health.CheckAsync(cancellationToken).ConfigureAwait(false);
 
-        return syncLock.TryAcquire(accountId) is SyncLockAttempt.Acquired acquired
+        return health switch
+        {
+            DatabaseHealthStatus.Healthy => await RunIfFreeAsync(accountId, trigger, cancellationToken).ConfigureAwait(false),
+            DatabaseHealthStatus.Failed => Refused(trigger),
+            _ => Stopped<SyncPassSummary>(SyncPassFailureFactory.CreateCancelled()),
+        };
+    }
+
+    private async Task<Result<SyncPassSummary, SyncPassFailure>> RunIfFreeAsync(AccountId accountId, SyncTrigger trigger, CancellationToken cancellationToken) =>
+        syncLock.TryAcquire(accountId) is SyncLockAttempt.Acquired acquired
             ? await RunHoldingAsync(acquired.Lease, accountId, trigger, cancellationToken).ConfigureAwait(false)
             : Skipped(trigger);
+
+    private Result<SyncPassSummary, SyncPassFailure> Refused(SyncTrigger trigger)
+    {
+        var message = $"The {trigger.GetType().Name} sync run was refused: the database failed its integrity check.";
+        LogMessage.Information(logger, Location, message);
+
+        return Stopped<SyncPassSummary>(SyncPassFailureFactory.CreateDatabaseUnavailable());
     }
 
     private static Result<T, SyncPassFailure> Stopped<T>(SyncPassFailure failure) => Result.Failure<T, SyncPassFailure>(failure);

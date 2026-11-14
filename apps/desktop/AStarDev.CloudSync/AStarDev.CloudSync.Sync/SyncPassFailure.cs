@@ -55,6 +55,14 @@ public abstract record SyncPassFailure
         }
     }
 
+    /// <summary>The database failed its integrity check, so nothing was started (#1612).</summary>
+    public sealed record DatabaseUnavailable : SyncPassFailure
+    {
+        internal DatabaseUnavailable()
+        {
+        }
+    }
+
     /// <summary>Anything else.</summary>
     public sealed record Unexpected : SyncPassFailure
     {
