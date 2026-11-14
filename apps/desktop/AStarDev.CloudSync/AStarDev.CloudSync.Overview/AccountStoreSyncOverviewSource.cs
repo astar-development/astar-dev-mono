@@ -65,9 +65,17 @@ internal sealed class AccountStoreSyncOverviewSource(ICloudSyncDatabase database
 
                             return Option.None<ErrorResponse>();
                         },
-                        Option.Some);
+                        _ => DegradedCounts(accountId, countsByAccount));
             },
             error => Task.FromResult(Option.Some(error))).ConfigureAwait(false);
+    }
+
+    private Option<ErrorResponse> DegradedCounts(AccountId accountId, Dictionary<AccountId, BaselineCounts> countsByAccount)
+    {
+        LogMessage.Warning(logger, nameof(AccountStoreSyncOverviewSource), "An account's baseline counts could not be read and are shown as zero.");
+        countsByAccount[accountId] = BaselineCountsFactory.Create(0, 0);
+
+        return Option.None<ErrorResponse>();
     }
 
     private CloudAccount ToCloudAccount(StoredAccount account, BaselineCounts counts, bool isPaused) =>
