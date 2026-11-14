@@ -18,7 +18,7 @@ public sealed class DownloadPassFixture : IDisposable
 
     private readonly ServiceProvider provider;
 
-    private DownloadPassFixture(AccountId account, InMemoryAccountStore accounts, DownloadPassOptions? options)
+    private DownloadPassFixture(AccountId account, InMemoryAccountStore accounts, DownloadPassOptions? options, LocalTrashOptions? trashOptions)
     {
         Account = account;
         FileSystem = new MockFileSystem(options => options.SimulatingOperatingSystem(SimulationMode.Linux));
@@ -45,6 +45,7 @@ public sealed class DownloadPassFixture : IDisposable
             .AddSingleton<IPathQuarantine>(Quarantine)
             .AddSingleton<IDiskSpaceProbe>(Disk)
             .AddSingleton(options ?? DownloadPassOptionsFactory.Create())
+            .AddSingleton(trashOptions ?? LocalTrashOptionsFactory.Create())
             .BuildServiceProvider();
     }
 
@@ -81,12 +82,12 @@ public sealed class DownloadPassFixture : IDisposable
 
     public RecordingLoggerProvider Logs { get; } = new();
 
-    public static async Task<DownloadPassFixture> CreateAsync(CancellationToken cancellationToken, DownloadPassOptions? options = null)
+    public static async Task<DownloadPassFixture> CreateAsync(CancellationToken cancellationToken, DownloadPassOptions? options = null, LocalTrashOptions? trashOptions = null)
     {
         var accounts = new InMemoryAccountStore();
         var added = (AccountAddOutcome.Added)await accounts.AddAsync(AccountFixtures.Registration("00000000-0000-0000-a1b2-c3d4e5f60718.9188040d-6c67-4c5b-b112-36a304b66dad"), cancellationToken);
 
-        return new DownloadPassFixture(added.AccountId, accounts, options);
+        return new DownloadPassFixture(added.AccountId, accounts, options, trashOptions);
     }
 
     public static RelativeSyncPath Path(string value) => RelativeSyncPathFactory.Create(value).Match(path => path, _ => throw new InvalidOperationException("The test path must be valid."));

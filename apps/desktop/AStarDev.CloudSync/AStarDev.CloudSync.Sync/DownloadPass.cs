@@ -13,8 +13,9 @@ namespace AStarDev.CloudSync.Sync;
 /// <param name="planner">Plans the pass.</param>
 /// <param name="executor">Carries out the plan.</param>
 /// <param name="holds">Closes the held sets of pairs that recovered; the runner records the deletions the guard held.</param>
+/// <param name="trash">Removes the trash entries that outlived the retention when a pass starts.</param>
 /// <param name="logger">Reports the pass with counts and the hashed account id only.</param>
-internal sealed partial class DownloadPass(ISyncRootReader roots, DownloadPlanLoader loader, IDownloadPlanner planner, DownloadExecutor executor, DownloadHolds holds, ILogger<DownloadPass> logger) : IDownloadPass
+internal sealed partial class DownloadPass(ISyncRootReader roots, DownloadPlanLoader loader, IDownloadPlanner planner, DownloadExecutor executor, DownloadHolds holds, LocalTrash trash, ILogger<DownloadPass> logger) : IDownloadPass
 {
     private const string Location = nameof(DownloadPass);
 
@@ -48,10 +49,11 @@ internal sealed partial class DownloadPass(ISyncRootReader roots, DownloadPlanLo
             return RootUnavailable();
 
         var orphans = DeleteOrphans(root);
+        var purged = trash.Purge(root);
         var summary = await loader.LoadAsync(accountId, root, localChanges, cancellationToken)
             .BindAsync(request => PlanAndRunAsync(accountId, root, request, cancellationToken))
             .ConfigureAwait(false);
-        LogPass(orphans, summary);
+        LogPass(orphans, purged, summary);
 
         return summary;
     }
@@ -71,11 +73,11 @@ internal sealed partial class DownloadPass(ISyncRootReader roots, DownloadPlanLo
         return Result.Failure<Unit, DownloadPassFailure>(DownloadPassFailureFactory.CreateUnexpected());
     }
 
-    private void LogPass(int orphans, Result<DownloadPassSummary, DownloadPassFailure> summary)
+    private void LogPass(int orphans, int purged, Result<DownloadPassSummary, DownloadPassFailure> summary)
     {
         var message = summary.Match(
-            done => $"The download pass finished: {done.Downloaded} downloaded ({done.Bytes} bytes), {done.FoldersCreated} folders created, {done.Moved} moved, {done.DeletedLocally} deleted, {done.HeldByGuard} held, {done.SentToConflicts} sent to conflicts, {done.Skipped} skipped, {done.Failed} failed, {orphans} orphan temp files removed.",
-            failure => $"The download pass stopped ({failure.GetType().Name}), {orphans} orphan temp files removed.");
+            done => $"The download pass finished: {done.Downloaded} downloaded ({done.Bytes} bytes), {done.FoldersCreated} folders created, {done.Moved} moved, {done.DeletedLocally} deleted, {done.HeldByGuard} held, {done.SentToConflicts} sent to conflicts, {done.Skipped} skipped, {done.Failed} failed, {orphans} orphan temp files removed, {purged} expired trash entries removed.",
+            failure => $"The download pass stopped ({failure.GetType().Name}), {orphans} orphan temp files removed, {purged} expired trash entries removed.");
         LogMessage.Information(logger, Location, message);
     }
 }

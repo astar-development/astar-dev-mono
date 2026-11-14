@@ -9,7 +9,7 @@ namespace AStarDev.CloudSync.Sync;
 
 /// <summary>Carries out a <see cref="DownloadPlan"/> (#1400): folders, moves, downloads (several at once), conflicts and deletions, writing the baseline in batches.</summary>
 /// <param name="fileStep">Downloads one file.</param>
-/// <param name="files">Creates, moves and deletes local items.</param>
+/// <param name="files">Creates and moves local items and trashes the ones the remote deleted.</param>
 /// <param name="baselineWriter">Writes the baseline rows.</param>
 /// <param name="options">The concurrency and the batch size.</param>
 /// <param name="sink">Takes the bytes downloaded so far.</param>
@@ -155,7 +155,7 @@ internal sealed class DownloadExecutor(DownloadFileStep fileStep, ILocalFileOper
                 Failed);
 
     private Task<DownloadItemOutcome> DeleteAsync(IDirectoryInfo root, DownloadPlanItem.DeleteLocal item, IReadOnlyDictionary<RelativeSyncPath, SyncBaselineEntry> byPath, BaselineBatch batch, CancellationToken cancellationToken) =>
-        files.DeleteAsync(ItemAt(root, item.Path, Lookup(byPath, item.Path)), cancellationToken)
+        files.TrashAsync(root, ItemAt(root, item.Path, Lookup(byPath, item.Path)), cancellationToken)
             .MatchAsync(
                 _ =>
                 {

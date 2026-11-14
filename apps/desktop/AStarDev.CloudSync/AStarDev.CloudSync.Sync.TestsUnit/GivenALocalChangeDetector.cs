@@ -34,6 +34,18 @@ public sealed class GivenALocalChangeDetector : IDisposable
     }
 
     [Fact]
+    public async Task when_the_sync_trash_holds_files_then_the_scan_never_reports_them()
+    {
+        fixture.Include("Docs", ".sync-trash");
+        _ = fixture.Write("Docs/new.txt", "hello");
+        _ = fixture.Write(".sync-trash/20261113120000000-abc/Docs/gone.txt", "trashed");
+
+        var set = await fixture.ScanAsync(CancellationToken);
+
+        LocalScanFixture.Describe(set).ShouldBe("Added:Docs/new.txt:File");
+    }
+
+    [Fact]
     public async Task when_a_folder_is_not_in_the_baseline_then_it_is_added_as_a_folder()
     {
         fixture.Include("Docs");
