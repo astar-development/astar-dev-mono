@@ -233,18 +233,33 @@ public class GivenAnAccountStoreSyncOverviewSource
     }
 
     [Fact]
-    public async Task when_an_account_ran_then_its_status_and_last_sync_come_from_the_run_status_source()
+    public async Task when_an_account_ran_then_its_status_comes_from_the_run_status_source_and_its_last_sync_from_the_journal()
     {
         var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]) };
         var runs = new FakeSyncRunStatusSource();
-        var finished = new DateTimeOffset(2026, 11, 14, 9, 0, 0, TimeSpan.Zero);
-        runs.Set(FlintId, SyncStatusFactory.CreateFailed(SyncFailureReasonFactory.CreateQuotaExceeded()), Option.Some(finished));
+        runs.Set(FlintId, SyncStatusFactory.CreateFailed(SyncFailureReasonFactory.CreateQuotaExceeded()), Option.None<DateTimeOffset>());
+        var time = new Microsoft.Extensions.Time.Testing.FakeTimeProvider(new DateTimeOffset(2026, 11, 14, 9, 0, 0, TimeSpan.Zero));
+        var journal = new InMemorySyncRunJournal(time);
+        var run = (await journal.StartAsync(FlintId, SyncTriggerFactory.CreateScheduled(), TestContext.Current.CancellationToken)).Match(id => id, _ => throw new InvalidOperationException("The run must start."));
+        _ = await journal.FinishAsync(run, SyncRunOutcomeFactory.CreateCompleted(), TestContext.Current.CancellationToken);
 
-        var overview = await LoadAsync(store, runs, new FakeAccountPauseReader());
+        var overview = await CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), new FakeSyncPairReader(), runs, new FakeAccountPauseReader(), new FakeSyncBaselineCounter(), new FakeActivityLogReader(), null, journal).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(loaded => loaded, failure => throw new InvalidOperationException(failure.Message));
 
         overview.Accounts.ShouldHaveSingleItem().ShouldSatisfyAllConditions(
             account => account.Status.ShouldBe(SyncStatusFactory.CreateFailed(SyncFailureReasonFactory.CreateQuotaExceeded())),
-            account => account.LastSync.ShouldBe(Option.Some(finished)));
+            account => account.LastSync.ShouldBe(Option.Some(time.GetUtcNow())));
+    }
+
+    [Fact]
+    public async Task when_the_journal_cannot_be_read_then_the_overview_still_loads_with_no_last_sync_and_a_warning_without_details()
+    {
+        var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]) };
+        using var logs = new RecordingLoggerProvider();
+
+        var overview = await CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), new FakeSyncPairReader(), new FakeSyncRunStatusSource(), new FakeAccountPauseReader(), new FakeSyncBaselineCounter(), new FakeActivityLogReader(), logs, new InMemorySyncRunJournal { Fails = true }).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(loaded => loaded, failure => throw new InvalidOperationException(failure.Message));
+
+        overview.Accounts.ShouldHaveSingleItem().LastSync.ShouldBe(Option.None<DateTimeOffset>());
+        string.Join("\n", logs.Logger.Messages).ShouldContain("last sync");
     }
 
     [Fact]
@@ -316,11 +331,12 @@ public class GivenAnAccountStoreSyncOverviewSource
     private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store, IAccountSignInStates states, ISyncPairReader pairReader, ISyncRunStatusSource runStatuses, IAccountPauseReader pauseReader, IActivityLogReader activityReader) =>
         CreateSource(database, store, states, pairReader, runStatuses, pauseReader, new FakeSyncBaselineCounter(), activityReader);
 
-    private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store, IAccountSignInStates states, ISyncPairReader pairReader, ISyncRunStatusSource runStatuses, IAccountPauseReader pauseReader, ISyncBaselineCounter counter, IActivityLogReader activityReader, RecordingLoggerProvider? logs = null) =>
+    private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store, IAccountSignInStates states, ISyncPairReader pairReader, ISyncRunStatusSource runStatuses, IAccountPauseReader pauseReader, ISyncBaselineCounter counter, IActivityLogReader activityReader, RecordingLoggerProvider? logs = null, ISyncRunJournal? journal = null) =>
         new ServiceCollection()
             .AddLogging(logging => _ = logs is null ? logging.ClearProviders() : logging.ClearProviders().AddProvider(logs))
             .AddSingleton(counter)
             .AddSingleton(activityReader)
+            .AddSingleton(journal ?? new InMemorySyncRunJournal())
             .AddSingleton(database)
             .AddSingleton(store)
             .AddSingleton(states)

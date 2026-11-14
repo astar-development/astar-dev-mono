@@ -150,6 +150,6 @@ public class GivenAnAccountDetailViewModel
     {
         var entry = ActivityEntryFactory.Create(accountId, Option.None<SyncPairId>(), kind, TestData.Now);
 
-        return new ActivityItemViewModel(entry, new ProviderViewModel(CloudProviderFactory.CreateOneDrive(), localization), localization, TestData.CreateTime());
+        return new ActivityItemViewModel(entry, "Captain Flint", new ProviderViewModel(CloudProviderFactory.CreateOneDrive(), localization), localization, TestData.CreateTime());
     }
 }

@@ -10,4 +10,5 @@ namespace AStarDev.CloudSync.Overview;
 /// <param name="Paused">Tells which accounts the user paused.</param>
 /// <param name="Baseline">Counts each account's synced folders and files with a count query.</param>
 /// <param name="Activity">Reads the newest activity across every account.</param>
-internal sealed record SyncOverviewReaders(IAccountSignInStates SignIn, ISyncPairReader Pairs, ISyncRunStatusSource Runs, IAccountPauseReader Paused, ISyncBaselineCounter Baseline, IActivityLogReader Activity);
+/// <param name="Journal">Tells when each account last synced, which survives a restart.</param>
+internal sealed record SyncOverviewReaders(IAccountSignInStates SignIn, ISyncPairReader Pairs, ISyncRunStatusSource Runs, IAccountPauseReader Paused, ISyncBaselineCounter Baseline, IActivityLogReader Activity, ISyncRunJournal Journal);

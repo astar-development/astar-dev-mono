@@ -74,4 +74,12 @@ public abstract record ActivityKind
         {
         }
     }
+
+    /// <summary>The last sync was interrupted and a new one starts (#1610).</summary>
+    public sealed record SyncInterrupted : ActivityKind
+    {
+        internal SyncInterrupted()
+        {
+        }
+    }
 }

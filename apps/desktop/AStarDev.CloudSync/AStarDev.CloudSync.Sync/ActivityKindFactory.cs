@@ -21,4 +21,7 @@ public static class ActivityKindFactory
 
     /// <summary>Creates an authenticated entry.</summary>
     public static ActivityKind CreateAuthenticated() => new ActivityKind.Authenticated();
+
+    /// <summary>Creates an interrupted-sync entry.</summary>
+    public static ActivityKind CreateSyncInterrupted() => new ActivityKind.SyncInterrupted();
 }

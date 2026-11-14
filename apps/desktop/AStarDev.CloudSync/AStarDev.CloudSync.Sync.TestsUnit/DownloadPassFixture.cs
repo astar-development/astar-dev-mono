@@ -38,6 +38,7 @@ public sealed class DownloadPassFixture : IDisposable
             .AddSingleton<ISyncAttentionCloser>(Attention)
             .AddSingleton<IRemoteIndexReader>(Remote)
             .AddSingleton<IActivityLogWriter>(new RecordingActivityLogWriter())
+            .AddSingleton<ISyncRunJournal>(Journal)
             .AddKeyedSingleton<IRemoteFileDownloader>(CloudProviderFactory.CreateOneDrive(), Downloader)
             .AddCloudSync()
             .AddSingleton<IRemoteIndexUpdater>(Steps)
@@ -53,6 +54,10 @@ public sealed class DownloadPassFixture : IDisposable
     public AccountId Account { get; }
 
     public ScriptedSyncSteps Steps { get; } = new();
+
+    public InMemorySyncRunJournal Journal { get; } = new();
+
+    public IInterruptedSyncRecovery Recovery => provider.GetRequiredService<IInterruptedSyncRecovery>();
 
     public ISyncProgressFeed Feed => provider.GetRequiredService<ISyncProgressFeed>();
 
