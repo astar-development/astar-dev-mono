@@ -25,6 +25,12 @@ internal static partial class OneDriveTransferLog
     [LoggerMessage(EventId = 5426, Level = LogLevel.Information, Message = "No access token for the transfer: {Outcome}.")]
     public static partial void TokenUnavailable(ILogger logger, string outcome);
 
+    [LoggerMessage(EventId = 5428, Level = LogLevel.Information, Message = "A saved upload session could not be used, so it was deleted and the upload starts again.")]
+    public static partial void SessionDiscarded(ILogger logger);
+
+    [LoggerMessage(EventId = 5429, Level = LogLevel.Warning, Message = "The saved upload sessions could not be read or written, so the upload cannot resume after a restart.")]
+    public static partial void SessionStoreFailed(ILogger logger);
+
     [LoggerMessage(EventId = 5427, Level = LogLevel.Information, Message = "The remote item to delete was already gone.")]
     public static partial void AlreadyGone(ILogger logger);
 }

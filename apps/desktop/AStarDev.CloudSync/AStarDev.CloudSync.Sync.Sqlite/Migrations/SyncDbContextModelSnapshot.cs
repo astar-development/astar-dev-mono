@@ -367,6 +367,39 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
                     b.ToTable("TrashRetention", (string)null);
                 });
 
+            modelBuilder.Entity("AStarDev.CloudSync.Sync.Sqlite.UploadSessionEntity", b =>
+                {
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PathKey")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("ConfirmedBytes")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("ExpiresAtUtcTicks")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("SourceLength")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("SourceWriteUtcTicks")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Target")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("AccountId", "PathKey");
+
+                    b.ToTable("UploadSessions", (string)null);
+                });
+
             modelBuilder.Entity("AStarDev.CloudSync.Sync.Sqlite.SyncAttentionPathEntity", b =>
                 {
                     b.HasOne("AStarDev.CloudSync.Sync.Sqlite.SyncAttentionEntity", null)
