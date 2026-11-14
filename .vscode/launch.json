@@ -5,12 +5,6 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "OneDrive.Sync.Client Debug",
-      "type": "dotnet",
-      "request": "launch",
-      "projectPath": "${workspaceFolder}/apps/desktop/AStarDev.OneDriveSyncClient/AStarDev.OneDriveSyncClient.csproj"
-    },
-    {
       "name": "CloudSync Debug",
       "type": "dotnet",
       "request": "launch",
