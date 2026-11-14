@@ -73,6 +73,24 @@
                            IsVisible="{Binding ErrorText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
             </StackPanel>
         </Border>
+        <Border DataContext="{Binding Autostart}">
+            <StackPanel x:DataType="vmDisplaySettings:AutostartSettingsViewModel" Spacing="4">
+                <TextBlock Classes="muted" Text="{Binding HeadingText}" />
+                <CheckBox Content="{Binding ToggleText}"
+                          IsChecked="{Binding IsEnabled, Mode=OneWay}"
+                          IsEnabled="{Binding CanChange}"
+                          Command="{Binding ToggleCommand}"
+                          AutomationProperties.Name="{Binding ToggleText}" />
+                <TextBlock Text="{Binding ReasonText}"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource CloudSyncTextMutedBrush}"
+                           IsVisible="{Binding ReasonText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                <TextBlock Text="{Binding ErrorText}"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource CloudSyncWarnBrush}"
+                           IsVisible="{Binding ErrorText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            </StackPanel>
+        </Border>
         <Border DataContext="{Binding PlaintextCacheConsent}">
             <StackPanel x:DataType="vmAccounts:PlaintextCacheConsentSettingsViewModel"
                         Spacing="6"

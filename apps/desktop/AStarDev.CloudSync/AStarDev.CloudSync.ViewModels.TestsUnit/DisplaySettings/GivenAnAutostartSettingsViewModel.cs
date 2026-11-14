@@ -99,7 +99,8 @@ public class GivenAnAutostartSettingsViewModel
         var afterOn = model.IsEnabled;
         await model.ToggleCommand.ExecuteAsync(null);
 
-        (afterOn, model.IsEnabled, registration.Calls).ShouldBe((true, false, ["enable", "disable"]));
+        (afterOn, model.IsEnabled).ShouldBe((true, false));
+        registration.Calls.ShouldBe(["enable", "disable"]);
     }
 
     [Fact]

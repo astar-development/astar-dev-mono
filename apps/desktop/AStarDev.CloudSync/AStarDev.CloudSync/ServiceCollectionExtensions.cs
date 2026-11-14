@@ -5,6 +5,7 @@ using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Accounts.OneDrive;
 using AStarDev.CloudSync.Accounts.Sqlite;
+using AStarDev.CloudSync.Autostart;
 using AStarDev.CloudSync.Common;
 using AStarDev.CloudSync.DisplaySettings;
 using AStarDev.CloudSync.Logging;
@@ -65,6 +66,9 @@ public static class ServiceCollectionExtensions
             .AddSingleton<ISyncActions, PlaceholderSyncActions>()
             .AddSingleton<IUiDispatcher, AvaloniaUiDispatcher>()
             .AddSingleton<MainWindowVisibility>()
+            .AddSingleton<IAutostartLauncher, VelopackAutostartLauncher>()
+            .AddSingleton<IAutostartRegistration>(provider => OperatingSystem.IsLinux() ? ActivatorUtilities.CreateInstance<LinuxAutostartRegistration>(provider) : new UnsupportedAutostartRegistration())
+            .AddSingleton<AutostartSettingsViewModel>()
             .AddSingleton<IWindowPresence, WindowPresenceReader>()
             .AddSingleton<INotificationSender>(_ => OperatingSystem.IsLinux() ? new LinuxNotificationSender() : new UnsupportedNotificationSender())
             .AddSingleton<SyncNotifier>()
