@@ -15,6 +15,9 @@ internal sealed class MainWindowVisibility : IMainWindowVisibility
     /// <param name="mainWindow">The main window.</param>
     internal void Attach(Window mainWindow) => window = mainWindow;
 
+    /// <summary>The main window, once it has been attached.</summary>
+    internal Window? Window => window;
+
     /// <inheritdoc />
     public void Show() => Dispatcher.UIThread.Post(() =>
     {

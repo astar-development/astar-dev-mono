@@ -7,6 +7,7 @@ using AStarDev.CloudSync.Accounts.OneDrive;
 using AStarDev.CloudSync.Accounts.Sqlite;
 using AStarDev.CloudSync.Common;
 using AStarDev.CloudSync.DisplaySettings;
+using AStarDev.CloudSync.Notifications;
 using AStarDev.CloudSync.Overview;
 using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.Sync.OneDrive;
@@ -19,6 +20,7 @@ using AStarDev.CloudSync.ViewModels.Common;
 using AStarDev.CloudSync.ViewModels.Conflicts;
 using AStarDev.CloudSync.ViewModels.DisplaySettings;
 using AStarDev.CloudSync.ViewModels.FolderSelection;
+using AStarDev.CloudSync.ViewModels.Notifications;
 using AStarDev.CloudSync.ViewModels.Layouts;
 using AStarDev.CloudSync.ViewModels.SyncRestart;
 using AStarDev.CloudSync.ViewModels.Tray;
@@ -62,6 +64,9 @@ public static class ServiceCollectionExtensions
             .AddSingleton<ISyncActions, PlaceholderSyncActions>()
             .AddSingleton<IUiDispatcher, AvaloniaUiDispatcher>()
             .AddSingleton<MainWindowVisibility>()
+            .AddSingleton<IWindowPresence, WindowPresenceReader>()
+            .AddSingleton<INotificationSender>(_ => OperatingSystem.IsLinux() ? new LinuxNotificationSender() : new UnsupportedNotificationSender())
+            .AddSingleton<SyncNotifier>()
             .AddSingleton<IMainWindowVisibility>(provider => provider.GetRequiredService<MainWindowVisibility>())
             .AddSingleton<IApplicationExit, DesktopApplicationExit>()
             .AddSingleton<IAppShutdown, AppShutdown>()

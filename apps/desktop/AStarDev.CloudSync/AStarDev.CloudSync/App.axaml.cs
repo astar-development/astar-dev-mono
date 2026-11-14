@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using AStarDev.CloudSync.Sync;
+using AStarDev.CloudSync.ViewModels.Notifications;
 using AStarDev.CloudSync.Tray;
 using AStarDev.CloudSync.ViewModels;
 using AStarDev.CloudSync.ViewModels.DisplaySettings;
@@ -43,6 +44,7 @@ public partial class App : Application, IDisposable
             var window = new MainWindow { DataContext = services.GetRequiredService<MainWindowViewModel>() };
             desktop.MainWindow = window;
             KeepRunningInTray(window);
+            _ = services.GetRequiredService<SyncNotifier>();
             KeepAsRunningInstance(claim, window, desktop);
             _ = services.GetRequiredService<SyncOverviewViewModel>().LoadAsync(CancellationToken.None);
             _ = services.GetRequiredService<SignInStateOverviewReloader>();
