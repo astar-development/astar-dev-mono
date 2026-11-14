@@ -52,6 +52,111 @@ public class GivenAnOverlayDialog
     [InlineData("FolderSelection")]
     [InlineData("SyncRestart")]
     [InlineData("ConflictList")]
+    public async Task when_focus_is_outside_the_open_dialog_and_escape_is_pressed_then_the_dialog_closes(string key)
+    {
+        var (window, _, vm, overlay, opener) = await ShowAsync(key);
+        await overlay.Open(vm);
+        Dispatcher.UIThread.RunJobs();
+        opener.Focus();
+
+        window.KeyPressQwerty(PhysicalKey.Escape, RawInputModifiers.None);
+
+        overlay.IsOpen(vm).ShouldBeFalse();
+    }
+
+    [AvaloniaTheory]
+    [InlineData("AddAccount")]
+    [InlineData("AccountDialog")]
+    [InlineData("FolderSelection")]
+    [InlineData("SyncRestart")]
+    [InlineData("ConflictList")]
+    public async Task when_another_key_is_pressed_then_the_open_dialog_stays_open(string key)
+    {
+        var (window, _, vm, overlay, _) = await ShowAsync(key);
+        await overlay.Open(vm);
+        Dispatcher.UIThread.RunJobs();
+
+        window.KeyPressQwerty(PhysicalKey.A, RawInputModifiers.None);
+
+        overlay.IsOpen(vm).ShouldBeTrue();
+    }
+
+    [AvaloniaTheory]
+    [InlineData("AddAccount")]
+    [InlineData("AccountDialog")]
+    [InlineData("FolderSelection")]
+    [InlineData("SyncRestart")]
+    [InlineData("ConflictList")]
+    public async Task when_escape_is_pressed_and_the_dialog_is_closed_then_nothing_happens(string key)
+    {
+        var (window, _, vm, overlay, _) = await ShowAsync(key);
+
+        window.KeyPressQwerty(PhysicalKey.Escape, RawInputModifiers.None);
+
+        overlay.IsOpen(vm).ShouldBeFalse();
+    }
+
+    [AvaloniaTheory]
+    [InlineData("AddAccount")]
+    [InlineData("AccountDialog")]
+    [InlineData("FolderSelection")]
+    [InlineData("SyncRestart")]
+    [InlineData("ConflictList")]
+    public async Task when_something_else_already_handled_escape_then_the_dialog_stays_open(string key)
+    {
+        var (window, _, vm, overlay, _) = await ShowAsync(key);
+        await overlay.Open(vm);
+        Dispatcher.UIThread.RunJobs();
+        window.AddHandler(InputElement.KeyDownEvent, (_, e) => e.Handled = true, Avalonia.Interactivity.RoutingStrategies.Tunnel);
+
+        window.KeyPressQwerty(PhysicalKey.Escape, RawInputModifiers.None);
+
+        overlay.IsOpen(vm).ShouldBeTrue();
+    }
+
+    [AvaloniaTheory]
+    [InlineData("AddAccount")]
+    [InlineData("AccountDialog")]
+    [InlineData("FolderSelection")]
+    [InlineData("SyncRestart")]
+    [InlineData("ConflictList")]
+    public async Task when_the_view_has_another_data_context_then_escape_does_not_close_the_dialog(string key)
+    {
+        var (window, view, vm, overlay, _) = await ShowAsync(key);
+        await overlay.Open(vm);
+        Dispatcher.UIThread.RunJobs();
+        view.DataContext = new object();
+
+        window.KeyPressQwerty(PhysicalKey.Escape, RawInputModifiers.None);
+
+        overlay.IsOpen(vm).ShouldBeTrue();
+    }
+
+    [AvaloniaTheory]
+    [InlineData("AddAccount")]
+    [InlineData("AccountDialog")]
+    [InlineData("FolderSelection")]
+    [InlineData("SyncRestart")]
+    [InlineData("ConflictList")]
+    public async Task when_the_dialog_is_removed_from_the_window_then_escape_no_longer_reaches_it(string key)
+    {
+        var (window, view, vm, overlay, _) = await ShowAsync(key);
+        await overlay.Open(vm);
+        Dispatcher.UIThread.RunJobs();
+        ((Panel)view.Parent!).Children.Remove(view);
+        Dispatcher.UIThread.RunJobs();
+
+        window.KeyPressQwerty(PhysicalKey.Escape, RawInputModifiers.None);
+
+        overlay.IsOpen(vm).ShouldBeTrue();
+    }
+
+    [AvaloniaTheory]
+    [InlineData("AddAccount")]
+    [InlineData("AccountDialog")]
+    [InlineData("FolderSelection")]
+    [InlineData("SyncRestart")]
+    [InlineData("ConflictList")]
     public async Task when_tab_is_pressed_on_the_last_control_then_focus_stays_inside_the_dialog(string key)
     {
         var (window, view, vm, overlay, _) = await ShowAsync(key);

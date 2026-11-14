@@ -9,7 +9,7 @@ using Avalonia.VisualTree;
 
 namespace AStarDev.CloudSync.Common;
 
-/// <summary>Modal overlay keyboard behaviour: takes focus when the overlay opens, closes on Escape, keeps Tab inside it and gives focus back to the control that opened it.</summary>
+/// <summary>Modal overlay keyboard behaviour: takes focus when the overlay opens, closes on Escape wherever focus is while it is open, keeps Tab inside it and gives focus back to the control that opened it.</summary>
 /// <typeparam name="TViewModel">The overlay's view model.</typeparam>
 internal sealed class OverlayBehavior<TViewModel> where TViewModel : class, INotifyPropertyChanged
 {
@@ -20,6 +20,7 @@ internal sealed class OverlayBehavior<TViewModel> where TViewModel : class, INot
     private TViewModel? observed;
     private bool wasOpen;
     private IInputElement? opener;
+    private TopLevel? host;
 
     private OverlayBehavior(UserControl view, Func<TViewModel, bool> isOpen, Func<TViewModel, ICommand> dismiss, string? focusName)
     {
@@ -33,7 +34,6 @@ internal sealed class OverlayBehavior<TViewModel> where TViewModel : class, INot
     {
         var behavior = new OverlayBehavior<TViewModel>(view, isOpen, dismiss, focusName);
         KeyboardNavigation.SetTabNavigation(view, KeyboardNavigationMode.Cycle);
-        view.AddHandler(InputElement.KeyDownEvent, behavior.OnKeyDown);
         view.Loaded += behavior.OnLoaded;
         view.Unloaded += behavior.OnUnloaded;
         view.DataContextChanged += behavior.OnDataContextChanged;
@@ -41,7 +41,7 @@ internal sealed class OverlayBehavior<TViewModel> where TViewModel : class, INot
 
     private void OnKeyDown(object? sender, KeyEventArgs e)
     {
-        if (e.Key != Key.Escape || e.Handled || view.DataContext is not TViewModel viewModel)
+        if (e.Key != Key.Escape || e.Handled || view.DataContext is not TViewModel viewModel || !isOpen(viewModel))
             return;
 
         var command = dismiss(viewModel);
@@ -53,11 +53,18 @@ internal sealed class OverlayBehavior<TViewModel> where TViewModel : class, INot
 
     private void OnLoaded(object? sender, RoutedEventArgs e)
     {
+        host = TopLevel.GetTopLevel(view)!;
+        host.AddHandler(InputElement.KeyDownEvent, OnKeyDown);
         Observe(view.DataContext as TViewModel);
         FocusInitial();
     }
 
-    private void OnUnloaded(object? sender, RoutedEventArgs e) => Observe(null);
+    private void OnUnloaded(object? sender, RoutedEventArgs e)
+    {
+        host!.RemoveHandler(InputElement.KeyDownEvent, OnKeyDown);
+        host = null;
+        Observe(null);
+    }
 
     private void OnDataContextChanged(object? sender, EventArgs e)
     {
