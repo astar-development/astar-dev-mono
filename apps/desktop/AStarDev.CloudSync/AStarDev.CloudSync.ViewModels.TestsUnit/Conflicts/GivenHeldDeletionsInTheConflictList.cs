@@ -211,7 +211,8 @@ public class GivenHeldDeletionsInTheConflictList
         await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
 
         var held = fixture.List.HeldDeletions.Single();
-        (held.IsExpanded, held.PathTexts, held.ToggleText).ShouldBe((true, ["a.jpg"], "Hide files"));
+        (held.IsExpanded, held.ToggleText).ShouldBe((true, "Hide files"));
+        held.PathTexts.ShouldBe(["a.jpg"]);
     }
 
     [Fact]
