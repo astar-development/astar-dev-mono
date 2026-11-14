@@ -58,6 +58,7 @@
   "Activity.Deleted.Many": "Deleted {0} files",
   "Activity.Conflict": "Conflict: {0}",
   "Activity.Authenticated": "Authenticated",
+  "Activity.SyncInterrupted": "The last sync of {0} was interrupted. Resuming now.",
   "Conflict.ChangedOnBothSides": "{0} · changed on both sides",
   "Conflict.KeepBoth": "Keep both",
   "Conflict.KeepLocal": "Keep local",

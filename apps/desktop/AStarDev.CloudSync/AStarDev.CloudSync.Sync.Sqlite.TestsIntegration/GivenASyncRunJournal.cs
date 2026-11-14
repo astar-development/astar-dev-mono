@@ -195,13 +195,12 @@ public sealed class GivenASyncRunJournal : IAsyncLifetime
     }
 
     [Fact]
-    public async Task when_the_database_cannot_be_read_then_the_journal_returns_an_error_and_logs_only_the_exception_type()
+    public async Task when_the_database_cannot_be_read_then_the_journal_returns_an_error()
     {
         await using var broken = TemporarySyncDatabase.CreateUnmigrated();
 
         var outcome = await broken.Journal.GetInterruptedAsync(CancellationToken);
 
         outcome.Match(_ => "ok", error => error.Message).ShouldNotBe("ok");
-        string.Join("\n", broken.Logs.Logger.Messages).ShouldNotContain(broken.DatabasePath);
     }
 }

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync.Overview;
 
-/// <summary>Builds the overview from the saved accounts and their sync pairs, after making sure the database is migrated. Activity is the newest entries of the activity log (#1564); conflicts and throughput stay empty until the overview work (#1408). An account's folder and file counts come from its sync baseline (#1565) and are unknown when that count cannot be read (#1592), its status and last sync come from its sync runs, a paused account that is not syncing and did not just fail shows as paused, and pairs show no files, up to date and never synced. Its last sync is the in-memory time of its last finished run; surviving a restart needs the run journal (#1407).</summary>
+/// <summary>Builds the overview from the saved accounts and their sync pairs, after making sure the database is migrated. Activity is the newest entries of the activity log (#1564); conflicts and throughput stay empty until the overview work (#1408). An account's folder and file counts come from its sync baseline (#1565) and are unknown when that count cannot be read (#1592), its status comes from its sync runs and its last sync from the run journal, a paused account that is not syncing and did not just fail shows as paused, and pairs show no files, up to date and never synced. Its last sync is read from the run journal (#1610), so it survives a restart, and shows as never when the journal cannot be read.</summary>
 /// <param name="database">Is migrated before the accounts are read, so a failed migration shows as a failed overview.</param>
 /// <param name="accountStore">Reads the saved accounts.</param>
 /// <param name="readers">The readers for sign-in states, pairs, runs, pauses, baseline counts and activity.</param>
@@ -43,9 +43,13 @@ internal sealed class AccountStoreSyncOverviewSource(ICloudSyncDatabase database
                 break;
         }
 
+        var lastSyncs = new Dictionary<AccountId, Option<DateTimeOffset>>();
+        foreach (var account in accounts)
+            lastSyncs[account.Id] = await LastSyncAsync(account.Id, cancellationToken).ConfigureAwait(false);
+
         return failure.Match(
             error => Result.Failure<SyncOverview, ErrorResponse>(error),
-            () => Result.Success<SyncOverview, ErrorResponse>(SyncOverviewFactory.Create([.. accounts.Select(account => ToCloudAccount(account, countsByAccount[account.Id], paused.Contains(account.Id)))], [.. accounts.SelectMany(account => pairsByAccount[account.Id])], activity, [], [], 0, Option.None<DateTimeOffset>())));
+            () => Result.Success<SyncOverview, ErrorResponse>(SyncOverviewFactory.Create([.. accounts.Select(account => ToCloudAccount(account, countsByAccount[account.Id], paused.Contains(account.Id), lastSyncs[account.Id]))], [.. accounts.SelectMany(account => pairsByAccount[account.Id])], activity, [], [], 0, Option.None<DateTimeOffset>())));
     }
 
     private async Task<Option<ErrorResponse>> ReadAsync(AccountId accountId, Dictionary<AccountId, IReadOnlyList<SyncPair>> pairsByAccount, Dictionary<AccountId, Option<BaselineCounts>> countsByAccount, CancellationToken cancellationToken)
@@ -78,8 +82,18 @@ internal sealed class AccountStoreSyncOverviewSource(ICloudSyncDatabase database
         return Option.None<ErrorResponse>();
     }
 
-    private CloudAccount ToCloudAccount(StoredAccount account, Option<BaselineCounts> counts, bool isPaused) =>
-        CloudAccountFactory.Create(CloudAccountIdentityFactory.Create(account.Id, account.Registration.DisplayName, account.Registration.Email, account.Registration.Provider), account.Registration.Storage, counts.Map(read => read.Folders), counts.Map(read => read.Files), StatusOf(account.Id, isPaused), readers.Runs.LastSyncOf(account.Id), readers.SignIn.StateOf(account.Id));
+    private Task<Option<DateTimeOffset>> LastSyncAsync(AccountId accountId, CancellationToken cancellationToken) =>
+        readers.Journal.GetLastSyncAsync(accountId, cancellationToken).MatchAsync(last => last, _ => UnknownLastSync());
+
+    private Option<DateTimeOffset> UnknownLastSync()
+    {
+        LogMessage.Warning(logger, nameof(AccountStoreSyncOverviewSource), "An account's last sync could not be read and is shown as never.");
+
+        return Option.None<DateTimeOffset>();
+    }
+
+    private CloudAccount ToCloudAccount(StoredAccount account, Option<BaselineCounts> counts, bool isPaused, Option<DateTimeOffset> lastSync) =>
+        CloudAccountFactory.Create(CloudAccountIdentityFactory.Create(account.Id, account.Registration.DisplayName, account.Registration.Email, account.Registration.Provider), account.Registration.Storage, counts.Map(read => read.Folders), counts.Map(read => read.Files), StatusOf(account.Id, isPaused), lastSync, readers.SignIn.StateOf(account.Id));
 
     private SyncStatus StatusOf(AccountId accountId, bool isPaused)
     {

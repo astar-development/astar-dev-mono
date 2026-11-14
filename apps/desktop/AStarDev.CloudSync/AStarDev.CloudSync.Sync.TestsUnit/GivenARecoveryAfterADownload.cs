@@ -12,7 +12,7 @@ public sealed class GivenARecoveryAfterADownload
     {
         using var fixture = await CreateAsync(CancellationToken);
         fixture.Docs();
-        fixture.Remote.File("Docs/a.txt", "a", "c2", 10);
+        fixture.Remote.File("Docs/a.txt", "a", "c-downloaded", 10);
         fixture.Downloader.Content["a"] = new byte[10];
         var reached = 0;
         fixture.Steps.OnStep = () =>
@@ -22,7 +22,7 @@ public sealed class GivenARecoveryAfterADownload
         };
         _ = await fixture.RunSyncAsync(CancellationToken);
         fixture.Journal.Restart();
-        fixture.Remote.File("Docs/b.txt", "b", "c2", 10);
+        fixture.Remote.File("Docs/b.txt", "b", "c-downloaded", 10);
         fixture.Downloader.Content["b"] = new byte[10];
 
         var outcomes = await fixture.Recovery.RecoverAsync(CancellationToken);

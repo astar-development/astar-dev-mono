@@ -237,7 +237,7 @@ public class GivenAnAccountStoreSyncOverviewSource
     {
         var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]) };
         var runs = new FakeSyncRunStatusSource();
-        runs.Set(FlintId, SyncStatusFactory.CreateFailed(SyncFailureReasonFactory.CreateQuotaExceeded()), Option.None<DateTimeOffset>());
+        runs.Set(FlintId, SyncStatusFactory.CreateFailed(SyncFailureReasonFactory.CreateQuotaExceeded()));
         var time = new Microsoft.Extensions.Time.Testing.FakeTimeProvider(new DateTimeOffset(2026, 11, 14, 9, 0, 0, TimeSpan.Zero));
         var journal = new InMemorySyncRunJournal(time);
         var run = (await journal.StartAsync(FlintId, SyncTriggerFactory.CreateScheduled(), TestContext.Current.CancellationToken)).Match(id => id, _ => throw new InvalidOperationException("The run must start."));
@@ -278,7 +278,7 @@ public class GivenAnAccountStoreSyncOverviewSource
     {
         var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]) };
         var runs = new FakeSyncRunStatusSource();
-        runs.Set(FlintId, SyncStatusFactory.CreateSyncing(0), Option.None<DateTimeOffset>());
+        runs.Set(FlintId, SyncStatusFactory.CreateSyncing(0));
         var pauses = new FakeAccountPauseReader { Paused = Result.Success<IReadOnlyList<AccountId>, ErrorResponse>([FlintId]) };
 
         var overview = await LoadAsync(store, runs, pauses);
@@ -291,7 +291,7 @@ public class GivenAnAccountStoreSyncOverviewSource
     {
         var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]) };
         var runs = new FakeSyncRunStatusSource();
-        runs.Set(FlintId, SyncStatusFactory.CreateCancelled(), Option.None<DateTimeOffset>());
+        runs.Set(FlintId, SyncStatusFactory.CreateCancelled());
         var pauses = new FakeAccountPauseReader { Paused = Result.Success<IReadOnlyList<AccountId>, ErrorResponse>([FlintId]) };
 
         var overview = await LoadAsync(store, runs, pauses);

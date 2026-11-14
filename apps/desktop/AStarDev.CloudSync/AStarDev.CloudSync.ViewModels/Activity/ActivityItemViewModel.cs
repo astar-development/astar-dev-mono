@@ -31,7 +31,7 @@ public sealed class ActivityItemViewModel(ActivityEntry entry, string accountNam
         ActivityKind.Deleted { FileCount: 1 } => Localization.GetLocal("Activity.Deleted.One"),
         ActivityKind.Deleted deleted => Localization.GetLocal("Activity.Deleted.Many", deleted.FileCount.ToString("N0", Localization.CurrentCulture)),
         ActivityKind.ConflictDetected conflict => Localization.GetLocal("Activity.Conflict", conflict.FileName),
-        ActivityKind.SyncInterrupted => throw new NotImplementedException(accountName),
+        ActivityKind.SyncInterrupted => Localization.GetLocal("Activity.SyncInterrupted", accountName),
         _ => Localization.GetLocal("Activity.Authenticated")
     };
 

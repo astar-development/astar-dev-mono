@@ -51,6 +51,7 @@ public sealed class GivenAnActivityLogStore : IAsyncLifetime
             ActivityEntryFactory.Create(FirstAccount, Option.None<SyncPairId>(), ActivityKindFactory.CreateConflictDetected("holiday.jpg"), Start.AddMinutes(4)),
             ActivityEntryFactory.Create(FirstAccount, Option.None<SyncPairId>(), ActivityKindFactory.CreateDetectingChanges(), Start.AddMinutes(5)),
             ActivityEntryFactory.Create(FirstAccount, Option.None<SyncPairId>(), ActivityKindFactory.CreateAuthenticated(), Start.AddMinutes(6)),
+            ActivityEntryFactory.Create(FirstAccount, Option.None<SyncPairId>(), ActivityKindFactory.CreateSyncInterrupted(), Start.AddMinutes(7)),
         };
 
         _ = await AppendAsync(entries);

@@ -47,11 +47,13 @@ internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps st
         using (lease)
         {
             pass = registry.Begin(accountId, trigger, cancellationToken);
+            var runId = await steps.After.Journal.StartAsync(accountId, trigger).ConfigureAwait(false);
             var running = StepsAsync(accountId, tally, pass.Token);
             await ((Task)running).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
             outcome = running.IsCompletedSuccessfully ? await running.ConfigureAwait(false) : Abandoned(running);
             await RefreshQuotaAsync(accountId, outcome, pass.Token).ConfigureAwait(false);
-            await steps.Activity.RecordAsync(accountId, outcome, tally.Download).ConfigureAwait(false);
+            await steps.After.Activity.RecordAsync(accountId, outcome, tally.Download).ConfigureAwait(false);
+            _ = await steps.After.Journal.FinishAsync(runId, outcome).ConfigureAwait(false);
         }
 
         registry.End(pass, outcome);
@@ -70,7 +72,7 @@ internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps st
         var limit = new CancellationTokenSource(QuotaTimeout, timeProvider);
         var bounded = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, limit.Token);
         var token = bounded.Token;
-        var refreshing = Task.Run(() => steps.Quota.RefreshAsync(accountId, token), token);
+        var refreshing = Task.Run(() => steps.After.Quota.RefreshAsync(accountId, token), token);
         _ = ReleaseWhenDoneAsync(refreshing, limit, bounded);
         var waiting = refreshing.WaitAsync(token);
         await ((Task)waiting).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
