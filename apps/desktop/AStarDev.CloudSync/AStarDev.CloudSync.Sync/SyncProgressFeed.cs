@@ -35,12 +35,14 @@ internal sealed class SyncProgressFeed(TimeProvider timeProvider) : ISyncProgres
             _ = published.Remove(accountId);
     }
 
+    private static bool IsMilestone(SyncProgress last, SyncProgress next) => last.Phase.GetType() != next.Phase.GetType() || (next.BytesTotal > 0 && next.BytesDone >= next.BytesTotal && last.BytesDone < next.BytesDone);
+
     private bool TryPublish(AccountId accountId, SyncProgress progress)
     {
         lock (gate)
         {
             var now = timeProvider.GetTimestamp();
-            if (published.TryGetValue(accountId, out var last) && timeProvider.GetElapsedTime(last.Stamp, now) < MinimumInterval)
+            if (published.TryGetValue(accountId, out var last) && !IsMilestone(last.Progress, progress) && timeProvider.GetElapsedTime(last.Stamp, now) < MinimumInterval)
                 return false;
 
             published[accountId] = (progress, now);
