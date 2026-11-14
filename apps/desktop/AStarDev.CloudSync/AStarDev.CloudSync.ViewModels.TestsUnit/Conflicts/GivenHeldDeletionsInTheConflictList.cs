@@ -201,6 +201,73 @@ public class GivenHeldDeletionsInTheConflictList
     }
 
     [Fact]
+    public async Task when_a_set_is_expanded_and_the_list_reloads_then_it_stays_expanded()
+    {
+        var fixture = new ConflictListFixture();
+        fixture.Reader.Add(Photos.Id, AttentionItems.CreateHeld(Photos.Id, CameraRoll, DeletionDirectionFactory.CreateDeleteLocal(), "a.jpg"));
+        await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
+        fixture.List.HeldDeletions.Single().ToggleCommand.Execute(null);
+
+        await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
+
+        var held = fixture.List.HeldDeletions.Single();
+        (held.IsExpanded, held.PathTexts, held.ToggleText).ShouldBe((true, ["a.jpg"], "Hide files"));
+    }
+
+    [Fact]
+    public async Task when_an_expanded_set_is_collapsed_again_then_it_stays_collapsed_after_a_reload()
+    {
+        var fixture = new ConflictListFixture();
+        fixture.Reader.Add(Photos.Id, AttentionItems.CreateHeld(Photos.Id, CameraRoll, DeletionDirectionFactory.CreateDeleteLocal(), "a.jpg"));
+        await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
+        fixture.List.HeldDeletions.Single().ToggleCommand.Execute(null);
+        fixture.List.HeldDeletions.Single().ToggleCommand.Execute(null);
+
+        await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
+
+        fixture.List.HeldDeletions.Single().IsExpanded.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task when_one_set_is_confirmed_then_the_other_expanded_set_stays_expanded()
+    {
+        var fixture = new ConflictListFixture();
+        var confirmed = (SyncAttentionItem.HeldDeletions)AttentionItems.CreateHeld(Photos.Id, CameraRoll, DeletionDirectionFactory.CreateDeleteLocal(), "a.jpg");
+        var other = (SyncAttentionItem.HeldDeletions)AttentionItems.CreateHeld(Photos.Id, new SyncPairId(Guid.NewGuid()), DeletionDirectionFactory.CreateDeleteLocal(), "b.jpg");
+        fixture.Reader.Add(Photos.Id, confirmed, other);
+        fixture.Decider.Outcome = (_, id, _) =>
+        {
+            fixture.Reader.RemoveHeld(id);
+
+            return Task.FromResult(Result.Success<Unit, HeldDeletionRefusal>(Unit.Instance));
+        };
+        await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
+        foreach (var held in fixture.List.HeldDeletions)
+            held.ToggleCommand.Execute(null);
+
+        await fixture.List.HeldDeletions.Single(held => held.Id == confirmed.Id).ConfirmCommand.ExecuteAsync(null);
+
+        fixture.List.HeldDeletions.Single().IsExpanded.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task when_an_expanded_set_leaves_the_queue_then_it_is_not_remembered_as_expanded()
+    {
+        var fixture = new ConflictListFixture();
+        var set = (SyncAttentionItem.HeldDeletions)AttentionItems.CreateHeld(Photos.Id, CameraRoll, DeletionDirectionFactory.CreateDeleteLocal(), "a.jpg");
+        fixture.Reader.Add(Photos.Id, set);
+        await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
+        fixture.List.HeldDeletions.Single().ToggleCommand.Execute(null);
+        fixture.Reader.RemoveHeld(set.Id);
+        await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
+        fixture.Reader.Add(Photos.Id, set);
+
+        await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
+
+        fixture.List.HeldDeletions.Single().IsExpanded.ShouldBeFalse();
+    }
+
+    [Fact]
     public async Task when_decide_later_is_clicked_then_nothing_runs_and_the_set_stays_held_and_marked_across_a_refresh()
     {
         var fixture = new ConflictListFixture();
