@@ -140,8 +140,7 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
 
     private static async Task<Exceptional<T>> RunAsync<T>(Func<Task<T>> operation, CancellationToken cancellationToken)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-        var attempt = Try.RunAsync(operation);
+        var attempt = Try.RunAsync(operation, cancellationToken);
         await ((Task)attempt).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
 
         return attempt.IsCanceled && !cancellationToken.IsCancellationRequested ? new Failure<T>(new TimeoutException()) : await attempt;

@@ -16,30 +16,24 @@ public sealed class MainWindowViewModel : LocalizedObservableObject
     /// <summary>Creates the view model and follows layout changes in the display settings.</summary>
     /// <param name="localization">The localisation service supplying the window's text.</param>
     /// <param name="displaySettings">The layout and theme choices.</param>
-    /// <param name="layoutA">Layout A, the unified account list.</param>
-    /// <param name="layoutB">Layout B, grouped by provider.</param>
-    /// <param name="layoutC">Layout C, sync pairs first.</param>
-    /// <param name="addAccount">The add-account dialog shown over the layout.</param>
-    /// <param name="accountDialog">The remove-account and sign-in dialog shown over the layout.</param>
-    /// <param name="folderSelection">The folder selection dialog shown over the layout.</param>
-    /// <param name="syncRestart">The question shown when Sync Now is pressed while the account is syncing.</param>
-    /// <param name="conflictList">The conflict list screen shown over the layout.</param>
-    public MainWindowViewModel(ILocalizationService localization, DisplaySettingsViewModel displaySettings, LayoutAViewModel layoutA, LayoutBViewModel layoutB, LayoutCViewModel layoutC, AddAccountViewModel addAccount, AccountDialogViewModel accountDialog, FolderSelectionViewModel folderSelection, ConfirmSyncRestartViewModel syncRestart, ConflictListViewModel conflictList) : base(localization)
+    /// <param name="layouts">The three layouts.</param>
+    /// <param name="dialogs">The dialogs and screens shown over the layout.</param>
+    public MainWindowViewModel(ILocalizationService localization, DisplaySettingsViewModel displaySettings, MainWindowLayouts layouts, MainWindowDialogs dialogs) : base(localization)
     {
         DisplaySettings = displaySettings;
-        LayoutA = layoutA;
-        LayoutB = layoutB;
-        LayoutC = layoutC;
-        AddAccount = addAccount;
-        AccountDialog = accountDialog;
-        FolderSelection = folderSelection;
-        SyncRestart = syncRestart;
-        ConflictList = conflictList;
-        syncRestart.PropertyChanged += OnSyncRestartChanged;
-        conflictList.PropertyChanged += OnConflictListChanged;
-        accountDialog.PropertyChanged += OnDialogChanged;
-        folderSelection.PropertyChanged += OnFolderSelectionChanged;
-        addAccount.PropertyChanged += OnDialogChanged;
+        LayoutA = layouts.LayoutA;
+        LayoutB = layouts.LayoutB;
+        LayoutC = layouts.LayoutC;
+        AddAccount = dialogs.AddAccount;
+        AccountDialog = dialogs.AccountDialog;
+        FolderSelection = dialogs.FolderSelection;
+        SyncRestart = dialogs.SyncRestart;
+        ConflictList = dialogs.ConflictList;
+        SyncRestart.PropertyChanged += OnSyncRestartChanged;
+        ConflictList.PropertyChanged += OnConflictListChanged;
+        AccountDialog.PropertyChanged += OnDialogChanged;
+        FolderSelection.PropertyChanged += OnFolderSelectionChanged;
+        AddAccount.PropertyChanged += OnDialogChanged;
         displaySettings.PropertyChanged += OnDisplaySettingsChanged;
     }
 
