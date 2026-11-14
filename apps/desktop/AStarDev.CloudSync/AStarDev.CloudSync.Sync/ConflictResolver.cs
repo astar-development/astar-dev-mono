@@ -21,12 +21,12 @@ internal sealed class ConflictResolver(IAccountSyncLock syncLock, ISyncAttention
     {
         var attempt = syncLock.TryAcquire(accountId);
         if (attempt is not SyncLockAttempt.Acquired acquired)
-            return Result.Failure<ResolutionSummary, ConflictRefusal>(ConflictRefusalFactory.CreateBusy());
+            return Result.Failure<ResolutionSummary, ConflictRefusal>(attempt is SyncLockAttempt.Busy ? ConflictRefusalFactory.CreateBusy() : ConflictRefusalFactory.CreateDraining());
 
         using var lease = acquired.Lease;
 
         return await reader.GetOpenAsync(accountId, cancellationToken)
-            .MatchAsync(open => ResolveOpenAsync(accountId, [.. open.OfType<SyncAttentionItem.Conflict>()], [.. (ids ?? []).Distinct()], strategy, cancellationToken), _ => Task.FromResult(Result.Failure<ResolutionSummary, ConflictRefusal>(ConflictRefusalFactory.CreateBusy())))
+            .MatchAsync(open => ResolveOpenAsync(accountId, [.. open.OfType<SyncAttentionItem.Conflict>()], [.. (ids ?? []).Distinct()], strategy, cancellationToken), _ => Task.FromResult(Result.Failure<ResolutionSummary, ConflictRefusal>(ConflictRefusalFactory.CreateQueueUnreadable())))
             .ConfigureAwait(false);
     }
 
