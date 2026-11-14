@@ -69,6 +69,21 @@ public sealed class GivenASyncPassRunnerThatRefreshesQuota : IDisposable
     }
 
     [Fact]
+    public async Task when_the_quota_read_hangs_then_it_is_abandoned_after_the_timeout_and_the_run_outcome_is_unchanged()
+    {
+        services.Quota.Block = Option.Some(new TaskCompletionSource());
+        var running = services.Runner.RunAsync(Personal, Manual, CancellationToken);
+        while (services.Quota.Calls.Count == 0)
+            await Task.Delay(5, CancellationToken);
+
+        services.Time.Advance(TimeSpan.FromSeconds(16));
+        var result = await running.WaitAsync(Limit, CancellationToken);
+
+        Outcome(result).ShouldBe("ran");
+        services.SyncLock.TryAcquire(Personal).ShouldBeOfType<SyncLockAttempt.Acquired>();
+    }
+
+    [Fact]
     public async Task when_the_pass_is_cancelled_then_the_quota_is_not_refreshed()
     {
         var gate = new WriteGate();

@@ -21,12 +21,21 @@ public sealed class ScriptedQuotaRefresher : IQuotaRefresher, IAccountQuotaRefre
         }
     }
 
+    public Option<TaskCompletionSource> Block { get; set; } = Option.None<TaskCompletionSource>();
+
     public Task<Result<StorageUsage, ProviderError>> RefreshAsync(AccountId accountId, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         lock (gate)
             calls.Add(accountId);
 
-        return Throws.Match(exception => throw exception, () => Task.FromResult(Outcome));
+        return Throws.Match(exception => throw exception, () => Block.Match(block => WaitAsync(block, cancellationToken), () => Task.FromResult(Outcome)));
+    }
+
+    private async Task<Result<StorageUsage, ProviderError>> WaitAsync(TaskCompletionSource block, CancellationToken cancellationToken)
+    {
+        await block.Task.WaitAsync(cancellationToken);
+
+        return Outcome;
     }
 }

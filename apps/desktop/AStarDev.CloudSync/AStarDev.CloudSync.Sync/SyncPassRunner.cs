@@ -16,6 +16,7 @@ namespace AStarDev.CloudSync.Sync;
 internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps steps, SyncPassRegistry registry, IAccountSignInStates states, TimeProvider timeProvider, ISyncProgressSink progress, ILogger<SyncPassRunner> logger) : ISyncPassRunner
 {
     private const string Location = nameof(SyncPassRunner);
+    private static readonly TimeSpan QuotaTimeout = TimeSpan.FromSeconds(15);
 
     /// <inheritdoc />
     public async Task<Result<SyncPassSummary, SyncPassFailure>> RunAsync(AccountId accountId, SyncTrigger trigger, CancellationToken cancellationToken)
@@ -64,7 +65,9 @@ internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps st
         if (cancellationToken.IsCancellationRequested || NeedsNoQuotaRefresh(outcome))
             return;
 
-        var refreshing = Task.Run(() => steps.Quota.RefreshAsync(accountId, cancellationToken), cancellationToken);
+        using var limit = new CancellationTokenSource(QuotaTimeout, timeProvider);
+        using var bounded = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, limit.Token);
+        var refreshing = Task.Run(() => steps.Quota.RefreshAsync(accountId, bounded.Token), bounded.Token);
         await ((Task)refreshing).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
 
         if (refreshing.Exception?.GetBaseException() is { } exception)
