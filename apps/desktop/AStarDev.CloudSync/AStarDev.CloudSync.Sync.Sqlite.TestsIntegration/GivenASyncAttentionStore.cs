@@ -101,6 +101,17 @@ public sealed class GivenASyncAttentionStore : IAsyncLifetime
     }
 
     [Fact]
+    public async Task when_a_conflict_of_every_kind_is_recorded_then_each_kind_reads_back()
+    {
+        ConflictKind[] kinds = [ConflictKindFactory.CreateBothModified(), ConflictKindFactory.CreateLocalModifiedRemoteDeleted(), ConflictKindFactory.CreateLocalDeletedRemoteModified(), ConflictKindFactory.CreateBothAdded(), ConflictKindFactory.CreateMoveTargetTaken(), ConflictKindFactory.CreateRemoteChangedDuringTransfer()];
+        _ = await Writer.RecordAsync([.. kinds.Select((kind, index) => Conflict(FirstAccount, $"Docs/{index}.txt", kind))], CancellationToken);
+
+        var stored = (await Open(FirstAccount)).OfType<SyncAttentionItem.Conflict>().OrderBy(item => item.Path.Value).Select(item => item.Kind);
+
+        stored.ShouldBe(kinds);
+    }
+
+    [Fact]
     public async Task when_the_database_is_closed_and_reopened_then_the_held_deletions_and_conflicts_are_still_there()
     {
         var id = new HeldDeletionId(Guid.NewGuid());

@@ -133,6 +133,19 @@ public sealed class GivenAnUploadPass : IDisposable
     }
 
     [Fact]
+    public async Task when_the_provider_answers_precondition_failed_and_the_classifier_has_no_answer_then_it_is_remote_changed_during_transfer()
+    {
+        fixture.Classifier = new SilentConflictClassifier();
+        fixture.Remote.Folder("Docs", "remote-docs");
+        fixture.Uploader.Respond = _ => Result.Failure<UploadedFile, ProviderError>(ProviderErrorFactory.CreatePreconditionFailed());
+        _ = await fixture.AddedFile("Docs/a.txt").BuildAsync(CancellationToken);
+
+        var result = await fixture.RunAsync(CancellationToken);
+
+        result.Match(summary => summary.Outcomes.OfType<UploadItemOutcome.SentToConflicts>().Single().Kind, _ => throw new InvalidOperationException()).ShouldBe(ConflictKindFactory.CreateRemoteChangedDuringTransfer());
+    }
+
+    [Fact]
     public async Task when_the_provider_answers_precondition_failed_then_the_kind_comes_from_the_classifier_with_a_precondition_signal()
     {
         var classifier = new RecordingConflictClassifier(ConflictKindFactory.CreateMoveTargetTaken());
