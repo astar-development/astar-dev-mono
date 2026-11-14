@@ -3,6 +3,7 @@
         xmlns:accounts="using:AStarDev.CloudSync.Accounts"
         xmlns:folderSelection="using:AStarDev.CloudSync.FolderSelection"
         xmlns:layouts="using:AStarDev.CloudSync.Layouts"
+        xmlns:syncRestart="using:AStarDev.CloudSync.SyncRestart"
         xmlns:vm="using:AStarDev.CloudSync.ViewModels"
         xmlns:vmLayouts="using:AStarDev.CloudSync.ViewModels.Layouts"
         x:Class="AStarDev.CloudSync.MainWindow"
@@ -59,6 +60,12 @@
                 Background="{DynamicResource CloudSyncScrimBrush}"
                 IsVisible="{Binding FolderSelection.IsOpen}">
             <folderSelection:FolderSelectionView DataContext="{Binding FolderSelection}" />
+        </Border>
+        <Border Grid.Row="0"
+                Grid.RowSpan="2"
+                Background="{DynamicResource CloudSyncScrimBrush}"
+                IsVisible="{Binding SyncRestart.IsOpen}">
+            <syncRestart:ConfirmSyncRestartView DataContext="{Binding SyncRestart}" />
         </Border>
     </Grid>
 </Window>
