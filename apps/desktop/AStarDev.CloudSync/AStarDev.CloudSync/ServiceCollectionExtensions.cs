@@ -84,6 +84,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IFolderPicker, AvaloniaFolderPicker>()
             .AddSingleton<LocalPathFormatter>()
             .AddSingleton<PlaintextCacheConsentSettingsViewModel>()
+            .AddSingleton<SyncScheduleSettingsViewModel>()
             .AddSingleton<DisplaySettingsViewModel>()
             .AddSingleton<SyncOverviewViewModel>()
             .AddSingleton<LayoutBViewModel>()

@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.ViewModels;
+using AStarDev.CloudSync.ViewModels.DisplaySettings;
 using AStarDev.CloudSync.ViewModels.Overview;
 using AStarDev.LoggingOTel;
 using AStarDev.SingleInstance;
@@ -40,6 +41,8 @@ public partial class App : Application, IDisposable
             KeepAsRunningInstance(claim, window, desktop);
             _ = services.GetRequiredService<SyncOverviewViewModel>().LoadAsync(CancellationToken.None);
             _ = services.GetRequiredService<SignInStateOverviewReloader>();
+            _ = services.GetRequiredService<SyncScheduleSettingsViewModel>().LoadAsync(CancellationToken.None);
+            _ = services.GetRequiredService<ISyncScheduler>().StartAsync(CancellationToken.None);
             _ = services.GetRequiredService<SyncRunOverviewReloader>();
             _ = Task.Run(() => services.GetRequiredService<ISignInStateRefresher>().RefreshAllAsync(CancellationToken.None), CancellationToken.None);
 
@@ -67,8 +70,18 @@ public partial class App : Application, IDisposable
 
     private void ReleaseAfterServices(PrimaryInstance instance)
     {
+        StopScheduler();
         services?.Dispose();
         Task.Run(() => instance.DisposeAsync().AsTask()).GetAwaiter().GetResult();
+    }
+
+    private void StopScheduler()
+    {
+        if (services is null)
+            return;
+
+        using var patience = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        Task.Run(() => services.GetRequiredService<ISyncScheduler>().StopAsync(patience.Token), CancellationToken.None).GetAwaiter().GetResult();
     }
 
     private static void BringForward(Window window)
