@@ -119,16 +119,15 @@ public class GivenAConflictListView
         var (window, list) = await ShowAsync(1, 800);
         var outside = new Button { Content = "Behind" };
         var view = (ConflictListView)window.Content!;
+        window.Content = null;
         window.Content = new StackPanel { Children = { view, outside } };
         Dispatcher.UIThread.RunJobs();
-        var close = window.GetVisualDescendants().OfType<Button>().Single(button => button.Command == list.CloseCommand);
-        close.Focus();
+        var last = view.GetVisualDescendants().OfType<Button>().Last(button => button.IsEffectivelyEnabled);
+        last.Focus();
 
         window.KeyPressQwerty(PhysicalKey.Tab, RawInputModifiers.None);
 
-        var focused = window.FocusManager!.GetFocusedElement().ShouldBeAssignableTo<Visual>();
-        focused.ShouldNotBeSameAs(outside);
-        focused!.GetVisualAncestors().ShouldContain(view);
+        window.FocusManager!.GetFocusedElement().ShouldBeSameAs(window.GetVisualDescendants().OfType<ComboBox>().Single());
     }
 
     [AvaloniaFact]
