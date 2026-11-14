@@ -13,7 +13,7 @@ public sealed class GatedActivityLogWriter(IActivityLogWriter inner) : IActivity
 
     public async Task<Result<Unit, ErrorResponse>> AppendAsync(IReadOnlyList<ActivityEntry> entries, CancellationToken cancellationToken)
     {
-        reached.SetResult();
+        _ = reached.TrySetResult();
         await released.Task.ConfigureAwait(false);
 
         return await inner.AppendAsync(entries, cancellationToken).ConfigureAwait(false);

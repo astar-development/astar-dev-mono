@@ -148,7 +148,7 @@ public class GivenAnAccountStoreSyncOverviewSource
         overview.Accounts.ShouldHaveSingleItem();
         overview.Activity.ShouldBeEmpty();
         logs.Logger.Entries.ShouldContain(entry => entry.Level == LogLevel.Warning);
-        string.Join("\n", logs.Logger.Messages).ShouldContain("activity");
+        string.Join("\n", logs.Logger.Messages).ShouldContain("The activity feed could not be read and is shown empty.");
         string.Join("\n", logs.Logger.Messages).ShouldNotContain(FlintEmail);
         string.Join("\n", logs.Logger.Messages).ShouldNotContain("/home/jbarden");
     }

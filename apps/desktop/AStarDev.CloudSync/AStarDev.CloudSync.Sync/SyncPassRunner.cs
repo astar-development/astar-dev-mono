@@ -54,7 +54,6 @@ internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps st
             await steps.Activity.RecordAsync(accountId, outcome, tally.Download).ConfigureAwait(false);
         }
 
-
         registry.End(pass, outcome);
         LogEnd(trigger, outcome, timeProvider.GetElapsedTime(started));
 
