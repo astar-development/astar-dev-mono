@@ -18,10 +18,10 @@ public sealed class FakeConflictResolver : IConflictResolver
         }
     }
 
-    public Func<AccountId, IReadOnlyList<ConflictId>, ConflictStrategy, CancellationToken, Task<Result<ResolutionSummary, ErrorResponse>>> Outcome { get; set; } = (_, ids, strategy, _) =>
-        Task.FromResult(Result.Success<ResolutionSummary, ErrorResponse>(strategy is ConflictStrategy.Skip ? ResolutionSummaryFactory.Create(0, [], ids.Count) : ResolutionSummaryFactory.Create(ids.Count, [], 0)));
+    public Func<AccountId, IReadOnlyList<ConflictId>, ConflictStrategy, CancellationToken, Task<Result<ResolutionSummary, ConflictRefusal>>> Outcome { get; set; } = (_, ids, strategy, _) =>
+        Task.FromResult(Result.Success<ResolutionSummary, ConflictRefusal>(strategy is ConflictStrategy.Skip ? ResolutionSummaryFactory.Create(0, [], ids.Count) : ResolutionSummaryFactory.Create(ids.Count, [], 0)));
 
-    public Task<Result<ResolutionSummary, ErrorResponse>> ResolveAsync(AccountId accountId, IReadOnlyList<ConflictId> ids, ConflictStrategy strategy, CancellationToken cancellationToken)
+    public Task<Result<ResolutionSummary, ConflictRefusal>> ResolveAsync(AccountId accountId, IReadOnlyList<ConflictId> ids, ConflictStrategy strategy, CancellationToken cancellationToken)
     {
         lock (gate)
             calls.Add((accountId, ids, strategy));

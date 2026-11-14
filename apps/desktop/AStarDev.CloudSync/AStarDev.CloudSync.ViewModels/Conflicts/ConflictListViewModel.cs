@@ -430,7 +430,7 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
         IReadOnlyList<ConflictId> ids = [.. items.Select(item => item.Id)];
 
         await await RunAsync(() => resolver.ResolveAsync(accountId, ids, strategy, cancellationToken), cancellationToken)
-            .MatchAsync(result => result.Match(summary => Recorded(ids, strategy, summary), error => RefuseAllAsync(items)), exception => ThrewAllAsync(items, exception));
+            .MatchAsync(result => result.Match(summary => Recorded(ids, strategy, summary), refusal => RefuseAllAsync(items, refusal)), exception => ThrewAllAsync(items, exception));
     }
 
     private Task Recorded(IReadOnlyList<ConflictId> ids, ConflictStrategy strategy, ResolutionSummary summary)
@@ -440,10 +440,10 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
         return Task.CompletedTask;
     }
 
-    private Task RefuseAllAsync(IReadOnlyList<ConflictItemViewModel> items)
+    private Task RefuseAllAsync(IReadOnlyList<ConflictItemViewModel> items, ConflictRefusal refusal)
     {
-        ConflictListLog.ResolveRefused(logger);
-        RememberAll(items, ConflictTexts.RefusedKey);
+        ConflictListLog.ResolveRefused(logger, refusal.GetType().Name);
+        RememberAll(items, ConflictTexts.RefusedKey(refusal));
 
         return Task.CompletedTask;
     }
@@ -516,7 +516,7 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
 
     private async Task ResolveAsync(ConflictItemViewModel item, ConflictStrategy strategy, CancellationToken cancellationToken) =>
         await await RunAsync(() => resolver.ResolveAsync(item.AccountId, [item.Id], strategy, cancellationToken), cancellationToken)
-            .MatchAsync(result => result.Match(summary => SettleAsync(item, strategy, summary, cancellationToken), error => RefuseAsync(item)), exception => ThrewAsync(item, exception));
+            .MatchAsync(result => result.Match(summary => SettleAsync(item, strategy, summary, cancellationToken), refusal => RefuseAsync(item, refusal)), exception => ThrewAsync(item, exception));
 
     private Task SettleAsync(ConflictItemViewModel item, ConflictStrategy strategy, ResolutionSummary summary, CancellationToken cancellationToken)
     {
@@ -540,10 +540,10 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
             _ = skipped.TryAdd(id, 0);
     }
 
-    private Task RefuseAsync(ConflictItemViewModel item)
+    private Task RefuseAsync(ConflictItemViewModel item, ConflictRefusal refusal)
     {
-        ConflictListLog.ResolveRefused(logger);
-        Remember(item, ConflictTexts.RefusedKey);
+        ConflictListLog.ResolveRefused(logger, refusal.GetType().Name);
+        Remember(item, ConflictTexts.RefusedKey(refusal));
 
         return Task.CompletedTask;
     }

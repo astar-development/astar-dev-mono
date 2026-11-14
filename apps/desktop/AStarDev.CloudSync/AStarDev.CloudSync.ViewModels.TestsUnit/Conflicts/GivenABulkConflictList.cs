@@ -146,7 +146,7 @@ public class GivenABulkConflictList
             foreach (var id in ids)
                 fixture.Reader.Remove(id);
 
-            return Task.FromResult(Result.Success<ResolutionSummary, ErrorResponse>(ResolutionSummaryFactory.Create(ids.Count, [], 0)));
+            return Task.FromResult(Result.Success<ResolutionSummary, ConflictRefusal>(ResolutionSummaryFactory.Create(ids.Count, [], 0)));
         };
         await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
         foreach (var item in fixture.List.Groups.SelectMany(group => group.Items).Where(item => item.PathText != "b.jpg"))
@@ -173,7 +173,7 @@ public class GivenABulkConflictList
         {
             fixture.Reader.Remove(closing.Id);
 
-            return Task.FromResult(Result.Success<ResolutionSummary, ErrorResponse>(ResolutionSummaryFactory.Create(1, [FailedResolutionFactory.Create(failing.Id, ResolutionFailureFactory.CreateRemoteChanged())], 0)));
+            return Task.FromResult(Result.Success<ResolutionSummary, ConflictRefusal>(ResolutionSummaryFactory.Create(1, [FailedResolutionFactory.Create(failing.Id, ResolutionFailureFactory.CreateRemoteChanged())], 0)));
         };
         await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
         fixture.List.SelectAllCommand.Execute(null);
@@ -201,20 +201,23 @@ public class GivenABulkConflictList
         items[1].IsSkipped.ShouldBeFalse();
     }
 
-    [Fact]
-    public async Task when_a_bulk_apply_is_refused_then_every_ticked_item_shows_the_refusal_and_stays_open()
+    [Theory]
+    [InlineData("Busy", "A sync is running for this account. Try again when it has finished.")]
+    [InlineData("Draining", "Sync is paused for an update or an account removal. Try again later.")]
+    [InlineData("QueueUnreadable", "The conflicts could not be read, so nothing was resolved. Try again.")]
+    public async Task when_a_bulk_apply_is_refused_then_every_ticked_item_shows_the_refusal_and_stays_open(string refusal, string expected)
     {
         var fixture = new ConflictListFixture();
         fixture.Reader.Add(Photos.Id, AttentionItems.CreateConflict(Photos.Id, "a.jpg"), AttentionItems.CreateConflict(Photos.Id, "b.jpg"));
-        fixture.Resolver.Outcome = (_, _, _, _) => Task.FromResult(Result.Failure<ResolutionSummary, ErrorResponse>(new ErrorResponse("busy")));
+        fixture.Resolver.Outcome = (_, _, _, _) => Task.FromResult(Result.Failure<ResolutionSummary, ConflictRefusal>(Refusal(refusal)));
         await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
         fixture.List.SelectAllCommand.Execute(null);
 
         await fixture.List.BulkOptions[0].Command.ExecuteAsync(null);
 
         var items = fixture.List.Groups.Single().Items;
-        items.ShouldAllBe(item => item.HasError && item.ErrorText.StartsWith("Could not resolve this now."));
-        fixture.List.BulkErrorText.ShouldStartWith("Could not resolve this now.");
+        items.ShouldAllBe(item => item.HasError && item.ErrorText == expected);
+        fixture.List.BulkErrorText.ShouldBe(expected);
     }
 
     [Fact]
@@ -244,7 +247,7 @@ public class GivenABulkConflictList
         {
             await release.Task;
 
-            return Result.Success<ResolutionSummary, ErrorResponse>(ResolutionSummaryFactory.Create(ids.Count, [], 0));
+            return Result.Success<ResolutionSummary, ConflictRefusal>(ResolutionSummaryFactory.Create(ids.Count, [], 0));
         };
         await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
         fixture.List.SelectAllCommand.Execute(null);
@@ -344,7 +347,7 @@ public class GivenABulkConflictList
             if (Interlocked.Increment(ref calls) == 1)
                 await release.Task;
 
-            return Result.Success<ResolutionSummary, ErrorResponse>(ResolutionSummaryFactory.Create(ids.Count, [], 0));
+            return Result.Success<ResolutionSummary, ConflictRefusal>(ResolutionSummaryFactory.Create(ids.Count, [], 0));
         };
         await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
         var items = fixture.List.Groups.Single().Items;
@@ -359,4 +362,11 @@ public class GivenABulkConflictList
         fixture.Resolver.Calls.Skip(0).Any(call => call.Ids.Count == 1 && call.Ids[0] == other.Id).ShouldBeTrue();
         fixture.Resolver.Calls.Count(call => call.Ids.Contains(busy.Id)).ShouldBe(1);
     }
+
+    private static ConflictRefusal Refusal(string refusal) => refusal switch
+    {
+        "Busy" => ConflictRefusalFactory.CreateBusy(),
+        "Draining" => ConflictRefusalFactory.CreateDraining(),
+        _ => ConflictRefusalFactory.CreateQueueUnreadable(),
+    };
 }
