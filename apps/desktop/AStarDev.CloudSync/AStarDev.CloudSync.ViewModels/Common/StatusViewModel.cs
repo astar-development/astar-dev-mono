@@ -38,7 +38,13 @@ public sealed class StatusViewModel(SyncStatus status, AccountSignInState signIn
     public bool IsUpToDate => !IsSignInRequired && status is SyncStatus.UpToDate;
 
     /// <summary>Whether there are conflicts; selects the pill colour.</summary>
-    public bool HasConflicts => !IsSignInRequired && status is SyncStatus.HasConflicts;
+    public bool HasConflicts => !IsSignInRequired && status is SyncStatus.HasConflicts or SyncStatus.NeedsAttention;
+
+    /// <summary>Whether the last run failed; selects the pill colour.</summary>
+    public bool IsFailed => !IsSignInRequired && status is SyncStatus.Failed;
+
+    /// <summary>Whether the last run was cancelled; selects the pill colour.</summary>
+    public bool IsCancelled => !IsSignInRequired && status is SyncStatus.Cancelled;
 
     /// <summary>Whether paused; selects the pill colour.</summary>
     public bool IsPaused => !IsSignInRequired && status is SyncStatus.Paused;
