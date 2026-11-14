@@ -43,6 +43,7 @@ public sealed class GivenAnInterruptedSyncRecovery : IDisposable
     {
         RecoveryOutcome.Resumed resumed => $"resumed {resumed.AccountId.Value}",
         RecoveryOutcome.NotResumed notResumed => $"not resumed {notResumed.AccountId.Value} {notResumed.Reason.GetType().Name}",
+        RecoveryOutcome.Held held => $"held {held.AccountId.Value}",
         _ => "unknown",
     };
 
@@ -148,6 +149,52 @@ public sealed class GivenAnInterruptedSyncRecovery : IDisposable
         _ = await running;
 
         outcomes.Select(Describe).ShouldBe([$"not resumed {Personal.Value} {nameof(SyncPassFailure.AlreadyRunning)}"]);
+    }
+
+    [Fact]
+    public async Task when_an_interrupted_account_is_paused_then_it_is_marked_interrupted_but_not_resumed_and_the_others_are()
+    {
+        await LeaveUnfinishedAsync(Personal);
+        await LeaveUnfinishedAsync(Work);
+        var next = Restart();
+        next.Paused.Paused = Result.Success<IReadOnlyList<AccountId>, ErrorResponse>([Personal]);
+
+        var recovering = Task.Run(() => next.Recovery.RecoverAsync(CancellationToken), CancellationToken);
+        await UntilRecoveryRunsAsync(1).WaitAsync(Limit, CancellationToken);
+        var outcomes = await recovering.WaitAsync(Limit, CancellationToken);
+
+        outcomes.Select(Describe).Order().ShouldBe([$"held {Personal.Value}", $"resumed {Work.Value}"]);
+        journal.Runs.Where(run => run.AccountId == Personal).Select(run => run.Outcome).ShouldBe([Option.Some(SyncRunOutcomeFactory.CreateInterrupted())]);
+        journal.Runs.Where(run => run.Trigger is SyncTrigger.Recovery).Select(run => run.AccountId).ShouldBe([Work]);
+    }
+
+    [Fact]
+    public async Task when_the_paused_accounts_cannot_be_read_then_every_interrupted_account_is_held_and_no_pass_runs()
+    {
+        await LeaveUnfinishedAsync(Personal);
+        var next = Restart();
+        next.Paused.Paused = Result.Failure<IReadOnlyList<AccountId>, ErrorResponse>(new ErrorResponse("locked"));
+
+        var outcomes = await next.Recovery.RecoverAsync(CancellationToken);
+
+        outcomes.Select(Describe).ShouldBe([$"held {Personal.Value}"]);
+        RecoveryRuns().ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task when_the_app_exits_while_a_recovery_pass_is_waiting_then_the_pass_never_starts()
+    {
+        await LeaveUnfinishedAsync(Personal);
+        await LeaveUnfinishedAsync(Work);
+        var next = Restart();
+        using var exit = CancellationTokenSource.CreateLinkedTokenSource(CancellationToken);
+
+        var recovering = Task.Run(() => next.Recovery.RecoverAsync(exit.Token), CancellationToken);
+        await UntilRecoveryRunsAsync(1).WaitAsync(Limit, CancellationToken);
+        await exit.CancelAsync();
+        var outcomes = await recovering.WaitAsync(Limit, CancellationToken);
+
+        (RecoveryRuns(), outcomes.Count(outcome => outcome is RecoveryOutcome.NotResumed { Reason: SyncPassFailure.Cancelled })).ShouldBe((1, 1));
     }
 
     private int RecoveryRuns() => journal.Runs.Count(run => run.Trigger is SyncTrigger.Recovery);

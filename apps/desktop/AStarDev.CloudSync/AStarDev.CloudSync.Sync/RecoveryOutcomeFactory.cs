@@ -13,4 +13,8 @@ public static class RecoveryOutcomeFactory
     /// <param name="accountId">The account.</param>
     /// <param name="reason">Why the recovery pass did not finish.</param>
     public static RecoveryOutcome CreateNotResumed(AccountId accountId, SyncPassFailure reason) => new RecoveryOutcome.NotResumed(accountId, reason);
+
+    /// <summary>Creates the <see cref="RecoveryOutcome.Held"/> case.</summary>
+    /// <param name="accountId">The account.</param>
+    public static RecoveryOutcome CreateHeld(AccountId accountId) => new RecoveryOutcome.Held(accountId);
 }
