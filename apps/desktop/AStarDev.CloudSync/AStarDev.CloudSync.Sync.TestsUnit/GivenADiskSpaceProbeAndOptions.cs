@@ -29,18 +29,18 @@ public sealed class GivenADiskSpaceProbeAndOptions
     }
 
     [Fact]
-    public void when_options_are_created_with_defaults_then_the_concurrency_is_eight_and_the_margin_is_one_hundred_megabytes()
+    public void when_options_are_created_with_defaults_then_the_margin_is_one_hundred_megabytes()
     {
         var options = DownloadPassOptionsFactory.Create();
 
-        (options.MaxConcurrentDownloads, options.FreeSpaceMarginBytes, options.BaselineChunkSize).ShouldBe((8, 104_857_600L, 100));
+        (options.FreeSpaceMarginBytes, options.BaselineChunkSize).ShouldBe((104_857_600L, 100));
     }
 
     [Fact]
     public void when_options_are_below_their_minimum_then_they_are_raised_to_it()
     {
-        var options = DownloadPassOptionsFactory.Create(0, -5, 0);
+        var options = DownloadPassOptionsFactory.Create(-5, 0);
 
-        (options.MaxConcurrentDownloads, options.FreeSpaceMarginBytes, options.BaselineChunkSize).ShouldBe((1, 0L, 1));
+        (options.FreeSpaceMarginBytes, options.BaselineChunkSize).ShouldBe((0L, 1));
     }
 }

@@ -292,7 +292,8 @@ public sealed class GivenADownloadPass
     [Fact]
     public async Task when_the_disk_is_too_full_then_the_pass_stops_with_insufficient_disk_space_and_keeps_the_rows_of_the_files_already_downloaded()
     {
-        using var fixture = await CreateAsync(CancellationToken, DownloadPassOptionsFactory.Create(1, 100, 1));
+        using var fixture = await CreateAsync(CancellationToken, DownloadPassOptionsFactory.Create(100, 1));
+        fixture.Concurrency.Value = 1;
         fixture.Docs();
         fixture.Remote.File("Docs/a.txt", "a", "c2", 5);
         fixture.Remote.File("Docs/b.txt", "b", "c2", 5);
@@ -345,7 +346,8 @@ public sealed class GivenADownloadPass
     [Fact]
     public async Task when_the_pass_is_cancelled_during_a_download_then_the_temp_file_is_deleted_and_the_finished_rows_are_kept()
     {
-        using var fixture = await CreateAsync(CancellationToken, DownloadPassOptionsFactory.Create(1, 100, 1));
+        using var fixture = await CreateAsync(CancellationToken, DownloadPassOptionsFactory.Create(100, 1));
+        fixture.Concurrency.Value = 1;
         fixture.Docs();
         fixture.Remote.File("Docs/a.txt", "a", "c2", 5);
         fixture.Remote.File("Docs/b.txt", "b", "c2", 5);

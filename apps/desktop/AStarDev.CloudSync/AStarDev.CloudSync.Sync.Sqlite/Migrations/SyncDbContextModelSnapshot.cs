@@ -354,6 +354,20 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
                     b.ToTable("SyncSchedule", (string)null);
                 });
 
+            modelBuilder.Entity("AStarDev.CloudSync.Sync.Sqlite.TransferConcurrencyEntity", b =>
+                {
+                    b.Property<Guid>("AccountId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("MaxConcurrentTransfers")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("AccountId");
+
+                    b.ToTable("TransferConcurrencies", (string)null);
+                });
+
             modelBuilder.Entity("AStarDev.CloudSync.Sync.Sqlite.TrashRetentionEntity", b =>
                 {
                     b.Property<int>("Id")

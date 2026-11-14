@@ -310,6 +310,39 @@ public sealed class GivenAnUploadPass : IDisposable
     }
 
     [Fact]
+    public async Task when_the_concurrency_cannot_be_read_then_the_default_of_four_is_used_and_the_failure_is_logged()
+    {
+        fixture.Remote.Folder("Docs", "remote-docs");
+        fixture.Concurrency.Fails = true;
+        var gate = new WriteGate();
+        fixture.Uploader.Gate = gate;
+        foreach (var index in Enumerable.Range(0, 12))
+            _ = fixture.AddedFile($"Docs/f{index}.txt");
+
+        _ = await fixture.BuildAsync(CancellationToken);
+        var running = fixture.RunAsync(CancellationToken);
+        await gate.Entered.WaitAsync(TimeSpan.FromSeconds(5), CancellationToken);
+        await Task.Delay(100, CancellationToken);
+        gate.Release();
+        _ = await running;
+
+        (fixture.Uploader.Peak, fixture.Logs.Logger.Messages.Any(message => message.Contains("could not be read", StringComparison.Ordinal))).ShouldBe((4, true));
+    }
+
+    [Fact]
+    public async Task when_a_pass_runs_then_the_accounts_concurrency_is_read_once_at_its_start()
+    {
+        fixture.Remote.Folder("Docs", "remote-docs");
+        foreach (var index in Enumerable.Range(0, 6))
+            _ = fixture.AddedFile($"Docs/f{index}.txt");
+        _ = await fixture.BuildAsync(CancellationToken);
+
+        _ = await fixture.RunAsync(CancellationToken);
+
+        fixture.Concurrency.Reads.ShouldBe(1);
+    }
+
+    [Fact]
     public async Task when_many_files_are_uploaded_then_no_more_than_the_configured_number_run_at_once()
     {
         fixture.Remote.Folder("Docs", "remote-docs");
