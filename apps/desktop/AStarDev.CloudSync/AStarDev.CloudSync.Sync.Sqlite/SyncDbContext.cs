@@ -34,6 +34,9 @@ internal sealed class SyncDbContext(DbContextOptions<SyncDbContext> options) : D
     /// <summary>The app-wide automatic sync schedule: at most one row.</summary>
     public DbSet<SyncScheduleEntity> SyncSchedule => Set<SyncScheduleEntity>();
 
+    /// <summary>The app-wide sync trash retention: at most one row.</summary>
+    public DbSet<TrashRetentionEntity> TrashRetention => Set<TrashRetentionEntity>();
+
     /// <summary>The activity log, newest 1,000 entries per account.</summary>
     public DbSet<ActivityLogEntity> ActivityLog => Set<ActivityLogEntity>();
 
@@ -49,6 +52,7 @@ internal sealed class SyncDbContext(DbContextOptions<SyncDbContext> options) : D
         modelBuilder.ApplyConfiguration(new SyncAttentionPathEntityConfiguration());
         modelBuilder.ApplyConfiguration(new AccountPauseEntityConfiguration());
         modelBuilder.ApplyConfiguration(new SyncScheduleEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new TrashRetentionEntityConfiguration());
         modelBuilder.ApplyConfiguration(new ActivityLogEntityConfiguration());
     }
 }

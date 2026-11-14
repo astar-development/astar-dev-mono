@@ -21,6 +21,7 @@ public sealed class DownloadPassFixture : IDisposable
     private DownloadPassFixture(AccountId account, InMemoryAccountStore accounts, DownloadPassOptions? options, LocalTrashOptions? trashOptions)
     {
         Account = account;
+        TrashRetention.Current = Result.Success<LocalTrashOptions, ErrorResponse>(trashOptions ?? LocalTrashOptionsFactory.Create());
         FileSystem = new MockFileSystem(options => options.SimulatingOperatingSystem(SimulationMode.Linux));
         Roots.Root = Option.Some(FileSystem.Directory.CreateDirectory(Root));
         Rules.Listing = Result.Success<IReadOnlyList<SelectionRule>, ErrorResponse>([SelectionTestRules.Include("Docs")]);
@@ -45,7 +46,7 @@ public sealed class DownloadPassFixture : IDisposable
             .AddSingleton<IPathQuarantine>(Quarantine)
             .AddSingleton<IDiskSpaceProbe>(Disk)
             .AddSingleton(options ?? DownloadPassOptionsFactory.Create())
-            .AddSingleton(trashOptions ?? LocalTrashOptionsFactory.Create())
+            .AddSingleton<ITrashRetentionSettings>(TrashRetention)
             .BuildServiceProvider();
     }
 
@@ -79,6 +80,8 @@ public sealed class DownloadPassFixture : IDisposable
     public FakeQuarantine Quarantine { get; } = new();
 
     public FakeDiskSpaceProbe Disk { get; } = new();
+
+    public FakeTrashRetentionSettings TrashRetention { get; } = new();
 
     public RecordingLoggerProvider Logs { get; } = new();
 

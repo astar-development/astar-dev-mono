@@ -79,6 +79,8 @@ public sealed class TemporarySyncDatabase : IAsyncDisposable
 
     public ISyncScheduleSettings ScheduleSettings => serviceProvider.GetRequiredService<ISyncScheduleSettings>();
 
+    public ITrashRetentionSettings TrashRetentionSettings => serviceProvider.GetRequiredService<ITrashRetentionSettings>();
+
     public ICloudSyncDatabase Database => serviceProvider.GetRequiredService<ICloudSyncDatabase>();
 
     public IAccountStore AccountStore => serviceProvider.GetRequiredService<IAccountStore>();

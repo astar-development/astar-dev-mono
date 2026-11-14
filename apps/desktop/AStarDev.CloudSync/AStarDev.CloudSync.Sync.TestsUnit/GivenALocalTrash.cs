@@ -1,4 +1,5 @@
 using System.IO.Abstractions;
+using AStarDev.CloudSync.TestHelpers.Accounts;
 using AStarDev.FunctionalParadigm;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
@@ -11,9 +12,10 @@ public sealed class GivenALocalTrash : IDisposable
     private readonly MockFileSystem fileSystem = new(options => options.SimulatingOperatingSystem(SimulationMode.Linux));
     private readonly MockFileSystem windows = new(options => options.SimulatingOperatingSystem(SimulationMode.Windows));
     private readonly FakeTimeProvider time = new(new DateTimeOffset(2026, 11, 13, 12, 0, 0, TimeSpan.Zero));
+    private readonly FakeTrashRetentionSettings retention = new();
     private readonly ServiceProvider provider;
 
-    public GivenALocalTrash() => provider = new ServiceCollection().AddSingleton<System.TimeProvider>(time).AddCloudSync().BuildServiceProvider();
+    public GivenALocalTrash() => provider = new ServiceCollection().AddSingleton<System.TimeProvider>(time).AddSingleton<ITrashRetentionSettings>(retention).AddCloudSync().BuildServiceProvider();
 
     private static CancellationToken CancellationToken => TestContext.Current.CancellationToken;
 
@@ -192,7 +194,19 @@ public sealed class GivenALocalTrash : IDisposable
             .ShouldBe((TimeSpan.FromDays(30), TimeSpan.Zero, TimeSpan.FromDays(7)));
     }
 
+    [Theory]
+    [InlineData(1, 1)]
+    [InlineData(7, 7)]
+    [InlineData(365, 365)]
+    [InlineData(0, 30)]
+    [InlineData(-5, 30)]
+    [InlineData(366, 30)]
+    [InlineData(int.MaxValue, 30)]
+    [InlineData(int.MinValue, 30)]
+    public void when_the_retention_is_created_from_days_then_only_one_to_365_is_accepted_and_the_rest_becomes_the_default(int days, int expectedDays) =>
+        LocalTrashOptionsFactory.CreateFromDays(days).Retention.ShouldBe(TimeSpan.FromDays(expectedDays));
+
     [Fact]
-    public void when_the_services_are_registered_then_the_trash_options_default_to_thirty_days() =>
-        provider.GetRequiredService<LocalTrashOptions>().Retention.ShouldBe(TimeSpan.FromDays(30));
+    public void when_the_choices_are_listed_then_each_is_accepted_and_the_default_is_one_of_them() =>
+        LocalTrashOptionsFactory.Choices.ShouldAllBe(days => LocalTrashOptionsFactory.CreateFromDays(days).Retention == TimeSpan.FromDays(days) && LocalTrashOptionsFactory.Choices.Contains(30));
 }

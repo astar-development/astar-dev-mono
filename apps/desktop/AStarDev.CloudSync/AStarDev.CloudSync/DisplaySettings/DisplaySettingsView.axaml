@@ -54,6 +54,25 @@
                            IsVisible="{Binding ErrorText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
             </StackPanel>
         </Border>
+        <Border DataContext="{Binding TrashRetention}">
+            <StackPanel x:DataType="vmDisplaySettings:TrashRetentionSettingsViewModel" Spacing="4">
+                <TextBlock Classes="muted" Text="{Binding HeadingText}" />
+                <ItemsControl ItemsSource="{Binding Options}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vmDisplaySettings:DisplayOptionViewModel">
+                            <RadioButton GroupName="CloudSyncTrashRetention"
+                                         Content="{Binding Label}"
+                                         IsChecked="{Binding IsSelected, Mode=OneWay}"
+                                         Command="{Binding SelectCommand}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock Text="{Binding ErrorText}"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource CloudSyncWarnBrush}"
+                           IsVisible="{Binding ErrorText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            </StackPanel>
+        </Border>
         <Border DataContext="{Binding PlaintextCacheConsent}">
             <StackPanel x:DataType="vmAccounts:PlaintextCacheConsentSettingsViewModel"
                         Spacing="6"

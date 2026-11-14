@@ -1,3 +1,5 @@
+using AStarDev.FunctionalParadigm;
+
 namespace AStarDev.CloudSync.Sync.TestsUnit;
 
 public sealed class GivenADownloadPassThatTrashes
@@ -69,6 +71,40 @@ public sealed class GivenADownloadPassThatTrashes
         _ = await fixture.RunAsync(CancellationToken);
 
         fixture.FileSystem.Directory.GetDirectories(Trash).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_the_setting_is_changed_between_passes_then_the_next_pass_uses_the_new_retention()
+    {
+        using var fixture = await DownloadPassFixture.CreateAsync(CancellationToken);
+        fixture.Docs();
+        fixture.Remote.Folder("Docs");
+        var now = fixture.Time.GetUtcNow();
+        fixture.FileSystem.Directory.CreateDirectory($"{Trash}/{Stamp(now.AddDays(-10))}-aaaa");
+        _ = await fixture.RunAsync(CancellationToken);
+        var keptAtThirtyDays = fixture.FileSystem.Directory.GetDirectories(Trash).Length;
+
+        _ = await fixture.TrashRetention.SetAsync(LocalTrashOptionsFactory.CreateFromDays(7), CancellationToken);
+        _ = await fixture.RunAsync(CancellationToken);
+
+        keptAtThirtyDays.ShouldBe(1);
+        fixture.FileSystem.Directory.GetDirectories(Trash).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_the_setting_cannot_be_read_then_nothing_is_purged()
+    {
+        using var fixture = await DownloadPassFixture.CreateAsync(CancellationToken);
+        fixture.Docs();
+        fixture.Remote.Folder("Docs");
+        fixture.TrashRetention.Current = Result.Failure<LocalTrashOptions, ErrorResponse>(new ErrorResponse("unreadable"));
+        var now = fixture.Time.GetUtcNow();
+        fixture.FileSystem.Directory.CreateDirectory($"{Trash}/{Stamp(now.AddDays(-31))}-aaaa");
+        fixture.FileSystem.Directory.CreateDirectory($"{Trash}/{Stamp(now.AddDays(-29))}-bbbb");
+
+        _ = await fixture.RunAsync(CancellationToken);
+
+        fixture.FileSystem.Directory.GetDirectories(Trash).Select(path => path[(Trash.Length + 1)..]).ShouldBe([$"{Stamp(now.AddDays(-31))}-aaaa", $"{Stamp(now.AddDays(-29))}-bbbb"]);
     }
 
     [Fact]
