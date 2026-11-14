@@ -1,11 +1,13 @@
 using System.Diagnostics.CodeAnalysis;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
+using AStarDev.CloudSync.Logging;
 using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.ViewModels.Notifications;
 using AStarDev.CloudSync.Tray;
 using AStarDev.CloudSync.ViewModels;
 using AStarDev.CloudSync.ViewModels.DisplaySettings;
 using AStarDev.CloudSync.ViewModels.Overview;
+using AStarDev.LoggingExtensions;
 using AStarDev.CloudSync.ViewModels.Tray;
 using AStarDev.LoggingOTel;
 using AStarDev.SingleInstance;
@@ -56,9 +58,18 @@ public partial class App : Application, IDisposable
             _ = Task.Run(() => services.GetRequiredService<ISignInStateRefresher>().RefreshAllAsync(CancellationToken.None), CancellationToken.None);
 
             _ = services.GetRequiredService<IUpdateNotificationService>().CheckAndNotifyAsync(shutdown.Token);
+            _ = Task.Run(SweepLogFiles, CancellationToken.None);
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private void SweepLogFiles()
+    {
+        var sweeper = services?.GetRequiredService<LogFileSweeper>();
+        var folder = services?.GetRequiredService<System.IO.Abstractions.IFileSystem>().DirectoryInfo.New(CloudSyncLogging.FolderPath());
+        if (sweeper is not null && folder is not null)
+            _ = sweeper.DeleteOlderThan(folder, CloudSyncLogging.FileNamePrefix, CloudSyncLogging.Retention);
     }
 
     private void KeepRunningInTray(Window window)
@@ -132,7 +143,7 @@ public partial class App : Application, IDisposable
             .Build();
 
         var services = new ServiceCollection();
-        _ = services.AddLogging(logging => logging.ConfigureOTelLogging(configuration, serviceName: "AStarDev.CloudSync"));
+        _ = services.AddLogging(logging => logging.ConfigureOTelLogging(configuration, serviceName: "AStarDev.CloudSync").AddFileLogging(CloudSyncLogging.FolderPath(), CloudSyncLogging.FileNamePrefix));
         _ = services.AddApplicationServices(configuration);
 
         return services.BuildServiceProvider();

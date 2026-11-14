@@ -7,6 +7,7 @@ using AStarDev.CloudSync.Accounts.OneDrive;
 using AStarDev.CloudSync.Accounts.Sqlite;
 using AStarDev.CloudSync.Common;
 using AStarDev.CloudSync.DisplaySettings;
+using AStarDev.CloudSync.Logging;
 using AStarDev.CloudSync.Notifications;
 using AStarDev.CloudSync.Overview;
 using AStarDev.CloudSync.Sync;
@@ -85,6 +86,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<SyncRunOverviewReloader>()
             .AddSingleton<IAddAccountDialog>(provider => provider.GetRequiredService<AddAccountViewModel>())
             .AddSingleton<IFileSystem, RealFileSystem>()
+            .AddSingleton<LogFileSweeper>()
             .AddSingleInstance()
             .AddSingleton(provider => SingleInstanceOptionsFactory.Create(provider.GetRequiredService<IFileSystem>().DirectoryInfo.New(ApplicationName.ApplicationDirectory()), SingleInstanceName, null))
             .AddCloudSyncPersistence(provider => provider.GetRequiredService<IFileSystem>().FileInfo.New(DatabaseFilePath))
