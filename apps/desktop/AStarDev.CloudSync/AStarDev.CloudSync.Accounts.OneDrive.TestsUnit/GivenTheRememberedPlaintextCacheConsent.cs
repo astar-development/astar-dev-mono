@@ -22,6 +22,22 @@ public sealed class GivenTheRememberedPlaintextCacheConsent : IDisposable
     }
 
     [Fact]
+    public async Task when_consent_is_granted_then_the_file_holds_the_original_json_format()
+    {
+        _ = await CreateModule(GrantingUser()).AddAsync(TestContext.Current.CancellationToken);
+
+        consentFile.FileSystem.File.ReadAllText(ConsentFile.Path).ShouldBe(ConsentFile.GrantedJson);
+    }
+
+    [Fact]
+    public void when_a_file_in_the_original_format_exists_then_the_consent_is_remembered()
+    {
+        consentFile.Write(ConsentFile.GrantedJson);
+
+        RememberedAnswer(CreateModule()).ShouldBe(nameof(PlaintextCacheConsent.Granted));
+    }
+
+    [Fact]
     public async Task when_consent_is_withdrawn_after_it_was_granted_then_it_is_forgotten_and_the_file_is_removed()
     {
         _ = await CreateModule(GrantingUser()).AddAsync(TestContext.Current.CancellationToken);
