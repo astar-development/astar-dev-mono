@@ -315,4 +315,48 @@ public class GivenABulkConflictList
         call.Ids.ShouldBe([ticked.Id]);
         call.Strategy.ShouldBeOfType<ConflictStrategy.KeepBoth>();
     }
+
+    [Fact]
+    public async Task when_the_read_fails_then_the_selection_is_cleared()
+    {
+        var fixture = new ConflictListFixture();
+        fixture.Reader.Add(Photos.Id, AttentionItems.CreateConflict(Photos.Id, "a.jpg"));
+        await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
+        fixture.List.SelectAllCommand.Execute(null);
+        fixture.Reader.Fails = _ => new ErrorResponse("down");
+
+        await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
+
+        fixture.List.SelectedCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task when_a_ticked_conflict_is_being_resolved_singly_then_a_bulk_apply_leaves_it_out()
+    {
+        var fixture = new ConflictListFixture();
+        var busy = (SyncAttentionItem.Conflict)AttentionItems.CreateConflict(Photos.Id, "a.jpg");
+        var other = (SyncAttentionItem.Conflict)AttentionItems.CreateConflict(Photos.Id, "b.jpg");
+        fixture.Reader.Add(Photos.Id, busy, other);
+        var release = new TaskCompletionSource();
+        var calls = 0;
+        fixture.Resolver.Outcome = async (_, ids, _, _) =>
+        {
+            if (Interlocked.Increment(ref calls) == 1)
+                await release.Task;
+
+            return Result.Success<ResolutionSummary, ErrorResponse>(ResolutionSummaryFactory.Create(ids.Count, [], 0));
+        };
+        await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
+        var items = fixture.List.Groups.Single().Items;
+        var single = items[0].Options[0].Command.ExecuteAsync(null);
+        fixture.List.SelectAllCommand.Execute(null);
+
+        await fixture.List.BulkOptions[0].Command.ExecuteAsync(null);
+        release.SetResult();
+        await single;
+
+        fixture.Resolver.Calls.Count.ShouldBe(2);
+        fixture.Resolver.Calls.Skip(0).Any(call => call.Ids.Count == 1 && call.Ids[0] == other.Id).ShouldBeTrue();
+        fixture.Resolver.Calls.Count(call => call.Ids.Contains(busy.Id)).ShouldBe(1);
+    }
 }

@@ -22,6 +22,8 @@ public class GivenHeldDeletionsInTheConflictList
         var held = fixture.List.HeldDeletions.ShouldHaveSingleItem();
         held.HeaderText.ShouldBe("Photos · Camera roll");
         held.SummaryText.ShouldBe("2 files deleted in the cloud would be deleted here");
+        held.PathTexts.ShouldBeEmpty();
+        held.ToggleCommand.Execute(null);
         held.PathTexts.ShouldBe(["a.jpg", "b.jpg"]);
         fixture.List.IsEmpty.ShouldBeFalse();
     }
