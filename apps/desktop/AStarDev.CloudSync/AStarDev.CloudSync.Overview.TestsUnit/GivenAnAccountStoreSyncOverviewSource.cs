@@ -1,3 +1,4 @@
+using System.Globalization;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Overview;
 using AStarDev.CloudSync.Sync;
@@ -335,5 +336,5 @@ public class GivenAnAccountStoreSyncOverviewSource
 
     private static (string Folders, string Files) CountsOf(CloudAccount account) => (Shown(account.FolderCount), Shown(account.FileCount));
 
-    private static string Shown(Option<int> count) => count.Match(value => value.ToString(System.Globalization.CultureInfo.InvariantCulture), () => "unknown");
+    private static string Shown(Option<int> count) => count.Match(value => value.ToString(CultureInfo.InvariantCulture), () => "unknown");
 }
