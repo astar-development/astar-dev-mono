@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.IO.Abstractions;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.FunctionalParadigm;
@@ -8,13 +9,12 @@ namespace AStarDev.CloudSync.Sync;
 
 /// <summary>Carries out a <see cref="DownloadPlan"/> (#1400): folders, moves, downloads (several at once), conflicts and deletions, writing the baseline in batches.</summary>
 /// <param name="fileStep">Downloads one file.</param>
-/// <param name="linker">Links a file both sides added when size and hash match.</param>
 /// <param name="files">Creates, moves and deletes local items.</param>
 /// <param name="baselineWriter">Writes the baseline rows.</param>
 /// <param name="options">The concurrency and the batch size.</param>
 /// <param name="sink">Takes the bytes downloaded so far.</param>
 /// <param name="logger">Reports why the pass stopped, with no paths.</param>
-internal sealed class DownloadExecutor(DownloadFileStep fileStep, FirstSyncLinker linker, ILocalFileOperations files, ISyncBaselineWriter baselineWriter, DownloadPassOptions options, ISyncProgressSink sink, ILogger<DownloadExecutor> logger)
+internal sealed class DownloadExecutor(DownloadFileStep fileStep, ILocalFileOperations files, ISyncBaselineWriter baselineWriter, DownloadPassOptions options, ISyncProgressSink sink, ILogger<DownloadExecutor> logger)
 {
     private const string Location = nameof(DownloadExecutor);
 
@@ -35,10 +35,11 @@ internal sealed class DownloadExecutor(DownloadFileStep fileStep, FirstSyncLinke
             return Stopped();
 
         List<DownloadPlanItem.DownloadFile> downloads = [.. plan.Items.OfType<DownloadPlanItem.DownloadFile>()];
-        var tally = new PhaseTally(accountId, SyncPhaseFactory.CreateDownloading(), downloads.Sum(SizeOf), sink);
-        var downloaded = await DownloadAllAsync(downloads, new DownloadRun(accountId, root, byPath, batch, tally), cancellationToken).ConfigureAwait(false);
+        var tally = new PhaseTally(accountId, SyncPhaseFactory.CreateDownloading(), downloads.Sum(SizeOf) + plan.Items.OfType<DownloadPlanItem.SendToConflicts>().Sum(conflict => FirstSyncLinker.BytesToHash(conflict.Finding, conflict.RemoteItem)), sink);
+        var run = new DownloadRun(accountId, root, byPath, batch, tally);
+        var downloaded = await DownloadAllAsync(downloads, run, cancellationToken).ConfigureAwait(false);
 
-        return await downloaded.BindAsync(done => FinishAsync(accountId, root, plan, byPath, batch, [.. outcomes, .. done], cancellationToken)).ConfigureAwait(false);
+        return await downloaded.BindAsync(done => FinishAsync(plan, run, [.. outcomes, .. done], cancellationToken)).ConfigureAwait(false);
     }
 
     private static long SizeOf(DownloadPlanItem.DownloadFile item) => item.Item.Kind is RemoteItemKind.File file ? file.Size : 0;
@@ -126,32 +127,32 @@ internal sealed class DownloadExecutor(DownloadFileStep fileStep, FirstSyncLinke
             _ = Interlocked.Exchange(ref run.Stopped.Value, 1);
     }
 
-    private async Task<Result<IReadOnlyList<DownloadItemOutcome>, DownloadPassFailure>> FinishAsync(AccountId accountId, IDirectoryInfo root, DownloadPlan plan, IReadOnlyDictionary<RelativeSyncPath, SyncBaselineEntry> byPath, BaselineBatch batch, IReadOnlyList<DownloadItemOutcome> sofar, CancellationToken cancellationToken)
+    private async Task<Result<IReadOnlyList<DownloadItemOutcome>, DownloadPassFailure>> FinishAsync(DownloadPlan plan, DownloadRun run, IReadOnlyList<DownloadItemOutcome> sofar, CancellationToken cancellationToken)
     {
         List<DownloadItemOutcome> outcomes = [.. sofar];
-        foreach (var conflict in plan.Items.OfType<DownloadPlanItem.SendToConflicts>())
-            outcomes.Add(await ReportConflictAsync(accountId, root, conflict, batch, cancellationToken).ConfigureAwait(false));
-
+        ConcurrentBag<DownloadItemOutcome> reported = [];
+        await Parallel.ForEachAsync(plan.Items.OfType<DownloadPlanItem.SendToConflicts>(), new ParallelOptions { MaxDegreeOfParallelism = options.MaxConcurrentDownloads, CancellationToken = cancellationToken }, async (conflict, token) => reported.Add(await ReportConflictAsync(run, conflict, token).ConfigureAwait(false))).ConfigureAwait(false);
+        outcomes.AddRange(reported);
         foreach (var deletion in plan.Items.OfType<DownloadPlanItem.DeleteLocal>())
-            outcomes.Add(await DeleteAsync(root, deletion, byPath, batch, cancellationToken).ConfigureAwait(false));
+            outcomes.Add(await DeleteAsync(run.Root, deletion, run.ByPath, run.Batch, cancellationToken).ConfigureAwait(false));
 
-        var flushed = await FlushAsync(accountId, batch, cancellationToken).ConfigureAwait(false);
+        var flushed = await FlushAsync(run.AccountId, run.Batch, cancellationToken).ConfigureAwait(false);
 
         return flushed.Match(_ => Result.Success<IReadOnlyList<DownloadItemOutcome>, DownloadPassFailure>(outcomes), _ => Stopped());
     }
 
-    private async Task<DownloadItemOutcome> ReportConflictAsync(AccountId accountId, IDirectoryInfo root, DownloadPlanItem.SendToConflicts conflict, BaselineBatch batch, CancellationToken cancellationToken)
-    {
-        var link = await linker.TryLinkAsync(accountId, root, conflict.Finding, conflict.RemoteItem, cancellationToken).ConfigureAwait(false);
+    private static Task<DownloadItemOutcome> ReportConflictAsync(DownloadRun run, DownloadPlanItem.SendToConflicts conflict, CancellationToken cancellationToken) =>
+        FirstSyncLinker.TryLinkAsync(run.AccountId, run.Root, conflict.Finding, conflict.RemoteItem, run.Tally.ForFile(FirstSyncLinker.BytesToHash(conflict.Finding, conflict.RemoteItem)), cancellationToken)
+            .MatchAsync(
+                link => link.Match(
+                    entry =>
+                    {
+                        run.Batch.Upsert(entry);
 
-        return link.Match(
-            entry =>
-            {
-                batch.Upsert(entry);
-                return DownloadItemOutcomeFactory.CreateLinkedExisting();
-            },
-            () => DownloadItemOutcomeFactory.CreateSentToConflicts(conflict.Finding));
-    }
+                        return DownloadItemOutcomeFactory.CreateLinkedExisting();
+                    },
+                    () => DownloadItemOutcomeFactory.CreateSentToConflicts(conflict.Finding)),
+                Failed);
 
     private Task<DownloadItemOutcome> DeleteAsync(IDirectoryInfo root, DownloadPlanItem.DeleteLocal item, IReadOnlyDictionary<RelativeSyncPath, SyncBaselineEntry> byPath, BaselineBatch batch, CancellationToken cancellationToken) =>
         files.DeleteAsync(ItemAt(root, item.Path, Lookup(byPath, item.Path)), cancellationToken)

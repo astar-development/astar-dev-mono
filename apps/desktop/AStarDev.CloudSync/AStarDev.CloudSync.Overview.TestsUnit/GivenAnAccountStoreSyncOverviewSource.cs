@@ -121,6 +121,32 @@ public class GivenAnAccountStoreSyncOverviewSource
     }
 
     [Fact]
+    public async Task when_the_activity_log_has_entries_then_the_overview_carries_them_newest_first_as_read()
+    {
+        var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]) };
+        var older = ActivityEntryFactory.Create(FlintId, Option.None<SyncPairId>(), ActivityKindFactory.CreateDeleted(2), new DateTimeOffset(2026, 11, 14, 8, 0, 0, TimeSpan.Zero));
+        var newer = ActivityEntryFactory.Create(FlintId, Option.None<SyncPairId>(), ActivityKindFactory.CreateDownloaded(1), new DateTimeOffset(2026, 11, 14, 9, 0, 0, TimeSpan.Zero));
+        var reader = new FakeActivityLogReader { Entries = Result.Success<IReadOnlyList<ActivityEntry>, ErrorResponse>([newer, older]) };
+
+        var overview = await CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), new FakeSyncPairReader(), new FakeSyncRunStatusSource(), new FakeAccountPauseReader(), reader).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(loaded => loaded, failure => throw new InvalidOperationException(failure.Message));
+
+        overview.Activity.ShouldBe([newer, older]);
+        reader.Requests.ShouldHaveSingleItem().Count.ShouldBe(OverviewActivityLimit.EntryCount);
+        reader.Requests.Single().AccountId.Match(_ => "one account", () => "all accounts").ShouldBe("all accounts");
+    }
+
+    [Fact]
+    public async Task when_the_activity_log_cannot_be_read_then_the_overview_fails_with_that_error_rather_than_showing_no_activity()
+    {
+        var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]) };
+        var reader = new FakeActivityLogReader { Entries = Result.Failure<IReadOnlyList<ActivityEntry>, ErrorResponse>(new ErrorResponse("The activity log could not be read.")) };
+
+        var error = await CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), new FakeSyncPairReader(), new FakeSyncRunStatusSource(), new FakeAccountPauseReader(), reader).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(_ => "loaded", failure => failure.Message);
+
+        error.ShouldBe("The activity log could not be read.");
+    }
+
+    [Fact]
     public async Task when_no_accounts_are_saved_then_the_overview_has_no_accounts()
     {
         var overview = await LoadAsync(new FakeAccountStore());
@@ -257,9 +283,19 @@ public class GivenAnAccountStoreSyncOverviewSource
 
     private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store, IAccountSignInStates states, ISyncPairReader pairReader) => CreateSource(database, store, states, pairReader, new FakeSyncRunStatusSource(), new FakeAccountPauseReader());
 
-    private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store, IAccountSignInStates states, ISyncPairReader pairReader, ISyncRunStatusSource runStatuses, IAccountPauseReader pauseReader, ISyncBaselineCounter? counter = null) =>
+    private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store, IAccountSignInStates states, ISyncPairReader pairReader, ISyncRunStatusSource runStatuses, IAccountPauseReader pauseReader) =>
+        CreateSource(database, store, states, pairReader, runStatuses, pauseReader, new FakeSyncBaselineCounter(), new FakeActivityLogReader());
+
+    private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store, IAccountSignInStates states, ISyncPairReader pairReader, ISyncRunStatusSource runStatuses, IAccountPauseReader pauseReader, ISyncBaselineCounter counter) =>
+        CreateSource(database, store, states, pairReader, runStatuses, pauseReader, counter, new FakeActivityLogReader());
+
+    private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store, IAccountSignInStates states, ISyncPairReader pairReader, ISyncRunStatusSource runStatuses, IAccountPauseReader pauseReader, IActivityLogReader activityReader) =>
+        CreateSource(database, store, states, pairReader, runStatuses, pauseReader, new FakeSyncBaselineCounter(), activityReader);
+
+    private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store, IAccountSignInStates states, ISyncPairReader pairReader, ISyncRunStatusSource runStatuses, IAccountPauseReader pauseReader, ISyncBaselineCounter counter, IActivityLogReader activityReader) =>
         new ServiceCollection()
-            .AddSingleton(counter ?? new FakeSyncBaselineCounter())
+            .AddSingleton(counter)
+            .AddSingleton(activityReader)
             .AddSingleton(database)
             .AddSingleton(store)
             .AddSingleton(states)

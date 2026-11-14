@@ -193,7 +193,7 @@ public sealed class GivenASyncPassRunnerThatWritesAttentionItems : IDisposable
     }
 
     [Fact]
-    public async Task when_closing_a_conflict_fails_then_the_run_is_unexpected_and_no_pass_runs()
+    public async Task when_closing_a_conflict_fails_then_the_conflict_stays_open_and_the_run_continues()
     {
         _ = Seed("Docs/a.txt", ConflictKindFactory.CreateBothModified(), ConflictFindings.Present());
         Baselined("Docs/a.txt", "a", "c1");
@@ -202,8 +202,122 @@ public sealed class GivenASyncPassRunnerThatWritesAttentionItems : IDisposable
 
         var result = await RunAsync();
 
-        Outcome(result).ShouldBe(SyncPassFailureFactory.CreateUnexpected());
+        Outcome(result).ShouldBe("ran");
+        services.Attention.ClosedConflicts.ShouldBeEmpty();
+        Steps.Steps.ShouldBe(["index", "scan", "download", "upload"]);
+    }
+
+    [Fact]
+    public async Task when_closing_one_conflict_fails_then_the_logged_line_carries_no_paths_or_error_text()
+    {
+        _ = Seed("Docs/secret-a.txt", ConflictKindFactory.CreateBothModified(), ConflictFindings.Present());
+        Baselined("Docs/secret-a.txt", "a", "c1");
+        services.Remote.File("Docs/secret-a.txt", "a", "c1", 10);
+        services.Attention.CloseFails = true;
+        services.Attention.CloseFailureText = "jane.doe@example.com opened C:\\Users\\jane\\secret-a.txt token=eyJhbGciOi";
+
+        _ = await RunAsync();
+
+        var logged = services.Logs.Logger.Messages;
+        logged.ShouldContain(message => message.Contains("could not be closed", StringComparison.Ordinal));
+        logged.ShouldNotContain(message => message.Contains("example.com", StringComparison.Ordinal) || message.Contains("secret-a", StringComparison.Ordinal) || message.Contains("eyJhbGciOi", StringComparison.Ordinal) || message.Contains("Users", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task when_the_run_is_cancelled_while_a_conflict_is_closing_then_the_run_is_cancelled_and_nothing_is_closed()
+    {
+        _ = Seed("Docs/a.txt", ConflictKindFactory.CreateBothModified(), ConflictFindings.Present());
+        Baselined("Docs/a.txt", "a", "c1");
+        services.Remote.File("Docs/a.txt", "a", "c1", 10);
+        using var cancel = CancellationTokenSource.CreateLinkedTokenSource(CancellationToken);
+        services.Attention.CancelOnClose = cancel;
+
+        var result = await services.Runner.RunAsync(Personal, Manual, cancel.Token);
+
+        Outcome(result).ShouldBe(SyncPassFailureFactory.CreateCancelled());
+        services.Attention.ClosedConflicts.ShouldBeEmpty();
         Steps.Steps.ShouldBe(["index", "scan"]);
+    }
+
+    [Fact]
+    public async Task when_a_move_target_conflict_has_no_scan_change_then_the_missing_path_does_not_clear_it()
+    {
+        _ = Seed("Docs/a.txt", ConflictKindFactory.CreateMoveTargetTaken(), ConflictFindings.Present());
+        Baselined("Docs/a.txt", "a", "c1");
+        services.Remote.File("Docs/a.txt", "a", "c2", 10);
+        ScanFinds();
+
+        _ = await RunAsync();
+
+        services.Attention.ClosedConflicts.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_a_remote_changed_during_transfer_conflict_has_no_scan_change_then_the_missing_path_does_not_clear_it()
+    {
+        _ = Seed("Docs/a.txt", ConflictKindFactory.CreateRemoteChangedDuringTransfer(), ConflictFindings.Present());
+        Baselined("Docs/a.txt", "a", "c1");
+        services.Remote.File("Docs/a.txt", "a", "c2", 10);
+        ScanFinds();
+
+        _ = await RunAsync();
+
+        services.Attention.ClosedConflicts.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_the_scan_reports_the_path_in_another_case_then_the_local_side_has_not_returned_and_the_conflict_stays_open()
+    {
+        _ = Seed("Docs/a.txt", ConflictKindFactory.CreateBothModified(), ConflictFindings.Present());
+        Baselined("Docs/a.txt", "a", "c1");
+        services.Remote.File("Docs/a.txt", "a", "c2", 10);
+        ScanFinds(Modified("DOCS/A.TXT"));
+
+        _ = await RunAsync();
+
+        services.Attention.ClosedConflicts.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_the_baseline_path_differs_in_case_from_the_conflict_then_the_returned_local_side_still_clears_it()
+    {
+        var conflict = Seed("DOCS/A.TXT", ConflictKindFactory.CreateBothModified(), ConflictFindings.Present());
+        Baselined("Docs/a.txt", "a", "c1");
+        services.Remote.File("Docs/a.txt", "a", "c2", 10);
+        ScanFinds();
+
+        _ = await RunAsync();
+
+        services.Attention.ClosedConflicts.Select(closed => closed.Id).ShouldBe([conflict.Id]);
+    }
+
+    [Fact]
+    public async Task when_one_conflict_is_auto_cleared_then_the_log_line_says_conflict_in_the_singular()
+    {
+        _ = Seed("Docs/a.txt", ConflictKindFactory.CreateBothModified(), ConflictFindings.Present());
+        Baselined("Docs/a.txt", "a", "c1");
+        services.Remote.File("Docs/a.txt", "a", "c2", 10);
+        ScanFinds();
+
+        _ = await RunAsync();
+
+        services.Logs.Logger.Messages.ShouldContain(message => message.Contains("Auto-cleared 1 conflict because", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task when_two_conflicts_are_auto_cleared_then_the_log_line_says_conflicts_in_the_plural()
+    {
+        _ = Seed("Docs/a.txt", ConflictKindFactory.CreateBothModified(), ConflictFindings.Present());
+        _ = Seed("Docs/b.txt", ConflictKindFactory.CreateBothModified(), ConflictFindings.Present());
+        Baselined("Docs/a.txt", "a", "c1");
+        Baselined("Docs/b.txt", "b", "c1");
+        services.Remote.File("Docs/a.txt", "a", "c2", 10);
+        services.Remote.File("Docs/b.txt", "b", "c2", 10);
+        ScanFinds();
+
+        _ = await RunAsync();
+
+        services.Logs.Logger.Messages.ShouldContain(message => message.Contains("Auto-cleared 2 conflicts because", StringComparison.Ordinal));
     }
 
     [Fact]

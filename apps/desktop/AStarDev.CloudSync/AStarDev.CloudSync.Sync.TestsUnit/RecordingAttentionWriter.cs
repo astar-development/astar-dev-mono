@@ -16,6 +16,10 @@ public sealed class RecordingAttentionWriter : ISyncAttentionWriter, ISyncAttent
 
     public bool CloseFails { get; set; }
 
+    public string CloseFailureText { get; set; } = "locked";
+
+    public CancellationTokenSource? CancelOnClose { get; set; }
+
     public int Calls { get; private set; }
 
     public IReadOnlyList<SyncAttentionItem.HeldDeletions> Held => [.. recorded.OfType<SyncAttentionItem.HeldDeletions>()];
@@ -50,8 +54,10 @@ public sealed class RecordingAttentionWriter : ISyncAttentionWriter, ISyncAttent
 
     public Task<Result<Unit, ErrorResponse>> CloseAsync(ConflictId id, AttentionResolution resolution, CancellationToken cancellationToken)
     {
+        CancelOnClose?.Cancel();
+        cancellationToken.ThrowIfCancellationRequested();
         if (CloseFails)
-            return Task.FromResult(Result.Failure<Unit, ErrorResponse>(new ErrorResponse("locked")));
+            return Task.FromResult(Result.Failure<Unit, ErrorResponse>(new ErrorResponse(CloseFailureText)));
 
         closedConflicts.Add((id, resolution));
 

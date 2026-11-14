@@ -16,6 +16,8 @@ public class GivenAnActivityItemViewModel
         { "uploaded-many", "Uploaded 12 files (84.0 MB)" },
         { "downloaded-one", "Downloaded 1 file" },
         { "downloaded-many", "Downloaded 3 files" },
+        { "deleted-one", "Deleted 1 file" },
+        { "deleted-many", "Deleted 5 files" },
         { "conflict", "Conflict: holiday-042.jpg" },
         { "authenticated", "Authenticated" }
     };
@@ -57,6 +59,8 @@ public class GivenAnActivityItemViewModel
         "uploaded-many" => ActivityKindFactory.CreateUploaded(12, 88_080_384),
         "downloaded-one" => ActivityKindFactory.CreateDownloaded(1),
         "downloaded-many" => ActivityKindFactory.CreateDownloaded(3),
+        "deleted-one" => ActivityKindFactory.CreateDeleted(1),
+        "deleted-many" => ActivityKindFactory.CreateDeleted(5),
         "conflict" => ActivityKindFactory.CreateConflictDetected("holiday-042.jpg"),
         _ => ActivityKindFactory.CreateAuthenticated()
     };

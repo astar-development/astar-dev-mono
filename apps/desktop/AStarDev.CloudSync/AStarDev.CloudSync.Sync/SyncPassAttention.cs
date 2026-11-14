@@ -43,7 +43,7 @@ internal sealed class SyncPassAttention(ISyncAttentionReader reader, ISyncAttent
         foreach (var conflict in conflicts)
         {
             var settled = await HasSettledAsync(accountId, conflict, changed, cancellationToken).ConfigureAwait(false);
-            var closed = await settled.BindAsync(done => done ? closer.CloseAsync(conflict.Id, AttentionResolutionFactory.CreateAutoCleared(), cancellationToken).MatchAsync(_ => Result.Success<bool, ErrorResponse>(true), Result.Failure<bool, ErrorResponse>) : Task.FromResult(Result.Success<bool, ErrorResponse>(false))).ConfigureAwait(false);
+            var closed = await settled.BindAsync(done => done ? closer.CloseAsync(conflict.Id, AttentionResolutionFactory.CreateAutoCleared(), cancellationToken).MatchAsync(_ => Result.Success<bool, ErrorResponse>(true), _ => CloseFailed()) : Task.FromResult(Result.Success<bool, ErrorResponse>(false))).ConfigureAwait(false);
             var step = closed.Match(wasClosed => Result.Success<int, ErrorResponse>(wasClosed ? 1 : 0), Result.Failure<int, ErrorResponse>);
             if (step.Match(_ => false, _ => true))
                 return step.Match(_ => Result.Success<Unit, ErrorResponse>(Unit.Instance), Result.Failure<Unit, ErrorResponse>);
@@ -61,9 +61,19 @@ internal sealed class SyncPassAttention(ISyncAttentionReader reader, ISyncAttent
         if (count == 0)
             return;
 
-        var message = $"Auto-cleared {count} conflicts because one side returned to the baseline.";
+        var noun = count == 1 ? "conflict" : "conflicts";
+        var message = $"Auto-cleared {count} {noun} because one side returned to the baseline.";
         LogMessage.Information(logger, Location, message);
     }
+
+    private Result<bool, ErrorResponse> CloseFailed()
+    {
+        LogMessage.Warning(logger, Location, "A conflict that settled itself could not be closed and stays open.");
+
+        return Result.Success<bool, ErrorResponse>(false);
+    }
+
+    private static bool LocalWasChangedSide(ConflictKind kind) => kind is ConflictKind.BothModified or ConflictKind.LocalModifiedRemoteDeleted;
 
     private async Task<Result<bool, ErrorResponse>> HasSettledAsync(AccountId accountId, SyncAttentionItem.Conflict conflict, HashSet<RelativeSyncPath> changed, CancellationToken cancellationToken)
     {
@@ -75,7 +85,7 @@ internal sealed class SyncPassAttention(ISyncAttentionReader reader, ISyncAttent
     }
 
     private Task<Result<bool, ErrorResponse>> SideReturnedAsync(AccountId accountId, SyncAttentionItem.Conflict conflict, SyncBaselineEntry known, SyncBaselineKind.File file, HashSet<RelativeSyncPath> changed, CancellationToken cancellationToken) =>
-        conflict.Local is SideSnapshot.Present && !changed.Contains(conflict.Path)
+        conflict.Local is SideSnapshot.Present && LocalWasChangedSide(conflict.Kind) && !changed.Contains(conflict.Path)
             ? Task.FromResult(Result.Success<bool, ErrorResponse>(true))
             : remoteIndex.GetAsync(accountId, known.ItemId, cancellationToken).MatchAsync(item => Result.Success<bool, ErrorResponse>(item.Match(found => found.Kind is RemoteItemKind.File current && current.CTag == file.CTag, () => false)), Result.Failure<bool, ErrorResponse>);
 }

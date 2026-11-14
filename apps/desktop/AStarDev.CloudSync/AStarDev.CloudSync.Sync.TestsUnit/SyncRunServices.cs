@@ -20,6 +20,7 @@ public sealed class SyncRunServices : IDisposable
             .AddSingleton<ISyncAttentionCloser>(Attention)
             .AddSingleton<ISyncBaselineReader>(Baseline)
             .AddSingleton<IRemoteIndexReader>(Remote)
+            .AddSingleton<IActivityLogWriter>(ActivityLog)
             .AddCloudSync()
             .AddSingleton<IRemoteIndexUpdater>(Steps)
             .AddSingleton<ILocalChangeDetector>(Steps)
@@ -41,6 +42,8 @@ public sealed class SyncRunServices : IDisposable
     public InMemorySyncBaseline Baseline { get; } = new();
 
     public ScriptedRemoteIndex Remote { get; } = new();
+
+    public RecordingActivityLogWriter ActivityLog { get; } = new();
 
     public ScriptedRestartDialog Dialog { get; } = new();
 
