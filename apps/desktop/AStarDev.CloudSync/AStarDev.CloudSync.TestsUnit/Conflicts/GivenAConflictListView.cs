@@ -6,10 +6,10 @@ using AStarDev.CloudSync.TestHelpers.Overview;
 using AStarDev.CloudSync.TestHelpers.Ui;
 using AStarDev.CloudSync.ViewModels.Conflicts;
 using AStarDev.FunctionalParadigm;
+using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Headless;
-using Avalonia;
 using Avalonia.Input;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
@@ -128,6 +128,23 @@ public class GivenAConflictListView
         window.KeyPressQwerty(PhysicalKey.Tab, RawInputModifiers.None);
 
         window.FocusManager!.GetFocusedElement().ShouldBeSameAs(window.GetVisualDescendants().OfType<ComboBox>().Single());
+    }
+
+    [AvaloniaFact]
+    public async Task when_shift_tab_is_pressed_on_the_first_control_then_focus_wraps_to_the_last_control_in_the_overlay()
+    {
+        var (window, _) = await ShowAsync(1, 800);
+        var view = (ConflictListView)window.Content!;
+        window.Content = null;
+        window.Content = new StackPanel { Children = { new Button { Content = "Before" }, view } };
+        Dispatcher.UIThread.RunJobs();
+        var filter = window.GetVisualDescendants().OfType<ComboBox>().Single();
+        filter.Focus();
+
+        window.KeyPressQwerty(PhysicalKey.Tab, RawInputModifiers.Shift);
+
+        var focused = window.FocusManager!.GetFocusedElement().ShouldBeOfType<Button>();
+        focused.GetVisualAncestors().ShouldContain(view);
     }
 
     [AvaloniaFact]

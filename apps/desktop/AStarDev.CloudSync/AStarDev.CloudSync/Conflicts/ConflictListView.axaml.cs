@@ -28,22 +28,26 @@ public partial class ConflictListView : UserControl
     }
 
     /// <inheritdoc />
-    protected override void OnDataContextChanged(EventArgs e)
-    {
-        base.OnDataContextChanged(e);
-        if (observed is not null)
-            observed.PropertyChanged -= OnListPropertyChanged;
-
-        observed = DataContext as ConflictListViewModel;
-        if (observed is not null)
-            observed.PropertyChanged += OnListPropertyChanged;
-    }
-
-    /// <inheritdoc />
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
+        Observe(DataContext as ConflictListViewModel);
         FocusFilter();
+    }
+
+    /// <inheritdoc />
+    protected override void OnUnloaded(RoutedEventArgs e)
+    {
+        base.OnUnloaded(e);
+        Observe(null);
+    }
+
+    /// <inheritdoc />
+    protected override void OnDataContextChanged(EventArgs e)
+    {
+        base.OnDataContextChanged(e);
+        if (IsLoaded)
+            Observe(DataContext as ConflictListViewModel);
     }
 
     private void InitializeComponent() => AvaloniaXamlLoader.Load(this);
@@ -54,5 +58,19 @@ public partial class ConflictListView : UserControl
             FocusFilter();
     }
 
-    private void FocusFilter() => Dispatcher.UIThread.Post(() => this.FindControl<ComboBox>("FilterBox")?.Focus(), DispatcherPriority.Input);
+    private void Observe(ConflictListViewModel? list)
+    {
+        if (observed is not null)
+            observed.PropertyChanged -= OnListPropertyChanged;
+
+        observed = list;
+        if (observed is not null)
+            observed.PropertyChanged += OnListPropertyChanged;
+    }
+
+    private void FocusFilter() => Dispatcher.UIThread.Post(() =>
+    {
+        if (IsEffectivelyVisible)
+            this.FindControl<ComboBox>("FilterBox")?.Focus();
+    }, DispatcherPriority.Input);
 }
