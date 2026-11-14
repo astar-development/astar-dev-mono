@@ -18,6 +18,14 @@ public class GivenAnAccountViewModel
     }
 
     [Fact]
+    public void when_the_counts_are_unknown_then_the_count_texts_are_an_em_dash()
+    {
+        var account = new AccountViewModel(TestData.CreateAccountWithUnknownCounts(), [], TestData.CreateLocalization(), TestData.CreateTime());
+
+        (account.FoldersText, account.FilesText).ShouldBe(("\u2014", "\u2014"));
+    }
+
+    [Fact]
     public void when_the_account_has_never_synced_then_the_last_sync_text_says_never()
     {
         var account = new AccountViewModel(TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>()), [], TestData.CreateLocalization(), TestData.CreateTime());

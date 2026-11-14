@@ -77,6 +77,15 @@ public class GivenASyncOverviewViewModel
     }
 
     [Fact]
+    public async Task when_any_account_has_an_unknown_folder_count_then_the_folders_synced_tile_shows_an_em_dash()
+    {
+        var known = TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
+        var viewModel = await CreateLoadedViewModelAsync(SyncOverviewFactory.Create([known, TestData.CreateAccountWithUnknownCounts()], [], [], [], [], 0, Option.None<DateTimeOffset>()));
+
+        (viewModel.Stats[2].Value, viewModel.Stats[2].Label).ShouldBe(("\u2014", "folders synced"));
+    }
+
+    [Fact]
     public async Task when_any_account_is_syncing_then_the_overall_status_is_syncing()
     {
         var viewModel = await TestData.CreateLoadedOverviewViewModelAsync();
