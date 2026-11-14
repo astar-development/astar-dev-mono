@@ -167,6 +167,22 @@ public class GivenAnOverlayDialog
     }
 
     [AvaloniaFact]
+    public async Task when_the_dialog_closes_and_nothing_outside_it_can_take_focus_then_closing_does_not_fail()
+    {
+        var (_, view, vm, overlay, opener) = await ShowAsync("ConflictList");
+        opener.Focus();
+        await overlay.Open(vm);
+        Dispatcher.UIThread.RunJobs();
+        foreach (var other in ((Panel)view.Parent!).Children.Where(child => !ReferenceEquals(child, view)))
+            other.IsVisible = false;
+
+        overlay.Close(vm);
+        Dispatcher.UIThread.RunJobs();
+
+        overlay.IsOpen(vm).ShouldBeFalse();
+    }
+
+    [AvaloniaFact]
     public async Task when_a_chained_dialog_closes_over_a_hidden_opener_then_focus_does_not_fall_onto_another_open_dialog()
     {
         var (window, _, vm, overlay, opener) = await ShowAsync("ConflictList");
