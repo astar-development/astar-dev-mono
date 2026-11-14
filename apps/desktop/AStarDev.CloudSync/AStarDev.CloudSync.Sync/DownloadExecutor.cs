@@ -33,9 +33,9 @@ internal sealed class DownloadExecutor(DownloadFileStep fileStep, ILocalFileOper
         if (flushed.Match(_ => false, _ => true))
             return Stopped();
 
-        List<DownloadPlanItem.DownloadFile> files = [.. plan.Items.OfType<DownloadPlanItem.DownloadFile>()];
-        var tally = new PhaseTally(accountId, SyncPhaseFactory.CreateDownloading(), files.Sum(SizeOf), sink);
-        var downloaded = await DownloadAllAsync(files, new DownloadRun(accountId, root, byPath, batch, tally), cancellationToken).ConfigureAwait(false);
+        List<DownloadPlanItem.DownloadFile> downloads = [.. plan.Items.OfType<DownloadPlanItem.DownloadFile>()];
+        var tally = new PhaseTally(accountId, SyncPhaseFactory.CreateDownloading(), downloads.Sum(SizeOf), sink);
+        var downloaded = await DownloadAllAsync(downloads, new DownloadRun(accountId, root, byPath, batch, tally), cancellationToken).ConfigureAwait(false);
 
         return await downloaded.BindAsync(done => FinishAsync(accountId, root, plan, byPath, batch, [.. outcomes, .. done], cancellationToken)).ConfigureAwait(false);
     }
