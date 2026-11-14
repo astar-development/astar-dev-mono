@@ -6,7 +6,14 @@ internal static class ConflictTexts
 {
     internal const string UnexpectedKey = "Conflict.Error.Unexpected";
 
-    internal const string HeldNotSettledKey = "Held.Error.NotSettled";
+    internal static string HeldRefusedKey(HeldDeletionRefusal refusal) => refusal switch
+    {
+        HeldDeletionRefusal.Busy => "Held.Refused.Busy",
+        HeldDeletionRefusal.Draining => "Held.Refused.Draining",
+        HeldDeletionRefusal.QueueUnreadable => "Held.Refused.QueueUnreadable",
+        HeldDeletionRefusal.NoLongerHeld => "Held.Refused.NoLongerHeld",
+        _ => "Held.Error.NotSettled",
+    };
 
     internal static string RefusedKey(ConflictRefusal refusal) => refusal switch
     {

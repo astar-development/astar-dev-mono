@@ -26,7 +26,7 @@ internal sealed class ConflictResolver(IAccountSyncLock syncLock, ISyncAttention
         using var lease = acquired.Lease;
 
         return await reader.GetOpenAsync(accountId, cancellationToken)
-            .MatchAsync(open => ResolveOpenAsync(accountId, [.. open.OfType<SyncAttentionItem.Conflict>()], [.. (ids ?? []).Distinct()], strategy, cancellationToken), _ => Task.FromResult(Result.Failure<ResolutionSummary, ConflictRefusal>(ConflictRefusalFactory.CreateQueueUnreadable())))
+            .MatchAsync(open => ResolveOpenAsync(accountId, [.. open.OfType<SyncAttentionItem.Conflict>()], [.. (ids ?? []).Distinct()], strategy, cancellationToken), _ => Task.FromResult(QueueUnreadable()))
             .ConfigureAwait(false);
     }
 
@@ -52,6 +52,13 @@ internal sealed class ConflictResolver(IAccountSyncLock syncLock, ISyncAttention
         LogMessage.Information(logger, Location, message);
 
         return Result.Success<ResolutionSummary, ConflictRefusal>(summary);
+    }
+
+    private Result<ResolutionSummary, ConflictRefusal> QueueUnreadable()
+    {
+        LogMessage.Warning(logger, Location, "The open conflicts could not be read, so none was resolved.");
+
+        return Result.Failure<ResolutionSummary, ConflictRefusal>(ConflictRefusalFactory.CreateQueueUnreadable());
     }
 
     private async Task ResolvePathAsync(AccountId accountId, SyncAttentionItem.Conflict chosen, IReadOnlyList<SyncAttentionItem.Conflict> members, ConflictStrategy strategy, Tally tally, CancellationToken cancellationToken)

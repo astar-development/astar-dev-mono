@@ -18,13 +18,13 @@ public sealed class FakeHeldDeletionDecider : IHeldDeletionDecider
         }
     }
 
-    public Func<string, HeldDeletionId, CancellationToken, Task<Result<Unit, ErrorResponse>>> Outcome { get; set; } = (_, _, _) => Task.FromResult(Result.Success<Unit, ErrorResponse>(Unit.Instance));
+    public Func<string, HeldDeletionId, CancellationToken, Task<Result<Unit, HeldDeletionRefusal>>> Outcome { get; set; } = (_, _, _) => Task.FromResult(Result.Success<Unit, HeldDeletionRefusal>(Unit.Instance));
 
-    public Task<Result<Unit, ErrorResponse>> ConfirmAsync(AccountId accountId, HeldDeletionId id, CancellationToken cancellationToken) => RunAsync("Confirm", accountId, id, cancellationToken);
+    public Task<Result<Unit, HeldDeletionRefusal>> ConfirmAsync(AccountId accountId, HeldDeletionId id, CancellationToken cancellationToken) => RunAsync("Confirm", accountId, id, cancellationToken);
 
-    public Task<Result<Unit, ErrorResponse>> RestoreAsync(AccountId accountId, HeldDeletionId id, CancellationToken cancellationToken) => RunAsync("Restore", accountId, id, cancellationToken);
+    public Task<Result<Unit, HeldDeletionRefusal>> RestoreAsync(AccountId accountId, HeldDeletionId id, CancellationToken cancellationToken) => RunAsync("Restore", accountId, id, cancellationToken);
 
-    private Task<Result<Unit, ErrorResponse>> RunAsync(string action, AccountId accountId, HeldDeletionId id, CancellationToken cancellationToken)
+    private Task<Result<Unit, HeldDeletionRefusal>> RunAsync(string action, AccountId accountId, HeldDeletionId id, CancellationToken cancellationToken)
     {
         lock (gate)
             calls.Add((action, accountId, id));
