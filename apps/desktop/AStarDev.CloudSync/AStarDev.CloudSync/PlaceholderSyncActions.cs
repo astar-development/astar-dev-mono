@@ -15,16 +15,16 @@ namespace AStarDev.CloudSync;
 /// <param name="logger">Records each requested placeholder action and the pause outcome.</param>
 public sealed class PlaceholderSyncActions(IAddAccountDialog addAccountDialog, IFolderSelectionDialog folderSelectionDialog, ISyncNowAction syncNow, ISyncCancelAction cancel, IAccountPauseWriter pauseWriter, ILogger<PlaceholderSyncActions> logger) : ISyncActions
 {
-    private readonly object unused = (syncNow, cancel, pauseWriter);
+    /// <inheritdoc />
+    public Task SyncNowAsync(AccountId accountId, CancellationToken cancellationToken) => syncNow.SyncNowAsync(accountId, cancellationToken);
 
     /// <inheritdoc />
-    public Task SyncNowAsync(AccountId accountId, CancellationToken cancellationToken) => LogRequestAsync("Sync now requested (placeholder: the sync engine is not implemented yet)", accountId.ToString());
+    public Task CancelSyncAsync(AccountId accountId, CancellationToken cancellationToken) => cancel.CancelAsync(accountId, cancellationToken);
 
     /// <inheritdoc />
-    public Task CancelSyncAsync(AccountId accountId, CancellationToken cancellationToken) => LogRequestAsync("Cancel sync requested (placeholder: the sync engine is not implemented yet)", accountId.ToString());
-
-    /// <inheritdoc />
-    public Task PauseAsync(AccountId accountId, CancellationToken cancellationToken) => LogRequestAsync("Pause requested (placeholder: the sync engine is not implemented yet)", accountId.ToString());
+    public Task PauseAsync(AccountId accountId, CancellationToken cancellationToken) =>
+        pauseWriter.ToggleAsync(accountId, cancellationToken)
+            .MatchAsync(LogPauseState, error => LogPauseFailure());
 
     /// <inheritdoc />
     public Task AddAccountAsync(CancellationToken cancellationToken) => addAccountDialog.ShowAsync(cancellationToken);
@@ -40,6 +40,20 @@ public sealed class PlaceholderSyncActions(IAddAccountDialog addAccountDialog, I
 
     /// <inheritdoc />
     public Task KeepCloudAsync(SyncConflict conflict, CancellationToken cancellationToken) => LogRequestAsync("Keep cloud requested (placeholder: the sync engine is not implemented yet)", conflict.SyncPairId.ToString());
+
+    private Unit LogPauseState(PauseState state)
+    {
+        LogMessage.Information(logger, nameof(PlaceholderSyncActions), state is PauseState.Paused ? "Scheduled syncing was paused for an account." : "Scheduled syncing was resumed for an account.");
+
+        return Unit.Instance;
+    }
+
+    private Unit LogPauseFailure()
+    {
+        LogMessage.Warning(logger, nameof(PlaceholderSyncActions), "Pausing or resuming an account could not be saved.");
+
+        return Unit.Instance;
+    }
 
     private Task LogRequestAsync(string action, string target)
     {
