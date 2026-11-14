@@ -54,8 +54,6 @@ internal static class FirstSyncLinker
         if (read != size || !IsUnchanged(target, size, lastWriteUtc))
             return Result.Failure<FileHashes, LocalOperationFailure>(LocalOperationFailureFactory.CreateTargetChanged());
 
-        progress.Finish();
-
         return Result.Success<FileHashes, LocalOperationFailure>((quickXor, Convert.ToHexStringLower(sha.GetHashAndReset()), new DateTimeOffset(lastWriteUtc, TimeSpan.Zero)));
     }
 
@@ -80,6 +78,7 @@ internal static class FirstSyncLinker
     {
         var target = root.FileSystem.FileInfo.New(root.FileSystem.Path.Join(root.FullName, path.Value));
         var hashed = await Try.RunAsync(() => HashOnceAsync(target, candidate.Size, progress, cancellationToken), cancellationToken).ConfigureAwait(false);
+        progress.Finish();
 
         return hashed.Match(
             result => result.Match(hashes => EntryFor(accountId, path, candidate, hashes), Result.Failure<Option<SyncBaselineEntry>, LocalOperationFailure>),
