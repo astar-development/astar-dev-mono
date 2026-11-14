@@ -243,22 +243,24 @@ public sealed class GivenASyncScheduler : IDisposable
     }
 
     [Fact]
-    public async Task when_the_app_was_busy_and_several_ticks_were_missed_then_the_next_pass_still_keeps_the_account_offset()
+    public async Task when_the_machine_slept_then_each_account_keeps_its_own_offset_for_the_next_pass()
     {
-        _ = await services.AddAccountAsync();
+        var first = await services.AddAccountAsync();
         var second = await services.AddAccountAsync();
         await StartAsync();
         await services.TickAtAsync(TimeSpan.FromHours(3));
         await services.WaitForRunsAsync(2);
 
-        await services.TickAtAsync(TimeSpan.FromHours(3) + Minutes(15));
+        await services.TickAtAsync(TimeSpan.FromHours(3) + Minutes(1));
         await ScheduleServices.NothingElseHappensAsync();
-        var beforeSecondOffset = services.Runner.Runs.Count;
-        await services.TickAtAsync(TimeSpan.FromHours(4) + Minutes(32));
+        var beforeTheFirstOffset = services.Runner.Runs.Count;
+        await services.TickAtAsync(TimeSpan.FromHours(3) + Minutes(2));
         await services.WaitForRunsAsync(3);
+        await services.TickAtAsync(TimeSpan.FromHours(3) + Minutes(32));
+        await services.WaitForRunsAsync(4);
 
-        beforeSecondOffset.ShouldBe(2);
-        services.Runner.Runs.Count(run => run.AccountId == second).ShouldBe(2);
+        beforeTheFirstOffset.ShouldBe(2);
+        RunAccounts.Skip(2).ShouldBe([first, second]);
     }
 
     [Fact]

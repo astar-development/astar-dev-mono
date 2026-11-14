@@ -11,11 +11,11 @@ public static class SyncScheduleFactory
 
     /// <summary>Creates an every-interval schedule. An interval that is not in <see cref="Intervals"/> becomes <see cref="DefaultInterval"/>.</summary>
     /// <param name="interval">The time between two syncs of one account.</param>
-    public static SyncSchedule CreateEvery(TimeSpan interval) => throw new NotImplementedException($"{interval}");
+    public static SyncSchedule CreateEvery(TimeSpan interval) => new SyncSchedule.Every(Intervals.Contains(interval) ? interval : DefaultInterval);
 
     /// <summary>Creates the manual-only schedule.</summary>
     public static SyncSchedule CreateManualOnly() => new SyncSchedule.ManualOnly();
 
     /// <summary>Creates the default schedule: every hour.</summary>
-    public static SyncSchedule CreateDefault() => throw new NotImplementedException();
+    public static SyncSchedule CreateDefault() => new SyncSchedule.Every(DefaultInterval);
 }
