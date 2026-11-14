@@ -6,7 +6,8 @@ namespace AStarDev.CloudSync.Sync;
 
 /// <summary>Knows the sync runs in progress: the <see cref="ISyncActivitySource"/> and the <see cref="ISyncCancelAction"/>. The runner tells it when a run starts and ends.</summary>
 /// <param name="timeProvider">Stamps the start of a run.</param>
-internal sealed class SyncPassRegistry(TimeProvider timeProvider) : ISyncActivitySource, ISyncCancelAction, ISyncRunStatusSource
+/// <param name="progress">Tells how far the running passes have got.</param>
+internal sealed class SyncPassRegistry(TimeProvider timeProvider, SyncProgressFeed progress) : ISyncActivitySource, ISyncCancelAction, ISyncRunStatusSource
 {
     private readonly ConcurrentDictionary<AccountId, RunningPass> running = new();
     private readonly ConcurrentDictionary<AccountId, SyncStatus> lastStatus = new();
@@ -24,7 +25,7 @@ internal sealed class SyncPassRegistry(TimeProvider timeProvider) : ISyncActivit
 
     /// <inheritdoc />
     public SyncStatus StatusOf(AccountId accountId) =>
-        running.ContainsKey(accountId) ? SyncStatusFactory.CreateSyncing(0) : lastStatus.GetValueOrDefault(accountId, SyncStatusFactory.CreateUpToDate());
+        running.ContainsKey(accountId) ? SyncStatusFactory.CreateSyncing(progress.ProgressOf(accountId).Match(current => current.PercentComplete(), () => 0)) : lastStatus.GetValueOrDefault(accountId, SyncStatusFactory.CreateUpToDate());
 
     /// <inheritdoc />
     public Option<DateTimeOffset> LastSyncOf(AccountId accountId) => lastSync.TryGetValue(accountId, out var finished) ? Option.Some(finished) : Option.None<DateTimeOffset>();
@@ -47,6 +48,7 @@ internal sealed class SyncPassRegistry(TimeProvider timeProvider) : ISyncActivit
     internal RunningPass Begin(AccountId accountId, SyncTrigger trigger, CancellationToken cancellationToken)
     {
         var pass = new RunningPass(accountId, trigger, timeProvider.GetUtcNow(), cancellationToken);
+        progress.Reset(accountId);
         running[accountId] = pass;
         PassStarted?.Invoke(this, new SyncPassStartedEventArgs(accountId, trigger, pass.StartedAt));
 
@@ -65,6 +67,7 @@ internal sealed class SyncPassRegistry(TimeProvider timeProvider) : ISyncActivit
             lastSync[pass.AccountId] = timeProvider.GetUtcNow();
 
         _ = running.TryRemove(new KeyValuePair<AccountId, RunningPass>(pass.AccountId, pass));
+        progress.Reset(pass.AccountId);
         pass.Dispose();
         PassFinished?.Invoke(this, new SyncPassFinishedEventArgs(pass.AccountId, pass.Trigger, outcome));
     }

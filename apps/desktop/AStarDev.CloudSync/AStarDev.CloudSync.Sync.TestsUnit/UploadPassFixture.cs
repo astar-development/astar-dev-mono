@@ -20,6 +20,10 @@ public sealed class UploadPassFixture : IDisposable
 
     public InMemorySyncBaseline Baseline { get; } = new();
 
+    public Microsoft.Extensions.Time.Testing.FakeTimeProvider Time { get; } = new(new DateTimeOffset(2026, 11, 13, 12, 0, 0, TimeSpan.Zero));
+
+    public ISyncProgressFeed Feed => provider!.GetRequiredService<ISyncProgressFeed>();
+
     public RemoteTreeIndex Remote { get; } = new();
 
     public FakeUploader Uploader { get; } = new();
@@ -77,6 +81,7 @@ public sealed class UploadPassFixture : IDisposable
         var roots = new FixedSyncRootReader { Root = HasRoot ? Option.Some(FileSystem.DirectoryInfo.New("/sync")) : Option.None<System.IO.Abstractions.IDirectoryInfo>() };
         provider = new ServiceCollection()
             .AddLogging(logging => logging.ClearProviders().AddProvider(Logs))
+            .AddSingleton<System.TimeProvider>(Time)
             .AddCloudSync()
             .AddSingleton<IAccountStore>(accounts)
             .AddSingleton<ISyncRootReader>(roots)

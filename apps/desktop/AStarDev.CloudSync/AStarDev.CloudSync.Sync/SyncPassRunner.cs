@@ -11,8 +11,9 @@ namespace AStarDev.CloudSync.Sync;
 /// <param name="registry">Told when a run starts and ends.</param>
 /// <param name="states">Set to sign-in required when a step reports it.</param>
 /// <param name="timeProvider">Times the steps.</param>
+/// <param name="progress">Told which phase a run is in.</param>
 /// <param name="logger">Logs the trigger, step timings and counts, with the hashed account id only.</param>
-internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps steps, SyncPassRegistry registry, IAccountSignInStates states, TimeProvider timeProvider, ILogger<SyncPassRunner> logger) : ISyncPassRunner
+internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps steps, SyncPassRegistry registry, IAccountSignInStates states, TimeProvider timeProvider, ISyncProgressSink progress, ILogger<SyncPassRunner> logger) : ISyncPassRunner
 {
     private const string Location = nameof(SyncPassRunner);
 
@@ -76,14 +77,15 @@ internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps st
     }
 
     private Task<Result<SyncPassSummary, SyncPassFailure>> StepsAsync(AccountId accountId, CancellationToken cancellationToken) =>
-        TimedAsync("remote index", () => UpdateIndexAsync(accountId, cancellationToken))
-            .BindAsync(remote => TimedAsync("local scan", () => ScanAsync(accountId, cancellationToken))
-                .BindAsync(changes => TimedAsync("download", () => DownloadAsync(accountId, changes, cancellationToken))
-                    .BindAsync(downloaded => TimedAsync("upload", () => UploadAsync(accountId, changes, cancellationToken))
+        TimedAsync(accountId, "remote index", SyncPhaseFactory.CreateUpdatingRemoteIndex(), () => UpdateIndexAsync(accountId, cancellationToken))
+            .BindAsync(remote => TimedAsync(accountId, "local scan", SyncPhaseFactory.CreateScanningLocal(), () => ScanAsync(accountId, cancellationToken))
+                .BindAsync(changes => TimedAsync(accountId, "download", SyncPhaseFactory.CreateDownloading(), () => DownloadAsync(accountId, changes, cancellationToken))
+                    .BindAsync(downloaded => TimedAsync(accountId, "upload", SyncPhaseFactory.CreateUploading(), () => UploadAsync(accountId, changes, cancellationToken))
                         .MatchAsync(uploaded => Result.Success<SyncPassSummary, SyncPassFailure>(SyncPassSummaryFactory.Create(remote, changes, downloaded, uploaded)), Stopped<SyncPassSummary>))));
 
-    private async Task<Result<T, SyncPassFailure>> TimedAsync<T>(string step, Func<Task<Result<T, SyncPassFailure>>> run)
+    private async Task<Result<T, SyncPassFailure>> TimedAsync<T>(AccountId accountId, string step, SyncPhase phase, Func<Task<Result<T, SyncPassFailure>>> run)
     {
+        progress.Report(accountId, SyncProgressFactory.Create(phase, 0, 0));
         var started = timeProvider.GetTimestamp();
         var outcome = await run().ConfigureAwait(false);
         var message = $"The {step} step took {(long)timeProvider.GetElapsedTime(started).TotalMilliseconds} ms.";

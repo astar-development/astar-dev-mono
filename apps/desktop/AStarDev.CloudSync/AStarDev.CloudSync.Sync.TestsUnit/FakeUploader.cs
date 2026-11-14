@@ -15,6 +15,10 @@ public sealed class FakeUploader : IRemoteFileUploader
 
     public WriteGate? Gate { get; set; }
 
+    public IReadOnlyList<long> Reports { get; set; } = [];
+
+    public Action BeforeEachReport { get; set; } = () => { };
+
     public int Peak => peak;
 
     public IReadOnlyList<(UploadTarget Target, string Name, UploadPrecondition Precondition)> Calls
@@ -36,6 +40,12 @@ public sealed class FakeUploader : IRemoteFileUploader
 
         if (Gate is { } waiting)
             await waiting.PassAsync().WaitAsync(cancellationToken);
+
+        foreach (var done in Reports)
+        {
+            BeforeEachReport();
+            progress.Report(TransferProgressFactory.Create(done, 10));
+        }
 
         lock (gate)
             inFlight--;

@@ -1,5 +1,6 @@
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Overview;
+using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.TestHelpers.Accounts;
 using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.CloudSync.TestHelpers.Ui;
@@ -19,12 +20,25 @@ public class GivenASyncRunOverviewReloader
         var source = new CountingOverviewSource();
         var activity = new FakeSyncActivitySource();
         var overview = new SyncOverviewViewModel(source, new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
-        _ = new SyncRunOverviewReloader(activity, overview, new ImmediateUiDispatcher());
+        _ = new SyncRunOverviewReloader(activity, new FakeSyncProgressFeed(), overview, new ImmediateUiDispatcher());
 
         activity.RaiseStarted(Personal);
         activity.RaiseFinished(Personal);
 
         source.Reads.ShouldBe(2);
+    }
+
+    [Fact]
+    public void when_progress_is_published_then_the_overview_reloads()
+    {
+        var source = new CountingOverviewSource();
+        var feed = new FakeSyncProgressFeed();
+        var overview = new SyncOverviewViewModel(source, new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        _ = new SyncRunOverviewReloader(new FakeSyncActivitySource(), feed, overview, new ImmediateUiDispatcher());
+
+        feed.Raise(Personal, SyncProgressFactory.Create(SyncPhaseFactory.CreateDownloading(), 50, 100));
+
+        source.Reads.ShouldBe(1);
     }
 
     private sealed class CountingOverviewSource : ISyncOverviewSource

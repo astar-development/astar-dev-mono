@@ -11,8 +11,9 @@ namespace AStarDev.CloudSync.Sync;
 /// <param name="files">Creates, moves and deletes local items.</param>
 /// <param name="baselineWriter">Writes the baseline rows.</param>
 /// <param name="options">The concurrency and the batch size.</param>
+/// <param name="sink">Takes the bytes downloaded so far.</param>
 /// <param name="logger">Reports why the pass stopped, with no paths.</param>
-internal sealed class DownloadExecutor(DownloadFileStep fileStep, ILocalFileOperations files, ISyncBaselineWriter baselineWriter, DownloadPassOptions options, ILogger<DownloadExecutor> logger)
+internal sealed class DownloadExecutor(DownloadFileStep fileStep, ILocalFileOperations files, ISyncBaselineWriter baselineWriter, DownloadPassOptions options, ISyncProgressSink sink, ILogger<DownloadExecutor> logger)
 {
     private const string Location = nameof(DownloadExecutor);
 
@@ -32,10 +33,14 @@ internal sealed class DownloadExecutor(DownloadFileStep fileStep, ILocalFileOper
         if (flushed.Match(_ => false, _ => true))
             return Stopped();
 
-        var downloaded = await DownloadAllAsync([.. plan.Items.OfType<DownloadPlanItem.DownloadFile>()], new DownloadRun(accountId, root, byPath, batch), cancellationToken).ConfigureAwait(false);
+        List<DownloadPlanItem.DownloadFile> files = [.. plan.Items.OfType<DownloadPlanItem.DownloadFile>()];
+        var tally = new PhaseTally(accountId, SyncPhaseFactory.CreateDownloading(), files.Sum(SizeOf), sink);
+        var downloaded = await DownloadAllAsync(files, new DownloadRun(accountId, root, byPath, batch, tally), cancellationToken).ConfigureAwait(false);
 
         return await downloaded.BindAsync(done => FinishAsync(accountId, root, plan, byPath, batch, [.. outcomes, .. done], cancellationToken)).ConfigureAwait(false);
     }
+
+    private static long SizeOf(DownloadPlanItem.DownloadFile item) => item.Item.Kind is RemoteItemKind.File file ? file.Size : 0;
 
     private static string FullPath(IDirectoryInfo root, RelativeSyncPath path) => root.FileSystem.Path.Join(root.FullName, path.Value);
 
@@ -109,7 +114,11 @@ internal sealed class DownloadExecutor(DownloadFileStep fileStep, ILocalFileOper
         if (Volatile.Read(ref run.Stopped.Value) == 1)
             return;
 
-        var step = await fileStep.RunAsync(run.AccountId, run.Root, item, Lookup(run.ByPath, item.Path), cancellationToken).ConfigureAwait(false);
+        var progress = run.Tally.ForFile(SizeOf(item));
+        var step = await fileStep.RunAsync(run.AccountId, run.Root, item, Lookup(run.ByPath, item.Path), progress, cancellationToken).ConfigureAwait(false);
+        if (step.Outcome is DownloadItemOutcome.Downloaded)
+            progress.Finish();
+
         run.Outcomes.Add(step.Outcome);
         step.Entry.Match(entry => { run.Batch.Upsert(entry); return Unit.Instance; }, () => Unit.Instance);
         if (IsDiskFull(step.Outcome))

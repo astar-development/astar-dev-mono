@@ -62,8 +62,11 @@ public sealed class ScriptedSyncSteps : IRemoteIndexUpdater, ILocalChangeDetecto
             await Task.Delay(5, cancellationToken);
     }
 
+    public Action OnStep { get; set; } = () => { };
+
     private T Record<T>(string step, T outcome)
     {
+        OnStep();
         lock (gate)
             steps.Add(step);
 

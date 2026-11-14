@@ -21,6 +21,10 @@ public sealed class ScriptedDownloader : IRemoteFileDownloader
 
     public TimeSpan Delay { get; set; } = TimeSpan.Zero;
 
+    public IReadOnlyList<long> Reports { get; set; } = [];
+
+    public Action BeforeEachReport { get; set; } = () => { };
+
     public IReadOnlyList<string> Calls
     {
         get
@@ -56,6 +60,11 @@ public sealed class ScriptedDownloader : IRemoteFileDownloader
                 await OnDownload(fileId.Value, target);
 
             cancellationToken.ThrowIfCancellationRequested();
+            foreach (var done in Reports)
+            {
+                BeforeEachReport();
+                progress.Report(TransferProgressFactory.Create(done, written.Length));
+            }
 
             return Result.Success<DownloadedFile, ProviderError>(DownloadedFileFactory.Create(fileId, RemoteIds.CTag("c-downloaded"), written.Length, Option.None<ContentHash>()));
         }

@@ -38,6 +38,9 @@ public sealed class DownloadPassFixture : IDisposable
             .AddSingleton<IRemoteIndexReader>(Remote)
             .AddKeyedSingleton<IRemoteFileDownloader>(CloudProviderFactory.CreateOneDrive(), Downloader)
             .AddCloudSync()
+            .AddSingleton<IRemoteIndexUpdater>(Steps)
+            .AddSingleton<ILocalChangeDetector>(Steps)
+            .AddSingleton<IUploadPass>(Steps)
             .AddSingleton<IPathQuarantine>(Quarantine)
             .AddSingleton<IDiskSpaceProbe>(Disk)
             .AddSingleton(options ?? DownloadPassOptionsFactory.Create())
@@ -45,6 +48,15 @@ public sealed class DownloadPassFixture : IDisposable
     }
 
     public AccountId Account { get; }
+
+    public ScriptedSyncSteps Steps { get; } = new();
+
+    public ISyncProgressFeed Feed => provider.GetRequiredService<ISyncProgressFeed>();
+
+    public ISyncRunStatusSource Status => provider.GetRequiredService<ISyncRunStatusSource>();
+
+    public Task<Result<SyncPassSummary, SyncPassFailure>> RunSyncAsync(CancellationToken cancellationToken) =>
+        provider.GetRequiredService<ISyncPassRunner>().RunAsync(Account, SyncTriggerFactory.CreateManual(), cancellationToken);
 
     public MockFileSystem FileSystem { get; }
 

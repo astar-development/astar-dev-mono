@@ -12,9 +12,7 @@ namespace AStarDev.CloudSync.Sync;
 /// <param name="options">The free-space margin.</param>
 internal sealed class DownloadFileStep(IProviderCapability<IRemoteFileDownloader> downloaders, ILocalFileOperations files, IContentHasher hasher, IDiskSpaceProbe disk, DownloadPassOptions options)
 {
-    private static readonly Progress<TransferProgress> NoProgress = new();
-
-    internal async Task<(DownloadItemOutcome Outcome, Option<SyncBaselineEntry> Entry)> RunAsync(AccountId accountId, IDirectoryInfo root, DownloadPlanItem.DownloadFile plan, Option<SyncBaselineEntry> baseline, CancellationToken cancellationToken)
+    internal async Task<(DownloadItemOutcome Outcome, Option<SyncBaselineEntry> Entry)> RunAsync(AccountId accountId, IDirectoryInfo root, DownloadPlanItem.DownloadFile plan, Option<SyncBaselineEntry> baseline, IProgress<TransferProgress> progress, CancellationToken cancellationToken)
     {
         var fileSystem = root.FileSystem;
         var target = fileSystem.FileInfo.New(fileSystem.Path.Join(root.FullName, plan.Path.Value));
@@ -25,7 +23,7 @@ internal sealed class DownloadFileStep(IProviderCapability<IRemoteFileDownloader
             return Failed(DownloadFailureFactory.CreateLocal(LocalOperationFailureFactory.CreateInsufficientDiskSpace()));
 
         return await files.CreateFolderAsync(folder, cancellationToken)
-            .MatchAsync(_ => DownloadToTempAsync(NewAttempt(accountId, plan, target, folder, size, baseline), cancellationToken), failure => Task.FromResult(Failed(DownloadFailureFactory.CreateLocal(failure))))
+            .MatchAsync(_ => DownloadToTempAsync(NewAttempt(accountId, plan, target, folder, size, baseline), progress, cancellationToken), failure => Task.FromResult(Failed(DownloadFailureFactory.CreateLocal(failure))))
             .ConfigureAwait(false);
     }
 
@@ -60,12 +58,12 @@ internal sealed class DownloadFileStep(IProviderCapability<IRemoteFileDownloader
         return Unit.Instance;
     });
 
-    private async Task<(DownloadItemOutcome Outcome, Option<SyncBaselineEntry> Entry)> DownloadToTempAsync(DownloadAttempt attempt, CancellationToken cancellationToken)
+    private async Task<(DownloadItemOutcome Outcome, Option<SyncBaselineEntry> Entry)> DownloadToTempAsync(DownloadAttempt attempt, IProgress<TransferProgress> progress, CancellationToken cancellationToken)
     {
         try
         {
             return await downloaders.ForAccountAsync(attempt.AccountId, cancellationToken)
-                .MatchAsync(downloader => FetchAsync(downloader, attempt, cancellationToken), error => Task.FromResult(ProviderFailed(error)))
+                .MatchAsync(downloader => FetchAsync(downloader, attempt, progress, cancellationToken), error => Task.FromResult(ProviderFailed(error)))
                 .ConfigureAwait(false);
         }
         finally
@@ -74,8 +72,8 @@ internal sealed class DownloadFileStep(IProviderCapability<IRemoteFileDownloader
         }
     }
 
-    private Task<(DownloadItemOutcome Outcome, Option<SyncBaselineEntry> Entry)> FetchAsync(IRemoteFileDownloader downloader, DownloadAttempt attempt, CancellationToken cancellationToken) =>
-        downloader.DownloadAsync(attempt.AccountId, attempt.Plan.Item.Id, attempt.Temp, NoProgress, cancellationToken)
+    private Task<(DownloadItemOutcome Outcome, Option<SyncBaselineEntry> Entry)> FetchAsync(IRemoteFileDownloader downloader, DownloadAttempt attempt, IProgress<TransferProgress> progress, CancellationToken cancellationToken) =>
+        downloader.DownloadAsync(attempt.AccountId, attempt.Plan.Item.Id, attempt.Temp, progress, cancellationToken)
             .MatchAsync(downloaded => InstallAsync(attempt, downloaded, cancellationToken), error => Task.FromResult(ProviderFailed(error)));
 
     private async Task<(DownloadItemOutcome Outcome, Option<SyncBaselineEntry> Entry)> InstallAsync(DownloadAttempt attempt, DownloadedFile downloaded, CancellationToken cancellationToken)
