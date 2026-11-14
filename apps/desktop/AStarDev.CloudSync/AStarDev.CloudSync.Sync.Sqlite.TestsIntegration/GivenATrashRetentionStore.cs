@@ -69,6 +69,17 @@ public sealed class GivenATrashRetentionStore : IAsyncLifetime
         (await GetAsync()).ShouldBe(LocalTrashOptionsFactory.Create());
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(400)]
+    public async Task when_a_retention_outside_the_range_is_saved_then_the_default_is_saved_and_returned(int days)
+    {
+        var saved = await Database.TrashRetentionSettings.SetAsync(LocalTrashOptionsFactory.Create(TimeSpan.FromDays(days)), CancellationToken);
+
+        saved.Match(options => (object)options, error => error).ShouldBe(LocalTrashOptionsFactory.Create());
+        (await GetAsync()).ShouldBe(LocalTrashOptionsFactory.Create());
+    }
+
     [Fact]
     public async Task when_twenty_saves_race_then_none_fail_and_one_of_the_values_remains()
     {

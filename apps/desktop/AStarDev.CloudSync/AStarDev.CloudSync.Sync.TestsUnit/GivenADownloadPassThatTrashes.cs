@@ -92,7 +92,7 @@ public sealed class GivenADownloadPassThatTrashes
     }
 
     [Fact]
-    public async Task when_the_setting_cannot_be_read_then_the_default_retention_applies()
+    public async Task when_the_setting_cannot_be_read_then_nothing_is_purged()
     {
         using var fixture = await DownloadPassFixture.CreateAsync(CancellationToken);
         fixture.Docs();
@@ -104,7 +104,7 @@ public sealed class GivenADownloadPassThatTrashes
 
         _ = await fixture.RunAsync(CancellationToken);
 
-        fixture.FileSystem.Directory.GetDirectories(Trash).Select(path => path[(Trash.Length + 1)..]).ShouldBe([$"{Stamp(now.AddDays(-29))}-bbbb"]);
+        fixture.FileSystem.Directory.GetDirectories(Trash).Select(path => path[(Trash.Length + 1)..]).ShouldBe([$"{Stamp(now.AddDays(-31))}-aaaa", $"{Stamp(now.AddDays(-29))}-bbbb"]);
     }
 
     [Fact]
