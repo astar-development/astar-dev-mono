@@ -22,7 +22,7 @@ internal sealed class DatabaseHealthGate(IDatabaseHealthCheck check) : IDatabase
             return Status;
 
         var entering = turn.WaitAsync(cancellationToken);
-        await ((Task)entering).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+        await entering.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
         if (!entering.IsCompletedSuccessfully)
             return Status;
 
