@@ -222,6 +222,57 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
+    public void when_application_services_are_added_then_the_conflict_list_is_resolved_and_is_the_one_in_the_main_window()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<AStarDev.CloudSync.ViewModels.Conflicts.ConflictListViewModel>().ShouldBeSameAs(provider.GetRequiredService<AStarDev.CloudSync.ViewModels.MainWindowViewModel>().ConflictList);
+    }
+
+    [Theory]
+    [InlineData("Conflict.Title")]
+    [InlineData("Conflict.Review")]
+    [InlineData("Conflict.Close")]
+    [InlineData("Conflict.Refresh")]
+    [InlineData("Conflict.FilterLabel")]
+    [InlineData("Conflict.Filter.All")]
+    [InlineData("Conflict.Kind.BothModified")]
+    [InlineData("Conflict.Kind.LocalModifiedRemoteDeleted")]
+    [InlineData("Conflict.Kind.LocalDeletedRemoteModified")]
+    [InlineData("Conflict.Kind.BothAdded")]
+    [InlineData("Conflict.Kind.MoveTargetTaken")]
+    [InlineData("Conflict.Kind.RemoteChangedDuringTransfer")]
+    [InlineData("Conflict.Skip")]
+    [InlineData("Conflict.Skipped")]
+    [InlineData("Conflict.Empty")]
+    [InlineData("Conflict.LoadFailed")]
+    [InlineData("Conflict.Detected")]
+    [InlineData("Conflict.Group.One")]
+    [InlineData("Conflict.Group.Many")]
+    [InlineData("Conflict.Action.AutomationName")]
+    [InlineData("Conflict.Unavailable.LocalSideAbsent")]
+    [InlineData("Conflict.Unavailable.RemoteSideAbsent")]
+    [InlineData("Conflict.Unavailable.NotAConflict")]
+    [InlineData("Conflict.Refused")]
+    [InlineData("Conflict.Error.NotAllowed")]
+    [InlineData("Conflict.Error.NotOpen")]
+    [InlineData("Conflict.Error.Unsupported")]
+    [InlineData("Conflict.Error.LocalFileMissing")]
+    [InlineData("Conflict.Error.RemoteFileMissing")]
+    [InlineData("Conflict.Error.LocalChanged")]
+    [InlineData("Conflict.Error.RemoteChanged")]
+    [InlineData("Conflict.Error.Transfer")]
+    [InlineData("Conflict.Error.Local")]
+    [InlineData("Conflict.Error.NotRecorded")]
+    [InlineData("Conflict.Error.Unexpected")]
+    public void when_application_services_are_added_then_the_conflict_list_keys_are_localised(string key)
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<ILocalizationService>().GetLocal(key).ShouldNotBe(key);
+    }
+
+    [Fact]
     public void when_application_services_are_added_then_the_sync_restart_question_and_the_sync_now_action_are_resolved_and_the_dialog_is_the_one_in_the_main_window()
     {
         using var provider = CreateServices().BuildServiceProvider();

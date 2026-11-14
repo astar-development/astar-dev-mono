@@ -99,9 +99,6 @@ public sealed class LayoutCViewModel : LocalizedObservableObject
     /// <summary>The selected sort order, e.g. "Sort: needs attention first".</summary>
     public string SortText => Localization.GetLocal("LayoutC.Sort", SelectedSortOption.Label);
 
-    /// <summary>The conflicts panel heading.</summary>
-    public string NeedsAttentionText => Localization.GetLocal("LayoutC.NeedsAttention");
-
     /// <summary>The activity feed heading.</summary>
     public string LiveActivityText => Localization.GetLocal("LayoutC.LiveActivity");
 
@@ -114,7 +111,7 @@ public sealed class LayoutCViewModel : LocalizedObservableObject
     /// <summary>The add account button text.</summary>
     public string AddAccountText => Localization.GetLocal("LayoutC.AddAccount");
 
-    private string ConflictsText => Localization.GetLocal(CountKey.For("Status.Conflicts", Overview.Conflicts.Count), Overview.Conflicts.Count.ToString("N0", Localization.CurrentCulture));
+    private string ConflictsText => Localization.GetLocal(CountKey.For("Status.Conflicts", Overview.ConflictCount), Overview.ConflictCount.ToString("N0", Localization.CurrentCulture));
 
     private string Count(Func<SyncPairViewModel, bool> predicate) => Overview.SyncPairs.Count(predicate).ToString("N0", Localization.CurrentCulture);
 

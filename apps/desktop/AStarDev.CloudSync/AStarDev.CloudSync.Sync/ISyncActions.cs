@@ -34,22 +34,4 @@ public interface ISyncActions
     /// <param name="cancellationToken">Cancels the request.</param>
     /// <returns>A task that completes when the request has been handled.</returns>
     Task AddSyncPairAsync(Option<AccountId> accountId, CancellationToken cancellationToken);
-
-    /// <summary>Resolves the conflict by keeping both the local and the cloud copy.</summary>
-    /// <param name="conflict">The conflict to resolve.</param>
-    /// <param name="cancellationToken">Cancels the request.</param>
-    /// <returns>A task that completes when the request has been handled.</returns>
-    Task KeepBothAsync(SyncConflict conflict, CancellationToken cancellationToken);
-
-    /// <summary>Resolves the conflict by keeping the local copy.</summary>
-    /// <param name="conflict">The conflict to resolve.</param>
-    /// <param name="cancellationToken">Cancels the request.</param>
-    /// <returns>A task that completes when the request has been handled.</returns>
-    Task KeepLocalAsync(SyncConflict conflict, CancellationToken cancellationToken);
-
-    /// <summary>Resolves the conflict by keeping the cloud copy.</summary>
-    /// <param name="conflict">The conflict to resolve.</param>
-    /// <param name="cancellationToken">Cancels the request.</param>
-    /// <returns>A task that completes when the request has been handled.</returns>
-    Task KeepCloudAsync(SyncConflict conflict, CancellationToken cancellationToken);
 }

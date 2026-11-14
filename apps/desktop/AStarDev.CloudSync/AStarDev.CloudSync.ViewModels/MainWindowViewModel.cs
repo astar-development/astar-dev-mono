@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using AStarDev.CloudSync.DisplaySettings;
 using AStarDev.CloudSync.ViewModels.Accounts;
+using AStarDev.CloudSync.ViewModels.Conflicts;
 using AStarDev.CloudSync.ViewModels.DisplaySettings;
 using AStarDev.CloudSync.ViewModels.FolderSelection;
 using AStarDev.CloudSync.ViewModels.Layouts;
@@ -15,27 +16,24 @@ public sealed class MainWindowViewModel : LocalizedObservableObject
     /// <summary>Creates the view model and follows layout changes in the display settings.</summary>
     /// <param name="localization">The localisation service supplying the window's text.</param>
     /// <param name="displaySettings">The layout and theme choices.</param>
-    /// <param name="layoutA">Layout A, the unified account list.</param>
-    /// <param name="layoutB">Layout B, grouped by provider.</param>
-    /// <param name="layoutC">Layout C, sync pairs first.</param>
-    /// <param name="addAccount">The add-account dialog shown over the layout.</param>
-    /// <param name="accountDialog">The remove-account and sign-in dialog shown over the layout.</param>
-    /// <param name="folderSelection">The folder selection dialog shown over the layout.</param>
-    /// <param name="syncRestart">The question shown when Sync Now is pressed while the account is syncing.</param>
-    public MainWindowViewModel(ILocalizationService localization, DisplaySettingsViewModel displaySettings, LayoutAViewModel layoutA, LayoutBViewModel layoutB, LayoutCViewModel layoutC, AddAccountViewModel addAccount, AccountDialogViewModel accountDialog, FolderSelectionViewModel folderSelection, ConfirmSyncRestartViewModel syncRestart) : base(localization)
+    /// <param name="layouts">The three layouts.</param>
+    /// <param name="dialogs">The dialogs and screens shown over the layout.</param>
+    public MainWindowViewModel(ILocalizationService localization, DisplaySettingsViewModel displaySettings, MainWindowLayouts layouts, MainWindowDialogs dialogs) : base(localization)
     {
         DisplaySettings = displaySettings;
-        LayoutA = layoutA;
-        LayoutB = layoutB;
-        LayoutC = layoutC;
-        AddAccount = addAccount;
-        AccountDialog = accountDialog;
-        FolderSelection = folderSelection;
-        SyncRestart = syncRestart;
-        syncRestart.PropertyChanged += OnSyncRestartChanged;
-        accountDialog.PropertyChanged += OnDialogChanged;
-        folderSelection.PropertyChanged += OnFolderSelectionChanged;
-        addAccount.PropertyChanged += OnDialogChanged;
+        LayoutA = layouts.LayoutA;
+        LayoutB = layouts.LayoutB;
+        LayoutC = layouts.LayoutC;
+        AddAccount = dialogs.AddAccount;
+        AccountDialog = dialogs.AccountDialog;
+        FolderSelection = dialogs.FolderSelection;
+        SyncRestart = dialogs.SyncRestart;
+        ConflictList = dialogs.ConflictList;
+        SyncRestart.PropertyChanged += OnSyncRestartChanged;
+        ConflictList.PropertyChanged += OnConflictListChanged;
+        AccountDialog.PropertyChanged += OnDialogChanged;
+        FolderSelection.PropertyChanged += OnFolderSelectionChanged;
+        AddAccount.PropertyChanged += OnDialogChanged;
         displaySettings.PropertyChanged += OnDisplaySettingsChanged;
     }
 
@@ -66,8 +64,11 @@ public sealed class MainWindowViewModel : LocalizedObservableObject
     /// <summary>The question shown when Sync Now is pressed while the account is syncing.</summary>
     public ConfirmSyncRestartViewModel SyncRestart { get; }
 
+    /// <summary>The conflict list screen.</summary>
+    public ConflictListViewModel ConflictList { get; }
+
     /// <summary>Whether a modal dialog is open, so the layout behind it is disabled.</summary>
-    public bool IsDialogOpen => AddAccount.IsOpen || AccountDialog.IsOpen || FolderSelection.IsOpen || SyncRestart.IsOpen;
+    public bool IsDialogOpen => AddAccount.IsOpen || AccountDialog.IsOpen || FolderSelection.IsOpen || SyncRestart.IsOpen || ConflictList.IsOpen;
 
     /// <summary>The view model of the layout to show. Each layout keeps its own state, so switching back restores it.</summary>
     public object CurrentLayout => DisplaySettings.CurrentLayout switch
@@ -86,6 +87,12 @@ public sealed class MainWindowViewModel : LocalizedObservableObject
     private void OnFolderSelectionChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(FolderSelectionViewModel.IsOpen))
+            OnPropertyChanged(nameof(IsDialogOpen));
+    }
+
+    private void OnConflictListChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ConflictListViewModel.IsOpen))
             OnPropertyChanged(nameof(IsDialogOpen));
     }
 

@@ -1,7 +1,6 @@
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Activity;
 using AStarDev.CloudSync.Common;
-using AStarDev.CloudSync.Conflicts;
 using AStarDev.CloudSync.Overview;
 using AStarDev.CloudSync.TestHelpers.Ui;
 using AStarDev.CloudSync.ViewModels.Overview;
@@ -17,7 +16,7 @@ public class GivenTheSharedControlSnapshots
     public static TheoryData<string, string> ControlsAndThemes()
     {
         var data = new TheoryData<string, string>();
-        foreach (string control in new[] { "provider-badge", "status-pill", "storage-bar", "activity-row", "conflict-card", "stat-tile", "stat-tile-warn", "stat-tile-accent", "throughput-sparkline" })
+        foreach (string control in new[] { "provider-badge", "status-pill", "storage-bar", "activity-row", "stat-tile", "stat-tile-warn", "stat-tile-accent", "throughput-sparkline" })
         {
             data.Add(control, "dark");
             data.Add(control, "light");
@@ -51,7 +50,6 @@ public class GivenTheSharedControlSnapshots
         "status-pill" => new StatusPill { DataContext = overview.Accounts[0].Status },
         "storage-bar" => new StorageBar { DataContext = overview.Accounts[0].Storage },
         "activity-row" => new ActivityRow { DataContext = overview.Activity[0] },
-        "conflict-card" => new ConflictCard { DataContext = overview.Conflicts[0] },
         "stat-tile" => new StatTile { DataContext = overview.Stats[0] },
         "stat-tile-warn" => new StatTile { DataContext = overview.Stats[3] },
         "stat-tile-accent" => new StatTile { DataContext = overview.Stats[4] },

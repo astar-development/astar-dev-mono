@@ -3,7 +3,7 @@ using Avalonia.Markup.Xaml;
 
 namespace AStarDev.CloudSync.Conflicts;
 
-/// <summary>Shared control used by every main window layout. Bind its DataContext to the matching view model.</summary>
+/// <summary>One conflict of the conflict list with its strategy buttons. Bind its DataContext to <c>ConflictItemViewModel</c>.</summary>
 public partial class ConflictCard : UserControl
 {
     /// <summary>Creates the control and loads its XAML.</summary>

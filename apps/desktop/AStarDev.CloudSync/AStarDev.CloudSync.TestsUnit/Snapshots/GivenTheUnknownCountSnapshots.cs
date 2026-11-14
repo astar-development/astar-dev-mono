@@ -51,7 +51,7 @@ public class GivenTheUnknownCountSnapshots
 
     private static async Task<SyncOverviewViewModel> CreateOverviewAsync()
     {
-        var overview = new SyncOverviewViewModel(new FixedOverviewSource(SyncOverviewFactory.Create([TestData.CreateAccountWithUnknownCounts()], [], [], [], [], 0, Option.None<DateTimeOffset>())), new RecordingSyncActions(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        var overview = new SyncOverviewViewModel(new FixedOverviewSource(SyncOverviewFactory.Create([TestData.CreateAccountWithUnknownCounts()], [], [], [], [], 0, Option.None<DateTimeOffset>())), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         await overview.LoadAsync(TestContext.Current.CancellationToken);
 
         return overview;

@@ -2,13 +2,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:accounts="using:AStarDev.CloudSync.Accounts"
              xmlns:activity="using:AStarDev.CloudSync.Activity"
-             xmlns:conflicts="using:AStarDev.CloudSync.Conflicts"
              xmlns:displaySettings="using:AStarDev.CloudSync.DisplaySettings"
              xmlns:overview="using:AStarDev.CloudSync.Overview"
              xmlns:common="using:AStarDev.CloudSync.Common"
              xmlns:vmAccounts="using:AStarDev.CloudSync.ViewModels.Accounts"
              xmlns:vmActivity="using:AStarDev.CloudSync.ViewModels.Activity"
-             xmlns:vmConflicts="using:AStarDev.CloudSync.ViewModels.Conflicts"
              xmlns:vmLayouts="using:AStarDev.CloudSync.ViewModels.Layouts"
              xmlns:vmSyncPairs="using:AStarDev.CloudSync.ViewModels.SyncPairs"
              x:Class="AStarDev.CloudSync.Layouts.LayoutCView"
@@ -331,62 +329,35 @@
                     BorderBrush="{DynamicResource CloudSyncBorderBrush}"
                     BorderThickness="1,0,0,0">
                 <Grid RowDefinitions="Auto,*"
+                      RowSpacing="12"
+                      Margin="20,20,20,0"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch">
-
-                    <Border Grid.Row="0"
-                            Padding="20"
-                            BorderBrush="{DynamicResource CloudSyncBorderBrush}"
-                            BorderThickness="0,0,0,1">
-                        <StackPanel Spacing="12">
-                            <TextBlock Classes="heading" Text="{Binding NeedsAttentionText}" />
-                            <ItemsControl ItemsSource="{Binding Overview.Conflicts}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <StackPanel Spacing="12" />
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="vmConflicts:ConflictViewModel">
-                                        <conflicts:ConflictCard />
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                        <TextBlock Grid.Column="0" Classes="heading" Text="{Binding LiveActivityText}" />
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <Ellipse Classes="dot" />
+                            <TextBlock Text="{Binding LiveText}" FontSize="12" Foreground="{DynamicResource CloudSyncAccentBrush}" VerticalAlignment="Center" />
                         </StackPanel>
-                    </Border>
-
-                    <Grid Grid.Row="1"
-                          RowDefinitions="Auto,*"
-                          RowSpacing="12"
-                          Margin="20,20,20,0"
-                          HorizontalAlignment="Stretch"
-                          VerticalAlignment="Stretch">
-                        <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
-                            <TextBlock Grid.Column="0" Classes="heading" Text="{Binding LiveActivityText}" />
-                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                <Ellipse Classes="dot" />
-                                <TextBlock Text="{Binding LiveText}" FontSize="12" Foreground="{DynamicResource CloudSyncAccentBrush}" VerticalAlignment="Center" />
-                            </StackPanel>
-                        </Grid>
-                        <ScrollViewer Grid.Row="1"
-                                      VerticalScrollBarVisibility="Auto"
-                                      HorizontalScrollBarVisibility="Disabled"
-                                      MinHeight="0"
-                                      Padding="0,0,0,20">
-                            <ItemsControl ItemsSource="{Binding Overview.Activity}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <StackPanel Spacing="12" />
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="vmActivity:ActivityItemViewModel">
-                                        <activity:ActivityRow />
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </ScrollViewer>
                     </Grid>
+                    <ScrollViewer Grid.Row="1"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  MinHeight="0"
+                                  Padding="0,0,0,20">
+                        <ItemsControl ItemsSource="{Binding Overview.Activity}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Spacing="12" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vmActivity:ActivityItemViewModel">
+                                    <activity:ActivityRow />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
                 </Grid>
             </Border>
         </Grid>

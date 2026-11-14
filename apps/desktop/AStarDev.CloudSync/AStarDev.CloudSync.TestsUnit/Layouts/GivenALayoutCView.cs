@@ -1,7 +1,6 @@
 using AStarDev.CloudSync.Layouts;
 using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.CloudSync.TestHelpers.Ui;
-using AStarDev.CloudSync.ViewModels.Conflicts;
 using AStarDev.CloudSync.ViewModels.Layouts;
 using AStarDev.CloudSync.ViewModels.SyncPairs;
 using Avalonia.Automation;
@@ -76,7 +75,7 @@ public class GivenALayoutCView
     }
 
     [AvaloniaFact]
-    public async Task when_shown_then_the_new_sync_pair_add_account_and_conflict_buttons_are_bound_to_their_commands()
+    public async Task when_shown_then_the_new_sync_pair_and_add_account_buttons_are_bound_to_their_commands()
     {
         var window = await CreateShownWindowAsync();
         var layout = window.Content.ShouldBeOfType<LayoutCView>().DataContext.ShouldBeOfType<LayoutCViewModel>();
@@ -84,11 +83,6 @@ public class GivenALayoutCView
 
         buttons.Single(button => Equals(button.Content, "+ New sync pair")).Command.ShouldBeSameAs(layout.NewSyncPairCommand);
         buttons.Single(button => Equals(button.Content, "+ Add account")).Command.ShouldBeSameAs(layout.AddAccountCommand);
-        var keepBoth = buttons.Where(button => Equals(button.Content, "Keep both")).ToList();
-        keepBoth.Count.ShouldBe(2);
-        keepBoth.ShouldAllBe(button => button.Command == ((ConflictViewModel)button.DataContext!).KeepBothCommand);
-        buttons.Where(button => Equals(button.Content, "Keep local")).ShouldAllBe(button => button.Command == ((ConflictViewModel)button.DataContext!).KeepLocalCommand);
-        buttons.Where(button => Equals(button.Content, "Keep cloud")).ShouldAllBe(button => button.Command == ((ConflictViewModel)button.DataContext!).KeepCloudCommand);
     }
 
     private static List<Button> FindChips(Window window) => [.. window.GetVisualDescendants().OfType<Button>().Where(button => button.Classes.Contains("chip"))];

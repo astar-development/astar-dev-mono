@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:accounts="using:AStarDev.CloudSync.Accounts"
+        xmlns:conflicts="using:AStarDev.CloudSync.Conflicts"
         xmlns:folderSelection="using:AStarDev.CloudSync.FolderSelection"
         xmlns:layouts="using:AStarDev.CloudSync.Layouts"
         xmlns:syncRestart="using:AStarDev.CloudSync.SyncRestart"
@@ -15,16 +16,28 @@
     <Grid RowDefinitions="Auto,*"
           HorizontalAlignment="Stretch"
           VerticalAlignment="Stretch">
-        <Border Grid.Row="0"
-                Background="{DynamicResource CloudSyncWarnSoftBrush}"
-                BorderBrush="{DynamicResource CloudSyncWarnBrush}"
-                BorderThickness="0,0,0,1"
-                Padding="16,8"
-                IsVisible="{Binding LayoutA.Overview.LoadErrorText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-            <TextBlock Text="{Binding LayoutA.Overview.LoadErrorText}"
-                       Foreground="{DynamicResource CloudSyncTextPrimaryBrush}"
-                       TextWrapping="Wrap" />
-        </Border>
+        <StackPanel Grid.Row="0">
+            <Border Background="{DynamicResource CloudSyncWarnSoftBrush}"
+                    BorderBrush="{DynamicResource CloudSyncWarnBrush}"
+                    BorderThickness="0,0,0,1"
+                    Padding="16,8"
+                    IsVisible="{Binding LayoutA.Overview.LoadErrorText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                <TextBlock Text="{Binding LayoutA.Overview.LoadErrorText}"
+                           Foreground="{DynamicResource CloudSyncTextPrimaryBrush}"
+                           TextWrapping="Wrap" />
+            </Border>
+            <Border Padding="16,6"
+                    HorizontalAlignment="Stretch"
+                    BorderBrush="{DynamicResource CloudSyncBorderBrush}"
+                    BorderThickness="0,0,0,1"
+                    IsEnabled="{Binding !IsDialogOpen}">
+                <Button HorizontalAlignment="Right"
+                        Classes="secondary"
+                        Content="{Binding ConflictList.ReviewText}"
+                        Command="{Binding ConflictList.OpenCommand}"
+                        AutomationProperties.Name="{Binding ConflictList.ReviewText}" />
+            </Border>
+        </StackPanel>
         <ContentControl x:Name="LayoutHost"
                         Grid.Row="1"
                         IsEnabled="{Binding !IsDialogOpen}"
@@ -60,6 +73,14 @@
                 Background="{DynamicResource CloudSyncScrimBrush}"
                 IsVisible="{Binding FolderSelection.IsOpen}">
             <folderSelection:FolderSelectionView DataContext="{Binding FolderSelection}" />
+        </Border>
+        <Border Grid.Row="0"
+                Grid.RowSpan="2"
+                Background="{DynamicResource CloudSyncScrimBrush}"
+                IsVisible="{Binding ConflictList.IsOpen}">
+            <conflicts:ConflictListView DataContext="{Binding ConflictList}"
+                                        Margin="32"
+                                        MaxWidth="960" />
         </Border>
         <Border Grid.Row="0"
                 Grid.RowSpan="2"

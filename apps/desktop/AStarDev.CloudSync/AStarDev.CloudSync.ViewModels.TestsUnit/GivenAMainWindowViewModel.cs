@@ -96,6 +96,20 @@ public class GivenAMainWindowViewModel
     }
 
     [Fact]
+    public async Task when_the_conflict_list_opens_and_closes_then_the_dialog_flag_follows_and_is_raised_each_time()
+    {
+        var viewModel = TestData.CreateMainWindowViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), TestData.CreateDisplaySettings());
+        var raised = new List<string?>();
+        viewModel.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
+
+        await viewModel.ConflictList.OpenCommand.ExecuteAsync(null);
+        var whileOpen = viewModel.IsDialogOpen;
+        viewModel.ConflictList.CloseCommand.Execute(null);
+
+        (whileOpen, viewModel.IsDialogOpen, raised.Count(name => name == nameof(MainWindowViewModel.IsDialogOpen))).ShouldBe((true, false, 2));
+    }
+
+    [Fact]
     public async Task when_the_sync_restart_question_opens_and_closes_then_the_dialog_flag_follows_and_is_raised_each_time()
     {
         var viewModel = TestData.CreateMainWindowViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), TestData.CreateDisplaySettings());
