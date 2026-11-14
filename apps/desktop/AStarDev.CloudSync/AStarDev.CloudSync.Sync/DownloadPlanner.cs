@@ -4,7 +4,8 @@ namespace AStarDev.CloudSync.Sync;
 
 /// <inheritdoc />
 /// <param name="evaluator">Judges paths against the selection rules.</param>
-internal sealed class DownloadPlanner(ISyncSelectionEvaluator evaluator) : IDownloadPlanner
+/// <param name="classifier">Decides the conflict kind when a remote move lands on a taken local path.</param>
+internal sealed class DownloadPlanner(ISyncSelectionEvaluator evaluator, IConflictClassifier classifier) : IDownloadPlanner
 {
     /// <inheritdoc />
     public DownloadPlan Plan(DownloadPlanRequest request)
@@ -75,7 +76,7 @@ internal sealed class DownloadPlanner(ISyncSelectionEvaluator evaluator) : IDown
 
     private static bool WaitsForNextPassOrChanges(LocalChange change) => WaitsForNextPass(change) || ChangesData(change);
 
-    private static IEnumerable<DownloadPlanItem> ForRemote(DownloadPlanState state, RemoteIndexEntry entry, IEnumerable<DownloadFolderMove> moves)
+    private IEnumerable<DownloadPlanItem> ForRemote(DownloadPlanState state, RemoteIndexEntry entry, IEnumerable<DownloadFolderMove> moves)
     {
         if (!state.Downloads(entry.Path) || IsHeldBack(state.QuarantineAt(entry.Path)))
             return [];
@@ -100,7 +101,7 @@ internal sealed class DownloadPlanner(ISyncSelectionEvaluator evaluator) : IDown
             },
             () => remoteChanged || (state.IsMissingLocally(entry.Path) && state.QuarantineAt(entry.Path) is PathQuarantineState.Clear) ? Fetch(entry) : []);
 
-    private static IEnumerable<DownloadPlanItem> Moved(DownloadPlanState state, RemoteIndexEntry entry, SyncBaselineEntry baseline, IReadOnlyList<DownloadFolderMove> moves)
+    private IEnumerable<DownloadPlanItem> Moved(DownloadPlanState state, RemoteIndexEntry entry, SyncBaselineEntry baseline, IReadOnlyList<DownloadFolderMove> moves)
     {
         var from = baseline.Path;
         if (IsHeldBack(state.QuarantineAt(from)) || moves.Any(move => move.Blocked && DownloadPlanState.IsBelow(from, move.From)))
@@ -114,15 +115,22 @@ internal sealed class DownloadPlanner(ISyncSelectionEvaluator evaluator) : IDown
         return own.Match(change => change is LocalChange.Deleted ? Conflict(from, ConflictKindFactory.CreateLocalDeletedRemoteModified(), own, Option.Some(entry.Item)) : Conflict(from, ConflictKindFactory.CreateBothModified(), own, Option.Some(entry.Item)), () => MovedUnchangedItself(state, entry, baseline, below, moves));
     }
 
-    private static IEnumerable<DownloadPlanItem> MovedUnchangedItself(DownloadPlanState state, RemoteIndexEntry entry, SyncBaselineEntry baseline, IReadOnlyList<LocalChange> below, IReadOnlyList<DownloadFolderMove> moves)
+    private IEnumerable<DownloadPlanItem> MovedUnchangedItself(DownloadPlanState state, RemoteIndexEntry entry, SyncBaselineEntry baseline, IReadOnlyList<LocalChange> below, IReadOnlyList<DownloadFolderMove> moves)
     {
         if (below.Any(ChangesData))
             return Conflict(baseline.Path, ConflictKindFactory.CreateBothModified(), state.LocalAt(baseline.Path), Option.Some(entry.Item));
 
         if (IsTargetTaken(state, entry, baseline))
-            return Conflict(entry.Path, ConflictKindFactory.CreateMoveTargetTaken(), state.LocalAt(entry.Path), Option.Some(entry.Item));
+            return Conflict(entry.Path, MoveTargetKind(state, entry), state.LocalAt(entry.Path), Option.Some(entry.Item));
 
         return moves.Any(move => !move.Blocked && IsCoveredBy(move, baseline.Path, entry.Path)) ? [] : [DownloadPlanItemFactory.CreateMoveLocal(baseline.Path, entry.Path, entry.Item.Id)];
+    }
+
+    private ConflictKind MoveTargetKind(DownloadPlanState state, RemoteIndexEntry entry)
+    {
+        var evidence = ConflictEvidenceFactory.Create(ConflictSides.Local(state.LocalAt(entry.Path)), ConflictSides.Remote(entry.Item), Option.None<ConflictBaseline>(), ConflictSignalFactory.CreateMoveTargetInUse());
+
+        return classifier.Classify(evidence).Match(kind => kind, ConflictKindFactory.CreateMoveTargetTaken);
     }
 
     private static bool IsTargetTaken(DownloadPlanState state, RemoteIndexEntry entry, SyncBaselineEntry baseline) =>

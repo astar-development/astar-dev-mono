@@ -10,7 +10,8 @@ namespace AStarDev.CloudSync.Sync;
 /// <param name="baseline">Writes linked folders and deletion changes to the baseline.</param>
 /// <param name="options">The concurrency limit.</param>
 /// <param name="sink">Takes the bytes uploaded so far.</param>
-internal sealed class UploadItemExecutor(IUploadRecorder recorder, ISyncBaselineWriter baseline, UploadPassOptions options, ISyncProgressSink sink)
+/// <param name="classifier">Decides the conflict kind when the provider answers a failed precondition.</param>
+internal sealed class UploadItemExecutor(IUploadRecorder recorder, ISyncBaselineWriter baseline, UploadPassOptions options, ISyncProgressSink sink, IConflictClassifier classifier)
 {
     private const char Separator = '/';
 
@@ -81,24 +82,32 @@ internal sealed class UploadItemExecutor(IUploadRecorder recorder, ISyncBaseline
             parent => run.Folders.TryGetValue(parent, out var id) ? Result.Success<Option<RemoteItemId>, UploadItemOutcome>(Option.Some(id)) : Result.Failure<Option<RemoteItemId>, UploadItemOutcome>(UploadItemOutcomeFactory.CreateFailed(path, ProviderErrorFactory.CreateNotFound())),
             () => Result.Success<Option<RemoteItemId>, UploadItemOutcome>(Option.None<RemoteItemId>()));
 
-    private static ConflictFinding FindingFor(PassRun run, RelativeSyncPath path, ConflictKind kind)
-    {
-        var change = run.Input.Changes.Changes.FirstOrNone(candidate => candidate.Path == path);
-        var remote = run.Input.Remote.TryGetValue(path, out var found) ? Option.Some(found) : Option.None<RemoteItemSnapshot>();
+    private static ConflictFinding FindingFor(PassRun run, RelativeSyncPath path, ConflictKind kind) => ConflictSides.Finding(path, kind, ChangeAt(run, path), RemoteAt(run, path));
 
-        return ConflictSides.Finding(path, kind, change, remote);
+    private ConflictFinding PreconditionFindingFor(PassRun run, RelativeSyncPath path)
+    {
+        var change = ChangeAt(run, path);
+        var remote = RemoteAt(run, path);
+        var evidence = ConflictEvidenceFactory.Create(ConflictSides.Local(change), ConflictSides.Remote(remote), Option.None<ConflictBaseline>(), ConflictSignalFactory.CreatePreconditionFailed());
+
+        return ConflictSides.Finding(path, classifier.Classify(evidence).Match(kind => kind, ConflictKindFactory.CreateRemoteChangedDuringTransfer), change, remote);
     }
+
+    private static Option<LocalChange> ChangeAt(PassRun run, RelativeSyncPath path) => run.Input.Changes.Changes.FirstOrNone(candidate => candidate.Path == path);
+
+    private static Option<RemoteItemSnapshot> RemoteAt(PassRun run, RelativeSyncPath path) => run.Input.Remote.TryGetValue(path, out var found) ? Option.Some(found) : Option.None<RemoteItemSnapshot>();
 
     private static IFileInfo SourceOf(PassRun run, RelativeSyncPath path) => run.Input.Root.FileSystem.FileInfo.New(run.Input.Root.FileSystem.Path.Join(run.Input.Root.FullName, path.Value));
 
-    private static UploadItemOutcome UploadFailed(PassRun run, UploadPlanItem item, ProviderError error)
+    private UploadItemOutcome UploadFailed(PassRun run, UploadPlanItem item, ProviderError error)
     {
         run.Observe(error);
         var isReplace = item is UploadPlanItem.UploadReplace;
 
         return error switch
         {
-            ProviderError.PreconditionFailed or ProviderError.NameConflict => UploadItemOutcomeFactory.CreateSentToConflicts(FindingFor(run, item.Path, isReplace ? ConflictKindFactory.CreateBothModified() : ConflictKindFactory.CreateBothAdded())),
+            ProviderError.PreconditionFailed => UploadItemOutcomeFactory.CreateSentToConflicts(PreconditionFindingFor(run, item.Path)),
+            ProviderError.NameConflict => UploadItemOutcomeFactory.CreateSentToConflicts(FindingFor(run, item.Path, isReplace ? ConflictKindFactory.CreateBothModified() : ConflictKindFactory.CreateBothAdded())),
             ProviderError.SourceChanged => UploadItemOutcomeFactory.CreateDeferred(item.Path),
             _ => UploadItemOutcomeFactory.CreateFailed(item.Path, error),
         };
@@ -201,12 +210,12 @@ internal sealed class UploadItemExecutor(IUploadRecorder recorder, ISyncBaseline
         return await ForgetAsync(run, item.Path, cancellationToken).ConfigureAwait(false);
     }
 
-    private static UploadItemOutcome RemoveFailed(PassRun run, RelativeSyncPath path, ProviderError error)
+    private UploadItemOutcome RemoveFailed(PassRun run, RelativeSyncPath path, ProviderError error)
     {
         run.Observe(error);
 
         return error is ProviderError.PreconditionFailed
-            ? UploadItemOutcomeFactory.CreateSentToConflicts(FindingFor(run, path, ConflictKindFactory.CreateLocalDeletedRemoteModified()))
+            ? UploadItemOutcomeFactory.CreateSentToConflicts(PreconditionFindingFor(run, path))
             : UploadItemOutcomeFactory.CreateFailed(path, error);
     }
 

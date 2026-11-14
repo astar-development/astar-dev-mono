@@ -42,6 +42,8 @@ public sealed class UploadPassFixture : IDisposable
 
     public QuarantineSnapshot Quarantine { get; set; } = QuarantineSnapshotFactory.CreateEmpty();
 
+    public IConflictClassifier Classifier { get; set; } = new ConflictClassifier();
+
     public bool HasRoot { get; set; } = true;
 
     public int MaxConcurrentUploads { get; set; } = 8;
@@ -83,6 +85,7 @@ public sealed class UploadPassFixture : IDisposable
             .AddLogging(logging => logging.ClearProviders().AddProvider(Logs))
             .AddSingleton<System.TimeProvider>(Time)
             .AddCloudSync()
+            .AddSingleton(Classifier)
             .AddSingleton<IAccountStore>(accounts)
             .AddSingleton<ISyncRootReader>(roots)
             .AddSingleton<ISelectionRuleReader>(new FixedSelectionRuleReader(Rules))

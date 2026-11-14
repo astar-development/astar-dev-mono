@@ -17,11 +17,13 @@ public sealed class TemporarySyncDatabase : IAsyncDisposable
 {
     public const string Home = "/home/jbarden";
 
-    private readonly ServiceProvider serviceProvider;
+    private readonly Func<ServiceProvider> build;
+    private ServiceProvider serviceProvider;
     private readonly IDirectoryInfo testFolder;
 
-    private TemporarySyncDatabase(ServiceProvider serviceProvider, IDirectoryInfo testFolder, MockFileSystem fileSystem, string databasePath, RecordingLoggerProvider logs)
+    private TemporarySyncDatabase(ServiceProvider serviceProvider, IDirectoryInfo testFolder, MockFileSystem fileSystem, string databasePath, RecordingLoggerProvider logs, Func<ServiceProvider> build)
     {
+        this.build = build;
         DatabasePath = databasePath;
         Logs = logs;
         this.serviceProvider = serviceProvider;
@@ -99,9 +101,9 @@ public sealed class TemporarySyncDatabase : IAsyncDisposable
             .AddCloudSyncPersistence(_ => databaseFile)
             .AddSyncPersistence(_ => databaseFile);
         configure?.Invoke(services);
-        var serviceProvider = services.BuildServiceProvider();
+        var build = () => services.BuildServiceProvider();
 
-        return new TemporarySyncDatabase(serviceProvider, testFolder, fileSystem, databaseFile.FullName, logs);
+        return new TemporarySyncDatabase(build(), testFolder, fileSystem, databaseFile.FullName, logs, build);
     }
 
     public static async Task<TemporarySyncDatabase> CreateMigratedAsync(CancellationToken cancellationToken, Action<IServiceCollection>? configure = null)
@@ -115,6 +117,13 @@ public sealed class TemporarySyncDatabase : IAsyncDisposable
         await database.DisposeAsync();
 
         throw new InvalidOperationException("The test database could not be migrated.");
+    }
+
+    public async Task RestartAsync()
+    {
+        await serviceProvider.DisposeAsync();
+        SqliteConnection.ClearAllPools();
+        serviceProvider = build();
     }
 
     public IDirectoryInfo Folder(string path) => FileSystem.DirectoryInfo.New(path);

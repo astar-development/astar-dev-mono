@@ -53,6 +53,16 @@ public class GivenADownloadPlannerForMovesAndDeletions
     }
 
     [Fact]
+    public void when_a_move_target_is_taken_then_the_kind_comes_from_the_classifier_with_a_move_target_signal()
+    {
+        var classifier = new RecordingConflictClassifier(ConflictKindFactory.CreateBothAdded());
+        var scenario = new DownloadScenario().ClassifiedBy(classifier).BaselineFile("Docs/a.txt", "a", "c1").RemoteFile("Docs/b.txt", "a", "c1").LocalAdded("Docs/b.txt");
+
+        scenario.Describe().ShouldBe(["conflict BothAdded Docs/b.txt"]);
+        classifier.Signals.ShouldContain(signal => signal is ConflictSignal.MoveTargetInUse);
+    }
+
+    [Fact]
     public void when_a_remote_file_was_renamed_onto_another_baseline_item_then_it_goes_to_conflicts_as_move_target_taken()
     {
         var scenario = new DownloadScenario().BaselineFile("Docs/a.txt", "a", "c1").BaselineFile("Docs/b.txt", "b", "c1").RemoteFile("Docs/b.txt", "a", "c1").RemoteFile("Docs/c.txt", "b", "c1");
