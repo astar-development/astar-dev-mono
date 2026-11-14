@@ -43,8 +43,8 @@ public sealed class HeldDeletionItemViewModel : LocalizedObservableObject
     /// <summary>What would be deleted and where, with the count.</summary>
     public string SummaryText => Localization.GetLocal(CountKey.For(held.Direction is DeletionDirection.DeleteLocal ? "Held.DeleteLocal" : "Held.DeleteRemote", held.Paths.Count), held.Paths.Count.ToString("N0", Localization.CurrentCulture));
 
-    /// <summary>The held paths.</summary>
-    public IReadOnlyList<string> PathTexts => [.. held.Paths.Select(path => path.Value)];
+    /// <summary>The held paths; empty until the set is expanded, so a large set costs nothing while collapsed.</summary>
+    public IReadOnlyList<string> PathTexts => isExpanded ? [.. held.Paths.Select(path => path.Value)] : [];
 
     /// <summary>Whether the paths are shown.</summary>
     public bool IsExpanded => isExpanded;
@@ -117,6 +117,7 @@ public sealed class HeldDeletionItemViewModel : LocalizedObservableObject
     {
         isExpanded = !isExpanded;
         OnPropertyChanged(nameof(IsExpanded));
+        OnPropertyChanged(nameof(PathTexts));
         OnPropertyChanged(nameof(ToggleText));
         OnPropertyChanged(nameof(ToggleAutomationName));
     }

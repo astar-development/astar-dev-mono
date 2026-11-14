@@ -315,6 +315,7 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
 
     private void Fail()
     {
+        selected.Clear();
         accounts = [];
         SetLoadState(SyncOverviewLoadStateFactory.CreateFailed());
         ApplyFilter();
@@ -417,7 +418,7 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
         NotifyBulk();
         SetBulkError(Option.None<string>());
 
-        foreach (var account in Groups.SelectMany(group => group.Items).Where(item => item.IsSelected).GroupBy(item => item.AccountId).ToList())
+        foreach (var account in Groups.SelectMany(group => group.Items).Where(item => item.IsSelected && !item.IsBusy).GroupBy(item => item.AccountId).ToList())
             await ApplyToAccountAsync(account.Key, [.. account], strategy, cancellationToken);
 
         ClearSelection();
