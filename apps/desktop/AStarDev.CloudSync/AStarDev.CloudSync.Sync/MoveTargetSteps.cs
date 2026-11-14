@@ -1,3 +1,4 @@
+using System.IO.Abstractions;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.FunctionalParadigm;
 
@@ -44,11 +45,11 @@ internal sealed class MoveTargetSteps(ResolutionTransfers transfers, IProviderCa
     private async Task<Result<Unit, ResolutionFailure>> RenameItemAsync(ResolutionContext context, RelativeSyncPath path, RemoteItemSnapshot item, IReadOnlyCollection<string> names, CancellationToken cancellationToken)
     {
         var newName = namer.Name(item.Name, time.GetUtcNow(), names);
-        var renamed = await renamers.ForAccountAsync(context.AccountId, cancellationToken)
-            .BindAsync(renamer => renamer.RenameAsync(context.AccountId, item.Id, newName, cancellationToken))
-            .MatchAsync(_ => Done(), error => Failed(ResolutionFailureFactory.CreateTransfer(error))).ConfigureAwait(false);
+        var forgotten = await ForgetOtherAsync(context, path, item.Id, cancellationToken).ConfigureAwait(false);
 
-        return await renamed.BindAsync(_ => ForgetOtherAsync(context, path, item.Id, cancellationToken)).ConfigureAwait(false);
+        return await forgotten.BindAsync(_ => renamers.ForAccountAsync(context.AccountId, cancellationToken)
+            .BindAsync(renamer => renamer.RenameAsync(context.AccountId, item.Id, newName, cancellationToken))
+            .MatchAsync(_ => Done(), error => Failed(ResolutionFailureFactory.CreateTransfer(error)))).ConfigureAwait(false);
     }
 
     private Task<Result<Option<RelativeSyncPath>, ResolutionFailure>> MoveAsideAsync(ResolutionContext context, RelativeSyncPath path, CancellationToken cancellationToken)
@@ -65,7 +66,7 @@ internal sealed class MoveTargetSteps(ResolutionTransfers transfers, IProviderCa
             failure => Task.FromResult(Result.Failure<Option<RelativeSyncPath>, ResolutionFailure>(failure)));
     }
 
-    private Task<Result<Option<RelativeSyncPath>, ResolutionFailure>> MoveNamedAsync(ResolutionContext context, RelativeSyncPath path, System.IO.Abstractions.IFileInfo local, IReadOnlyCollection<string> names, CancellationToken cancellationToken)
+    private Task<Result<Option<RelativeSyncPath>, ResolutionFailure>> MoveNamedAsync(ResolutionContext context, RelativeSyncPath path, IFileInfo local, IReadOnlyCollection<string> names, CancellationToken cancellationToken)
     {
         var copyPath = ResolutionSteps.SiblingPath(path, namer.Name(local.Name, time.GetUtcNow(), names));
 
