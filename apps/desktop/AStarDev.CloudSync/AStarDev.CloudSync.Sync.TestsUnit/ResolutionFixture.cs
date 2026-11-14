@@ -32,6 +32,8 @@ public sealed class ResolutionFixture : IDisposable
             .AddCloudSync()
             .AddSingleton<IAccountStore>(accounts)
             .AddSingleton<ISyncRootReader>(Roots)
+            .AddSingleton<ISelectionRuleReader>(new FixedSelectionRuleReader([]))
+            .AddSingleton<IPathQuarantine>(new FixedPathQuarantine(QuarantineSnapshotFactory.CreateEmpty()))
             .AddSingleton<ISyncBaselineReader>(Baseline)
             .AddSingleton<ISyncBaselineWriter>(Baseline)
             .AddSingleton<ISyncAttentionWriter>(Attention)
@@ -150,7 +152,7 @@ public sealed class ResolutionFixture : IDisposable
     public IReadOnlyList<string> TrashedFiles() =>
         FileSystem.Directory.Exists(FullPath(".sync-trash")) ? [.. FileSystem.Directory.EnumerateFiles(FullPath(".sync-trash"), "*", SearchOption.AllDirectories)] : [];
 
-    public IReadOnlyList<string> FilesUnder(string relative) => [.. FileSystem.Directory.EnumerateFiles(FullPath(relative)).Select(FileSystem.Path.GetFileName).OfType<string>().Order(StringComparer.Ordinal)];
+    public string FilesUnder(string relative) => string.Join(",", FileSystem.Directory.EnumerateFiles(FullPath(relative)).Select(FileSystem.Path.GetFileName).OfType<string>().Order(StringComparer.Ordinal));
 
     public void Dispose()
     {

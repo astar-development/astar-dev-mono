@@ -137,7 +137,7 @@ public sealed class GivenAConflictResolver : IDisposable
 
         var summary = await Summary(run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateRemoteWins(), CancellationToken));
 
-        (summary.Resolved, run.FileSystem.File.Exists(ResolutionFixture.FullPath("Docs/a.txt")), run.TrashedFiles().Select(run.FileSystem.File.ReadAllText).ToList(), run.Baseline.Has("Docs/a.txt")).ShouldBe((1, false, ["precious"], false));
+        (summary.Resolved, run.FileSystem.File.Exists(ResolutionFixture.FullPath("Docs/a.txt")), string.Join(",", run.TrashedFiles().Select(run.FileSystem.File.ReadAllText)), run.Baseline.Has("Docs/a.txt")).ShouldBe((1, false, "precious", false));
     }
 
     [Fact]
@@ -230,7 +230,7 @@ public sealed class GivenAConflictResolver : IDisposable
         var summary = await Summary(run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateKeepBoth(), CancellationToken));
 
         (summary.Resolved, run.FilesUnder("Docs"), run.FileSystem.File.ReadAllText(ResolutionFixture.FullPath($"Docs/a-({Stamp}).txt")), run.FileSystem.File.ReadAllText(ResolutionFixture.FullPath("Docs/a.txt")), run.Uploader.Calls.Single().Name, run.Attention.ClosedConflicts.Single().Resolution)
-            .ShouldBe((1, (IReadOnlyList<string>)["a-(" + Stamp + ").txt", "a.txt"], "mine", "theirs", $"a-({Stamp}).txt", AttentionResolutionFactory.CreateKeepBoth()));
+            .ShouldBe((1, "a-(" + Stamp + ").txt,a.txt", "mine", "theirs", $"a-({Stamp}).txt", AttentionResolutionFactory.CreateKeepBoth()));
     }
 
     [Fact]
@@ -259,7 +259,7 @@ public sealed class GivenAConflictResolver : IDisposable
 
         var summary = await Summary(run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateKeepBoth(), CancellationToken));
 
-        (summary.Failed.Count, run.FilesUnder("Docs"), run.Downloader.Calls.Count, run.Attention.ClosedConflicts.Count).ShouldBe((1, (IReadOnlyList<string>)["a.txt"], 0, 0));
+        (summary.Failed.Count, run.FilesUnder("Docs"), run.Downloader.Calls.Count, run.Attention.ClosedConflicts.Count).ShouldBe((1, "a.txt", 0, 0));
     }
 
     [Fact]
@@ -276,7 +276,7 @@ public sealed class GivenAConflictResolver : IDisposable
 
         var retry = await Summary(run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateKeepBoth(), CancellationToken));
 
-        (retry.Resolved, run.FilesUnder("Docs"), run.Uploader.Calls.Count).ShouldBe((1, (IReadOnlyList<string>)["a-(" + Stamp + ").txt", "a.txt"], 1));
+        (retry.Resolved, run.FilesUnder("Docs"), run.Uploader.Calls.Count).ShouldBe((1, "a-(" + Stamp + ").txt,a.txt", 1));
     }
 
     [Fact]
@@ -332,7 +332,7 @@ public sealed class GivenAConflictResolver : IDisposable
 
         _ = await Summary(run.Resolver.ResolveAsync(run.Account, [selected], ConflictStrategyFactory.CreateLocalWins(), CancellationToken));
 
-        (run.Uploader.Calls.Select(call => call.Name).ToList(), run.Attention.ClosedConflicts.Count).ShouldBe((["a.txt"], 1));
+        (string.Join(",", run.Uploader.Calls.Select(call => call.Name)), run.Attention.ClosedConflicts.Count).ShouldBe(("a.txt", 1));
     }
 
     [Fact]

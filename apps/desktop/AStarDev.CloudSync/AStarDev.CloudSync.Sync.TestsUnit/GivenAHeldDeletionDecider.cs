@@ -20,7 +20,7 @@ public sealed class GivenAHeldDeletionDecider : IDisposable
 
         var result = await run.Decider.ConfirmAsync(run.Account, id, CancellationToken);
 
-        (result.Match(_ => "ok", error => error.Message), run.FilesUnder("Docs"), run.TrashedFiles().Count, run.Baseline.Has("Docs/a.txt"), run.Attention.Closed.Single()).ShouldBe(("ok", (IReadOnlyList<string>)[], 2, false, id));
+        (result.Match(_ => "ok", error => error.Message), run.FilesUnder("Docs"), run.TrashedFiles().Count, run.Baseline.Has("Docs/a.txt"), run.Attention.Closed.Single()).ShouldBe(("ok", "", 2, false, id));
     }
 
     [Fact]
