@@ -44,7 +44,6 @@ public static class SyncServiceCollectionExtensions
             .AddSingleton<IDiskSpaceProbe, DiskSpaceProbe>()
             .AddSingleton<DownloadPlanLoader>()
             .AddSingleton<DownloadFileStep>()
-            .AddSingleton<FirstSyncLinker>()
             .AddSingleton<DownloadExecutor>()
             .AddSingleton<DownloadHolds>()
             .AddSingleton<IDownloadPass, DownloadPass>()

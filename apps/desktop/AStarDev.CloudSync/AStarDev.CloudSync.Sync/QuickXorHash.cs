@@ -8,7 +8,7 @@ internal static class QuickXorHash
     private const int WideBits = 128;
     private const int LengthOffset = 12;
 
-    internal static async Task<string> ComputeAsync(Stream stream, CancellationToken cancellationToken)
+    internal static async Task<string> ComputeAsync(Stream stream, Action<ReadOnlyMemory<byte>> observe, CancellationToken cancellationToken)
     {
         UInt128 low = 0;
         uint high = 0;
@@ -18,6 +18,7 @@ internal static class QuickXorHash
         int read;
         while ((read = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) > 0)
         {
+            observe(buffer.AsMemory(0, read));
             for (var index = 0; index < read; index++)
             {
                 XorAt(buffer[index], position, ref low, ref high);
