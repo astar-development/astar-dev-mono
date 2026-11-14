@@ -14,6 +14,8 @@ public sealed class FakeAttentionReader : ISyncAttentionReader
 
     public int Reads { get; private set; }
 
+    public Func<Task> Delay { get; set; } = () => Task.CompletedTask;
+
     public void Add(AccountId accountId, params SyncAttentionItem[] added)
     {
         if (!items.TryGetValue(accountId, out var list))
@@ -34,20 +36,21 @@ public sealed class FakeAttentionReader : ISyncAttentionReader
             list.RemoveAll(item => item is SyncAttentionItem.HeldDeletions held && held.Id == id);
     }
 
-    public Task<Result<IReadOnlyList<SyncAttentionItem>, ErrorResponse>> GetOpenAsync(AccountId accountId, CancellationToken cancellationToken)
+    public async Task<Result<IReadOnlyList<SyncAttentionItem>, ErrorResponse>> GetOpenAsync(AccountId accountId, CancellationToken cancellationToken)
     {
         Reads++;
+        await Delay().ConfigureAwait(false);
         var thrown = Throws(accountId);
         if (thrown is not null)
             throw thrown;
 
         var failure = Fails(accountId);
         if (failure is not null)
-            return Task.FromResult(Result.Failure<IReadOnlyList<SyncAttentionItem>, ErrorResponse>(failure));
+            return Result.Failure<IReadOnlyList<SyncAttentionItem>, ErrorResponse>(failure);
 
         IReadOnlyList<SyncAttentionItem> open = items.TryGetValue(accountId, out var list) ? [.. list] : [];
 
-        return Task.FromResult(Result.Success<IReadOnlyList<SyncAttentionItem>, ErrorResponse>(open));
+        return Result.Success<IReadOnlyList<SyncAttentionItem>, ErrorResponse>(open);
     }
 
     public Task<Result<IReadOnlyList<RelativeSyncPath>, ErrorResponse>> GetConflictedPathsAsync(AccountId accountId, CancellationToken cancellationToken) =>
