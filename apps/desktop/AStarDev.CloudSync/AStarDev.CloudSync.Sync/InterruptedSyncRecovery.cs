@@ -52,8 +52,9 @@ internal sealed class InterruptedSyncRecovery(ISyncRunJournal journal, IActivity
         return Task.FromResult<IReadOnlyList<RecoveryOutcome>>([]);
     }
 
-    private async Task<IReadOnlyList<RecoveryOutcome>> RecoverRunsAsync(IReadOnlyList<InterruptedSyncRun> runs, CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<RecoveryOutcome>> RecoverRunsAsync(IReadOnlyList<InterruptedSyncRun> unfinished, CancellationToken cancellationToken)
     {
+        var runs = unfinished.Where(run => !checks.Live.Contains(run.Id)).ToList();
         if (runs.Count == 0)
             return [];
 

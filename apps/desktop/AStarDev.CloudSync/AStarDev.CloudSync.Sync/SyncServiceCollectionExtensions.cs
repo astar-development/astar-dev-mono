@@ -81,6 +81,7 @@ public static class SyncServiceCollectionExtensions
             .AddSingleton<SyncPassAttention>()
             .AddSingleton<IAccountQuotaRefresher, AccountQuotaRefresher>()
             .AddSingleton<SyncPassActivity>()
+            .AddSingleton<LiveSyncRuns>()
             .AddSingleton<SyncPassJournal>()
             .AddSingleton<SyncPassAftermath>()
             .AddSingleton<SyncPassSteps>()

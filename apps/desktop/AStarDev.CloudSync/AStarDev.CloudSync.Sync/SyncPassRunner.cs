@@ -65,12 +65,20 @@ internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps st
         {
             pass = registry.Begin(accountId, trigger, cancellationToken);
             var runId = await steps.After.Journal.StartAsync(accountId, trigger).ConfigureAwait(false);
-            var running = StepsAsync(accountId, tally, pass.Token);
-            await ((Task)running).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
-            outcome = running.IsCompletedSuccessfully ? await running.ConfigureAwait(false) : Abandoned(running);
-            await RefreshQuotaAsync(accountId, outcome, pass.Token).ConfigureAwait(false);
-            await steps.After.Activity.RecordAsync(accountId, outcome, tally.Download).ConfigureAwait(false);
-            _ = await steps.After.Journal.FinishAsync(runId, outcome).ConfigureAwait(false);
+            outcome = Stopped<SyncPassSummary>(SyncPassFailureFactory.CreateUnexpected());
+            try
+            {
+                var running = StepsAsync(accountId, tally, pass.Token);
+                await ((Task)running).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+                var stepped = running.IsCompletedSuccessfully ? await running.ConfigureAwait(false) : Abandoned(running);
+                await RefreshQuotaAsync(accountId, stepped, pass.Token).ConfigureAwait(false);
+                await steps.After.Activity.RecordAsync(accountId, stepped, tally.Download).ConfigureAwait(false);
+                outcome = stepped;
+            }
+            finally
+            {
+                _ = await steps.After.Journal.FinishAsync(runId, outcome).ConfigureAwait(false);
+            }
         }
 
         registry.End(pass, outcome);
