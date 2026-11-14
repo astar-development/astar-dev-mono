@@ -99,19 +99,51 @@ public sealed class GivenAConflictResolverForMoveTargetTaken : IDisposable
 
         var summary = await Summary(run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateRemoteWins(), CancellationToken));
 
-        (summary.Resolved, run.FilesUnder("Docs"), run.FileSystem.File.ReadAllText(ResolutionFixture.FullPath("Docs/" + CopyName)), run.Renamer.Calls.Count, run.Uploader.Calls.Count, run.Attention.ClosedConflicts.Single().Resolution)
-            .ShouldBe((1, $"{CopyName},old.txt", "mine", 0, 0, AttentionResolutionFactory.CreateKeepCloud()));
+        (summary.Resolved, run.FilesUnder("Docs"), run.FileSystem.File.ReadAllText(ResolutionFixture.FullPath("Docs/" + CopyName)), run.FileSystem.File.ReadAllText(ResolutionFixture.FullPath(Target)), run.Renamer.Calls.Count, run.Uploader.Calls.Count, run.Attention.ClosedConflicts.Single().Resolution)
+            .ShouldBe((1, $"{CopyName},new.txt", "mine", "moved", 0, 0, AttentionResolutionFactory.CreateKeepCloud()));
     }
 
     [Fact]
-    public async Task when_remote_wins_and_another_item_was_synced_at_the_target_then_its_baseline_row_is_dropped()
+    public async Task when_remote_wins_and_another_item_was_synced_at_the_target_then_its_baseline_row_is_replaced_by_the_moved_item()
     {
         var (run, id) = await StartAsync();
         _ = run.Synced(Target, "older", "id-b");
 
         _ = await Summary(run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateRemoteWins(), CancellationToken));
 
-        run.Baseline.Has(Target).ShouldBeFalse();
+        run.Baseline.Find(Target).ItemId.ShouldBe(RemoteIds.Of("id-m"));
+    }
+
+    [Fact]
+    public async Task when_remote_wins_then_the_moved_item_is_settled_at_the_target_without_a_sync_pass()
+    {
+        var (run, id) = await StartAsync();
+
+        _ = await Summary(run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateRemoteWins(), CancellationToken));
+
+        (run.Baseline.Has("Docs/old.txt"), run.Baseline.Find(Target).ItemId, run.Baseline.Find(Target).Kind.ShouldBeOfType<SyncBaselineKind.File>().CTag).ShouldBe((false, RemoteIds.Of("id-m"), RemoteIds.CTag("c-m")));
+    }
+
+    [Fact]
+    public async Task when_remote_wins_and_the_baseline_cannot_be_recorded_then_the_local_move_is_undone_and_the_next_pass_still_follows_the_move()
+    {
+        var (run, id) = await StartAsync();
+        run.Baseline.UpsertFails = true;
+
+        var summary = await Summary(run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateRemoteWins(), CancellationToken));
+
+        (summary.Resolved, run.FilesUnder("Docs"), run.Baseline.Has("Docs/old.txt"), run.Baseline.Has(Target)).ShouldBe((1, $"{CopyName},old.txt", true, false));
+    }
+
+    [Fact]
+    public async Task when_remote_wins_and_the_old_local_file_is_gone_then_the_conflict_still_resolves_and_the_baseline_is_left_for_the_next_pass()
+    {
+        var (run, id) = await StartAsync();
+        run.FileSystem.File.Delete(ResolutionFixture.FullPath("Docs/old.txt"));
+
+        var summary = await Summary(run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateRemoteWins(), CancellationToken));
+
+        (summary.Resolved, run.FilesUnder("Docs"), run.Baseline.Has("Docs/old.txt"), run.Baseline.Has(Target)).ShouldBe((1, CopyName, true, false));
     }
 
     [Fact]
@@ -136,7 +168,28 @@ public sealed class GivenAConflictResolverForMoveTargetTaken : IDisposable
         var summary = await Summary(run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateKeepBoth(), CancellationToken));
 
         (summary.Resolved, run.FilesUnder("Docs"), run.Uploader.Calls.Single().Name, run.Renamer.Calls.Count, run.Attention.ClosedConflicts.Single().Resolution)
-            .ShouldBe((1, $"{CopyName},old.txt", CopyName, 0, AttentionResolutionFactory.CreateKeepBoth()));
+            .ShouldBe((1, $"{CopyName},new.txt", CopyName, 0, AttentionResolutionFactory.CreateKeepBoth()));
+    }
+
+    [Fact]
+    public async Task when_keep_both_then_the_moved_item_is_settled_at_the_target_without_a_sync_pass()
+    {
+        var (run, id) = await StartAsync();
+
+        _ = await Summary(run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateKeepBoth(), CancellationToken));
+
+        (run.FileSystem.File.ReadAllText(ResolutionFixture.FullPath(Target)), run.Baseline.Has("Docs/old.txt"), run.Baseline.Find(Target).ItemId).ShouldBe(("moved", false, RemoteIds.Of("id-m")));
+    }
+
+    [Fact]
+    public async Task when_local_wins_and_the_keep_both_name_is_taken_by_another_cloud_item_then_the_remote_is_renamed_to_a_free_name()
+    {
+        var (run, id) = await StartAsync();
+        run.Remote.File("Docs/" + CopyName, "id-other", "c-other", 3);
+
+        _ = await Summary(run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateLocalWins(), CancellationToken));
+
+        run.Renamer.Calls.Single().NewName.ShouldNotBeOneOf(CopyName, "new.txt");
     }
 
     [Fact]
