@@ -16,6 +16,8 @@ public class GivenOverviewServiceCollectionExtensions
             .AddSingleton<IAccountStore>(new FakeAccountStore())
             .AddSingleton<IAccountSignInStates>(new FakeAccountSignInStates())
             .AddSingleton<ISyncPairReader>(new FakeSyncPairReader())
+            .AddSingleton<ISyncRunStatusSource>(new FakeSyncRunStatusSource())
+            .AddSingleton<IAccountPauseReader>(new FakeAccountPauseReader())
             .AddSyncOverview()
             .BuildServiceProvider();
 

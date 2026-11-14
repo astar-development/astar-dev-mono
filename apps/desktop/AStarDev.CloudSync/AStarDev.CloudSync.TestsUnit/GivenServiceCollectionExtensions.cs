@@ -214,6 +214,18 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
+    public void when_application_services_are_added_then_the_sync_restart_question_and_the_sync_now_action_are_resolved_and_the_dialog_is_the_one_in_the_main_window()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<IConfirmSyncRestartDialog>().ShouldBeSameAs(provider.GetRequiredService<AStarDev.CloudSync.ViewModels.SyncRestart.ConfirmSyncRestartViewModel>());
+        provider.GetRequiredService<AStarDev.CloudSync.ViewModels.MainWindowViewModel>().SyncRestart.ShouldBeSameAs(provider.GetRequiredService<AStarDev.CloudSync.ViewModels.SyncRestart.ConfirmSyncRestartViewModel>());
+        provider.GetRequiredService<ISyncNowAction>().ShouldNotBeNull();
+        provider.GetRequiredService<AStarDev.CloudSync.ViewModels.Overview.SyncRunOverviewReloader>().ShouldNotBeNull();
+        provider.GetRequiredService<ISyncActions>().ShouldNotBeNull();
+    }
+
+    [Fact]
     public void when_application_services_are_added_then_the_placeholder_sync_actions_are_registered()
     {
         var services = CreateServices();

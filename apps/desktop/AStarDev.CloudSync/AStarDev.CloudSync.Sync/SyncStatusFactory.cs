@@ -14,4 +14,13 @@ public static class SyncStatusFactory
 
     /// <summary>Creates a paused status.</summary>
     public static SyncStatus CreatePaused() => new SyncStatus.Paused();
+
+    /// <summary>Creates a failed status.</summary>
+    public static SyncStatus CreateFailed(SyncFailureReason reason) => new SyncStatus.Failed(reason);
+
+    /// <summary>Creates a cancelled status.</summary>
+    public static SyncStatus CreateCancelled() => new SyncStatus.Cancelled();
+
+    /// <summary>Creates a needs-attention status. Counts below 0 are treated as 0.</summary>
+    public static SyncStatus CreateNeedsAttention(int conflicts, int heldDeletions) => new SyncStatus.NeedsAttention(Math.Max(conflicts, 0), Math.Max(heldDeletions, 0));
 }

@@ -6,9 +6,11 @@ namespace AStarDev.CloudSync.Sync;
 
 /// <summary>Knows the sync runs in progress: the <see cref="ISyncActivitySource"/> and the <see cref="ISyncCancelAction"/>. The runner tells it when a run starts and ends.</summary>
 /// <param name="timeProvider">Stamps the start of a run.</param>
-internal sealed class SyncPassRegistry(TimeProvider timeProvider) : ISyncActivitySource, ISyncCancelAction
+internal sealed class SyncPassRegistry(TimeProvider timeProvider) : ISyncActivitySource, ISyncCancelAction, ISyncRunStatusSource
 {
     private readonly ConcurrentDictionary<AccountId, RunningPass> running = new();
+    private readonly ConcurrentDictionary<AccountId, SyncStatus> lastStatus = new();
+    private readonly ConcurrentDictionary<AccountId, DateTimeOffset> lastSync = new();
 
     /// <inheritdoc />
     public event EventHandler<SyncPassStartedEventArgs>? PassStarted;
@@ -19,6 +21,13 @@ internal sealed class SyncPassRegistry(TimeProvider timeProvider) : ISyncActivit
     /// <inheritdoc />
     public AccountSyncActivity ActivityOf(AccountId accountId) =>
         running.TryGetValue(accountId, out var pass) ? AccountSyncActivityFactory.CreateRunning(pass.Trigger, pass.StartedAt) : AccountSyncActivityFactory.CreateIdle();
+
+    /// <inheritdoc />
+    public SyncStatus StatusOf(AccountId accountId) =>
+        running.ContainsKey(accountId) ? SyncStatusFactory.CreateSyncing(0) : lastStatus.GetValueOrDefault(accountId, SyncStatusFactory.CreateUpToDate());
+
+    /// <inheritdoc />
+    public Option<DateTimeOffset> LastSyncOf(AccountId accountId) => lastSync.TryGetValue(accountId, out var finished) ? Option.Some(finished) : Option.None<DateTimeOffset>();
 
     /// <inheritdoc />
     public Task CancelAsync(AccountId accountId, CancellationToken cancellationToken)
@@ -49,6 +58,12 @@ internal sealed class SyncPassRegistry(TimeProvider timeProvider) : ISyncActivit
     /// <param name="outcome">What the run did.</param>
     internal void End(RunningPass pass, Result<SyncPassSummary, SyncPassFailure> outcome)
     {
+        if (outcome.ToStatus() is Option<SyncStatus>.Some recorded)
+            lastStatus[pass.AccountId] = recorded.Value;
+
+        if (outcome.Match(_ => true, _ => false))
+            lastSync[pass.AccountId] = timeProvider.GetUtcNow();
+
         _ = running.TryRemove(new KeyValuePair<AccountId, RunningPass>(pass.AccountId, pass));
         pass.Dispose();
         PassFinished?.Invoke(this, new SyncPassFinishedEventArgs(pass.AccountId, pass.Trigger, outcome));

@@ -23,6 +23,12 @@
     <Style Selector="Border.status-pill.paused > TextBlock">
         <Setter Property="Foreground" Value="{DynamicResource CloudSyncIdleBrush}" />
     </Style>
+    <Style Selector="Border.status-pill.failed > TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource CloudSyncWarnBrush}" />
+    </Style>
+    <Style Selector="Border.status-pill.cancelled > TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource CloudSyncIdleBrush}" />
+    </Style>
     <Style Selector="Border.status-pill.signin > TextBlock">
         <Setter Property="Foreground" Value="{DynamicResource CloudSyncWarnBrush}" />
     </Style>

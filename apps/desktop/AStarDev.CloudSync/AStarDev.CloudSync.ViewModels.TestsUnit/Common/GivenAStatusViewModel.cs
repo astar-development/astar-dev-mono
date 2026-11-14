@@ -77,4 +77,57 @@ public class GivenAStatusViewModel
 
         status.Progress.ShouldBe(0);
     }
+
+    [Theory]
+    [MemberData(nameof(FailureTexts))]
+    public void when_the_last_run_failed_then_the_text_names_the_reason_and_only_the_failed_flag_is_set(SyncFailureReason reason, string text)
+    {
+        var status = new StatusViewModel(SyncStatusFactory.CreateFailed(reason), TestData.CreateLocalization());
+
+        status.Text.ShouldBe(text);
+        status.IsFailed.ShouldBeTrue();
+        status.IsUpToDate.ShouldBeFalse();
+        status.IsCancelled.ShouldBeFalse();
+    }
+
+    public static TheoryData<SyncFailureReason, string> FailureTexts => new()
+    {
+        { SyncFailureReasonFactory.CreateRootUnavailable(), "Sync folder unavailable" },
+        { SyncFailureReasonFactory.CreateQuotaExceeded(), "Cloud storage full" },
+        { SyncFailureReasonFactory.CreateInsufficientDiskSpace(), "Not enough disk space" },
+        { SyncFailureReasonFactory.CreateUnexpected(), "Sync failed" },
+    };
+
+    [Fact]
+    public void when_the_last_run_was_cancelled_then_the_text_says_cancelled_and_it_is_not_shown_as_failed()
+    {
+        var status = new StatusViewModel(SyncStatusFactory.CreateCancelled(), TestData.CreateLocalization());
+
+        status.Text.ShouldBe("Sync cancelled");
+        status.IsCancelled.ShouldBeTrue();
+        status.IsFailed.ShouldBeFalse();
+    }
+
+    [Theory]
+    [InlineData(1, 0, "1 conflict")]
+    [InlineData(3, 0, "3 conflicts")]
+    [InlineData(0, 1, "1 deletion held")]
+    [InlineData(0, 4, "4 deletions held")]
+    [InlineData(2, 5, "2 conflicts, 5 deletions held")]
+    public void when_the_last_run_needs_attention_then_the_text_counts_what_waits_and_the_conflicts_flag_is_set(int conflicts, int held, string text)
+    {
+        var status = new StatusViewModel(SyncStatusFactory.CreateNeedsAttention(conflicts, held), TestData.CreateLocalization());
+
+        status.Text.ShouldBe(text);
+        status.HasConflicts.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void when_the_account_needs_sign_in_then_that_wins_over_a_failed_run()
+    {
+        var status = new StatusViewModel(SyncStatusFactory.CreateFailed(SyncFailureReasonFactory.CreateUnexpected()), AccountSignInStateFactory.CreateSignInRequired(), TestData.CreateLocalization());
+
+        status.Text.ShouldBe("Sign-in required");
+        status.IsFailed.ShouldBeFalse();
+    }
 }

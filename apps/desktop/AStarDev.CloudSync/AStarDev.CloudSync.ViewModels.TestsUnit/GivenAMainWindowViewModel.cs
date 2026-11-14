@@ -94,4 +94,18 @@ public class GivenAMainWindowViewModel
 
         (whileOpen, viewModel.IsDialogOpen, raised.Count(name => name == nameof(MainWindowViewModel.IsDialogOpen))).ShouldBe((true, false, 2));
     }
+
+    [Fact]
+    public async Task when_the_sync_restart_question_opens_and_closes_then_the_dialog_flag_follows_and_is_raised_each_time()
+    {
+        var viewModel = TestData.CreateMainWindowViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), TestData.CreateDisplaySettings());
+        var raised = new List<string?>();
+        viewModel.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
+
+        _ = viewModel.SyncRestart.AskAsync(AStarDev.CloudSync.Accounts.AccountIdFactory.Create(Guid.NewGuid()), TestContext.Current.CancellationToken);
+        var whileOpen = viewModel.IsDialogOpen;
+        viewModel.SyncRestart.KeepCommand.Execute(null);
+
+        (whileOpen, viewModel.IsDialogOpen, raised.Count(name => name == nameof(MainWindowViewModel.IsDialogOpen))).ShouldBe((true, false, 2));
+    }
 }

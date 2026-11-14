@@ -18,6 +18,7 @@ using AStarDev.CloudSync.ViewModels.Common;
 using AStarDev.CloudSync.ViewModels.DisplaySettings;
 using AStarDev.CloudSync.ViewModels.FolderSelection;
 using AStarDev.CloudSync.ViewModels.Layouts;
+using AStarDev.CloudSync.ViewModels.SyncRestart;
 using AStarDev.CloudSync.ViewModels.Overview;
 using AStarDev.Localization;
 using AStarDev.SingleInstance;
@@ -43,7 +44,7 @@ public static class ServiceCollectionExtensions
 
     private static string TokenCacheConsentFilePath => ApplicationName.ApplicationDirectory().CombinePath("token-cache-consent.json");
 
-    /// <summary>Registers localisation, the Velopack update services, the account-store overview, the placeholder sync actions, the add-account dialog and its token cache question, the CloudSync database and account store, the Microsoft account sign-in and OneDrive drive lookup, the display settings with the plaintext token file setting, and the view models, including layouts A, B and C.</summary>
+    /// <summary>Registers localisation, the Velopack update services, the account-store overview, the placeholder sync actions, the add-account dialog and its token cache question, the sync restart question, the CloudSync database and account store, the Microsoft account sign-in and OneDrive drive lookup, the display settings with the plaintext token file setting, and the view models, including layouts A, B and C.</summary>
     /// <param name="services">The service collection to register the application's services with.</param>
     /// <param name="configuration">The application configuration used to bind the options sections.</param>
     /// <returns>The <paramref name="services" /> collection to allow further chaining.</returns>
@@ -59,12 +60,15 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IUiDispatcher, AvaloniaUiDispatcher>()
             .AddSingleton<TokenCacheConsentViewModel>()
             .AddSingleton<ITokenCacheConsent>(provider => provider.GetRequiredService<TokenCacheConsentViewModel>())
+            .AddSingleton<ConfirmSyncRestartViewModel>()
+            .AddSingleton<IConfirmSyncRestartDialog>(provider => provider.GetRequiredService<ConfirmSyncRestartViewModel>())
             .AddSingleton<AddAccountViewModel>()
             .AddSingleton<AccountDialogViewModel>()
             .AddSingleton<FolderSelectionViewModel>()
             .AddSingleton<IFolderSelectionDialog>(provider => provider.GetRequiredService<FolderSelectionViewModel>())
             .AddSingleton<IAccountCommands>(provider => provider.GetRequiredService<AccountDialogViewModel>())
             .AddSingleton<SignInStateOverviewReloader>()
+            .AddSingleton<SyncRunOverviewReloader>()
             .AddSingleton<IAddAccountDialog>(provider => provider.GetRequiredService<AddAccountViewModel>())
             .AddSingleton<IFileSystem, RealFileSystem>()
             .AddSingleInstance()

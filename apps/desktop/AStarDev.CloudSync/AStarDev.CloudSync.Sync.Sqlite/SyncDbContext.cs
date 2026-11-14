@@ -28,6 +28,9 @@ internal sealed class SyncDbContext(DbContextOptions<SyncDbContext> options) : D
 
     public DbSet<SyncAttentionPathEntity> SyncAttentionPaths => Set<SyncAttentionPathEntity>();
 
+    /// <summary>The accounts whose scheduled syncing the user paused.</summary>
+    public DbSet<AccountPauseEntity> AccountPauses => Set<AccountPauseEntity>();
+
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -38,5 +41,6 @@ internal sealed class SyncDbContext(DbContextOptions<SyncDbContext> options) : D
         modelBuilder.ApplyConfiguration(new SyncBaselineEntityConfiguration());
         modelBuilder.ApplyConfiguration(new SyncAttentionEntityConfiguration());
         modelBuilder.ApplyConfiguration(new SyncAttentionPathEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new AccountPauseEntityConfiguration());
     }
 }

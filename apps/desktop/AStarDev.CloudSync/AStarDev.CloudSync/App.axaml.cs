@@ -40,6 +40,7 @@ public partial class App : Application, IDisposable
             KeepAsRunningInstance(claim, window, desktop);
             _ = services.GetRequiredService<SyncOverviewViewModel>().LoadAsync(CancellationToken.None);
             _ = services.GetRequiredService<SignInStateOverviewReloader>();
+            _ = services.GetRequiredService<SyncRunOverviewReloader>();
             _ = Task.Run(() => services.GetRequiredService<ISignInStateRefresher>().RefreshAllAsync(CancellationToken.None), CancellationToken.None);
 
             _ = services.GetRequiredService<IUpdateNotificationService>().CheckAndNotifyAsync();

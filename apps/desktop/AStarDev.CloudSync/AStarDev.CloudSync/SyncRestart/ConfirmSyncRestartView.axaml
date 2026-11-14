@@ -1,0 +1,40 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmSyncRestart="using:AStarDev.CloudSync.ViewModels.SyncRestart"
+             x:Class="AStarDev.CloudSync.SyncRestart.ConfirmSyncRestartView"
+             x:DataType="vmSyncRestart:ConfirmSyncRestartViewModel"
+             HorizontalAlignment="Center"
+             VerticalAlignment="Center">
+    <Border Background="{DynamicResource CloudSyncSurfaceBrush}"
+            BorderBrush="{DynamicResource CloudSyncBorderBrush}"
+            BorderThickness="1"
+            CornerRadius="8"
+            Padding="24"
+            Margin="24"
+            MaxWidth="460">
+        <Grid RowDefinitions="Auto,*"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch">
+            <TextBlock Grid.Row="0"
+                       Margin="0,0,0,16"
+                       Text="{Binding TitleText}"
+                       FontSize="18"
+                       FontWeight="SemiBold"
+                       Foreground="{DynamicResource CloudSyncTextPrimaryBrush}" />
+            <ScrollViewer Grid.Row="1"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          MinHeight="0">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="{Binding MessageText}"
+                               TextWrapping="Wrap"
+                               Foreground="{DynamicResource CloudSyncTextPrimaryBrush}" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                        <Button Classes="secondary" Content="{Binding KeepText}" Command="{Binding KeepCommand}" />
+                        <Button Classes="primary" Content="{Binding CancelAndRestartText}" Command="{Binding CancelAndRestartCommand}" />
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Border>
+</UserControl>
