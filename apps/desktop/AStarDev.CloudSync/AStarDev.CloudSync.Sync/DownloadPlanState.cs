@@ -21,7 +21,7 @@ internal sealed class DownloadPlanState
         local = request.Local.Changes.ToDictionary(change => change.Path);
         baselineByPath = request.Baseline.GroupBy(entry => entry.Path).ToDictionary(group => group.Key, group => group.First());
         baselineById = request.Baseline.GroupBy(entry => entry.ItemId).ToDictionary(group => group.Key, group => group.First());
-        Remote = [.. request.Remote.Where(entry => entry.Item.Kind is not RemoteItemKind.Deleted).GroupBy(entry => entry.Item.Id).Select(group => group.OrderBy(entry => entry.Path.Value, StringComparer.OrdinalIgnoreCase).First())];
+        Remote = [.. request.Remote.Where(entry => entry.Item.Kind is not RemoteItemKind.Deleted && !LocalTrash.Contains(entry.Path)).GroupBy(entry => entry.Item.Id).Select(group => group.OrderBy(entry => entry.Path.Value, StringComparer.OrdinalIgnoreCase).First())];
         remoteById = Remote.ToDictionary(entry => entry.Item.Id);
         remoteByPath = Remote.GroupBy(entry => entry.Path).ToDictionary(group => group.Key, group => group.First());
         missing = request.MissingLocally.ToHashSet();
