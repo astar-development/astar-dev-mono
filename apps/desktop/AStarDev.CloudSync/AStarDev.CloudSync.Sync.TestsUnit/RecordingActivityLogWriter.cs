@@ -8,6 +8,8 @@ public sealed class RecordingActivityLogWriter : IActivityLogWriter
 
     public bool Fails { get; set; }
 
+    public bool Throws { get; set; }
+
     public int Calls { get; private set; }
 
     public IReadOnlyList<ActivityEntry> Appended => appended;
@@ -15,6 +17,9 @@ public sealed class RecordingActivityLogWriter : IActivityLogWriter
     public Task<Result<Unit, ErrorResponse>> AppendAsync(IReadOnlyList<ActivityEntry> entries, CancellationToken cancellationToken)
     {
         Calls++;
+        if (Throws)
+            throw new InvalidOperationException("boom");
+
         if (Fails)
             return Task.FromResult(Result.Failure<Unit, ErrorResponse>(new ErrorResponse("locked")));
 
