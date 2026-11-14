@@ -44,7 +44,7 @@
   "Activity.Downloaded.Many": "Downloaded {0} files",
   "Activity.Deleted.One": "Deleted 1 file",
   "Activity.Deleted.Many": "Deleted {0} files",
-  "Activity.Conflict":"Conflict: {0}",
+  "Activity.Conflict": "Conflict: {0}",
   "Activity.Authenticated": "Authenticated",
   "Conflict.ChangedOnBothSides": "{0} · changed on both sides",
   "Conflict.KeepBoth": "Keep both",
