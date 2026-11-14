@@ -20,6 +20,7 @@ internal sealed class OneDriveFileUploader(OneDriveTransferHttp http, IUploadSes
     private const int FragmentBytes = 10 * 1024 * 1024;
     private const int MaxAttempts = 5;
     private const int MaxRestarts = 2;
+    private static readonly TimeSpan ExpiryMargin = TimeSpan.FromMinutes(5);
 
     /// <inheritdoc />
     public async Task<Result<UploadedFile, ProviderError>> UploadAsync(AccountId accountId, UploadTarget target, IFileInfo source, UploadPrecondition precondition, IProgress<TransferProgress> progress, CancellationToken cancellationToken)
@@ -221,7 +222,7 @@ internal sealed class OneDriveFileUploader(OneDriveTransferHttp http, IUploadSes
     }
 
     private bool Reusable(Transfer transfer, UploadSession saved) =>
-        timeProvider.GetUtcNow() < saved.ExpiresAt && saved.SourceLength == transfer.Length && saved.SourceWriteUtc == transfer.LastWriteUtc && saved.Target == TargetOf(transfer);
+        timeProvider.GetUtcNow() + ExpiryMargin < saved.ExpiresAt && saved.SourceLength == transfer.Length && saved.SourceWriteUtc == transfer.LastWriteUtc && saved.Target == TargetOf(transfer);
 
     private async Task<Result<Unit, ProviderError>> ReadSavedStatusAsync(Transfer transfer, UploadSession saved, HttpResponseMessage response, CancellationToken cancellationToken)
     {
