@@ -38,23 +38,17 @@ public sealed class LocalFolderBrowser(ISyncRootReader syncRoots, ILocalFolderFi
         if (!parentDirectory.Exists)
             return Failed(LocalFolderErrorFactory.CreateNotFound());
 
-        try
-        {
-            return Result.Success<IReadOnlyList<LocalFolder>, LocalFolderError>([.. ReadChildren(parentDirectory, parent, cancellationToken).OrderBy(folder => folder.Name, StringComparer.OrdinalIgnoreCase)]);
-        }
-        catch (UnauthorizedAccessException)
-        {
-            return Failed(LocalFolderErrorFactory.CreateAccessDenied());
-        }
-        catch (DirectoryNotFoundException)
-        {
-            return Failed(LocalFolderErrorFactory.CreateNotFound());
-        }
-        catch (IOException)
-        {
-            return Failed(LocalFolderErrorFactory.CreateUnexpected(new ErrorResponse("The folders could not be read.")));
-        }
+        return Try.Run(() => Result.Success<IReadOnlyList<LocalFolder>, LocalFolderError>([.. ReadChildren(parentDirectory, parent, cancellationToken).OrderBy(folder => folder.Name, StringComparer.OrdinalIgnoreCase)]))
+            .Match(listed => listed, ListingFailed);
     }
+
+    private static Result<IReadOnlyList<LocalFolder>, LocalFolderError> ListingFailed(Exception exception) =>
+        exception switch
+        {
+            UnauthorizedAccessException => Failed(LocalFolderErrorFactory.CreateAccessDenied()),
+            DirectoryNotFoundException => Failed(LocalFolderErrorFactory.CreateNotFound()),
+            _ => Failed(LocalFolderErrorFactory.CreateUnexpected(new ErrorResponse("The folders could not be read.")))
+        };
 
     private IEnumerable<LocalFolder> ReadChildren(IDirectoryInfo parentDirectory, LocalRelativePath parent, CancellationToken cancellationToken)
     {
@@ -70,25 +64,24 @@ public sealed class LocalFolderBrowser(ISyncRootReader syncRoots, ILocalFolderFi
         }
     }
 
-    private IEnumerable<LocalFolderChildren> ChildrenOf(IDirectoryInfo child)
+    private IEnumerable<LocalFolderChildren> ChildrenOf(IDirectoryInfo child) => Try.Run(() => ReadChildrenOf(child)).Match(children => children, ChildrenUnreadable);
+
+    private IEnumerable<LocalFolderChildren> ReadChildrenOf(IDirectoryInfo child)
     {
-        try
-        {
-            child.Refresh();
-            if (!child.Exists)
-                return [];
-
-            return [child.EnumerateDirectories().Any(grandChild => filter.ShouldSkip(grandChild) is LocalFolderVisibility.Visible) ? LocalFolderChildrenFactory.CreateHasChildFolders() : LocalFolderChildrenFactory.CreateNoChildFolders()];
-        }
-        catch (DirectoryNotFoundException)
-        {
+        child.Refresh();
+        if (!child.Exists)
             return [];
-        }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
-        {
-            LogMessage.Warning(logger, Location, "A child folder could not be read, so it is listed without its sub-folders.");
 
-            return [LocalFolderChildrenFactory.CreateNoChildFolders()];
-        }
+        return [child.EnumerateDirectories().Any(grandChild => filter.ShouldSkip(grandChild) is LocalFolderVisibility.Visible) ? LocalFolderChildrenFactory.CreateHasChildFolders() : LocalFolderChildrenFactory.CreateNoChildFolders()];
+    }
+
+    private IEnumerable<LocalFolderChildren> ChildrenUnreadable(Exception exception)
+    {
+        if (exception is DirectoryNotFoundException)
+            return [];
+
+        LogMessage.Warning(logger, Location, "A child folder could not be read, so it is listed without its sub-folders.");
+
+        return [LocalFolderChildrenFactory.CreateNoChildFolders()];
     }
 }

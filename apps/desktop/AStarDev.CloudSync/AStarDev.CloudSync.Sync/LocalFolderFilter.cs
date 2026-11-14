@@ -31,15 +31,5 @@ public sealed class LocalFolderFilter : ILocalFolderFilter
 
     private static bool HasAttribute(IDirectoryInfo folder, FileAttributes attribute) => Reads(() => folder.Attributes.HasFlag(attribute));
 
-    private static bool Reads(Func<bool> read)
-    {
-        try
-        {
-            return read();
-        }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
-        {
-            return false;
-        }
-    }
+    private static bool Reads(Func<bool> read) => Try.Run(read).Match(value => value, _ => false);
 }
