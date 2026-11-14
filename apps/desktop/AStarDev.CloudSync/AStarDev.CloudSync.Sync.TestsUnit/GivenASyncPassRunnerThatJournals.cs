@@ -62,6 +62,17 @@ public sealed class GivenASyncPassRunnerThatJournals : IDisposable
     }
 
     [Fact]
+    public async Task when_a_step_after_the_pass_throws_then_the_row_still_ends_failed_as_unexpected()
+    {
+        services.ActivityLog.Throws = true;
+        services.Steps.Downloaded = Result.Success<DownloadPassSummary, DownloadPassFailure>(DownloadPassSummaryFactory.Create([DownloadItemOutcomeFactory.CreateDownloaded(100)], []));
+
+        _ = await Record.ExceptionAsync(() => RunAsync(SyncTriggerFactory.CreateManual()));
+
+        services.Journal.Runs.ShouldHaveSingleItem().Outcome.ShouldBe(Option.Some(SyncRunOutcomeFactory.CreateFailed(SyncFailureReasonFactory.CreateUnexpected())));
+    }
+
+    [Fact]
     public async Task when_a_run_is_skipped_because_another_is_running_then_no_row_is_journaled()
     {
         var gate = new WriteGate();
