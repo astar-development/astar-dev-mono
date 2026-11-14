@@ -8,6 +8,9 @@ using AStarDev.CloudSync.ViewModels.Conflicts;
 using AStarDev.FunctionalParadigm;
 using Avalonia.Automation;
 using Avalonia.Controls;
+using Avalonia.Headless;
+using Avalonia;
+using Avalonia.Input;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -87,6 +90,45 @@ public class GivenAConflictListView
         buttons.Single(button => button.Command == list.RefreshCommand).Content.ShouldBe("Refresh");
         buttons.Single(button => button.Command == list.CloseCommand).Content.ShouldBe("Close");
         AutomationProperties.GetName(buttons.Single(button => button.Command == list.CloseCommand)).ShouldBe("Close");
+    }
+
+    [AvaloniaFact]
+    public async Task when_shown_then_focus_moves_to_the_filter_inside_the_overlay()
+    {
+        var (window, _) = await ShowAsync(1, 800);
+
+        var filter = window.GetVisualDescendants().OfType<ComboBox>().Single();
+
+        window.FocusManager!.GetFocusedElement().ShouldBeSameAs(filter);
+    }
+
+    [AvaloniaFact]
+    public async Task when_escape_is_pressed_then_the_list_closes()
+    {
+        var (window, list) = await ShowAsync(1, 800);
+        await list.OpenCommand.ExecuteAsync(null);
+
+        window.KeyPressQwerty(PhysicalKey.Escape, RawInputModifiers.None);
+
+        list.IsOpen.ShouldBeFalse();
+    }
+
+    [AvaloniaFact]
+    public async Task when_tab_is_pressed_on_the_last_control_then_focus_stays_inside_the_overlay()
+    {
+        var (window, list) = await ShowAsync(1, 800);
+        var outside = new Button { Content = "Behind" };
+        var view = (ConflictListView)window.Content!;
+        window.Content = new StackPanel { Children = { view, outside } };
+        Dispatcher.UIThread.RunJobs();
+        var close = window.GetVisualDescendants().OfType<Button>().Single(button => button.Command == list.CloseCommand);
+        close.Focus();
+
+        window.KeyPressQwerty(PhysicalKey.Tab, RawInputModifiers.None);
+
+        var focused = window.FocusManager!.GetFocusedElement().ShouldBeAssignableTo<Visual>();
+        focused.ShouldNotBeSameAs(outside);
+        focused!.GetVisualAncestors().ShouldContain(view);
     }
 
     [AvaloniaFact]
