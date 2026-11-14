@@ -49,7 +49,7 @@ internal sealed partial class DownloadPass(ISyncRootReader roots, DownloadPlanLo
             return RootUnavailable();
 
         var orphans = DeleteOrphans(root);
-        var purged = trash.Purge(root);
+        var purged = await trash.PurgeAsync(root, cancellationToken).ConfigureAwait(false);
         var summary = await loader.LoadAsync(accountId, root, localChanges, cancellationToken)
             .BindAsync(request => PlanAndRunAsync(accountId, root, request, cancellationToken))
             .ConfigureAwait(false);

@@ -85,6 +85,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<LocalPathFormatter>()
             .AddSingleton<PlaintextCacheConsentSettingsViewModel>()
             .AddSingleton<SyncScheduleSettingsViewModel>()
+            .AddSingleton<TrashRetentionSettingsViewModel>()
             .AddSingleton<DisplaySettingsViewModel>()
             .AddSingleton<SyncOverviewViewModel>()
             .AddSingleton<LayoutBViewModel>()

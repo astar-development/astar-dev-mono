@@ -236,6 +236,15 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
+    public void when_application_services_are_added_then_the_trash_retention_setting_resolves_and_is_the_one_in_the_display_settings()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<AStarDev.CloudSync.ViewModels.DisplaySettings.DisplaySettingsViewModel>().TrashRetention.ShouldBeSameAs(provider.GetRequiredService<AStarDev.CloudSync.ViewModels.DisplaySettings.TrashRetentionSettingsViewModel>());
+        provider.GetRequiredService<ITrashRetentionSettings>().ShouldBeSameAs(provider.GetRequiredService<ITrashRetentionSettings>());
+    }
+
+    [Fact]
     public void when_application_services_are_added_then_the_placeholder_sync_actions_are_registered()
     {
         var services = CreateServices();
