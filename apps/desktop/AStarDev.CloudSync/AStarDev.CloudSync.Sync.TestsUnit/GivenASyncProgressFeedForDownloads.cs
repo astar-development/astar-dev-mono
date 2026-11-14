@@ -39,7 +39,7 @@ public sealed class GivenASyncProgressFeedForDownloads
     }
 
     [Fact]
-    public async Task when_reports_arrive_faster_than_four_a_second_then_only_the_first_is_published()
+    public async Task when_reports_arrive_faster_than_four_a_second_then_only_the_first_and_the_completing_update_are_published()
     {
         using var fixture = await CreateAsync(CancellationToken);
         fixture.Docs();
@@ -50,7 +50,7 @@ public sealed class GivenASyncProgressFeedForDownloads
 
         _ = await fixture.RunAsync(CancellationToken);
 
-        Published(events).ShouldBe([(10, 100)]);
+        Published(events).ShouldBe([(10, 100), (100, 100)]);
     }
 
     [Fact]
@@ -114,7 +114,7 @@ public sealed class GivenASyncProgressFeedForDownloads
         var summary = Summary(await Task.Run(() => fixture.RunAsync(CancellationToken), CancellationToken));
 
         summary.Downloaded.ShouldBe(20);
-        events.ShouldHaveSingleItem().Progress.BytesTotal.ShouldBe(200);
+        Published(events).ShouldBe([(Published(events)[0].Done, 200), (200, 200)]);
     }
 
     [Fact]
@@ -126,13 +126,13 @@ public sealed class GivenASyncProgressFeedForDownloads
         fixture.Downloader.Content["a"] = Bytes(100);
         fixture.Downloader.Reports = [50];
         fixture.Steps.OnStep = () => fixture.Time.Advance(Step);
-        SyncStatus? seen = null;
+        List<SyncStatus> seen = [];
         fixture.Downloader.BeforeEachReport = () => fixture.Time.Advance(Step);
-        fixture.Feed.ProgressChanged += (_, change) => seen = change.Progress.Phase is SyncPhase.Downloading ? fixture.Status.StatusOf(change.AccountId) : seen;
+        fixture.Feed.ProgressChanged += (_, change) => seen.Add(fixture.Status.StatusOf(change.AccountId));
 
         _ = await fixture.RunSyncAsync(CancellationToken);
 
-        seen.ShouldBe(SyncStatusFactory.CreateSyncing(50));
+        seen.ShouldContain(SyncStatusFactory.CreateSyncing(50));
     }
 
     [Fact]

@@ -23,6 +23,17 @@ public sealed class GivenASyncProgressFeedForRuns : IDisposable
     }
 
     [Fact]
+    public async Task when_phases_change_within_a_quarter_second_then_each_phase_is_still_published()
+    {
+        List<string> phases = [];
+        services.Feed.ProgressChanged += (_, change) => phases.Add(change.Progress.Phase.GetType().Name);
+
+        _ = await services.Runner.RunAsync(services.Personal, Manual, CancellationToken);
+
+        phases.ShouldBe(["UpdatingRemoteIndex", "ScanningLocal", "Downloading", "Uploading"]);
+    }
+
+    [Fact]
     public async Task when_a_run_is_in_progress_then_the_account_has_progress_and_when_it_ends_it_has_none()
     {
         var gate = new WriteGate();
@@ -40,7 +51,7 @@ public sealed class GivenASyncProgressFeedForRuns : IDisposable
     }
 
     [Fact]
-    public async Task when_a_second_run_starts_within_a_quarter_second_of_the_first_then_its_first_update_is_still_published()
+    public async Task when_a_second_run_starts_within_a_quarter_second_of_the_first_then_its_phases_are_published_again()
     {
         var published = 0;
         services.Feed.ProgressChanged += (_, _) => published++;
@@ -48,7 +59,7 @@ public sealed class GivenASyncProgressFeedForRuns : IDisposable
         _ = await services.Runner.RunAsync(services.Personal, Manual, CancellationToken);
         _ = await services.Runner.RunAsync(services.Personal, Manual, CancellationToken);
 
-        published.ShouldBe(2);
+        published.ShouldBe(8);
     }
 
     [Fact]
@@ -60,7 +71,7 @@ public sealed class GivenASyncProgressFeedForRuns : IDisposable
         _ = await services.Runner.RunAsync(services.Personal, Manual, CancellationToken);
         _ = await services.Runner.RunAsync(services.Work, Manual, CancellationToken);
 
-        published.ShouldBe(2);
+        published.ShouldBe(8);
     }
 
     public void Dispose() => services.Dispose();
