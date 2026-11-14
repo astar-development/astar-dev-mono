@@ -4,11 +4,16 @@ namespace AStarDev.CloudSync.ViewModels.Conflicts;
 
 internal static class ConflictTexts
 {
-    internal const string RefusedKey = "Conflict.Refused";
-
     internal const string UnexpectedKey = "Conflict.Error.Unexpected";
 
     internal const string HeldNotSettledKey = "Held.Error.NotSettled";
+
+    internal static string RefusedKey(ConflictRefusal refusal) => refusal switch
+    {
+        ConflictRefusal.Busy => "Conflict.Refused.Busy",
+        ConflictRefusal.Draining => "Conflict.Refused.Draining",
+        _ => "Conflict.Refused.QueueUnreadable",
+    };
 
     internal static string KindKey(ConflictKind kind) => kind switch
     {

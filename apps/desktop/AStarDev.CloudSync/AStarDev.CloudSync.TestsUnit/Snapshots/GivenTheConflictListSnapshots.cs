@@ -51,7 +51,7 @@ public class GivenTheConflictListSnapshots
         var reader = new FakeAttentionReader();
         var failing = (SyncAttentionItem.Conflict)AttentionItems.CreateConflict(photos.Id, "Camera/holiday-042.jpg");
         reader.Add(photos.Id, failing, AttentionItems.CreateConflict(photos.Id, "Camera/holiday-043.jpg"));
-        var resolver = new FakeConflictResolver { Outcome = (_, _, _, _) => Task.FromResult(Result.Success<ResolutionSummary, ErrorResponse>(ResolutionSummaryFactory.Create(0, [FailedResolutionFactory.Create(failing.Id, ResolutionFailureFactory.CreateRemoteChanged())], 0))) };
+        var resolver = new FakeConflictResolver { Outcome = (_, _, _, _) => Task.FromResult(Result.Success<ResolutionSummary, ConflictRefusal>(ResolutionSummaryFactory.Create(0, [FailedResolutionFactory.Create(failing.Id, ResolutionFailureFactory.CreateRemoteChanged())], 0))) };
         var window = await CreateWindowAsync(reader, resolver, photos);
         var list = (AStarDev.CloudSync.ViewModels.Conflicts.ConflictListViewModel)((ConflictListView)window.Content!).DataContext!;
 

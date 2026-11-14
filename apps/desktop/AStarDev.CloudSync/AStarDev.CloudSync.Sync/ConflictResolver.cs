@@ -17,16 +17,16 @@ internal sealed class ConflictResolver(IAccountSyncLock syncLock, ISyncAttention
     private const string Location = nameof(ConflictResolver);
 
     /// <inheritdoc />
-    public async Task<Result<ResolutionSummary, ErrorResponse>> ResolveAsync(AccountId accountId, IReadOnlyList<ConflictId> ids, ConflictStrategy strategy, CancellationToken cancellationToken)
+    public async Task<Result<ResolutionSummary, ConflictRefusal>> ResolveAsync(AccountId accountId, IReadOnlyList<ConflictId> ids, ConflictStrategy strategy, CancellationToken cancellationToken)
     {
         var attempt = syncLock.TryAcquire(accountId);
         if (attempt is not SyncLockAttempt.Acquired acquired)
-            return Result.Failure<ResolutionSummary, ErrorResponse>(ResolutionRefusal.For(attempt));
+            return Result.Failure<ResolutionSummary, ConflictRefusal>(attempt is SyncLockAttempt.Busy ? ConflictRefusalFactory.CreateBusy() : ConflictRefusalFactory.CreateDraining());
 
         using var lease = acquired.Lease;
 
         return await reader.GetOpenAsync(accountId, cancellationToken)
-            .BindAsync(open => ResolveOpenAsync(accountId, [.. open.OfType<SyncAttentionItem.Conflict>()], [.. (ids ?? []).Distinct()], strategy, cancellationToken))
+            .MatchAsync(open => ResolveOpenAsync(accountId, [.. open.OfType<SyncAttentionItem.Conflict>()], [.. (ids ?? []).Distinct()], strategy, cancellationToken), _ => Task.FromResult(Result.Failure<ResolutionSummary, ConflictRefusal>(ConflictRefusalFactory.CreateQueueUnreadable())))
             .ConfigureAwait(false);
     }
 
@@ -37,7 +37,7 @@ internal sealed class ConflictResolver(IAccountSyncLock syncLock, ISyncAttention
         _ => AttentionResolutionFactory.CreateKeepBoth(),
     };
 
-    private async Task<Result<ResolutionSummary, ErrorResponse>> ResolveOpenAsync(AccountId accountId, IReadOnlyList<SyncAttentionItem.Conflict> open, IReadOnlyList<ConflictId> ids, ConflictStrategy strategy, CancellationToken cancellationToken)
+    private async Task<Result<ResolutionSummary, ConflictRefusal>> ResolveOpenAsync(AccountId accountId, IReadOnlyList<SyncAttentionItem.Conflict> open, IReadOnlyList<ConflictId> ids, ConflictStrategy strategy, CancellationToken cancellationToken)
     {
         var tally = new Tally();
         var selected = open.Where(conflict => ids.Contains(conflict.Id)).ToList();
@@ -51,7 +51,7 @@ internal sealed class ConflictResolver(IAccountSyncLock syncLock, ISyncAttention
         var message = $"Conflict resolution finished: {summary.Resolved} resolved, {summary.Failed.Count} failed, {summary.Skipped} skipped.";
         LogMessage.Information(logger, Location, message);
 
-        return Result.Success<ResolutionSummary, ErrorResponse>(summary);
+        return Result.Success<ResolutionSummary, ConflictRefusal>(summary);
     }
 
     private async Task ResolvePathAsync(AccountId accountId, SyncAttentionItem.Conflict chosen, IReadOnlyList<SyncAttentionItem.Conflict> members, ConflictStrategy strategy, Tally tally, CancellationToken cancellationToken)
