@@ -1,0 +1,16 @@
+<Project>
+  <!--
+    apps/desktop/AStarDev.CloudSync/Directory.Build.props
+    Inherits from apps/desktop.
+
+    EF Core is not trim-compatible (DbContext construction, migrations and
+    model building use reflection), so trimming the published app fails with
+    IL2026 under TreatWarningsAsErrors. This overrides the PublishTrimmed
+    default in apps/desktop/Directory.Build.props for every CloudSync project.
+  -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release' And '$(RuntimeIdentifier)' != ''">
+    <PublishTrimmed>false</PublishTrimmed>
+  </PropertyGroup>
+</Project>
