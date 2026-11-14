@@ -164,6 +164,67 @@ public sealed class GivenASyncBaselineStore : IAsyncLifetime
     }
 
     [Fact]
+    public async Task when_the_baseline_is_counted_then_folders_and_files_of_that_account_only_are_counted()
+    {
+        _ = await Database.BaselineWriter.UpsertAsync(FirstAccount, [FolderEntry(FirstAccount, "Docs", "f1"), FolderEntry(FirstAccount, "Docs/Sub", "f2"), FileEntry(FirstAccount, "Docs/a.txt", "1"), FileEntry(FirstAccount, "Docs/Sub/b.txt", "2"), FileEntry(FirstAccount, "c.txt", "3")], CancellationToken);
+        _ = await Database.BaselineWriter.UpsertAsync(SecondAccount, [FolderEntry(SecondAccount, "Other", "f9"), FileEntry(SecondAccount, "Other/z.txt", "9")], CancellationToken);
+
+        var counts = await Database.BaselineCounter.CountAsync(FirstAccount, CancellationToken);
+
+        counts.Match(found => (found.Folders, found.Files), _ => (-1, -1)).ShouldBe((2, 3));
+    }
+
+    [Fact]
+    public async Task when_an_account_has_no_baseline_then_the_counts_are_zero()
+    {
+        var counts = await Database.BaselineCounter.CountAsync(FirstAccount, CancellationToken);
+
+        counts.Match(found => (found.Folders, found.Files), _ => (-1, -1)).ShouldBe((0, 0));
+    }
+
+    [Fact]
+    public async Task when_an_entry_is_saved_again_with_a_casing_variant_then_it_is_counted_once()
+    {
+        _ = await Database.BaselineWriter.UpsertAsync(FirstAccount, [FileEntry(FirstAccount, "Docs/a.txt", "1")], CancellationToken);
+        _ = await Database.BaselineWriter.UpsertAsync(FirstAccount, [FileEntry(FirstAccount, "DOCS/A.TXT", "1")], CancellationToken);
+
+        var counts = await Database.BaselineCounter.CountAsync(FirstAccount, CancellationToken);
+
+        counts.Match(found => (found.Folders, found.Files), _ => (-1, -1)).ShouldBe((0, 1));
+    }
+
+    [Fact]
+    public async Task when_the_baseline_is_counted_while_it_is_saved_to_then_every_count_succeeds_and_the_final_count_is_exact()
+    {
+        var saves = Enumerable.Range(0, 20).Select(index => Task.Run(() => Database.BaselineWriter.UpsertAsync(FirstAccount, [FileEntry(FirstAccount, $"Docs/{index}.txt", $"i{index}")], CancellationToken), CancellationToken));
+        var counts = Enumerable.Range(0, 20).Select(_ => Task.Run(() => Database.BaselineCounter.CountAsync(FirstAccount, CancellationToken), CancellationToken));
+
+        var counted = await Task.WhenAll(counts);
+        _ = await Task.WhenAll(saves);
+
+        counted.ShouldAllBe(result => result.Match(_ => true, _ => false));
+        (await Database.BaselineCounter.CountAsync(FirstAccount, CancellationToken)).Match(found => found.Files, _ => -1).ShouldBe(20);
+    }
+
+    [Fact]
+    public async Task when_the_baseline_is_counted_with_a_cancelled_token_then_the_count_is_cancelled()
+    {
+        var count = () => Database.BaselineCounter.CountAsync(FirstAccount, new CancellationToken(true));
+
+        await Should.ThrowAsync<OperationCanceledException>(count);
+    }
+
+    [Fact]
+    public async Task when_the_baseline_cannot_be_counted_then_the_count_fails_instead_of_being_zero()
+    {
+        await using var unmigrated = TemporarySyncDatabase.CreateUnmigrated();
+
+        var counts = await unmigrated.BaselineCounter.CountAsync(FirstAccount, CancellationToken);
+
+        counts.Match(_ => "counted", error => error.Message).ShouldBe("The baseline could not be counted.");
+    }
+
+    [Fact]
     public async Task when_a_stored_row_is_corrupt_then_the_page_read_fails_instead_of_returning_a_short_page()
     {
         _ = await Database.BaselineWriter.UpsertAsync(FirstAccount, [FileEntry(FirstAccount, "Docs/a.txt", "1"), FileEntry(FirstAccount, "Docs/c.txt", "3")], CancellationToken);

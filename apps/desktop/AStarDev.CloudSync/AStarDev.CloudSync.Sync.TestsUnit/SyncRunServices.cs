@@ -26,6 +26,7 @@ public sealed class SyncRunServices : IDisposable
             .AddSingleton<ILocalChangeDetector>(Steps)
             .AddSingleton<IDownloadPass>(Steps)
             .AddSingleton<IUploadPass>(Steps)
+            .AddSingleton<IAccountQuotaRefresher>(Quota)
             .BuildServiceProvider();
 
     public AccountId Personal { get; } = AccountIdFactory.Create(Guid.Parse("11111111-1111-1111-1111-111111111111"));
@@ -33,6 +34,8 @@ public sealed class SyncRunServices : IDisposable
     public AccountId Work { get; } = AccountIdFactory.Create(Guid.Parse("22222222-2222-2222-2222-222222222222"));
 
     public ScriptedSyncSteps Steps { get; } = new();
+
+    public ScriptedQuotaRefresher Quota { get; } = new();
 
     public RecordingAttentionWriter Attention { get; } = new();
 

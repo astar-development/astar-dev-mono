@@ -50,7 +50,7 @@ public class GivenAnAccountStoreSyncOverviewSource
     }
 
     [Fact]
-    public async Task when_an_account_has_sync_pairs_then_the_overview_lists_them_and_counts_them_as_the_accounts_folders()
+    public async Task when_an_account_has_sync_pairs_then_the_overview_lists_them_and_the_accounts_counts_come_from_the_baseline_not_the_pairs()
     {
         var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]) };
         var docs = SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), FlintId, "Docs", RelativePaths.Of("Docs"), Option.None<RemoteItemId>(), SyncDirectionFactory.CreateTwoWay(), SyncStatusFactory.CreateUpToDate(), 0, Option.None<DateTimeOffset>());
@@ -60,7 +60,53 @@ public class GivenAnAccountStoreSyncOverviewSource
         var overview = await CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), reader).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(loaded => loaded, failure => throw new InvalidOperationException(failure.Message));
 
         overview.SyncPairs.Select(pair => pair.Name).ToList().ShouldBe(["Docs", "Photos"]);
-        overview.Accounts.Single().FolderCount.ShouldBe(2);
+        overview.Accounts.Single().FolderCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task when_an_account_has_baseline_counts_then_its_folder_and_file_counts_are_those_counts()
+    {
+        var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]) };
+        var counter = new FakeSyncBaselineCounter { Counts = accountId => Result.Success<BaselineCounts, ErrorResponse>(accountId == FlintId ? BaselineCountsFactory.Create(4, 250) : BaselineCountsFactory.Create(0, 0)) };
+
+        var overview = await CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), new FakeSyncPairReader(), new FakeSyncRunStatusSource(), new FakeAccountPauseReader(), counter).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(loaded => loaded, failure => throw new InvalidOperationException(failure.Message));
+
+        overview.Accounts.ShouldHaveSingleItem().ShouldSatisfyAllConditions(account => account.FolderCount.ShouldBe(4), account => account.FileCount.ShouldBe(250));
+    }
+
+    [Fact]
+    public async Task when_several_accounts_exist_then_each_gets_its_own_counts_and_none_loads_the_baseline()
+    {
+        var other = AccountIdFactory.Create(Guid.Parse("1f2e3d4c-5b6a-4798-8a9b-0c1d2e3f4a5b"));
+        var otherAccount = StoredAccountFactory.Create(other, StoredFlint().Registration);
+        var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint(), otherAccount]) };
+        var counter = new FakeSyncBaselineCounter { Counts = accountId => Result.Success<BaselineCounts, ErrorResponse>(accountId == FlintId ? BaselineCountsFactory.Create(1, 2) : BaselineCountsFactory.Create(3, 4)) };
+
+        var overview = await CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), new FakeSyncPairReader(), new FakeSyncRunStatusSource(), new FakeAccountPauseReader(), counter).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(loaded => loaded, failure => throw new InvalidOperationException(failure.Message));
+
+        overview.Accounts.Select(account => (account.Id, account.FolderCount, account.FileCount)).ShouldBe([(FlintId, 1, 2), (other, 3, 4)]);
+        counter.Counted.ShouldBe([FlintId, other], ignoreOrder: true);
+    }
+
+    [Fact]
+    public async Task when_the_baseline_cannot_be_counted_then_the_overview_fails_with_that_error_rather_than_showing_zero_counts()
+    {
+        var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]) };
+        var counter = new FakeSyncBaselineCounter { Counts = _ => Result.Failure<BaselineCounts, ErrorResponse>(new ErrorResponse("The baseline could not be counted.")) };
+
+        var error = await CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), new FakeSyncPairReader(), new FakeSyncRunStatusSource(), new FakeAccountPauseReader(), counter).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(_ => "loaded", failure => failure.Message);
+
+        error.ShouldBe("The baseline could not be counted.");
+    }
+
+    [Fact]
+    public async Task when_the_overview_is_read_with_a_cancelled_token_then_it_is_cancelled()
+    {
+        var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]) };
+        var counter = new FakeSyncBaselineCounter { Counts = _ => throw new OperationCanceledException() };
+        var read = () => CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), new FakeSyncPairReader(), new FakeSyncRunStatusSource(), new FakeAccountPauseReader(), counter).GetOverviewAsync(TestContext.Current.CancellationToken);
+
+        await Should.ThrowAsync<OperationCanceledException>(read);
     }
 
     [Fact]
@@ -238,10 +284,17 @@ public class GivenAnAccountStoreSyncOverviewSource
     private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store, IAccountSignInStates states, ISyncPairReader pairReader) => CreateSource(database, store, states, pairReader, new FakeSyncRunStatusSource(), new FakeAccountPauseReader());
 
     private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store, IAccountSignInStates states, ISyncPairReader pairReader, ISyncRunStatusSource runStatuses, IAccountPauseReader pauseReader) =>
-        CreateSource(database, store, states, pairReader, runStatuses, pauseReader, new FakeActivityLogReader());
+        CreateSource(database, store, states, pairReader, runStatuses, pauseReader, new FakeSyncBaselineCounter(), new FakeActivityLogReader());
+
+    private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store, IAccountSignInStates states, ISyncPairReader pairReader, ISyncRunStatusSource runStatuses, IAccountPauseReader pauseReader, ISyncBaselineCounter counter) =>
+        CreateSource(database, store, states, pairReader, runStatuses, pauseReader, counter, new FakeActivityLogReader());
 
     private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store, IAccountSignInStates states, ISyncPairReader pairReader, ISyncRunStatusSource runStatuses, IAccountPauseReader pauseReader, IActivityLogReader activityReader) =>
+        CreateSource(database, store, states, pairReader, runStatuses, pauseReader, new FakeSyncBaselineCounter(), activityReader);
+
+    private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store, IAccountSignInStates states, ISyncPairReader pairReader, ISyncRunStatusSource runStatuses, IAccountPauseReader pauseReader, ISyncBaselineCounter counter, IActivityLogReader activityReader) =>
         new ServiceCollection()
+            .AddSingleton(counter)
             .AddSingleton(activityReader)
             .AddSingleton(database)
             .AddSingleton(store)

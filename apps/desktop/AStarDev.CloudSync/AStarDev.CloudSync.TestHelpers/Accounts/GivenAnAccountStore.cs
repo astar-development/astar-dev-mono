@@ -221,6 +221,70 @@ public abstract class GivenAnAccountStore : IAsyncLifetime
         (await Store.GetAllAsync(CancellationToken)).Match(accounts => accounts.Count, _ => -1).ShouldBe(1);
     }
 
+    [Fact]
+    public async Task when_the_storage_of_an_account_is_updated_then_only_its_storage_changes()
+    {
+        var registration = Registration(HomeAccountIdentifier, PersonalDisplayName);
+        var added = (await Store.AddAsync(registration, CancellationToken)).ShouldBeOfType<AccountAddOutcome.Added>().AccountId;
+        var other = (await Store.AddAsync(Registration(OtherHomeAccountIdentifier, "Photos"), CancellationToken)).ShouldBeOfType<AccountAddOutcome.Added>().AccountId;
+        var refreshed = StorageUsageFactory.Create(4_096, 9_999_999_999);
+
+        var result = await Store.UpdateStorageAsync(added, refreshed, CancellationToken);
+
+        result.Match(_ => "updated", error => error.Message).ShouldBe("updated");
+        var all = (await Store.GetAllAsync(CancellationToken)).Match(accounts => accounts, _ => []);
+        all.Single(account => account.Id == added).Registration.ShouldBe(AccountRegistrationFactory.Create(registration.Key, registration.Provider, registration.DisplayName, registration.Email, registration.DriveId, refreshed));
+        all.Single(account => account.Id == other).Registration.Storage.ShouldBe(StorageUsageFactory.Create(1_024, 5_368_709_120));
+    }
+
+    [Fact]
+    public async Task when_the_storage_of_an_unknown_or_removed_account_is_updated_then_it_succeeds_and_adds_nothing()
+    {
+        var removed = (await Store.AddAsync(Registration(HomeAccountIdentifier, PersonalDisplayName), CancellationToken)).ShouldBeOfType<AccountAddOutcome.Added>().AccountId;
+        _ = await Store.RemoveAsync(removed, CancellationToken);
+
+        var results = new[] { await Store.UpdateStorageAsync(removed, StorageUsageFactory.Create(1, 2), CancellationToken), await Store.UpdateStorageAsync(AccountIdFactory.Create(Guid.NewGuid()), StorageUsageFactory.Create(1, 2), CancellationToken) };
+
+        results.ShouldAllBe(result => result.Match(_ => true, _ => false));
+        (await Store.GetAllAsync(CancellationToken)).Match(accounts => accounts.Count, _ => -1).ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task when_the_storage_is_updated_after_the_account_signed_in_again_with_a_different_key_casing_then_the_same_account_is_updated()
+    {
+        var added = (await Store.AddAsync(Registration(HomeAccountIdentifier, PersonalDisplayName), CancellationToken)).ShouldBeOfType<AccountAddOutcome.Added>().AccountId;
+        _ = await Store.AddAsync(Registration(HomeAccountIdentifier.ToUpperInvariant(), PersonalDisplayName), CancellationToken);
+
+        _ = await Store.UpdateStorageAsync(added, StorageUsageFactory.Create(7, 70), CancellationToken);
+
+        var all = (await Store.GetAllAsync(CancellationToken)).Match(accounts => accounts, _ => []);
+        all.ShouldHaveSingleItem().Registration.Storage.ShouldBe(StorageUsageFactory.Create(7, 70));
+    }
+
+    [Fact]
+    public async Task when_the_storage_is_updated_many_times_at_once_then_every_update_succeeds_and_one_of_the_values_is_kept()
+    {
+        var added = (await Store.AddAsync(Registration(HomeAccountIdentifier, PersonalDisplayName), CancellationToken)).ShouldBeOfType<AccountAddOutcome.Added>().AccountId;
+        var values = Enumerable.Range(1, 20).Select(attempt => StorageUsageFactory.Create(attempt * 100, 10_000)).ToList();
+
+        var results = await Task.WhenAll(values.Select(value => Task.Run(() => Store.UpdateStorageAsync(added, value, CancellationToken), CancellationToken)));
+
+        results.ShouldAllBe(result => result.Match(_ => true, _ => false));
+        var all = (await Store.GetAllAsync(CancellationToken)).Match(accounts => accounts, _ => []);
+        values.ShouldContain(all.ShouldHaveSingleItem().Registration.Storage);
+    }
+
+    [Fact]
+    public async Task when_the_storage_is_updated_with_a_cancelled_token_then_it_is_cancelled_and_the_storage_is_kept()
+    {
+        var added = (await Store.AddAsync(Registration(HomeAccountIdentifier, PersonalDisplayName), CancellationToken)).ShouldBeOfType<AccountAddOutcome.Added>().AccountId;
+
+        var update = () => Store.UpdateStorageAsync(added, StorageUsageFactory.Create(7, 70), new CancellationToken(true));
+
+        await Should.ThrowAsync<OperationCanceledException>(update);
+        (await Store.GetAllAsync(CancellationToken)).Match(accounts => accounts.Single().Registration.Storage, _ => StorageUsageFactory.Create(-1, -1)).ShouldBe(StorageUsageFactory.Create(1_024, 5_368_709_120));
+    }
+
     private static ProviderAccountKey Key(string identifier) => ProviderAccountKeyFactory.Create(identifier).Match(key => key, _ => throw new InvalidOperationException("The test key must be valid."));
 
     private static AccountRegistration Registration(string identifier, string displayName) => AccountRegistrationFactory.Create(Key(identifier), CloudProviderFactory.CreateOneDrive(), displayName, $"{displayName.ToLowerInvariant()}@example.com", new DriveId("8A3F2C1D0E9B7A65"), StorageUsageFactory.Create(1_024, 5_368_709_120));

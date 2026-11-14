@@ -16,6 +16,7 @@ namespace AStarDev.CloudSync.Sync;
 internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps steps, SyncPassRegistry registry, IAccountSignInStates states, TimeProvider timeProvider, ISyncProgressSink progress, ILogger<SyncPassRunner> logger) : ISyncPassRunner
 {
     private const string Location = nameof(SyncPassRunner);
+    private static readonly TimeSpan QuotaTimeout = TimeSpan.FromSeconds(15);
 
     /// <inheritdoc />
     public async Task<Result<SyncPassSummary, SyncPassFailure>> RunAsync(AccountId accountId, SyncTrigger trigger, CancellationToken cancellationToken)
@@ -48,6 +49,7 @@ internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps st
             var running = StepsAsync(accountId, pass.Token);
             await ((Task)running).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
             outcome = running.IsCompletedSuccessfully ? await running.ConfigureAwait(false) : Abandoned(running);
+            await RefreshQuotaAsync(accountId, outcome, pass.Token).ConfigureAwait(false);
         }
 
         await steps.Activity.RecordAsync(accountId, outcome).ConfigureAwait(false);
@@ -55,6 +57,22 @@ internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps st
         LogEnd(trigger, outcome, timeProvider.GetElapsedTime(started));
 
         return outcome;
+    }
+
+    private static bool NeedsNoQuotaRefresh(Result<SyncPassSummary, SyncPassFailure> outcome) => outcome.Match(_ => false, failure => failure is SyncPassFailure.Cancelled or SyncPassFailure.AuthenticationRequired);
+
+    private async Task RefreshQuotaAsync(AccountId accountId, Result<SyncPassSummary, SyncPassFailure> outcome, CancellationToken cancellationToken)
+    {
+        if (cancellationToken.IsCancellationRequested || NeedsNoQuotaRefresh(outcome))
+            return;
+
+        using var limit = new CancellationTokenSource(QuotaTimeout, timeProvider);
+        using var bounded = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, limit.Token);
+        var refreshing = Task.Run(() => steps.Quota.RefreshAsync(accountId, bounded.Token), bounded.Token);
+        await ((Task)refreshing).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+
+        if (refreshing.Exception?.GetBaseException() is { } exception)
+            LogMessage.Warning(logger, Location, $"The storage quota refresh threw {exception.GetType().Name}.");
     }
 
     private Result<SyncPassSummary, SyncPassFailure> Abandoned(Task running)

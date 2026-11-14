@@ -41,6 +41,22 @@ public sealed class InMemoryAccountStore : IAccountStore
         return Task.FromResult(Result.Success<Unit, ErrorResponse>(Unit.Instance));
     }
 
+    public Task<Result<Unit, ErrorResponse>> UpdateStorageAsync(AccountId accountId, StorageUsage storage, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        lock (gate)
+        {
+            var index = accounts.FindIndex(account => account.Id == accountId);
+            if (index >= 0)
+            {
+                var registration = accounts[index].Registration;
+                accounts[index] = StoredAccountFactory.Create(accountId, AccountRegistrationFactory.Create(registration.Key, registration.Provider, registration.DisplayName, registration.Email, registration.DriveId, storage));
+            }
+        }
+
+        return Task.FromResult(Result.Success<Unit, ErrorResponse>(Unit.Instance));
+    }
+
     private Option<StoredAccount> Find(CloudProvider provider, ProviderAccountKey key) => accounts
         .Where(account => account.Registration.Provider == provider && string.Equals(account.Registration.Key.Value, key.Value, StringComparison.OrdinalIgnoreCase))
         .Select(Option.Some)

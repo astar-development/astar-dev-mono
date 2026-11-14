@@ -43,6 +43,21 @@ internal sealed class SqliteAccountStore(IDbContextFactory<CloudSyncDbContext> d
         Try.RunAsync(() => DeleteAsync(accountId, cancellationToken), cancellationToken)
             .MatchAsync(Result.Success<Unit, ErrorResponse>, exception => ReadFailed<Unit>(exception, "Could not remove the account.", "The account could not be removed."));
 
+    /// <inheritdoc />
+    public Task<Result<Unit, ErrorResponse>> UpdateStorageAsync(AccountId accountId, StorageUsage storage, CancellationToken cancellationToken) =>
+        Try.RunAsync(() => SaveStorageAsync(accountId, storage, cancellationToken), cancellationToken)
+            .MatchAsync(Result.Success<Unit, ErrorResponse>, exception => ReadFailed<Unit>(exception, "Could not update the account storage.", "The account storage could not be updated."));
+
+    private async Task<Unit> SaveStorageAsync(AccountId accountId, StorageUsage storage, CancellationToken cancellationToken)
+    {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        _ = await dbContext.Accounts.Where(account => account.Id == accountId.Value)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(account => account.QuotaUsedBytes, storage.UsedBytes).SetProperty(account => account.QuotaTotalBytes, storage.TotalBytes), cancellationToken)
+            .ConfigureAwait(false);
+
+        return Unit.Instance;
+    }
+
     private async Task<Unit> DeleteAsync(AccountId accountId, CancellationToken cancellationToken)
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);

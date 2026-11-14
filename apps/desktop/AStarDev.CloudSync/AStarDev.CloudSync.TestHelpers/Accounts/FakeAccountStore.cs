@@ -9,6 +9,7 @@ public sealed class FakeAccountStore : IAccountStore
 
     private readonly Lock gate = new();
     private readonly List<AccountRegistration> savedRegistrations = [];
+    private readonly List<(AccountId AccountId, StorageUsage Storage)> updates = [];
 
     public Func<AccountRegistration, CancellationToken, Task<AccountAddOutcome>> Save { get; init; } = (_, _) => Task.FromResult(AccountAddOutcomeFactory.CreateAdded(AddedAccountId));
 
@@ -38,4 +39,23 @@ public sealed class FakeAccountStore : IAccountStore
     public Func<AccountId, Result<Unit, ErrorResponse>> Remove { get; init; } = _ => Result.Success<Unit, ErrorResponse>(Unit.Instance);
 
     public Task<Result<Unit, ErrorResponse>> RemoveAsync(AccountId accountId, CancellationToken cancellationToken) => Task.FromResult(Remove(accountId));
+
+    public Func<AccountId, StorageUsage, Result<Unit, ErrorResponse>> Update { get; init; } = (_, _) => Result.Success<Unit, ErrorResponse>(Unit.Instance);
+
+    public IReadOnlyList<(AccountId AccountId, StorageUsage Storage)> Updates
+    {
+        get
+        {
+            lock (gate)
+                return [.. updates];
+        }
+    }
+
+    public Task<Result<Unit, ErrorResponse>> UpdateStorageAsync(AccountId accountId, StorageUsage storage, CancellationToken cancellationToken)
+    {
+        lock (gate)
+            updates.Add((accountId, storage));
+
+        return Task.FromResult(Update(accountId, storage));
+    }
 }
