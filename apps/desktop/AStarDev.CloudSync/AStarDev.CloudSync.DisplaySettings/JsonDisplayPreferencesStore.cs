@@ -24,7 +24,7 @@ internal sealed class JsonDisplayPreferencesStore(IFileInfo settingsFile, ILogge
 
     private DisplayPreferences Read()
     {
-        var stored = JsonSerializer.Deserialize<StoredPreferences>(settingsFile.FileSystem.File.ReadAllText(settingsFile.FullName));
+        var stored = JsonSerializer.Deserialize(settingsFile.FileSystem.File.ReadAllText(settingsFile.FullName), DisplayPreferencesJsonContext.Default.StoredPreferences);
 
         return DisplayPreferencesFactory.Create(MainLayoutFactory.FromKey(stored?.Layout), AppThemeFactory.FromKey(stored?.Theme));
     }
@@ -32,7 +32,7 @@ internal sealed class JsonDisplayPreferencesStore(IFileInfo settingsFile, ILogge
     private Unit Write(DisplayPreferences preferences)
     {
         settingsFile.Directory?.Create();
-        settingsFile.FileSystem.File.WriteAllText(settingsFile.FullName, JsonSerializer.Serialize(new StoredPreferences(preferences.Layout.ToKey(), preferences.Theme.ToKey())));
+        settingsFile.FileSystem.File.WriteAllText(settingsFile.FullName, JsonSerializer.Serialize(new StoredPreferences(preferences.Layout.ToKey(), preferences.Theme.ToKey()), DisplayPreferencesJsonContext.Default.StoredPreferences));
 
         return Unit.Instance;
     }
@@ -51,5 +51,5 @@ internal sealed class JsonDisplayPreferencesStore(IFileInfo settingsFile, ILogge
         return Unit.Instance;
     }
 
-    private sealed record StoredPreferences(string Layout, string Theme);
+    internal sealed record StoredPreferences(string Layout, string Theme);
 }

@@ -20,7 +20,7 @@ internal sealed class JsonPlaintextCacheConsentStore(IFileInfo consentFile, ILog
         consentFile.Refresh();
 
         return consentFile.Exists
-            ? Try.Run(() => JsonSerializer.Deserialize<StoredConsent>(consentFile.FileSystem.File.ReadAllText(consentFile.FullName))).Match(ToConsent, Unreadable)
+            ? Try.Run(() => JsonSerializer.Deserialize(consentFile.FileSystem.File.ReadAllText(consentFile.FullName), PlaintextCacheConsentJsonContext.Default.StoredConsent)).Match(ToConsent, Unreadable)
             : Option.None<PlaintextCacheConsent>();
     }
 
@@ -42,7 +42,7 @@ internal sealed class JsonPlaintextCacheConsentStore(IFileInfo consentFile, ILog
     private Unit Write()
     {
         consentFile.Directory?.Create();
-        consentFile.FileSystem.File.WriteAllText(consentFile.FullName, JsonSerializer.Serialize(new StoredConsent(GrantedValue)));
+        consentFile.FileSystem.File.WriteAllText(consentFile.FullName, JsonSerializer.Serialize(new StoredConsent(GrantedValue), PlaintextCacheConsentJsonContext.Default.StoredConsent));
 
         return Unit.Instance;
     }
@@ -64,5 +64,5 @@ internal sealed class JsonPlaintextCacheConsentStore(IFileInfo consentFile, ILog
         return Result.Failure<Unit, ErrorResponse>(new ErrorResponse("The plaintext token file consent could not be saved."));
     }
 
-    private sealed record StoredConsent(string PlaintextCache);
+    internal sealed record StoredConsent(string PlaintextCache);
 }

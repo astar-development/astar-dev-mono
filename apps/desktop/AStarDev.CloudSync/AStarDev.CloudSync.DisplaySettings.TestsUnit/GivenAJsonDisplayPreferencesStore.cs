@@ -44,6 +44,28 @@ public class GivenAJsonDisplayPreferencesStore
         fileSystem.File.Exists(SettingsPath).ShouldBeTrue();
     }
 
+    [Fact]
+    public void when_a_file_in_the_original_format_exists_then_its_preferences_are_loaded()
+    {
+        var fileSystem = new MockFileSystem();
+        fileSystem.Directory.CreateDirectory("/home/user/.config/AStarDev.CloudSync");
+        fileSystem.File.WriteAllText(SettingsPath, """{"Layout":"C","Theme":"Light"}""");
+
+        var preferences = CreateStore(fileSystem).Load();
+
+        preferences.ShouldBe(DisplayPreferencesFactory.Create(MainLayoutFactory.CreateSyncPairsFirst(), AppThemeFactory.CreateLight()));
+    }
+
+    [Fact]
+    public void when_preferences_are_saved_then_the_file_holds_the_original_json_format()
+    {
+        var fileSystem = new MockFileSystem();
+
+        CreateStore(fileSystem).Save(DisplayPreferencesFactory.Create(MainLayoutFactory.CreateSyncPairsFirst(), AppThemeFactory.CreateLight()));
+
+        fileSystem.File.ReadAllText(SettingsPath).ShouldBe("""{"Layout":"C","Theme":"Light"}""");
+    }
+
     [Theory]
     [InlineData("not json")]
     [InlineData("{\"Layout\":\"Q\",\"Theme\":\"Purple\"}")]
