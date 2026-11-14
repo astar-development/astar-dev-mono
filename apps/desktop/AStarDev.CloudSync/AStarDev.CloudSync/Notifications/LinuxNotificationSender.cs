@@ -14,16 +14,22 @@ internal sealed class LinuxNotificationSender : INotificationSender
     /// <inheritdoc />
     public async Task<Result<Unit, NotificationFailure>> SendAsync(DesktopNotification notification, CancellationToken cancellationToken)
     {
-        var start = new ProcessStartInfo("notify-send") { UseShellExecute = false, CreateNoWindow = true };
-        foreach (var argument in NotificationCommandBuilder.Arguments(notification))
-            start.ArgumentList.Add(argument);
-
-        var run = Try.RunAsync(() => RunAsync(start, cancellationToken), cancellationToken);
+        var program = NotificationCommandBuilder.FindProgram(File.Exists);
+        var run = Try.RunAsync(() => program.Match(path => RunAsync(StartInfoFor(path, notification), cancellationToken), () => Task.FromResult(false)), cancellationToken);
         await ((Task)run).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
 
         return run.IsCompletedSuccessfully && run.Result.Match(done => done, _ => false)
             ? Result.Success<Unit, NotificationFailure>(Unit.Instance)
             : Result.Failure<Unit, NotificationFailure>(NotificationFailureFactory.CreateSenderFailed());
+    }
+
+    private static ProcessStartInfo StartInfoFor(string program, DesktopNotification notification)
+    {
+        var start = new ProcessStartInfo(program) { UseShellExecute = false, CreateNoWindow = true };
+        foreach (var argument in NotificationCommandBuilder.Arguments(notification))
+            start.ArgumentList.Add(argument);
+
+        return start;
     }
 
     private static async Task<bool> RunAsync(ProcessStartInfo start, CancellationToken cancellationToken)
