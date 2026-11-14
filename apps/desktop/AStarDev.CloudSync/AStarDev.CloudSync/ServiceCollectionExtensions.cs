@@ -68,6 +68,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IFolderSelectionDialog>(provider => provider.GetRequiredService<FolderSelectionViewModel>())
             .AddSingleton<IAccountCommands>(provider => provider.GetRequiredService<AccountDialogViewModel>())
             .AddSingleton<SignInStateOverviewReloader>()
+            .AddSingleton<SyncRunOverviewReloader>()
             .AddSingleton<IAddAccountDialog>(provider => provider.GetRequiredService<AddAccountViewModel>())
             .AddSingleton<IFileSystem, RealFileSystem>()
             .AddSingleInstance()

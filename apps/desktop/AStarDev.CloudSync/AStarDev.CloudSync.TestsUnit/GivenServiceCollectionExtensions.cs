@@ -221,6 +221,7 @@ public class GivenServiceCollectionExtensions
         provider.GetRequiredService<IConfirmSyncRestartDialog>().ShouldBeSameAs(provider.GetRequiredService<AStarDev.CloudSync.ViewModels.SyncRestart.ConfirmSyncRestartViewModel>());
         provider.GetRequiredService<AStarDev.CloudSync.ViewModels.MainWindowViewModel>().SyncRestart.ShouldBeSameAs(provider.GetRequiredService<AStarDev.CloudSync.ViewModels.SyncRestart.ConfirmSyncRestartViewModel>());
         provider.GetRequiredService<ISyncNowAction>().ShouldNotBeNull();
+        provider.GetRequiredService<AStarDev.CloudSync.ViewModels.Overview.SyncRunOverviewReloader>().ShouldNotBeNull();
         provider.GetRequiredService<ISyncActions>().ShouldNotBeNull();
     }
 
