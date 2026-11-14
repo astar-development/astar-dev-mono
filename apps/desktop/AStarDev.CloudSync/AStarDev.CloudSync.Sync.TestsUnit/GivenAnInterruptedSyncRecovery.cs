@@ -197,6 +197,22 @@ public sealed class GivenAnInterruptedSyncRecovery : IDisposable
         (RecoveryRuns(), outcomes.Count(outcome => outcome is RecoveryOutcome.NotResumed { Reason: SyncPassFailure.Cancelled })).ShouldBe((1, 1));
     }
 
+    [Fact]
+    public async Task when_an_account_is_paused_while_its_recovery_pass_is_waiting_then_the_pass_is_held()
+    {
+        await LeaveUnfinishedAsync(Personal);
+        await LeaveUnfinishedAsync(Work);
+        var next = Restart();
+
+        var recovering = Task.Run(() => next.Recovery.RecoverAsync(CancellationToken), CancellationToken);
+        await UntilRecoveryRunsAsync(1).WaitAsync(Limit, CancellationToken);
+        next.Paused.Paused = Result.Success<IReadOnlyList<AccountId>, ErrorResponse>([Personal, Work]);
+        next.Time.Advance(RecoveryStagger.Window);
+        var outcomes = await recovering.WaitAsync(Limit, CancellationToken);
+
+        (RecoveryRuns(), outcomes.Count(outcome => outcome is RecoveryOutcome.Held), outcomes.Count(outcome => outcome is RecoveryOutcome.Resumed)).ShouldBe((1, 1, 1));
+    }
+
     private int RecoveryRuns() => journal.Runs.Count(run => run.Trigger is SyncTrigger.Recovery);
 
     private async Task UntilRecoveryRunsAsync(int count)
