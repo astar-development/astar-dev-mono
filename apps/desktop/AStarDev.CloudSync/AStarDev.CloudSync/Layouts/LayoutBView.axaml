@@ -181,6 +181,7 @@
                                 <Button Grid.Column="6" Classes="secondary" Content="{Binding Account.RemoveText}" Command="{Binding Account.RemoveCommand}" VerticalAlignment="Center" />
                             </Grid>
                             <ProgressBar Classes="account-progress" Value="{Binding Progress}" AutomationProperties.Name="{Binding Account.Status.Text}" />
+                            <TextBlock Text="{Binding Account.LayoutBFailureText}" FontSize="12" Foreground="{DynamicResource CloudSyncWarnBrush}" TextWrapping="Wrap" IsVisible="{Binding Account.HasFailure}" />
                         </StackPanel>
 
                         <TabControl Grid.Row="1" Margin="28,6,28,20" Padding="0">

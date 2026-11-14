@@ -291,6 +291,7 @@
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                                 <TextBlock Text="{Binding Account.Name}" FontSize="14" FontWeight="SemiBold" />
                                                 <TextBlock Classes="muted" Text="{Binding EmailAndProviderText}" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Text="{Binding Account.LayoutAFailureText}" FontSize="11" Foreground="{DynamicResource CloudSyncWarnBrush}" TextWrapping="Wrap" IsVisible="{Binding Account.HasFailure}" />
                                             </StackPanel>
                                             <common:StatusPill Grid.Column="2" VerticalAlignment="Center" DataContext="{Binding Account.Status}" />
                                             <Button Grid.Column="3" Classes="card-action" Content="{Binding ActionText}" Command="{Binding ActionCommand}" />

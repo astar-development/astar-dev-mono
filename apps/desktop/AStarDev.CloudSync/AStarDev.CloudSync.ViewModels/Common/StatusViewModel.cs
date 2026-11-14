@@ -34,13 +34,17 @@ public sealed class StatusViewModel(SyncStatus status, AccountSignInState signIn
         _ => Localization.GetLocal("Status.UpToDate")
     };
 
-    private static string FailureKey(SyncFailureReason reason) => reason switch
+    private static string FailureKey(SyncFailureReason reason) => $"Status.Failed.{ReasonName(reason)}";
+
+    private static string ReasonName(SyncFailureReason reason) => reason switch
     {
-        SyncFailureReason.RootUnavailable => "Status.Failed.RootUnavailable",
-        SyncFailureReason.QuotaExceeded => "Status.Failed.QuotaExceeded",
-        SyncFailureReason.InsufficientDiskSpace => "Status.Failed.InsufficientDiskSpace",
-        _ => "Status.Failed.Unexpected"
+        SyncFailureReason.RootUnavailable => "RootUnavailable",
+        SyncFailureReason.QuotaExceeded => "QuotaExceeded",
+        SyncFailureReason.InsufficientDiskSpace => "InsufficientDiskSpace",
+        _ => "Unexpected"
     };
+
+    internal string FailureMessage(string layout) => status is SyncStatus.Failed failed && !IsSignInRequired ? Localization.GetLocal($"Failure.{layout}.{ReasonName(failed.Reason)}") : string.Empty;
 
     private string AttentionText(SyncStatus.NeedsAttention attention) => attention switch
     {
