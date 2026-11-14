@@ -44,8 +44,8 @@ internal sealed class AccountStoreSyncOverviewSource(ICloudSyncDatabase database
         }
 
         var lastSyncs = new Dictionary<AccountId, Option<DateTimeOffset>>();
-        foreach (var account in accounts)
-            lastSyncs[account.Id] = await LastSyncAsync(account.Id, cancellationToken).ConfigureAwait(false);
+        foreach (var accountId in accounts.Select(account => account.Id))
+            lastSyncs[accountId] = await LastSyncAsync(accountId, cancellationToken).ConfigureAwait(false);
 
         return failure.Match(
             error => Result.Failure<SyncOverview, ErrorResponse>(error),

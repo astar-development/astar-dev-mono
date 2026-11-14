@@ -109,17 +109,17 @@ internal sealed class ResolutionTransfers(UploadPassProviders providers, UploadP
         _ => ResolutionFailureFactory.CreateUnexpected(),
     };
 
-    private static bool IsDone(UploadItemOutcome outcome) => outcome is UploadItemOutcome.Uploaded or UploadItemOutcome.FolderCreated or UploadItemOutcome.Linked or UploadItemOutcome.RemovedRemotely;
-
-    private static Result<Unit, ResolutionFailure> Settled(IReadOnlyList<UploadItemOutcome> outcomes) =>
-        outcomes.FirstOrNone(outcome => !IsDone(outcome)).Match(outcome => Failed(FailureOf(outcome)), Done);
-
     private static ResolutionFailure FailureOf(DownloadFailure failure) => failure switch
     {
         DownloadFailure.Provider provider => ResolutionFailureFactory.CreateTransfer(provider.Error),
         DownloadFailure.Local local => ResolutionFailureFactory.CreateLocal(local.Failure),
         _ => ResolutionFailureFactory.CreateUnexpected(),
     };
+
+    private static bool IsDone(UploadItemOutcome outcome) => outcome is UploadItemOutcome.Uploaded or UploadItemOutcome.FolderCreated or UploadItemOutcome.Linked or UploadItemOutcome.RemovedRemotely;
+
+    private static Result<Unit, ResolutionFailure> Settled(IReadOnlyList<UploadItemOutcome> outcomes) =>
+        outcomes.FirstOrNone(outcome => !IsDone(outcome)).Match(outcome => Failed(FailureOf(outcome)), Done);
 
     private async Task<Result<Unit, ResolutionFailure>> DownloadFileAsync(ResolutionContext context, RelativeSyncPath path, RemoteItemSnapshot remote, RemoteItemKind.File current, CancellationToken cancellationToken)
     {
