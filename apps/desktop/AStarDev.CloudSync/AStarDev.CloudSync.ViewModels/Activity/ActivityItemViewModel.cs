@@ -27,6 +27,8 @@ public sealed class ActivityItemViewModel(ActivityEntry entry, ProviderViewModel
         ActivityKind.Uploaded uploaded => Localization.GetLocal("Activity.Uploaded.Many", uploaded.FileCount.ToString("N0", Localization.CurrentCulture), ByteSizeFormatter.Format(uploaded.Bytes, Localization)),
         ActivityKind.Downloaded { FileCount: 1 } => Localization.GetLocal("Activity.Downloaded.One"),
         ActivityKind.Downloaded downloaded => Localization.GetLocal("Activity.Downloaded.Many", downloaded.FileCount.ToString("N0", Localization.CurrentCulture)),
+        ActivityKind.Deleted { FileCount: 1 } => Localization.GetLocal("Activity.Deleted.One"),
+        ActivityKind.Deleted deleted => Localization.GetLocal("Activity.Deleted.Many", deleted.FileCount.ToString("N0", Localization.CurrentCulture)),
         ActivityKind.ConflictDetected conflict => Localization.GetLocal("Activity.Conflict", conflict.FileName),
         _ => Localization.GetLocal("Activity.Authenticated")
     };

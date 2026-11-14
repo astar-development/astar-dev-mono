@@ -50,6 +50,7 @@ internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps st
             outcome = running.IsCompletedSuccessfully ? await running.ConfigureAwait(false) : Abandoned(running);
         }
 
+        await steps.Activity.RecordAsync(accountId, outcome).ConfigureAwait(false);
         registry.End(pass, outcome);
         LogEnd(trigger, outcome, timeProvider.GetElapsedTime(started));
 
