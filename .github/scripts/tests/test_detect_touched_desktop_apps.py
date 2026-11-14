@@ -87,8 +87,8 @@ class GivenTheDesktopAppsConfig(unittest.TestCase):
         config_path = pathlib.Path(__file__).resolve().parents[2] / "desktop-apps.json"
         self.apps = json.loads(config_path.read_text(encoding="utf-8"))
 
-    def test_when_config_is_loaded_then_all_five_desktop_apps_are_present(self):
-        self.assertEqual({"clock", "cloudsync", "file-app", "onedrive-sync", "wallpaper-scraper"}, {app["channel_prefix"] for app in self.apps})
+    def test_when_config_is_loaded_then_all_four_desktop_apps_are_present(self):
+        self.assertEqual({"clock", "cloudsync", "file-app", "wallpaper-scraper"}, {app["channel_prefix"] for app in self.apps})
 
     def test_when_config_is_loaded_then_cloudsync_releases_on_the_channel_its_updater_reads(self):
         repo_root = pathlib.Path(__file__).resolve().parents[3]
