@@ -15,6 +15,7 @@ public sealed class HeldDeletionItemViewModel : LocalizedObservableObject
     private readonly SyncAttentionItem.HeldDeletions held;
     private readonly string accountName;
     private readonly string pairName;
+    private readonly HeldDeletionActions actions;
     private int busy;
     private bool isExpanded;
     private bool isDeferred;
@@ -25,6 +26,8 @@ public sealed class HeldDeletionItemViewModel : LocalizedObservableObject
         this.held = held;
         this.accountName = accountName;
         this.pairName = pairName;
+        this.actions = actions;
+        isExpanded = actions.WasExpanded(held.Id);
         this.errorKey = errorKey;
         this.isDeferred = isDeferred;
         ConfirmCommand = new AsyncRelayCommand(cancellationToken => RunAsync(actions.Confirm, cancellationToken), () => !IsBusy);
@@ -118,6 +121,7 @@ public sealed class HeldDeletionItemViewModel : LocalizedObservableObject
     private void Toggle()
     {
         isExpanded = !isExpanded;
+        actions.ExpandedChanged(held.Id, isExpanded);
         OnPropertyChanged(nameof(IsExpanded));
         OnPropertyChanged(nameof(PathTexts));
         OnPropertyChanged(nameof(ToggleText));

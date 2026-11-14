@@ -26,6 +26,7 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
     private readonly ConcurrentDictionary<ConflictId, byte> selected = new();
     private readonly ConcurrentDictionary<HeldDeletionId, string> heldErrorKeys = new();
     private readonly ConcurrentDictionary<HeldDeletionId, byte> deferred = new();
+    private readonly ConcurrentDictionary<HeldDeletionId, byte> expanded = new();
     private readonly HeldDeletionActions heldActions;
     private int loadsStarted;
     private int bulkBusy;
@@ -63,7 +64,7 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
             }.Select(kind => new ConflictKindFilterViewModel(Option.Some(kind), localization))
         ];
         selectedFilter = Filters[0];
-        heldActions = new HeldDeletionActions(ConfirmHeldAsync, RestoreHeldAsync, DecideLater);
+        heldActions = new HeldDeletionActions(ConfirmHeldAsync, RestoreHeldAsync, DecideLater, expanded.ContainsKey, RememberExpanded);
         BulkOptions =
         [
             CreateBulkOption(ConflictStrategyFactory.CreateLocalWins()),
@@ -295,6 +296,9 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
 
         foreach (var id in deferred.Keys.Where(id => !openHeld.Contains(id)))
             _ = deferred.TryRemove(id, out _);
+
+        foreach (var id in expanded.Keys.Where(id => !openHeld.Contains(id)))
+            _ = expanded.TryRemove(id, out _);
     }
 
     private Unit NotRead(ErrorResponse error)
@@ -504,6 +508,14 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
     {
         heldErrorKeys[item.Id] = key;
         item.ShowError(key);
+    }
+
+    private void RememberExpanded(HeldDeletionId id, bool isExpanded)
+    {
+        if (isExpanded)
+            _ = expanded.TryAdd(id, 0);
+        else
+            _ = expanded.TryRemove(id, out _);
     }
 
     private void DecideLater(HeldDeletionItemViewModel item)
