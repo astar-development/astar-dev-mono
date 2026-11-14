@@ -173,6 +173,20 @@ public sealed class GivenASyncRunJournal : IAsyncLifetime
     }
 
     [Fact]
+    public async Task when_more_than_the_history_limit_of_runs_failed_since_the_last_completed_run_then_the_last_sync_is_still_known()
+    {
+        await FinishAsync(await StartAsync(FirstAccount), SyncRunOutcomeFactory.CreateCompleted());
+        var completedAt = time.GetUtcNow();
+        foreach (var _ in Enumerable.Range(0, SyncRunJournalLimits.RunsPerAccount + 5))
+        {
+            time.Advance(TimeSpan.FromSeconds(1));
+            await FinishAsync(await StartAsync(FirstAccount), SyncRunOutcomeFactory.CreateFailed(SyncFailureReasonFactory.CreateQuotaExceeded()));
+        }
+
+        (await LastSyncAsync(FirstAccount)).ShouldBe(Option.Some(completedAt));
+    }
+
+    [Fact]
     public async Task when_twenty_runs_start_and_finish_at_once_then_every_one_is_finished_and_none_is_lost()
     {
         var work = Enumerable.Range(0, 20).Select(_ => Task.Run(async () => await FinishAsync(await StartAsync(FirstAccount), SyncRunOutcomeFactory.CreateCompleted()), CancellationToken));
