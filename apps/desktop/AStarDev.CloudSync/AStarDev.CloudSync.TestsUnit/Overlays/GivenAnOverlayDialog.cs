@@ -52,6 +52,24 @@ public class GivenAnOverlayDialog
     [InlineData("FolderSelection")]
     [InlineData("SyncRestart")]
     [InlineData("ConflictList")]
+    public async Task when_focus_is_outside_the_open_dialog_and_escape_is_pressed_then_the_dialog_closes(string key)
+    {
+        var (window, _, vm, overlay, opener) = await ShowAsync(key);
+        await overlay.Open(vm);
+        Dispatcher.UIThread.RunJobs();
+        opener.Focus();
+
+        window.KeyPressQwerty(PhysicalKey.Escape, RawInputModifiers.None);
+
+        overlay.IsOpen(vm).ShouldBeFalse();
+    }
+
+    [AvaloniaTheory]
+    [InlineData("AddAccount")]
+    [InlineData("AccountDialog")]
+    [InlineData("FolderSelection")]
+    [InlineData("SyncRestart")]
+    [InlineData("ConflictList")]
     public async Task when_tab_is_pressed_on_the_last_control_then_focus_stays_inside_the_dialog(string key)
     {
         var (window, view, vm, overlay, _) = await ShowAsync(key);
