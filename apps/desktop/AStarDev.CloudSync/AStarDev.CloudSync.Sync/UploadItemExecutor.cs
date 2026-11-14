@@ -9,15 +9,14 @@ namespace AStarDev.CloudSync.Sync;
 /// <param name="recorder">Writes the baseline and remote index rows of an uploaded file or a created folder in one transaction.</param>
 /// <param name="baseline">Writes linked folders and deletion changes to the baseline.</param>
 /// <param name="options">The concurrency limit.</param>
-/// <param name="linker">Links a file both sides added when size and hash match.</param>
 /// <param name="sink">Takes the bytes uploaded so far.</param>
-internal sealed class UploadItemExecutor(IUploadRecorder recorder, ISyncBaselineWriter baseline, FirstSyncLinker linker, UploadPassOptions options, ISyncProgressSink sink)
+internal sealed class UploadItemExecutor(IUploadRecorder recorder, ISyncBaselineWriter baseline, UploadPassOptions options, ISyncProgressSink sink)
 {
     private const char Separator = '/';
 
     internal async Task<Result<IReadOnlyList<UploadItemOutcome>, UploadPassFailure>> ExecuteAsync(AccountId accountId, UploadPlan plan, UploadPassInput input, UploadProviders providers, CancellationToken cancellationToken)
     {
-        var tally = new PhaseTally(accountId, SyncPhaseFactory.CreateUploading(), plan.Items.Where(IsUploadStep).Sum(SizeOf), sink);
+        var tally = new PhaseTally(accountId, SyncPhaseFactory.CreateUploading(), plan.Items.Sum(SizeOf), sink);
         var run = new PassRun(accountId, input, providers, SeedFolders(input), tally);
         foreach (var item in plan.Items.Where(IsFolderStep))
             run.Outcomes.Add(await RunFolderStepAsync(run, item, cancellationToken).ConfigureAwait(false));
@@ -27,8 +26,7 @@ internal sealed class UploadItemExecutor(IUploadRecorder recorder, ISyncBaseline
         foreach (var item in plan.Items.Where(IsRemovalStep))
             run.Outcomes.Add(await RunRemovalStepAsync(run, item, cancellationToken).ConfigureAwait(false));
 
-        foreach (var item in plan.Items.Where(IsReportedStep))
-            run.Outcomes.Add(await ReportedAsync(run, item, cancellationToken).ConfigureAwait(false));
+        await Parallel.ForEachAsync(plan.Items.Where(IsReportedStep), new ParallelOptions { MaxDegreeOfParallelism = options.MaxConcurrentUploads, CancellationToken = cancellationToken }, async (item, token) => run.Outcomes.Add(await ReportedAsync(run, item, token).ConfigureAwait(false))).ConfigureAwait(false);
 
         return run.Stop.Match(
             failure => Result.Failure<IReadOnlyList<UploadItemOutcome>, UploadPassFailure>(failure),
@@ -39,6 +37,7 @@ internal sealed class UploadItemExecutor(IUploadRecorder recorder, ISyncBaseline
     {
         UploadPlanItem.UploadNewFile created => created.Size,
         UploadPlanItem.UploadReplace replace => replace.Size,
+        UploadPlanItem.SendToConflicts conflict => FirstSyncLinker.BytesToHash(conflict.Finding, conflict.RemoteItem),
         _ => 0,
     };
 
@@ -113,12 +112,17 @@ internal sealed class UploadItemExecutor(IUploadRecorder recorder, ISyncBaseline
         if (item is not UploadPlanItem.SendToConflicts conflict)
             return UploadItemOutcomeFactory.CreateFailed(item.Path, ProviderErrorFactory.CreateUnexpected());
 
-        var link = await linker.TryLinkAsync(run.AccountId, run.Input.Root, conflict.Finding, conflict.RemoteItem, cancellationToken).ConfigureAwait(false);
-
-        return await link.Match(
-            entry => baseline.UpsertAsync(run.AccountId, [entry], cancellationToken).MatchAsync(_ => UploadItemOutcomeFactory.CreateLinked(item.Path), _ => UploadItemOutcomeFactory.CreateFailed(item.Path, ProviderErrorFactory.CreateUnexpected())),
-            () => Task.FromResult(UploadItemOutcomeFactory.CreateSentToConflicts(conflict.Finding))).ConfigureAwait(false);
+        return await FirstSyncLinker.TryLinkAsync(run.AccountId, run.Input.Root, conflict.Finding, conflict.RemoteItem, run.Tally.ForFile(FirstSyncLinker.BytesToHash(conflict.Finding, conflict.RemoteItem)), cancellationToken)
+            .MatchAsync(link => LinkedOrConflictAsync(run, conflict, link, cancellationToken), failure => Task.FromResult(LinkFailed(conflict.Path, failure))).ConfigureAwait(false);
     }
+
+    private static UploadItemOutcome LinkFailed(RelativeSyncPath path, LocalOperationFailure failure) =>
+        failure is LocalOperationFailure.TargetChanged ? UploadItemOutcomeFactory.CreateDeferred(path) : UploadItemOutcomeFactory.CreateFailed(path, ProviderErrorFactory.CreateUnexpected());
+
+    private Task<UploadItemOutcome> LinkedOrConflictAsync(PassRun run, UploadPlanItem.SendToConflicts conflict, Option<SyncBaselineEntry> link, CancellationToken cancellationToken) =>
+        link.Match(
+            entry => baseline.UpsertAsync(run.AccountId, [entry], cancellationToken).MatchAsync(_ => UploadItemOutcomeFactory.CreateLinked(conflict.Path), _ => UploadItemOutcomeFactory.CreateFailed(conflict.Path, ProviderErrorFactory.CreateUnexpected())),
+            () => Task.FromResult(UploadItemOutcomeFactory.CreateSentToConflicts(conflict.Finding)));
 
     private async Task<UploadItemOutcome> RunFolderStepAsync(PassRun run, UploadPlanItem item, CancellationToken cancellationToken)
     {

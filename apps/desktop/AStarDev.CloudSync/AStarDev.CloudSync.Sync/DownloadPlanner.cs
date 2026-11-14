@@ -55,7 +55,7 @@ internal sealed class DownloadPlanner(ISyncSelectionEvaluator evaluator) : IDown
     private static IEnumerable<DownloadPlanItem> NewOverLocal(RemoteIndexEntry entry, LocalChange change) => change switch
     {
         LocalChange.Added added when IsFolder(entry) && added.Kind is LocalItemKind.Folder => Fetch(entry),
-        LocalChange.Added => Conflict(entry.Path, ConflictKindFactory.CreateBothAdded(), Option.Some(change), Option.Some(entry.Item)),
+        LocalChange.Added => Conflict(change.Path, ConflictKindFactory.CreateBothAdded(), Option.Some(change), Option.Some(entry.Item)),
         LocalChange.Modified => Conflict(entry.Path, ConflictKindFactory.CreateBothModified(), Option.Some(change), Option.Some(entry.Item)),
         LocalChange.Deleted => Conflict(entry.Path, ConflictKindFactory.CreateLocalDeletedRemoteModified(), Option.Some(change), Option.Some(entry.Item)),
         _ => [],
