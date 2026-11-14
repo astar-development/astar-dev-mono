@@ -50,7 +50,7 @@ public class GivenTheAccountDialogSnapshots
         Assert.SkipUnless(OperatingSystem.IsLinux(), Snapshot.LinuxOnlyReason);
         var fileSystem = new Testably.Abstractions.Testing.MockFileSystem(options => options.SimulatingOperatingSystem(Testably.Abstractions.Testing.SimulationMode.Linux));
         var account = TestData.CreateAccountNeedingSignIn();
-        var syncedAccount = CloudAccountFactory.Create(account.Id, account.DisplayName, account.Email, account.Provider, account.Storage, account.FolderCount, account.FileCount, SyncStatusFactory.CreateUpToDate(), Option.Some(TestData.Now), AccountSignInStateFactory.CreateSignedIn());
+        var syncedAccount = CloudAccountFactory.Create(CloudAccountIdentityFactory.Create(account.Id, account.DisplayName, account.Email, account.Provider), account.Storage, account.FolderCount, account.FileCount, SyncStatusFactory.CreateUpToDate(), Option.Some(TestData.Now), AccountSignInStateFactory.CreateSignedIn());
         var syncRoots = new FakeSyncRootReader
         {
             Roots = [AccountSyncRootFactory.Create(account.Id, SyncRootFactory.Create(fileSystem.DirectoryInfo.New("/home/jbarden/CloudSync/OneDrive-Personal")).Match(root => root, _ => throw new InvalidOperationException("The test root must be valid.")))],

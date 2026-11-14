@@ -79,7 +79,7 @@ internal sealed class AccountStoreSyncOverviewSource(ICloudSyncDatabase database
     }
 
     private CloudAccount ToCloudAccount(StoredAccount account, Option<BaselineCounts> counts, bool isPaused) =>
-        CloudAccountFactory.Create(account.Id, account.Registration.DisplayName, account.Registration.Email, account.Registration.Provider, account.Registration.Storage, counts.Map(read => read.Folders), counts.Map(read => read.Files), StatusOf(account.Id, isPaused), readers.Runs.LastSyncOf(account.Id), readers.SignIn.StateOf(account.Id));
+        CloudAccountFactory.Create(CloudAccountIdentityFactory.Create(account.Id, account.Registration.DisplayName, account.Registration.Email, account.Registration.Provider), account.Registration.Storage, counts.Map(read => read.Folders), counts.Map(read => read.Files), StatusOf(account.Id, isPaused), readers.Runs.LastSyncOf(account.Id), readers.SignIn.StateOf(account.Id));
 
     private SyncStatus StatusOf(AccountId accountId, bool isPaused)
     {

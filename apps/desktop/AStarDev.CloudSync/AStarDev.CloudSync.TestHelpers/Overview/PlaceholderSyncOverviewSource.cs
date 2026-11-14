@@ -19,10 +19,10 @@ public sealed class PlaceholderSyncOverviewSource(TimeProvider timeProvider) : I
         var now = timeProvider.GetUtcNow();
         var oneDrive = CloudProviderFactory.CreateOneDrive();
 
-        var work = CloudAccountFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), "Work", "work@example.com", oneDrive, StorageUsageFactory.Create(782_643_000_000, Terabyte), 30, 240_686, SyncStatusFactory.CreateSyncing(25), Option.Some(now.AddMinutes(-4)));
-        var personal = CloudAccountFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), "Personal", "me@example.com", oneDrive, StorageUsageFactory.Create(44_238_000_000, 100 * Gigabyte), 12, 9_402, SyncStatusFactory.CreateUpToDate(), Option.Some(now.AddHours(-1)));
-        var photos = CloudAccountFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), "Photos", "photos@example.com", oneDrive, StorageUsageFactory.Create(1_718_000_000, 5 * Gigabyte), 3, 1_118, SyncStatusFactory.CreateHasConflicts(2), Option.Some(now.AddHours(-30)));
-        var archive = CloudAccountFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), "Archive", "archive@example.com", oneDrive, StorageUsageFactory.Create(1_048_576, 5 * Gigabyte), 3, 0, SyncStatusFactory.CreatePaused(), Option.None<DateTimeOffset>());
+        var work = CloudAccountFactory.Create(CloudAccountIdentityFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), "Work", "work@example.com", oneDrive), StorageUsageFactory.Create(782_643_000_000, Terabyte), 30, 240_686, SyncStatusFactory.CreateSyncing(25), Option.Some(now.AddMinutes(-4)));
+        var personal = CloudAccountFactory.Create(CloudAccountIdentityFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), "Personal", "me@example.com", oneDrive), StorageUsageFactory.Create(44_238_000_000, 100 * Gigabyte), 12, 9_402, SyncStatusFactory.CreateUpToDate(), Option.Some(now.AddHours(-1)));
+        var photos = CloudAccountFactory.Create(CloudAccountIdentityFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), "Photos", "photos@example.com", oneDrive), StorageUsageFactory.Create(1_718_000_000, 5 * Gigabyte), 3, 1_118, SyncStatusFactory.CreateHasConflicts(2), Option.Some(now.AddHours(-30)));
+        var archive = CloudAccountFactory.Create(CloudAccountIdentityFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), "Archive", "archive@example.com", oneDrive), StorageUsageFactory.Create(1_048_576, 5 * Gigabyte), 3, 0, SyncStatusFactory.CreatePaused(), Option.None<DateTimeOffset>());
 
         var documents = CreatePair(work, "Documents", "/Documents", SyncDirectionFactory.CreateTwoWay(), SyncStatusFactory.CreateSyncing(25), 4_812, Option.Some(now.AddMinutes(-4)));
         var projects = CreatePair(work, "Projects", "/Projects", SyncDirectionFactory.CreateTwoWay(), SyncStatusFactory.CreateUpToDate(), 15_240, Option.Some(now.AddMinutes(-4)));

@@ -140,7 +140,7 @@ public class GivenAnAccountDetailViewModel
     private static AccountDetailViewModel CreateDetail(int folderCount, int fileCount, SyncStatus status)
     {
         var localization = TestData.CreateLocalization();
-        var cloudAccount = CloudAccountFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), "Work", "work@example.com", CloudProviderFactory.CreateOneDrive(), StorageUsageFactory.Create(1, 2), folderCount, fileCount, status, Option.None<DateTimeOffset>());
+        var cloudAccount = CloudAccountFactory.Create(CloudAccountIdentityFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), "Work", "work@example.com", CloudProviderFactory.CreateOneDrive()), StorageUsageFactory.Create(1, 2), folderCount, fileCount, status, Option.None<DateTimeOffset>());
         var account = new AccountViewModel(cloudAccount, [], localization, TestData.CreateTime());
 
         return new AccountDetailViewModel(account, [], [], TestData.CreateLocalPathFormatter(), new RecordingSyncActions(), localization);

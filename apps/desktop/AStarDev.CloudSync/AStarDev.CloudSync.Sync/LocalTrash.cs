@@ -43,7 +43,7 @@ internal sealed class LocalTrash(TimeProvider timeProvider, ITrashRetentionSetti
         return retention.Match(kept => Try.Run(() => PurgeExpired(root, kept)).Match(count => count, _ => 0), () => 0);
     }
 
-    private static string FirstSegment(string relative, IPath path) => relative.Split([path.DirectorySeparatorChar, path.AltDirectorySeparatorChar])[0];
+    private static string FirstSegment(string relative, IPath path) => relative.Split(path.DirectorySeparatorChar, path.AltDirectorySeparatorChar)[0];
 
     private static bool DeleteQuietly(IDirectoryInfo entry) => Try.Run(() =>
     {
