@@ -9,7 +9,7 @@ using Avalonia.VisualTree;
 
 namespace AStarDev.CloudSync.Common;
 
-/// <summary>Modal overlay keyboard behaviour: takes focus when the overlay opens, closes on Escape wherever focus is while it is open, keeps Tab inside it and gives focus back to the control that opened it.</summary>
+/// <summary>Modal overlay keyboard behaviour: takes focus when the overlay opens, closes on Escape wherever focus is while it is open, keeps Tab inside it and gives focus back to the control that opened it, or to the first usable control outside it when the opener is gone, hidden or disabled.</summary>
 /// <typeparam name="TViewModel">The overlay's view model.</typeparam>
 internal sealed class OverlayBehavior<TViewModel> where TViewModel : class, INotifyPropertyChanged
 {
@@ -137,7 +137,13 @@ internal sealed class OverlayBehavior<TViewModel> where TViewModel : class, INot
         opener = null;
         if (target is InputElement { IsEffectivelyVisible: true, IsEffectivelyEnabled: true } element && TopLevel.GetTopLevel(element) is not null)
             element.Focus();
+        else if (FocusIsLostOrInsideView())
+            FallbackTarget()?.Focus();
     }
+
+    private bool FocusIsLostOrInsideView() => FocusedElement() is not Visual focused || IsInside(focused);
+
+    private InputElement? FallbackTarget() => host!.GetVisualDescendants().OfType<InputElement>().FirstOrDefault(candidate => candidate.Focusable && candidate.IsTabStop && candidate.IsEffectivelyVisible && candidate.IsEffectivelyEnabled && !IsInside(candidate));
 
     private static void Defer(Action action) => Dispatcher.UIThread.Post(action, DispatcherPriority.Input);
 }
