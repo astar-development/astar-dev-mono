@@ -12,6 +12,8 @@ public static class AttentionItems
 
     public static SyncAttentionItem CreateConflict(AccountId accountId, string path, ConflictKind kind, SideSnapshot local, SideSnapshot remote) => SyncAttentionItemFactory.CreateConflict(new ConflictId(Guid.NewGuid()), accountId, Path(path), kind, local, remote, TestClock.Now.AddHours(-30));
 
+    public static CloudAccount Account(string name) => CloudAccountFactory.Create(CloudAccountIdentityFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), name, $"{name.ToLowerInvariant()}@example.com", CloudProviderFactory.CreateOneDrive()), StorageUsageFactory.Create(1_048_576, 1_073_741_824), 1, 1, SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
+
     public static SideSnapshot Present() => SideSnapshotFactory.CreatePresent(2_048, TestClock.Now.AddHours(-31), Option.None<ContentHash>(), Option.None<ContentTag>());
 
     public static RelativeSyncPath Path(string value) => RelativeSyncPathFactory.Create(value).Match(path => path, _ => throw new InvalidOperationException("The test path must be valid."));

@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using AStarDev.CloudSync.DisplaySettings;
 using AStarDev.CloudSync.ViewModels.Accounts;
+using AStarDev.CloudSync.ViewModels.Conflicts;
 using AStarDev.CloudSync.ViewModels.DisplaySettings;
 using AStarDev.CloudSync.ViewModels.FolderSelection;
 using AStarDev.CloudSync.ViewModels.Layouts;
@@ -22,7 +23,8 @@ public sealed class MainWindowViewModel : LocalizedObservableObject
     /// <param name="accountDialog">The remove-account and sign-in dialog shown over the layout.</param>
     /// <param name="folderSelection">The folder selection dialog shown over the layout.</param>
     /// <param name="syncRestart">The question shown when Sync Now is pressed while the account is syncing.</param>
-    public MainWindowViewModel(ILocalizationService localization, DisplaySettingsViewModel displaySettings, LayoutAViewModel layoutA, LayoutBViewModel layoutB, LayoutCViewModel layoutC, AddAccountViewModel addAccount, AccountDialogViewModel accountDialog, FolderSelectionViewModel folderSelection, ConfirmSyncRestartViewModel syncRestart) : base(localization)
+    /// <param name="conflictList">The conflict list screen shown over the layout.</param>
+    public MainWindowViewModel(ILocalizationService localization, DisplaySettingsViewModel displaySettings, LayoutAViewModel layoutA, LayoutBViewModel layoutB, LayoutCViewModel layoutC, AddAccountViewModel addAccount, AccountDialogViewModel accountDialog, FolderSelectionViewModel folderSelection, ConfirmSyncRestartViewModel syncRestart, ConflictListViewModel conflictList) : base(localization)
     {
         DisplaySettings = displaySettings;
         LayoutA = layoutA;
@@ -32,6 +34,7 @@ public sealed class MainWindowViewModel : LocalizedObservableObject
         AccountDialog = accountDialog;
         FolderSelection = folderSelection;
         SyncRestart = syncRestart;
+        ConflictList = conflictList;
         syncRestart.PropertyChanged += OnSyncRestartChanged;
         accountDialog.PropertyChanged += OnDialogChanged;
         folderSelection.PropertyChanged += OnFolderSelectionChanged;
@@ -65,6 +68,9 @@ public sealed class MainWindowViewModel : LocalizedObservableObject
 
     /// <summary>The question shown when Sync Now is pressed while the account is syncing.</summary>
     public ConfirmSyncRestartViewModel SyncRestart { get; }
+
+    /// <summary>The conflict list screen.</summary>
+    public ConflictListViewModel ConflictList { get; }
 
     /// <summary>Whether a modal dialog is open, so the layout behind it is disabled.</summary>
     public bool IsDialogOpen => AddAccount.IsOpen || AccountDialog.IsOpen || FolderSelection.IsOpen || SyncRestart.IsOpen;

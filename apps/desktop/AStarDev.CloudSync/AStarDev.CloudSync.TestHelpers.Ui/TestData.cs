@@ -4,11 +4,13 @@ using AStarDev.CloudSync.Overview;
 using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.TestHelpers.Accounts;
 using AStarDev.CloudSync.TestHelpers.Common;
+using AStarDev.CloudSync.TestHelpers.Conflicts;
 using AStarDev.CloudSync.TestHelpers.DisplaySettings;
 using AStarDev.CloudSync.TestHelpers.Overview;
 using AStarDev.CloudSync.ViewModels;
 using AStarDev.CloudSync.ViewModels.Accounts;
 using AStarDev.CloudSync.ViewModels.Common;
+using AStarDev.CloudSync.ViewModels.Conflicts;
 using AStarDev.CloudSync.ViewModels.DisplaySettings;
 using AStarDev.CloudSync.ViewModels.FolderSelection;
 using AStarDev.CloudSync.ViewModels.Layouts;
@@ -16,6 +18,7 @@ using AStarDev.CloudSync.ViewModels.SyncRestart;
 using AStarDev.CloudSync.ViewModels.Overview;
 using AStarDev.FunctionalParadigm;
 using AStarDev.Localization;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Time.Testing;
 using Testably.Abstractions;
@@ -90,10 +93,16 @@ public static class TestData
         var localization = CreateLocalization();
         var syncActions = new RecordingSyncActions();
 
-        return new MainWindowViewModel(localization, displaySettings, new LayoutAViewModel(overview, syncActions, localization), new LayoutBViewModel(overview, CreateLocalPathFormatter(), syncActions, localization), new LayoutCViewModel(overview, syncActions, localization), addAccount, CreateAccountDialog(new FakeAccountActions()), folderSelection, new ConfirmSyncRestartViewModel(localization));
+        return new MainWindowViewModel(localization, displaySettings, new LayoutAViewModel(overview, syncActions, localization), new LayoutBViewModel(overview, CreateLocalPathFormatter(), syncActions, localization), new LayoutCViewModel(overview, syncActions, localization), addAccount, CreateAccountDialog(new FakeAccountActions()), folderSelection, new ConfirmSyncRestartViewModel(localization), CreateConflictList());
     }
 
     public static FolderSelectionViewModel CreateFolderSelection() => CreateFolderSelection(new FakeFolderTreeSource(), new FakeSelectionRuleReader(), new FakeSelectionRuleWriter(), new FakeSyncPairReader(), new InMemoryAccountStore());
 
     public static FolderSelectionViewModel CreateFolderSelection(FakeFolderTreeSource tree, FakeSelectionRuleReader rules, FakeSelectionRuleWriter writer, FakeSyncPairReader pairs, IAccountStore accounts) => new(tree, rules, writer, new SyncSelectionEvaluator(), pairs, accounts, CreateLocalization());
+
+    public static ConflictListViewModel CreateConflictList() => CreateConflictList(new FixedAccountsSource(), new FakeAttentionReader(), new FakeConflictResolver());
+
+    public static ConflictListViewModel CreateConflictList(ISyncOverviewSource accounts, FakeAttentionReader reader, FakeConflictResolver resolver) => CreateConflictList(accounts, reader, resolver, NullLogger<ConflictListViewModel>.Instance);
+
+    public static ConflictListViewModel CreateConflictList(ISyncOverviewSource accounts, FakeAttentionReader reader, FakeConflictResolver resolver, ILogger<ConflictListViewModel> logger) => new(accounts, reader, resolver, new ConflictResolutionPlanner(), CreateLocalization(), logger);
 }

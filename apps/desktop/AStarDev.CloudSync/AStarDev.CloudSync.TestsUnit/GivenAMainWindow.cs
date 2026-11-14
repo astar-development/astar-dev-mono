@@ -1,4 +1,5 @@
 using AStarDev.CloudSync.Accounts;
+using AStarDev.CloudSync.Conflicts;
 using AStarDev.CloudSync.DisplaySettings;
 using AStarDev.CloudSync.Layouts;
 using AStarDev.CloudSync.TestHelpers.Accounts;
@@ -241,6 +242,44 @@ public class GivenAMainWindow
         var buttons = FindSingle<AddAccountView>(window).GetVisualDescendants().OfType<Button>().ToList();
         buttons.Single(button => Equals(button.Content, addAccount.ChooseFoldersText)).Command.ShouldBeSameAs(addAccount.ChooseFoldersCommand);
         buttons.Single(button => Equals(button.Content, addAccount.LaterText)).Command.ShouldBeSameAs(addAccount.LaterCommand);
+    }
+
+    [AvaloniaFact]
+    public async Task when_shown_then_the_review_conflicts_button_is_bound_to_the_open_command_and_named()
+    {
+        var viewModel = await CreateViewModelAsync();
+        var window = new MainWindow { DataContext = viewModel };
+
+        window.Show();
+
+        var button = window.GetVisualDescendants().OfType<Button>().Single(candidate => Equals(candidate.Content, "Review conflicts"));
+        button.Command.ShouldBeSameAs(viewModel.ConflictList.OpenCommand);
+        Avalonia.Automation.AutomationProperties.GetName(button).ShouldBe("Review conflicts");
+    }
+
+    [AvaloniaFact]
+    public async Task when_the_conflict_list_is_open_then_the_window_shows_it_over_the_disabled_layout()
+    {
+        var viewModel = await CreateViewModelAsync();
+        var window = new MainWindow { DataContext = viewModel };
+        window.Show();
+
+        await viewModel.ConflictList.OpenCommand.ExecuteAsync(null);
+        window.UpdateLayout();
+
+        FindSingle<ConflictListView>(window).DataContext.ShouldBeSameAs(viewModel.ConflictList);
+        FindSingle<ConflictListView>(window).IsEffectivelyVisible.ShouldBeTrue();
+        window.FindControl<ContentControl>("LayoutHost").ShouldNotBeNull().IsEffectivelyEnabled.ShouldBeFalse();
+    }
+
+    [AvaloniaFact]
+    public async Task when_the_conflict_list_is_closed_then_it_is_not_visible()
+    {
+        var window = new MainWindow { DataContext = await CreateViewModelAsync() };
+
+        window.Show();
+
+        FindSingle<ConflictListView>(window).IsEffectivelyVisible.ShouldBeFalse();
     }
 
     private static T FindSingle<T>(Window window) where T : Control => window.GetVisualDescendants().OfType<T>().ShouldHaveSingleItem();
