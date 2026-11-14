@@ -46,20 +46,11 @@ internal sealed class DownloadFileStep(IProviderCapability<IRemoteFileDownloader
             : SideSnapshotFactory.CreateAbsent();
     }
 
-    private static bool IsTargetChanged(IFileInfo target, Option<SyncBaselineEntry> baseline)
+    private static bool IsTargetChanged(SideSnapshot local, Option<SyncBaselineEntry> baseline) =>
+        local is SideSnapshot.Present present && baseline.Match(entry => !(entry.Kind is SyncBaselineKind.File synced && synced.Size == present.Size && synced.LastWriteUtc == present.LastModified), () => true);
+
+    private (DownloadItemOutcome Outcome, Option<SyncBaselineEntry> Entry) TargetChangedConflict(DownloadAttempt attempt, SideSnapshot local)
     {
-        target.Refresh();
-        if (!target.Exists)
-            return false;
-
-        var writtenAt = new DateTimeOffset(target.LastWriteTimeUtc, TimeSpan.Zero);
-
-        return baseline.Match(entry => !(entry.Kind is SyncBaselineKind.File synced && synced.Size == target.Length && synced.LastWriteUtc == writtenAt), () => true);
-    }
-
-    private (DownloadItemOutcome Outcome, Option<SyncBaselineEntry> Entry) TargetChangedConflict(DownloadAttempt attempt)
-    {
-        var local = LocalSnapshotOf(attempt.Target);
         var remote = ConflictSides.Remote(attempt.Plan.Item);
         var evidence = ConflictEvidenceFactory.Create(local, remote, Option.None<ConflictBaseline>(), ConflictSignalFactory.CreatePreconditionFailed());
         var kind = classifier.Classify(evidence).Match(found => found, ConflictKindFactory.CreateRemoteChangedDuringTransfer);
@@ -100,8 +91,9 @@ internal sealed class DownloadFileStep(IProviderCapability<IRemoteFileDownloader
         if (!attempt.Temp.Exists || attempt.Temp.Length != attempt.Size)
             return Failed(DownloadFailureFactory.CreateProvider(ProviderErrorFactory.CreateTransient()));
 
-        if (IsTargetChanged(attempt.Target, attempt.Baseline))
-            return TargetChangedConflict(attempt);
+        var local = LocalSnapshotOf(attempt.Target);
+        if (IsTargetChanged(local, attempt.Baseline))
+            return TargetChangedConflict(attempt, local);
 
         return await files.ReplaceAsync(attempt.Temp, attempt.Target, attempt.Plan.Item.LastModified, cancellationToken)
             .MatchAsync(_ => HashAsync(attempt, downloaded, cancellationToken), failure => Task.FromResult(Failed(DownloadFailureFactory.CreateLocal(failure))))
