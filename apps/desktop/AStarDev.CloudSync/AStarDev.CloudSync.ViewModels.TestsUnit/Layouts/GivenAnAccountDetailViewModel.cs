@@ -126,6 +126,17 @@ public class GivenAnAccountDetailViewModel
         detail.CanSync.ShouldBeTrue();
     }
 
+    [Fact]
+    public void when_the_counts_are_unknown_then_the_folder_and_file_tiles_show_an_em_dash_with_plural_labels()
+    {
+        var localization = TestData.CreateLocalization();
+        var account = new AccountViewModel(TestData.CreateAccountWithUnknownCounts(), [], localization, TestData.CreateTime());
+
+        var detail = new AccountDetailViewModel(account, [], [], TestData.CreateLocalPathFormatter(), new RecordingSyncActions(), localization);
+
+        detail.Stats.Take(2).Select(tile => (tile.Value, tile.Label)).ShouldBe([("\u2014", "folders"), ("\u2014", "files")]);
+    }
+
     private static AccountDetailViewModel CreateDetail(int folderCount, int fileCount, SyncStatus status)
     {
         var localization = TestData.CreateLocalization();

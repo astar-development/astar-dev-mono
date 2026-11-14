@@ -77,6 +77,33 @@ public class GivenASyncOverviewViewModel
     }
 
     [Fact]
+    public async Task when_any_account_has_an_unknown_folder_count_then_the_folders_synced_tile_shows_an_em_dash()
+    {
+        var known = TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
+        var viewModel = await CreateLoadedViewModelAsync(SyncOverviewFactory.Create([known, TestData.CreateAccountWithUnknownCounts()], [], [], [], [], 0, Option.None<DateTimeOffset>()));
+
+        (viewModel.Stats[2].Value, viewModel.Stats[2].Label).ShouldBe(("\u2014", "folders synced"));
+    }
+
+    [Fact]
+    public async Task when_every_account_has_a_folder_count_then_the_folders_synced_tile_is_their_sum()
+    {
+        var first = CloudAccountFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), "Work", "work@example.com", CloudProviderFactory.CreateOneDrive(), StorageUsageFactory.Create(1, 2), 4, 1, SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
+        var second = CloudAccountFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), "Home", "home@example.com", CloudProviderFactory.CreateOneDrive(), StorageUsageFactory.Create(1, 2), 3, 1, SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
+        var viewModel = await CreateLoadedViewModelAsync(SyncOverviewFactory.Create([first, second], [], [], [], [], 0, Option.None<DateTimeOffset>()));
+
+        viewModel.Stats[2].Value.ShouldBe("7");
+    }
+
+    [Fact]
+    public async Task when_there_are_no_accounts_then_the_folders_synced_tile_is_zero()
+    {
+        var viewModel = await CreateLoadedViewModelAsync(SyncOverviewFactory.Create([], [], [], [], [], 0, Option.None<DateTimeOffset>()));
+
+        viewModel.Stats[2].Value.ShouldBe("0");
+    }
+
+    [Fact]
     public async Task when_any_account_is_syncing_then_the_overall_status_is_syncing()
     {
         var viewModel = await TestData.CreateLoadedOverviewViewModelAsync();

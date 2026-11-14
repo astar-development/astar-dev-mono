@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync.Overview;
 
-/// <summary>Builds the overview from the saved accounts and their sync pairs, after making sure the database is migrated. Activity is the newest entries of the activity log (#1564); conflicts and throughput stay empty until the overview work (#1408). An account's folder and file counts come from its sync baseline (#1565), its status and last sync come from its sync runs, a paused account that is not syncing and did not just fail shows as paused, and pairs show no files, up to date and never synced. Its last sync is the in-memory time of its last finished run; surviving a restart needs the run journal (#1407).</summary>
+/// <summary>Builds the overview from the saved accounts and their sync pairs, after making sure the database is migrated. Activity is the newest entries of the activity log (#1564); conflicts and throughput stay empty until the overview work (#1408). An account's folder and file counts come from its sync baseline (#1565) and are unknown when that count cannot be read (#1592), its status and last sync come from its sync runs, a paused account that is not syncing and did not just fail shows as paused, and pairs show no files, up to date and never synced. Its last sync is the in-memory time of its last finished run; surviving a restart needs the run journal (#1407).</summary>
 /// <param name="database">Is migrated before the accounts are read, so a failed migration shows as a failed overview.</param>
 /// <param name="accountStore">Reads the saved accounts.</param>
 /// <param name="readers">The readers for sign-in states, pairs, runs, pauses, baseline counts and activity.</param>
@@ -33,7 +33,7 @@ internal sealed class AccountStoreSyncOverviewSource(ICloudSyncDatabase database
     private async Task<Result<SyncOverview, ErrorResponse>> BuildAsync(IReadOnlyList<StoredAccount> accounts, IReadOnlyList<AccountId> paused, IReadOnlyList<ActivityEntry> activity, CancellationToken cancellationToken)
     {
         var pairsByAccount = new Dictionary<AccountId, IReadOnlyList<SyncPair>>();
-        var countsByAccount = new Dictionary<AccountId, BaselineCounts>();
+        var countsByAccount = new Dictionary<AccountId, Option<BaselineCounts>>();
         var failure = Option.None<ErrorResponse>();
         foreach (var account in accounts)
         {
@@ -48,7 +48,7 @@ internal sealed class AccountStoreSyncOverviewSource(ICloudSyncDatabase database
             () => Result.Success<SyncOverview, ErrorResponse>(SyncOverviewFactory.Create([.. accounts.Select(account => ToCloudAccount(account, countsByAccount[account.Id], paused.Contains(account.Id)))], [.. accounts.SelectMany(account => pairsByAccount[account.Id])], activity, [], [], 0, Option.None<DateTimeOffset>())));
     }
 
-    private async Task<Option<ErrorResponse>> ReadAsync(AccountId accountId, Dictionary<AccountId, IReadOnlyList<SyncPair>> pairsByAccount, Dictionary<AccountId, BaselineCounts> countsByAccount, CancellationToken cancellationToken)
+    private async Task<Option<ErrorResponse>> ReadAsync(AccountId accountId, Dictionary<AccountId, IReadOnlyList<SyncPair>> pairsByAccount, Dictionary<AccountId, Option<BaselineCounts>> countsByAccount, CancellationToken cancellationToken)
     {
         var pairs = await readers.Pairs.GetAsync(accountId, cancellationToken).ConfigureAwait(false);
 
@@ -61,7 +61,7 @@ internal sealed class AccountStoreSyncOverviewSource(ICloudSyncDatabase database
                     .MatchAsync(
                         counts =>
                         {
-                            countsByAccount[accountId] = counts;
+                            countsByAccount[accountId] = Option.Some(counts);
 
                             return Option.None<ErrorResponse>();
                         },
@@ -70,16 +70,16 @@ internal sealed class AccountStoreSyncOverviewSource(ICloudSyncDatabase database
             error => Task.FromResult(Option.Some(error))).ConfigureAwait(false);
     }
 
-    private Option<ErrorResponse> DegradedCounts(AccountId accountId, Dictionary<AccountId, BaselineCounts> countsByAccount)
+    private Option<ErrorResponse> DegradedCounts(AccountId accountId, Dictionary<AccountId, Option<BaselineCounts>> countsByAccount)
     {
-        LogMessage.Warning(logger, nameof(AccountStoreSyncOverviewSource), "An account's baseline counts could not be read and are shown as zero.");
-        countsByAccount[accountId] = BaselineCountsFactory.Create(0, 0);
+        LogMessage.Warning(logger, nameof(AccountStoreSyncOverviewSource), "An account's baseline counts could not be read and are shown as unknown.");
+        countsByAccount[accountId] = Option.None<BaselineCounts>();
 
         return Option.None<ErrorResponse>();
     }
 
-    private CloudAccount ToCloudAccount(StoredAccount account, BaselineCounts counts, bool isPaused) =>
-        CloudAccountFactory.Create(account.Id, account.Registration.DisplayName, account.Registration.Email, account.Registration.Provider, account.Registration.Storage, counts.Folders, counts.Files, StatusOf(account.Id, isPaused), readers.Runs.LastSyncOf(account.Id), readers.SignIn.StateOf(account.Id));
+    private CloudAccount ToCloudAccount(StoredAccount account, Option<BaselineCounts> counts, bool isPaused) =>
+        CloudAccountFactory.Create(account.Id, account.Registration.DisplayName, account.Registration.Email, account.Registration.Provider, account.Registration.Storage, counts.Map(read => read.Folders), counts.Map(read => read.Files), StatusOf(account.Id, isPaused), readers.Runs.LastSyncOf(account.Id), readers.SignIn.StateOf(account.Id));
 
     private SyncStatus StatusOf(AccountId accountId, bool isPaused)
     {

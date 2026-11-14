@@ -1,3 +1,4 @@
+using System.Globalization;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Overview;
 using AStarDev.CloudSync.Sync;
@@ -34,7 +35,7 @@ public class GivenAnAccountStoreSyncOverviewSource
             account => account.Email.ShouldBe(FlintEmail),
             account => account.Provider.ShouldBe(CloudProviderFactory.CreateOneDrive()),
             account => account.Storage.ShouldBe(FlintStorage),
-            account => (account.FolderCount, account.FileCount).ShouldBe((0, 0)),
+            account => CountsOf(account).ShouldBe(("0", "0")),
             account => account.Status.ShouldBeOfType<SyncStatus.UpToDate>(),
             account => account.LastSync.Match(_ => "synced", () => "never").ShouldBe("never"));
     }
@@ -61,7 +62,7 @@ public class GivenAnAccountStoreSyncOverviewSource
         var overview = await CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), reader).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(loaded => loaded, failure => throw new InvalidOperationException(failure.Message));
 
         overview.SyncPairs.Select(pair => pair.Name).ToList().ShouldBe(["Docs", "Photos"]);
-        overview.Accounts.Single().FolderCount.ShouldBe(0);
+        CountsOf(overview.Accounts.Single()).ShouldBe(("0", "0"));
     }
 
     [Fact]
@@ -72,7 +73,7 @@ public class GivenAnAccountStoreSyncOverviewSource
 
         var overview = await CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), new FakeSyncPairReader(), new FakeSyncRunStatusSource(), new FakeAccountPauseReader(), counter).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(loaded => loaded, failure => throw new InvalidOperationException(failure.Message));
 
-        overview.Accounts.ShouldHaveSingleItem().ShouldSatisfyAllConditions(account => account.FolderCount.ShouldBe(4), account => account.FileCount.ShouldBe(250));
+        overview.Accounts.ShouldHaveSingleItem().ShouldSatisfyAllConditions(account => CountsOf(account).ShouldBe(("4", "250")));
     }
 
     [Fact]
@@ -85,12 +86,12 @@ public class GivenAnAccountStoreSyncOverviewSource
 
         var overview = await CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), new FakeSyncPairReader(), new FakeSyncRunStatusSource(), new FakeAccountPauseReader(), counter).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(loaded => loaded, failure => throw new InvalidOperationException(failure.Message));
 
-        overview.Accounts.Select(account => (account.Id, account.FolderCount, account.FileCount)).ShouldBe([(FlintId, 1, 2), (other, 3, 4)]);
+        overview.Accounts.Select(account => (account.Id, CountsOf(account))).ShouldBe([(FlintId, ("1", "2")), (other, ("3", "4"))]);
         counter.Counted.ShouldBe([FlintId, other], ignoreOrder: true);
     }
 
     [Fact]
-    public async Task when_the_baseline_of_one_account_cannot_be_counted_then_it_shows_zero_the_others_keep_their_counts_and_the_warning_has_no_details()
+    public async Task when_the_baseline_of_one_account_cannot_be_counted_then_it_shows_unknown_the_others_keep_their_counts_and_the_warning_has_no_details()
     {
         var other = AccountIdFactory.Create(Guid.Parse("1f2e3d4c-5b6a-4798-8a9b-0c1d2e3f4a5b"));
         var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint(), StoredAccountFactory.Create(other, StoredFlint().Registration)]) };
@@ -99,7 +100,7 @@ public class GivenAnAccountStoreSyncOverviewSource
 
         var overview = await CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), new FakeSyncPairReader(), new FakeSyncRunStatusSource(), new FakeAccountPauseReader(), counter, new FakeActivityLogReader(), logs).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(loaded => loaded, failure => throw new InvalidOperationException(failure.Message));
 
-        overview.Accounts.Select(account => (account.Id, account.FolderCount, account.FileCount)).ShouldBe([(FlintId, 0, 0), (other, 3, 4)]);
+        overview.Accounts.Select(account => (account.Id, CountsOf(account))).ShouldBe([(FlintId, ("unknown", "unknown")), (other, ("3", "4"))]);
         logs.Logger.Entries.Count(entry => entry.Level == LogLevel.Warning).ShouldBe(1);
         logs.Logger.Messages.ShouldAllBe(message => !message.Contains(FlintEmail, StringComparison.Ordinal) && !message.Contains(FlintDisplayName, StringComparison.Ordinal) && !message.Contains(FlintAccountKey, StringComparison.Ordinal));
     }
@@ -332,4 +333,8 @@ public class GivenAnAccountStoreSyncOverviewSource
 
     private static StoredAccount StoredFlint() =>
         StoredAccountFactory.Create(FlintId, AccountRegistrationFactory.Create(ProviderAccountKeyFactory.Create(FlintAccountKey).Match(key => key, error => throw new InvalidOperationException(error.Message)), CloudProviderFactory.CreateOneDrive(), FlintDisplayName, FlintEmail, DriveIdFactory.Create("8f2a1b3c4d5e6f70").Match(driveId => driveId, error => throw new InvalidOperationException(error.Message)), FlintStorage));
+
+    private static (string Folders, string Files) CountsOf(CloudAccount account) => (Shown(account.FolderCount), Shown(account.FileCount));
+
+    private static string Shown(Option<int> count) => count.Match(value => value.ToString(CultureInfo.InvariantCulture), () => "unknown");
 }

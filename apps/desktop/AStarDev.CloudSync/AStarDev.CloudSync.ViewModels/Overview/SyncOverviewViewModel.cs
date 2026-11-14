@@ -133,17 +133,19 @@ public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ISyncActio
     private StatTileViewModel[] CreateStats()
     {
         int providerCount = overview.Accounts.Select(account => account.Provider).Distinct().Count();
-        int folderCount = overview.Accounts.Sum(account => account.FolderCount);
+        var folderCount = TotalFolders();
 
         return
         [
             new(() => overview.Accounts.Count.ToString("N0", Localization.CurrentCulture), CountKey.For("Stats.Accounts", overview.Accounts.Count), StatTileToneFactory.CreateNormal(), Localization),
             new(() => providerCount.ToString("N0", Localization.CurrentCulture), CountKey.For("Stats.Providers", providerCount), StatTileToneFactory.CreateNormal(), Localization),
-            new(() => folderCount.ToString("N0", Localization.CurrentCulture), CountKey.For("Stats.FoldersSynced", folderCount), StatTileToneFactory.CreateNormal(), Localization),
+            new(() => CountText.Format(folderCount, Localization), CountKey.For("Stats.FoldersSynced", folderCount), StatTileToneFactory.CreateNormal(), Localization),
             new(() => overview.Conflicts.Count.ToString("N0", Localization.CurrentCulture), CountKey.For("Stats.Conflicts", overview.Conflicts.Count), overview.Conflicts.Count > 0 ? StatTileToneFactory.CreateWarn() : StatTileToneFactory.CreateNormal(), Localization),
             new(OverallStatusText, "Stats.OverallStatus", StatTileToneFactory.CreateAccent(), Localization)
         ];
     }
+
+    private Option<int> TotalFolders() => overview.Accounts.Aggregate(Option.Some(0), (total, account) => total.Bind(sum => account.FolderCount.Map(count => sum + count)));
 
     /// <summary>The overall status across every account, e.g. "Syncing" or "Up to date".</summary>
     /// <returns>The localised overall status.</returns>

@@ -122,6 +122,15 @@ public class GivenALayoutAAccountCardViewModel
         _ => SyncStatusFactory.CreateUpToDate()
     };
 
+    [Fact]
+    public void when_the_counts_are_unknown_then_the_labels_are_plural()
+    {
+        var localization = TestData.CreateLocalization();
+        var card = new LayoutAAccountCardViewModel(new AccountViewModel(TestData.CreateAccountWithUnknownCounts(), [], localization, TestData.CreateTime()), _ => { }, new RecordingSyncActions(), localization);
+
+        (card.FoldersLabel, card.FilesLabel).ShouldBe(("folders", "files"));
+    }
+
     private static LayoutAAccountCardViewModel CreateCard(SyncStatus status)
     {
         var localization = TestData.CreateLocalization();
