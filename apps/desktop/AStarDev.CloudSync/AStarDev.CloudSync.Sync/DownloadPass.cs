@@ -12,7 +12,7 @@ namespace AStarDev.CloudSync.Sync;
 /// <param name="loader">Reads the planner's inputs.</param>
 /// <param name="planner">Plans the pass.</param>
 /// <param name="executor">Carries out the plan.</param>
-/// <param name="holds">Records the deletions the guard held and closes the held sets of pairs that recovered.</param>
+/// <param name="holds">Closes the held sets of pairs that recovered; the runner records the deletions the guard held.</param>
 /// <param name="logger">Reports the pass with counts and the hashed account id only.</param>
 internal sealed partial class DownloadPass(ISyncRootReader roots, DownloadPlanLoader loader, IDownloadPlanner planner, DownloadExecutor executor, DownloadHolds holds, ILogger<DownloadPass> logger) : IDownloadPass
 {
@@ -66,7 +66,7 @@ internal sealed partial class DownloadPass(ISyncRootReader roots, DownloadPlanLo
 
     private Result<Unit, DownloadPassFailure> HeldNotSettled()
     {
-        LogMessage.Warning(logger, Location, "The download pass could not record the deletions it held or close the held sets of recovered pairs.");
+        LogMessage.Warning(logger, Location, "The download pass could not close the held sets of recovered pairs.");
 
         return Result.Failure<Unit, DownloadPassFailure>(DownloadPassFailureFactory.CreateUnexpected());
     }

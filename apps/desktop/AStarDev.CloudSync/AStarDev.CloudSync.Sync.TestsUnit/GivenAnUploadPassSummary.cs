@@ -13,7 +13,7 @@ public class GivenAnUploadPassSummary
             UploadItemOutcomeFactory.CreateFolderCreated(At("New")),
             UploadItemOutcomeFactory.CreateLinked(At("Old")),
             UploadItemOutcomeFactory.CreateRemovedRemotely(At("c.txt")),
-            UploadItemOutcomeFactory.CreateSentToConflicts(At("d.txt"), ConflictKindFactory.CreateBothModified()),
+            UploadItemOutcomeFactory.CreateSentToConflicts(ConflictFindings.Of(At("d.txt"), ConflictKindFactory.CreateBothModified())),
             UploadItemOutcomeFactory.CreateDeferred(At("e.txt")),
             UploadItemOutcomeFactory.CreateFailed(At("f.txt"), ProviderErrorFactory.CreateTransient()),
             UploadItemOutcomeFactory.CreateRejected(At("g:h.txt"), InvalidRemoteNameFactory.CreateIllegalCharacter()),

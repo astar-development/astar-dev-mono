@@ -36,6 +36,12 @@ public sealed record DownloadPassSummary
     /// <summary>Paths sent to the attention queue.</summary>
     public int SentToConflicts => Outcomes.OfType<DownloadItemOutcome.SentToConflicts>().Count();
 
+    /// <summary>The conflicts the pass found, each with both sides' snapshots, for the runner to record.</summary>
+    public IReadOnlyList<ConflictFinding> Conflicts => [.. Outcomes.OfType<DownloadItemOutcome.SentToConflicts>().Select(outcome => outcome.Finding)];
+
+    /// <summary>Files both sides added that were linked in the baseline because size and hash match.</summary>
+    public int LinkedExisting => Outcomes.OfType<DownloadItemOutcome.LinkedExisting>().Count();
+
     /// <summary>Items left alone.</summary>
     public int Skipped => Outcomes.OfType<DownloadItemOutcome.Skipped>().Count();
 

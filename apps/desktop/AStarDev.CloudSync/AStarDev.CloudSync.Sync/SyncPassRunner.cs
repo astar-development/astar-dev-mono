@@ -79,9 +79,28 @@ internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps st
     private Task<Result<SyncPassSummary, SyncPassFailure>> StepsAsync(AccountId accountId, CancellationToken cancellationToken) =>
         TimedAsync(accountId, "remote index", SyncPhaseFactory.CreateUpdatingRemoteIndex(), () => UpdateIndexAsync(accountId, cancellationToken))
             .BindAsync(remote => TimedAsync(accountId, "local scan", SyncPhaseFactory.CreateScanningLocal(), () => ScanAsync(accountId, cancellationToken))
-                .BindAsync(changes => TimedAsync(accountId, "download", SyncPhaseFactory.CreateDownloading(), () => DownloadAsync(accountId, changes, cancellationToken))
+                .BindAsync(changes => ClearAsync(accountId, changes, cancellationToken)
+                    .BindAsync(_ => TimedAsync(accountId, "download", SyncPhaseFactory.CreateDownloading(), () => DownloadAsync(accountId, changes, cancellationToken)))
+                    .BindAsync(downloaded => RecordDownloadAsync(accountId, downloaded, cancellationToken))
                     .BindAsync(downloaded => TimedAsync(accountId, "upload", SyncPhaseFactory.CreateUploading(), () => UploadAsync(accountId, changes, cancellationToken))
+                        .BindAsync(uploaded => RecordUploadAsync(accountId, uploaded, cancellationToken))
                         .MatchAsync(uploaded => Result.Success<SyncPassSummary, SyncPassFailure>(SyncPassSummaryFactory.Create(remote, changes, downloaded, uploaded)), Stopped<SyncPassSummary>))));
+
+    private Task<Result<Unit, SyncPassFailure>> ClearAsync(AccountId accountId, LocalChangeSet changes, CancellationToken cancellationToken) =>
+        steps.Attention.ClearAsync(accountId, changes, cancellationToken).MatchAsync(Result.Success<Unit, SyncPassFailure>, _ => AttentionFailed<Unit>());
+
+    private Task<Result<DownloadPassSummary, SyncPassFailure>> RecordDownloadAsync(AccountId accountId, DownloadPassSummary downloaded, CancellationToken cancellationToken) =>
+        steps.Attention.RecordAsync(accountId, downloaded.Conflicts, downloaded.Held, cancellationToken).MatchAsync(_ => Result.Success<DownloadPassSummary, SyncPassFailure>(downloaded), _ => AttentionFailed<DownloadPassSummary>());
+
+    private Task<Result<UploadPassSummary, SyncPassFailure>> RecordUploadAsync(AccountId accountId, UploadPassSummary uploaded, CancellationToken cancellationToken) =>
+        steps.Attention.RecordAsync(accountId, uploaded.Conflicts, [], cancellationToken).MatchAsync(_ => Result.Success<UploadPassSummary, SyncPassFailure>(uploaded), _ => AttentionFailed<UploadPassSummary>());
+
+    private Result<T, SyncPassFailure> AttentionFailed<T>()
+    {
+        LogMessage.Warning(logger, Location, "The sync run could not read or write the attention queue.");
+
+        return Stopped<T>(SyncPassFailureFactory.CreateUnexpected());
+    }
 
     private async Task<Result<T, SyncPassFailure>> TimedAsync<T>(AccountId accountId, string step, SyncPhase phase, Func<Task<Result<T, SyncPassFailure>>> run)
     {

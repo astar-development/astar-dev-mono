@@ -39,6 +39,14 @@ public abstract record AttentionResolution
         }
     }
 
+    /// <summary>The engine closed the conflict itself because one side returned to the baseline (#1534).</summary>
+    public sealed record AutoCleared : AttentionResolution
+    {
+        internal AutoCleared()
+        {
+        }
+    }
+
     /// <summary>Restore the items the held deletions would remove.</summary>
     public sealed record RestoreItems : AttentionResolution
     {

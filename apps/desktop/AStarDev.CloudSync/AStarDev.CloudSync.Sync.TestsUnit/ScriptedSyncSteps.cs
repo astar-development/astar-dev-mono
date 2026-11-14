@@ -33,6 +33,8 @@ public sealed class ScriptedSyncSteps : IRemoteIndexUpdater, ILocalChangeDetecto
 
     public Option<Exception> DownloadThrows { get; set; } = Option.None<Exception>();
 
+    public Action OnDownload { get; set; } = () => { };
+
     public Task<Result<RemoteUpdateSummary, ProviderError>> UpdateAsync(AccountId accountId, CancellationToken cancellationToken) => Task.FromResult(Record("index", Index));
 
     public Task<Result<LocalChangeSet, LocalScanFailure>> DetectAsync(AccountId accountId, CancellationToken cancellationToken) => Task.FromResult(Record("scan", Scan));
@@ -40,6 +42,7 @@ public sealed class ScriptedSyncSteps : IRemoteIndexUpdater, ILocalChangeDetecto
     async Task<Result<DownloadPassSummary, DownloadPassFailure>> IDownloadPass.RunAsync(AccountId accountId, LocalChangeSet localChanges, CancellationToken cancellationToken)
     {
         var outcome = Record("download", Downloaded);
+        OnDownload();
         lock (gate)
             maxConcurrentDownloads = Math.Max(maxConcurrentDownloads, ++inDownload);
 

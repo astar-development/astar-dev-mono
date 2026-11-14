@@ -53,8 +53,8 @@ public sealed class GivenASyncRunStatusSource : IDisposable
     public async Task when_a_run_finishes_with_conflicts_and_held_deletions_then_the_account_needs_attention()
     {
         var path = RelativeSyncPathFactory.Create("Docs/a.txt").Match(found => found, _ => throw new InvalidOperationException("The test path must be valid."));
-        services.Steps.Downloaded = Result.Success<DownloadPassSummary, DownloadPassFailure>(DownloadPassSummaryFactory.Create([DownloadItemOutcomeFactory.CreateSentToConflicts(ConflictKindFactory.CreateBothModified()), DownloadItemOutcomeFactory.CreateHeldByGuard()], []));
-        services.Steps.Uploaded = Result.Success<UploadPassSummary, UploadPassFailure>(UploadPassSummaryFactory.Create([UploadItemOutcomeFactory.CreateSentToConflicts(path, ConflictKindFactory.CreateBothAdded())]));
+        services.Steps.Downloaded = Result.Success<DownloadPassSummary, DownloadPassFailure>(DownloadPassSummaryFactory.Create([DownloadItemOutcomeFactory.CreateSentToConflicts(ConflictFindings.Of("Docs/a.txt", ConflictKindFactory.CreateBothModified())), DownloadItemOutcomeFactory.CreateHeldByGuard()], []));
+        services.Steps.Uploaded = Result.Success<UploadPassSummary, UploadPassFailure>(UploadPassSummaryFactory.Create([UploadItemOutcomeFactory.CreateSentToConflicts(ConflictFindings.Of(path, ConflictKindFactory.CreateBothAdded()))]));
 
         await RunAsync(Personal);
 

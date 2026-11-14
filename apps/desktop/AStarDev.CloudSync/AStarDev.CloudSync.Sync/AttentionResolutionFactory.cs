@@ -15,6 +15,9 @@ public static class AttentionResolutionFactory
     /// <summary>Creates the <see cref="AttentionResolution.ConfirmDeletions"/> case.</summary>
     public static AttentionResolution CreateConfirmDeletions() => new AttentionResolution.ConfirmDeletions();
 
+    /// <summary>Creates the <see cref="AttentionResolution.AutoCleared"/> case.</summary>
+    public static AttentionResolution CreateAutoCleared() => new AttentionResolution.AutoCleared();
+
     /// <summary>Creates the <see cref="AttentionResolution.RestoreItems"/> case.</summary>
     public static AttentionResolution CreateRestoreItems() => new AttentionResolution.RestoreItems();
 }

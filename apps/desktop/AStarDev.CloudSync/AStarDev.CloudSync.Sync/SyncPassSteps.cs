@@ -5,7 +5,8 @@ namespace AStarDev.CloudSync.Sync;
 /// <param name="localChanges">Step 2: scans the local side.</param>
 /// <param name="download">Step 3: remote to local.</param>
 /// <param name="upload">Step 4: local to remote.</param>
-internal sealed class SyncPassSteps(IRemoteIndexUpdater remoteIndex, ILocalChangeDetector localChanges, IDownloadPass download, IUploadPass upload)
+/// <param name="attention">Closes settled conflicts before the passes and records what they found.</param>
+internal sealed class SyncPassSteps(IRemoteIndexUpdater remoteIndex, ILocalChangeDetector localChanges, IDownloadPass download, IUploadPass upload, SyncPassAttention attention)
 {
     /// <summary>Step 1: brings the remote index up to date.</summary>
     public IRemoteIndexUpdater RemoteIndex { get; } = remoteIndex;
@@ -18,4 +19,7 @@ internal sealed class SyncPassSteps(IRemoteIndexUpdater remoteIndex, ILocalChang
 
     /// <summary>Step 4: local to remote.</summary>
     public IUploadPass Upload { get; } = upload;
+
+    /// <summary>The attention queue: conflicts and held deletions.</summary>
+    public SyncPassAttention Attention { get; } = attention;
 }

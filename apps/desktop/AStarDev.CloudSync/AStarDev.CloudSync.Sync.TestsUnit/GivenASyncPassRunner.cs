@@ -35,8 +35,8 @@ public sealed class GivenASyncPassRunner : IDisposable
         var pair = SyncPairIdFactory.Create(Guid.NewGuid());
         var path = RelativeSyncPathFactory.Create("Docs/a.txt").Match(found => found, _ => throw new InvalidOperationException("The test path must be valid."));
         Steps.Scan = Result.Success<LocalChangeSet, LocalScanFailure>(LocalChangeSetFactory.Create([], [MassDeletionSuspectedFactory.Create(pair, 60, 120)], 0, 0));
-        Steps.Downloaded = Result.Success<DownloadPassSummary, DownloadPassFailure>(DownloadPassSummaryFactory.Create([DownloadItemOutcomeFactory.CreateSentToConflicts(ConflictKindFactory.CreateBothModified()), DownloadItemOutcomeFactory.CreateHeldByGuard()], []));
-        Steps.Uploaded = Result.Success<UploadPassSummary, UploadPassFailure>(UploadPassSummaryFactory.Create([UploadItemOutcomeFactory.CreateSentToConflicts(path, ConflictKindFactory.CreateBothAdded()), UploadItemOutcomeFactory.CreateUploaded(path, 10)]));
+        Steps.Downloaded = Result.Success<DownloadPassSummary, DownloadPassFailure>(DownloadPassSummaryFactory.Create([DownloadItemOutcomeFactory.CreateSentToConflicts(ConflictFindings.Of("Docs/a.txt", ConflictKindFactory.CreateBothModified())), DownloadItemOutcomeFactory.CreateHeldByGuard()], []));
+        Steps.Uploaded = Result.Success<UploadPassSummary, UploadPassFailure>(UploadPassSummaryFactory.Create([UploadItemOutcomeFactory.CreateSentToConflicts(ConflictFindings.Of(path, ConflictKindFactory.CreateBothAdded())), UploadItemOutcomeFactory.CreateUploaded(path, 10)]));
 
         var result = await RunAsync(Personal, Manual);
 

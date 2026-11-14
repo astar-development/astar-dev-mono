@@ -1,3 +1,5 @@
+using AStarDev.FunctionalParadigm;
+
 namespace AStarDev.CloudSync.Sync;
 
 /// <summary>One step of an upload pass for one path.</summary>
@@ -125,17 +127,23 @@ public abstract record UploadPlanItem
     /// <summary>Both sides changed: hand the path to conflict handling and touch nothing.</summary>
     public sealed record SendToConflicts : UploadPlanItem
     {
-        internal SendToConflicts(RelativeSyncPath path, ConflictKind kind)
+        internal SendToConflicts(ConflictFinding finding, Option<RemoteItemSnapshot> remoteItem)
         {
-            Path = path;
-            Kind = kind;
+            Finding = finding;
+            RemoteItem = remoteItem;
         }
 
+        /// <summary>The conflict with both sides' snapshots.</summary>
+        public ConflictFinding Finding { get; }
+
+        /// <summary>The cloud item the conflict is about, when there is one; a first-sync link needs its id and tags.</summary>
+        public Option<RemoteItemSnapshot> RemoteItem { get; }
+
         /// <inheritdoc />
-        public override RelativeSyncPath Path { get; }
+        public override RelativeSyncPath Path => Finding.Path;
 
         /// <summary>What kind of conflict it is.</summary>
-        public ConflictKind Kind { get; }
+        public ConflictKind Kind => Finding.Kind;
     }
 
     /// <summary>The provider would reject the item: skip it and tell the user.</summary>

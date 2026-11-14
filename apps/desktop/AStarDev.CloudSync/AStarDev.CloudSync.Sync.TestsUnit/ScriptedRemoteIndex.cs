@@ -31,7 +31,7 @@ public sealed class ScriptedRemoteIndex : IRemoteIndexReader
         }
     }
 
-    public void File(string path, string id, string cTag, long size)
+    public void File(string path, string id, string cTag, long size, string? hash = null)
     {
         var slash = path.LastIndexOf('/');
         if (slash > 0)
@@ -40,7 +40,7 @@ public sealed class ScriptedRemoteIndex : IRemoteIndexReader
         var parent = default(RemoteItemId);
         if (slash > 0)
             parent = path[..slash].Split('/').Aggregate(Option.None<RemoteItemId>(), (current, name) => Option.Some(items.First(item => item.ParentId.Equals(current) && string.Equals(item.Name, name, StringComparison.OrdinalIgnoreCase)).Id)).Match(found => found, () => default);
-        items.Add(RemoteItemSnapshotFactory.Create(RemoteIds.Of(id), slash > 0 ? Option.Some(parent) : Option.None<RemoteItemId>(), path[(slash + 1)..], RemoteItemKindFactory.CreateFile(size, Option.None<ContentHash>(), RemoteIds.CTag(cTag)), Stamp, RemoteIds.ETag("e-" + cTag)));
+        items.Add(RemoteItemSnapshotFactory.Create(RemoteIds.Of(id), slash > 0 ? Option.Some(parent) : Option.None<RemoteItemId>(), path[(slash + 1)..], RemoteItemKindFactory.CreateFile(size, hash is null ? Option.None<ContentHash>() : Option.Some(RemoteIds.Hash(hash)), RemoteIds.CTag(cTag)), Stamp, RemoteIds.ETag("e-" + cTag)));
     }
 
     public Task<Result<Option<ChangeCursor>, ErrorResponse>> GetCursorAsync(AccountId accountId, CancellationToken cancellationToken) => throw new NotSupportedException();
@@ -52,7 +52,7 @@ public sealed class ScriptedRemoteIndex : IRemoteIndexReader
 
     public Task<Result<Option<ResyncPassId>, ErrorResponse>> GetResyncPassAsync(AccountId accountId, CancellationToken cancellationToken) => throw new NotSupportedException();
 
-    public Task<Result<Option<RemoteItemSnapshot>, ErrorResponse>> GetAsync(AccountId accountId, RemoteItemId itemId, CancellationToken cancellationToken) => throw new NotSupportedException();
+    public Task<Result<Option<RemoteItemSnapshot>, ErrorResponse>> GetAsync(AccountId accountId, RemoteItemId itemId, CancellationToken cancellationToken) => Task.FromResult(Outcome(items.FirstOrNone(item => item.Id == itemId)));
 
     public Task<Result<Option<LocalRelativePath>, ErrorResponse>> GetPathAsync(AccountId accountId, RemoteItemId itemId, CancellationToken cancellationToken) => throw new NotSupportedException();
 

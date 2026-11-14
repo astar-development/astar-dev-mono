@@ -1,3 +1,5 @@
+using AStarDev.FunctionalParadigm;
+
 namespace AStarDev.CloudSync.Sync;
 
 /// <summary>One step the download pass takes for one path (#1400).</summary>
@@ -84,16 +86,22 @@ public abstract record DownloadPlanItem
     /// <summary>Both sides changed, so nothing is touched and the path goes to the attention queue (#1405).</summary>
     public sealed record SendToConflicts : DownloadPlanItem
     {
-        internal SendToConflicts(RelativeSyncPath path, ConflictKind kind)
+        internal SendToConflicts(ConflictFinding finding, Option<RemoteItemSnapshot> remoteItem)
         {
-            Path = path;
-            Kind = kind;
+            Finding = finding;
+            RemoteItem = remoteItem;
         }
 
+        /// <summary>The conflict with both sides' snapshots.</summary>
+        public ConflictFinding Finding { get; }
+
+        /// <summary>The cloud item the conflict is about, when there is one; a first-sync link needs its id and tags.</summary>
+        public Option<RemoteItemSnapshot> RemoteItem { get; }
+
         /// <inheritdoc />
-        public override RelativeSyncPath Path { get; }
+        public override RelativeSyncPath Path => Finding.Path;
 
         /// <summary>Why the path conflicts.</summary>
-        public ConflictKind Kind { get; }
+        public ConflictKind Kind => Finding.Kind;
     }
 }
