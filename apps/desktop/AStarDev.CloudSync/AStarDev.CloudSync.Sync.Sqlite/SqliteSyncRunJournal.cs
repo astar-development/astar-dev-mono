@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync.Sync.Sqlite;
 
-/// <summary>Keeps the run journal in the sync tables, newest 100 runs per account. A finish stores and prunes inside one serializable transaction. A run still in progress is never pruned.</summary>
+/// <summary>Keeps the run journal in the sync tables, newest 100 runs per account plus the newest completed run, which Last sync needs. A finish stores and prunes inside one serializable transaction. A run still in progress is never pruned.</summary>
 /// <param name="dbContextFactory">Creates a database context per operation.</param>
 /// <param name="timeProvider">Stamps starts and ends.</param>
 /// <param name="logger">Reports reads and writes that fail, by exception type only.</param>
@@ -60,8 +60,18 @@ internal sealed class SqliteSyncRunJournal(IDbContextFactory<SyncDbContext> dbCo
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        if (oldestKept is { } ticks)
-            _ = await dbContext.SyncRuns.Where(run => run.AccountId == accountId && run.FinishedAtUtcTicks != null && run.StartedAtUtcTicks < ticks).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        if (oldestKept is not { } ticks)
+            return;
+
+        var completed = nameof(SyncRunOutcome.Completed);
+        var lastCompleted = await dbContext.SyncRuns
+            .Where(run => run.AccountId == accountId && run.Outcome == completed)
+            .OrderByDescending(run => run.FinishedAtUtcTicks)
+            .Select(run => run.Id)
+            .FirstOrDefaultAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        _ = await dbContext.SyncRuns.Where(run => run.AccountId == accountId && run.FinishedAtUtcTicks != null && run.StartedAtUtcTicks < ticks && run.Id != lastCompleted).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<SyncRunId> InsertAsync(AccountId accountId, SyncTrigger trigger, CancellationToken cancellationToken)
