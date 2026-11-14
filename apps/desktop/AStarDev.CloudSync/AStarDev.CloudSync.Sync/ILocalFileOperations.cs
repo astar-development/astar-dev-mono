@@ -25,6 +25,13 @@ public interface ILocalFileOperations
     /// <returns>Success, or why the delete failed.</returns>
     Task<Result<Unit, LocalOperationFailure>> DeleteAsync(IFileSystemInfo item, CancellationToken cancellationToken);
 
+    /// <summary>Moves a file or a whole folder into the <c>.sync-trash</c> folder of the sync root instead of deleting it (#1583). Every call gets its own trash folder, so nothing already trashed is overwritten. An item that is already gone or already in the trash counts as trashed. A failed move is never turned into a delete.</summary>
+    /// <param name="root">The sync root that holds the item and the trash.</param>
+    /// <param name="item">The item.</param>
+    /// <param name="cancellationToken">Cancels a retry wait.</param>
+    /// <returns>Success, or why the move failed. A locked item is retried briefly first.</returns>
+    Task<Result<Unit, LocalOperationFailure>> TrashAsync(IDirectoryInfo root, IFileSystemInfo item, CancellationToken cancellationToken);
+
     /// <summary>Moves a finished download over the target and sets the target's last write time.</summary>
     /// <param name="download">The finished temp file.</param>
     /// <param name="target">The file to replace.</param>

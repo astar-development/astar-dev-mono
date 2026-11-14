@@ -23,6 +23,10 @@ internal sealed class LocalFileOperations(TimeProvider timeProvider) : ILocalFil
     public Task<Result<Unit, LocalOperationFailure>> DeleteAsync(IFileSystemInfo item, CancellationToken cancellationToken) => WithRetryAsync(() => Do(() => DeleteItem(item)), cancellationToken);
 
     /// <inheritdoc />
+    public Task<Result<Unit, LocalOperationFailure>> TrashAsync(IDirectoryInfo root, IFileSystemInfo item, CancellationToken cancellationToken) =>
+        throw new NotImplementedException($"{nameof(root)} {nameof(item)} {nameof(cancellationToken)}");
+
+    /// <inheritdoc />
     public Task<Result<Unit, LocalOperationFailure>> ReplaceAsync(IFileInfo download, IFileInfo target, DateTimeOffset lastWriteUtc, CancellationToken cancellationToken) =>
         WithRetryAsync(() => Do(() => ReplaceFile(download, target, lastWriteUtc)), cancellationToken);
 
