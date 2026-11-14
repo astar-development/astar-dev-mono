@@ -9,15 +9,16 @@ namespace AStarDev.CloudSync.Sync;
 /// <param name="recorder">Writes the baseline and remote index rows of an uploaded file or a created folder in one transaction.</param>
 /// <param name="baseline">Writes linked folders and deletion changes to the baseline.</param>
 /// <param name="options">The concurrency limit.</param>
-internal sealed class UploadItemExecutor(IUploadRecorder recorder, ISyncBaselineWriter baseline, FirstSyncLinker linker, UploadPassOptions options)
+/// <param name="linker">Links a file both sides added when size and hash match.</param>
+/// <param name="sink">Takes the bytes uploaded so far.</param>
+internal sealed class UploadItemExecutor(IUploadRecorder recorder, ISyncBaselineWriter baseline, FirstSyncLinker linker, UploadPassOptions options, ISyncProgressSink sink)
 {
     private const char Separator = '/';
 
-    private static readonly IProgress<TransferProgress> NoProgress = new Progress<TransferProgress>();
-
     internal async Task<Result<IReadOnlyList<UploadItemOutcome>, UploadPassFailure>> ExecuteAsync(AccountId accountId, UploadPlan plan, UploadPassInput input, UploadProviders providers, CancellationToken cancellationToken)
     {
-        var run = new PassRun(accountId, input, providers, SeedFolders(input));
+        var tally = new PhaseTally(accountId, SyncPhaseFactory.CreateUploading(), plan.Items.Where(IsUploadStep).Sum(SizeOf), sink);
+        var run = new PassRun(accountId, input, providers, SeedFolders(input), tally);
         foreach (var item in plan.Items.Where(IsFolderStep))
             run.Outcomes.Add(await RunFolderStepAsync(run, item, cancellationToken).ConfigureAwait(false));
 
@@ -33,6 +34,13 @@ internal sealed class UploadItemExecutor(IUploadRecorder recorder, ISyncBaseline
             failure => Result.Failure<IReadOnlyList<UploadItemOutcome>, UploadPassFailure>(failure),
             () => Result.Success<IReadOnlyList<UploadItemOutcome>, UploadPassFailure>([.. run.Outcomes]));
     }
+
+    private static long SizeOf(UploadPlanItem item) => item switch
+    {
+        UploadPlanItem.UploadNewFile created => created.Size,
+        UploadPlanItem.UploadReplace replace => replace.Size,
+        _ => 0,
+    };
 
     private static bool IsFolderStep(UploadPlanItem item) => item is UploadPlanItem.EnsureRemoteFolder or UploadPlanItem.LinkExisting;
 
@@ -149,19 +157,24 @@ internal sealed class UploadItemExecutor(IUploadRecorder recorder, ISyncBaseline
         if (run.IsStopped)
             return;
 
-        run.Outcomes.Add(await UploadOneAsync(run, item, cancellationToken).ConfigureAwait(false));
+        var progress = run.Tally.ForFile(SizeOf(item));
+        var outcome = await UploadOneAsync(run, item, progress, cancellationToken).ConfigureAwait(false);
+        if (outcome is UploadItemOutcome.Uploaded)
+            progress.Finish();
+
+        run.Outcomes.Add(outcome);
     }
 
-    private Task<UploadItemOutcome> UploadOneAsync(PassRun run, UploadPlanItem item, CancellationToken cancellationToken) => item switch
+    private Task<UploadItemOutcome> UploadOneAsync(PassRun run, UploadPlanItem item, IProgress<TransferProgress> progress, CancellationToken cancellationToken) => item switch
     {
-        UploadPlanItem.UploadReplace replace => SendAsync(run, item, Result.Success<UploadTarget, UploadItemOutcome>(UploadTargetFactory.CreateReplacingItem(replace.ItemId)), replace.Precondition, replace.LastWriteUtc, cancellationToken),
-        UploadPlanItem.UploadNewFile created => SendAsync(run, item, ParentIdOf(run, item.Path).Map(UploadTargetFactory.CreateNewFileIn), created.Precondition, created.LastWriteUtc, cancellationToken),
+        UploadPlanItem.UploadReplace replace => SendAsync(run, item, Result.Success<UploadTarget, UploadItemOutcome>(UploadTargetFactory.CreateReplacingItem(replace.ItemId)), replace.Precondition, replace.LastWriteUtc, progress, cancellationToken),
+        UploadPlanItem.UploadNewFile created => SendAsync(run, item, ParentIdOf(run, item.Path).Map(UploadTargetFactory.CreateNewFileIn), created.Precondition, created.LastWriteUtc, progress, cancellationToken),
         _ => Task.FromResult(UploadItemOutcomeFactory.CreateFailed(item.Path, ProviderErrorFactory.CreateUnexpected())),
     };
 
-    private Task<UploadItemOutcome> SendAsync(PassRun run, UploadPlanItem item, Result<UploadTarget, UploadItemOutcome> target, UploadPrecondition precondition, DateTimeOffset lastWrite, CancellationToken cancellationToken) =>
+    private Task<UploadItemOutcome> SendAsync(PassRun run, UploadPlanItem item, Result<UploadTarget, UploadItemOutcome> target, UploadPrecondition precondition, DateTimeOffset lastWrite, IProgress<TransferProgress> progress, CancellationToken cancellationToken) =>
         target.Match(
-            resolved => run.Providers.Uploader.UploadAsync(run.AccountId, resolved, SourceOf(run, item.Path), precondition, NoProgress, cancellationToken)
+            resolved => run.Providers.Uploader.UploadAsync(run.AccountId, resolved, SourceOf(run, item.Path), precondition, progress, cancellationToken)
                 .MatchAsync(uploaded => RecordUploadAsync(run, item.Path, uploaded, lastWrite, cancellationToken), error => Task.FromResult(UploadFailed(run, item, error))),
             failed => Task.FromResult(failed));
 
@@ -197,7 +210,7 @@ internal sealed class UploadItemExecutor(IUploadRecorder recorder, ISyncBaseline
         baseline.RemoveAsync(run.AccountId, [path], cancellationToken)
             .MatchAsync(_ => UploadItemOutcomeFactory.CreateRemovedRemotely(path), _ => UploadItemOutcomeFactory.CreateFailed(path, ProviderErrorFactory.CreateUnexpected()));
 
-    private sealed class PassRun(AccountId accountId, UploadPassInput input, UploadProviders providers, ConcurrentDictionary<RelativeSyncPath, RemoteItemId> folders)
+    private sealed class PassRun(AccountId accountId, UploadPassInput input, UploadProviders providers, ConcurrentDictionary<RelativeSyncPath, RemoteItemId> folders, PhaseTally tally)
     {
         private readonly Lock gate = new();
         private Option<UploadPassFailure> stop = Option.None<UploadPassFailure>();
@@ -209,6 +222,8 @@ internal sealed class UploadItemExecutor(IUploadRecorder recorder, ISyncBaseline
         internal UploadProviders Providers { get; } = providers;
 
         internal ConcurrentDictionary<RelativeSyncPath, RemoteItemId> Folders { get; } = folders;
+
+        internal PhaseTally Tally { get; } = tally;
 
         internal ConcurrentBag<UploadItemOutcome> Outcomes { get; } = [];
 

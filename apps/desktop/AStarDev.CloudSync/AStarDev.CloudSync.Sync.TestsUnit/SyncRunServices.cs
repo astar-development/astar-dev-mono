@@ -47,6 +47,8 @@ public sealed class SyncRunServices : IDisposable
 
     public ISyncPassRunner Runner => provider.GetRequiredService<ISyncPassRunner>();
 
+    public ISyncProgressFeed Feed => provider.GetRequiredService<ISyncProgressFeed>();
+
     public ISyncActivitySource Activity => provider.GetRequiredService<ISyncActivitySource>();
 
     public ISyncCancelAction Cancel => provider.GetRequiredService<ISyncCancelAction>();
