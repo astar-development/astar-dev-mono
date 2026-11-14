@@ -388,18 +388,6 @@ public sealed class GivenAConflictResolver : IDisposable
     }
 
     [Fact]
-    public async Task when_the_kind_is_move_target_taken_then_it_stays_open_as_unsupported()
-    {
-        var run = await StartAsync();
-        run.Local("Docs/a.txt", "mine");
-        var id = run.Conflict("Docs/a.txt", ConflictKindFactory.CreateMoveTargetTaken());
-
-        var summary = await Summary(run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateLocalWins(), CancellationToken));
-
-        (summary.Failed.Single().Reason, run.Attention.ClosedConflicts.Count).ShouldBe((ResolutionFailureFactory.CreateUnsupported(), 0));
-    }
-
-    [Fact]
     public async Task when_the_strategy_does_not_apply_then_the_item_fails_as_not_allowed_with_the_reason()
     {
         var run = await StartAsync();

@@ -77,7 +77,7 @@ internal sealed class ResolutionTransfers(UploadPassProviders providers, UploadP
             found => DownloadFileAsync(context, path, found.Item, found.File, cancellationToken),
             failure => Task.FromResult(Failed(failure)));
 
-    private static Result<(RemoteItemSnapshot Item, RemoteItemKind.File File), ResolutionFailure> CheckedFile(ResolutionContext context, RelativeSyncPath path, Option<ContentTag> seen) =>
+    internal static Result<(RemoteItemSnapshot Item, RemoteItemKind.File File), ResolutionFailure> CheckedFile(ResolutionContext context, RelativeSyncPath path, Option<ContentTag> seen) =>
         RemoteItem(context, path).Match(
             item => item.Kind is RemoteItemKind.File file ? Seen(item, file, seen) : Result.Failure<(RemoteItemSnapshot, RemoteItemKind.File), ResolutionFailure>(ResolutionFailureFactory.CreateRemoteFileMissing()),
             () => Result.Failure<(RemoteItemSnapshot, RemoteItemKind.File), ResolutionFailure>(ResolutionFailureFactory.CreateRemoteFileMissing()));

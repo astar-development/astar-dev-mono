@@ -60,6 +60,8 @@ public sealed class OneDriveTransferFixture : IDisposable
 
     public IRemoteItemRemover Remover => provider!.GetRequiredKeyedService<IRemoteItemRemover>(CloudProviderFactory.CreateOneDrive());
 
+    public IRemoteItemRenamer Renamer => provider!.GetRequiredKeyedService<IRemoteItemRenamer>(CloudProviderFactory.CreateOneDrive());
+
     public System.IO.Abstractions.IFileInfo File(string name, byte[] content)
     {
         _ = FileSystem.Directory.CreateDirectory("/sync");

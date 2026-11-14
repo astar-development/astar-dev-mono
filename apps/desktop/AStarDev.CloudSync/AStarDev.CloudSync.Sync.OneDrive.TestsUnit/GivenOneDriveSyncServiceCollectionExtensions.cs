@@ -24,6 +24,14 @@ public class GivenOneDriveSyncServiceCollectionExtensions
     }
 
     [Fact]
+    public void when_the_module_is_added_then_the_item_renamer_is_registered_keyed_by_onedrive()
+    {
+        var services = new ServiceCollection().AddOneDriveSync();
+
+        services.ShouldContain(descriptor => descriptor.ServiceType == typeof(IRemoteItemRenamer) && descriptor.IsKeyedService && Equals(descriptor.ServiceKey, CloudProviderFactory.CreateOneDrive()) && descriptor.Lifetime == ServiceLifetime.Singleton);
+    }
+
+    [Fact]
     public void when_the_module_is_added_then_the_change_feed_is_registered_keyed_by_onedrive()
     {
         var services = new ServiceCollection().AddOneDriveSync();

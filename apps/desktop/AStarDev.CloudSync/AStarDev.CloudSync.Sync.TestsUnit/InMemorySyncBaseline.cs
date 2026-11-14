@@ -16,6 +16,8 @@ public sealed class InMemorySyncBaseline : ISyncBaselineReader, ISyncBaselineWri
 
     public bool UpsertFails { get; set; }
 
+    public bool RemoveFails { get; set; }
+
     public IReadOnlyList<SyncBaselineEntry> All
     {
         get
@@ -73,6 +75,9 @@ public sealed class InMemorySyncBaseline : ISyncBaselineReader, ISyncBaselineWri
 
     public Task<Result<Unit, ErrorResponse>> RemoveAsync(AccountId accountId, IReadOnlyList<RelativeSyncPath> paths, CancellationToken cancellationToken)
     {
+        if (RemoveFails)
+            return Task.FromResult(Result.Failure<Unit, ErrorResponse>(new ErrorResponse("locked")));
+
         lock (gate)
             foreach (var path in paths)
                 _ = stored.Remove(path.Value ?? string.Empty);

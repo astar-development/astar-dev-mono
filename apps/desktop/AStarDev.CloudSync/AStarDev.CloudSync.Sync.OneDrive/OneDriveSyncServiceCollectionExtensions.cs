@@ -28,6 +28,7 @@ public static class OneDriveSyncServiceCollectionExtensions
             .AddKeyedSingleton<IRemoteFileUploader, OneDriveFileUploader>(CloudProviderFactory.CreateOneDrive())
             .AddKeyedSingleton<IRemoteFolderCreator, OneDriveFolderCreator>(CloudProviderFactory.CreateOneDrive())
             .AddKeyedSingleton<IRemoteItemRemover, OneDriveItemRemover>(CloudProviderFactory.CreateOneDrive())
+            .AddKeyedSingleton<IRemoteItemRenamer, OneDriveItemRenamer>(CloudProviderFactory.CreateOneDrive())
             .AddKeyedSingleton<IQuotaRefresher, OneDriveQuotaRefresher>(CloudProviderFactory.CreateOneDrive());
     }
 }

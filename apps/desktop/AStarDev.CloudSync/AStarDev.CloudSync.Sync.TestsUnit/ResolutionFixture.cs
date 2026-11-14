@@ -47,6 +47,7 @@ public sealed class ResolutionFixture : IDisposable
             .AddKeyedSingleton<IRemoteFileUploader>(oneDrive, Uploader)
             .AddKeyedSingleton<IRemoteFolderCreator>(oneDrive, Folders)
             .AddKeyedSingleton<IRemoteItemRemover>(oneDrive, Remover)
+            .AddKeyedSingleton<IRemoteItemRenamer>(oneDrive, Renamer)
             .AddKeyedSingleton<IRemoteNamePolicy>(oneDrive, Names)
             .BuildServiceProvider();
     }
@@ -72,6 +73,8 @@ public sealed class ResolutionFixture : IDisposable
     public FakeFolderCreator Folders { get; } = new();
 
     public FakeItemRemover Remover { get; } = new();
+
+    public FakeItemRenamer Renamer { get; } = new();
 
     public FakeRemoteNamePolicy Names { get; } = new();
 
