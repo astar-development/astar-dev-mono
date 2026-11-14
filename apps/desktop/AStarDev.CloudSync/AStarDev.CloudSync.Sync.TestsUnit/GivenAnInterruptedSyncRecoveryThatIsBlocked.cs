@@ -85,7 +85,7 @@ public sealed class GivenAnInterruptedSyncRecoveryThatIsBlocked : IDisposable
         var outcomes = await next.Recovery.RecoverAsync(CancellationToken);
 
         outcomes.ShouldBeEmpty();
-        (journal.Runs.Select(run => run.Outcome), next.ActivityLog.Calls, next.Steps.Steps).ShouldBe(([Option.None<SyncRunOutcome>()], 0, []));
+        (journal.Runs.Count(run => run.Outcome is Option<SyncRunOutcome>.None), journal.Runs.Count, next.ActivityLog.Calls, next.Steps.Steps.Count).ShouldBe((1, 1, 0, 0));
     }
 
     [Fact]

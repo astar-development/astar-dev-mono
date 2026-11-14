@@ -67,6 +67,10 @@ internal sealed class SqliteActivityLogStore(IDbContextFactory<SyncDbContext> db
             case ActivityKind.SyncInterrupted:
                 row.Kind = nameof(ActivityKind.SyncInterrupted);
                 break;
+            case ActivityKind.RecoveryBlocked blocked:
+                row.Kind = nameof(ActivityKind.RecoveryBlocked);
+                row.FileName = blocked.Blocker.GetType().Name;
+                break;
             default:
                 row.Kind = nameof(ActivityKind.DetectingChanges);
                 break;
@@ -90,7 +94,15 @@ internal sealed class SqliteActivityLogStore(IDbContextFactory<SyncDbContext> db
         nameof(ActivityKind.ConflictDetected) => ActivityKindFactory.CreateConflictDetected(row.FileName ?? string.Empty),
         nameof(ActivityKind.Authenticated) => ActivityKindFactory.CreateAuthenticated(),
         nameof(ActivityKind.SyncInterrupted) => ActivityKindFactory.CreateSyncInterrupted(),
+        nameof(ActivityKind.RecoveryBlocked) => ActivityKindFactory.CreateRecoveryBlocked(BlockerOf(row.FileName)),
         _ => ActivityKindFactory.CreateDetectingChanges(),
+    };
+
+    private static RecoveryBlocker BlockerOf(string? name) => name switch
+    {
+        nameof(RecoveryBlocker.SyncFolderMissing) => RecoveryBlockerFactory.CreateSyncFolderMissing(),
+        nameof(RecoveryBlocker.DatabaseUnreadable) => RecoveryBlockerFactory.CreateDatabaseUnreadable(),
+        _ => RecoveryBlockerFactory.CreateSignInRequired(),
     };
 
     private static async Task TrimAsync(SyncDbContext dbContext, Guid accountId, CancellationToken cancellationToken)

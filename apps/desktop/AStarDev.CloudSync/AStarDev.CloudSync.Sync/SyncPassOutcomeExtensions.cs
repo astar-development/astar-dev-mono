@@ -15,7 +15,7 @@ internal static class SyncPassOutcomeExtensions
 
     private static Option<SyncStatus> FromFailure(SyncPassFailure failure) => failure switch
     {
-        SyncPassFailure.AlreadyRunning or SyncPassFailure.AuthenticationRequired => Option.None<SyncStatus>(),
+        SyncPassFailure.AlreadyRunning or SyncPassFailure.AuthenticationRequired or SyncPassFailure.DatabaseUnavailable => Option.None<SyncStatus>(),
         SyncPassFailure.Cancelled => Option.Some(SyncStatusFactory.CreateCancelled()),
         SyncPassFailure.RootUnavailable => Failed(SyncFailureReasonFactory.CreateRootUnavailable()),
         SyncPassFailure.QuotaExceeded => Failed(SyncFailureReasonFactory.CreateQuotaExceeded()),

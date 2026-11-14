@@ -28,7 +28,7 @@ public sealed class GivenASyncPassRunnerOverADamagedDatabase : IDisposable
         var result = await services.Runner.RunAsync(services.Personal, TriggerNamed(trigger), CancellationToken);
 
         result.Match(_ => (object)"ran", failure => failure).ShouldBe(SyncPassFailureFactory.CreateDatabaseUnavailable());
-        (services.Steps.Steps, journal.Runs).ShouldBe(([], []));
+        (services.Steps.Steps.Count, journal.Runs.Count).ShouldBe((0, 0));
     }
 
     [Fact]

@@ -18,11 +18,33 @@ internal sealed class InterruptedSyncRecovery(ISyncRunJournal journal, IActivity
     private const string Location = nameof(InterruptedSyncRecovery);
 
     /// <inheritdoc />
-    public Task<IReadOnlyList<RecoveryOutcome>> RecoverAsync(CancellationToken cancellationToken) =>
-        journal.GetInterruptedAsync(cancellationToken).MatchAsync(runs => RecoverRunsAsync(runs, cancellationToken), _ => NothingRecovered());
+    public async Task<IReadOnlyList<RecoveryOutcome>> RecoverAsync(CancellationToken cancellationToken)
+    {
+        var health = await checks.Health.CheckAsync(cancellationToken).ConfigureAwait(false);
+        if (health is not DatabaseHealthStatus.Healthy)
+            return DatabaseNotSound(health);
+
+        return await journal.GetInterruptedAsync(cancellationToken).MatchAsync(runs => RecoverRunsAsync(runs, cancellationToken), _ => NothingRecovered()).ConfigureAwait(false);
+    }
 
     private static RecoveryOutcome Resumed(AccountId accountId, Result<SyncPassSummary, SyncPassFailure> result) =>
-        result.Match(_ => RecoveryOutcomeFactory.CreateResumed(accountId), failure => RecoveryOutcomeFactory.CreateNotResumed(accountId, failure));
+        result.Match(_ => RecoveryOutcomeFactory.CreateResumed(accountId), failure => Stopped(accountId, failure));
+
+    private static RecoveryOutcome Stopped(AccountId accountId, SyncPassFailure failure) => failure switch
+    {
+        SyncPassFailure.AuthenticationRequired => RecoveryOutcomeFactory.CreateNotPossible(accountId, RecoveryBlockerFactory.CreateSignInRequired()),
+        SyncPassFailure.RootUnavailable => RecoveryOutcomeFactory.CreateNotPossible(accountId, RecoveryBlockerFactory.CreateSyncFolderMissing()),
+        SyncPassFailure.DatabaseUnavailable => RecoveryOutcomeFactory.CreateNotPossible(accountId, RecoveryBlockerFactory.CreateDatabaseUnreadable()),
+        _ => RecoveryOutcomeFactory.CreateNotResumed(accountId, failure),
+    };
+
+    private IReadOnlyList<RecoveryOutcome> DatabaseNotSound(DatabaseHealthStatus health)
+    {
+        if (health is DatabaseHealthStatus.Failed)
+            LogMessage.Warning(logger, Location, "The database failed its integrity check, so no interrupted sync was recovered. The interrupted runs stay as they are until the next start.");
+
+        return [];
+    }
 
     private Task<IReadOnlyList<RecoveryOutcome>> NothingRecovered()
     {
@@ -48,8 +70,17 @@ internal sealed class InterruptedSyncRecovery(ISyncRunJournal journal, IActivity
         var offsets = stagger.OffsetsFor(resumable, RecoveryStagger.Window);
         var held = accounts.Where(pausedIds.Contains).Select(RecoveryOutcomeFactory.CreateHeld);
         var resumed = await Task.WhenAll(resumable.Select(account => ResumeAsync(account, offsets[account], cancellationToken))).ConfigureAwait(false);
+        _ = await TellBlockedAsync(resumed, cancellationToken).ConfigureAwait(false);
 
         return [.. held, .. resumed];
+    }
+
+    private Task<Unit> TellBlockedAsync(RecoveryOutcome[] outcomes, CancellationToken cancellationToken)
+    {
+        var occurredAt = timeProvider.GetUtcNow();
+        IReadOnlyList<ActivityEntry> entries = [.. outcomes.OfType<RecoveryOutcome.NotPossible>().Select(blocked => ActivityEntryFactory.Create(blocked.AccountId, Option.None<SyncPairId>(), ActivityKindFactory.CreateRecoveryBlocked(blocked.Blocker), occurredAt))];
+
+        return entries.Count == 0 ? Task.FromResult(Unit.Instance) : activity.AppendAsync(entries, cancellationToken).MatchAsync(done => done, _ => Warn("The blocked recovery could not be written to the activity log."));
     }
 
     private List<AccountId> HoldAll(List<AccountId> accounts)

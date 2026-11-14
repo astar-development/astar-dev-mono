@@ -1,6 +1,6 @@
 using AStarDev.CloudSync.Sync;
 
-namespace AStarDev.CloudSync.ViewModels.TestsUnit.Overview;
+namespace AStarDev.CloudSync.TestHelpers.Ui;
 
 public sealed class FakeDatabaseHealthGate : IDatabaseHealthGate
 {

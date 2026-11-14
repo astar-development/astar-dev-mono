@@ -32,7 +32,15 @@ public sealed class ActivityItemViewModel(ActivityEntry entry, string accountNam
         ActivityKind.Deleted deleted => Localization.GetLocal("Activity.Deleted.Many", deleted.FileCount.ToString("N0", Localization.CurrentCulture)),
         ActivityKind.ConflictDetected conflict => Localization.GetLocal("Activity.Conflict", conflict.FileName),
         ActivityKind.SyncInterrupted => Localization.GetLocal("Activity.SyncInterrupted", accountName),
+        ActivityKind.RecoveryBlocked blocked => Localization.GetLocal(RecoveryBlockedKey(blocked.Blocker), accountName),
         _ => Localization.GetLocal("Activity.Authenticated")
+    };
+
+    private static string RecoveryBlockedKey(RecoveryBlocker blocker) => blocker switch
+    {
+        RecoveryBlocker.SyncFolderMissing => "Activity.RecoveryBlocked.SyncFolderMissing",
+        RecoveryBlocker.DatabaseUnreadable => "Activity.RecoveryBlocked.DatabaseUnreadable",
+        _ => "Activity.RecoveryBlocked.SignInRequired"
     };
 
     /// <summary>When it happened, relative to now, e.g. "5 min ago".</summary>

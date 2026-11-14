@@ -13,6 +13,8 @@ public sealed class GivenADatabaseHealthCheckOverSqlite : IAsyncLifetime
 
     private TemporarySyncDatabase? database;
 
+    private int ProbePageSize { get; set; }
+
     private static CancellationToken CancellationToken => TestContext.Current.CancellationToken;
 
     private TemporarySyncDatabase Database => database ?? throw new InvalidOperationException("The database is created before each test.");
@@ -33,12 +35,12 @@ public sealed class GivenADatabaseHealthCheckOverSqlite : IAsyncLifetime
 
     private async Task<object> CheckAsync() => await Database.Health.CheckAsync(CancellationToken).MatchAsync(_ => (object)"sound", failure => failure);
 
-    private async Task CorruptAsync()
+    private async Task CorruptAsync(int from = 100)
     {
         await Database.RestartAsync();
         SqliteConnection.ClearAllPools();
         var bytes = await File.ReadAllBytesAsync(Database.DatabasePath, CancellationToken);
-        Array.Fill(bytes, (byte)0xFF, 200, 1500);
+        Array.Fill(bytes, (byte)0xFF, from, bytes.Length - from);
         await File.WriteAllBytesAsync(Database.DatabasePath, bytes, CancellationToken);
     }
 
@@ -78,6 +80,35 @@ public sealed class GivenADatabaseHealthCheckOverSqlite : IAsyncLifetime
         var result = await CheckAsync();
 
         result.ShouldBeAssignableTo<DatabaseHealthFailure>();
+    }
+
+    [Fact]
+    public async Task when_only_an_index_page_is_corrupted_then_the_integrity_check_reports_damage()
+    {
+        await Database.RestartAsync();
+        var rootPage = await AddProbeIndexAsync();
+        var bytes = await File.ReadAllBytesAsync(Database.DatabasePath, CancellationToken);
+        Array.Fill(bytes, (byte)0xFF, ((rootPage - 1) * ProbePageSize) + 8, 32);
+        await File.WriteAllBytesAsync(Database.DatabasePath, bytes, CancellationToken);
+
+        var result = await CheckAsync();
+
+        result.ShouldBe(DatabaseHealthFailureFactory.CreateDamaged());
+    }
+
+    private async Task<int> AddProbeIndexAsync()
+    {
+        await using var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = Database.DatabasePath, Pooling = false }.ToString());
+        await connection.OpenAsync(CancellationToken);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "CREATE TABLE probe(id INTEGER PRIMARY KEY, v TEXT); CREATE INDEX probe_v ON probe(v); WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i < 2000) INSERT INTO probe(v) SELECT 'value ' || i FROM n; PRAGMA journal_mode = DELETE;";
+        _ = await command.ExecuteNonQueryAsync(CancellationToken);
+        command.CommandText = "SELECT rootpage FROM sqlite_master WHERE name = 'probe_v'";
+        var rootPage = Convert.ToInt32(await command.ExecuteScalarAsync(CancellationToken));
+        command.CommandText = "PRAGMA page_size";
+        ProbePageSize = Convert.ToInt32(await command.ExecuteScalarAsync(CancellationToken));
+
+        return rootPage;
     }
 
     [Fact]

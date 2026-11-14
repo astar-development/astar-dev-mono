@@ -5,6 +5,7 @@ using AStarDev.CloudSync.ViewModels.Conflicts;
 using AStarDev.CloudSync.ViewModels.DisplaySettings;
 using AStarDev.CloudSync.ViewModels.FolderSelection;
 using AStarDev.CloudSync.ViewModels.Layouts;
+using AStarDev.CloudSync.ViewModels.Overview;
 using AStarDev.CloudSync.ViewModels.SyncRestart;
 using AStarDev.Localization;
 
@@ -29,6 +30,7 @@ public sealed class MainWindowViewModel : LocalizedObservableObject
         FolderSelection = dialogs.FolderSelection;
         SyncRestart = dialogs.SyncRestart;
         ConflictList = dialogs.ConflictList;
+        DatabaseHealth = dialogs.DatabaseHealth;
         SyncRestart.PropertyChanged += OnSyncRestartChanged;
         ConflictList.PropertyChanged += OnConflictListChanged;
         AccountDialog.PropertyChanged += OnDialogChanged;
@@ -36,6 +38,9 @@ public sealed class MainWindowViewModel : LocalizedObservableObject
         AddAccount.PropertyChanged += OnDialogChanged;
         displaySettings.PropertyChanged += OnDisplaySettingsChanged;
     }
+
+    /// <summary>The banner shown while the database integrity check has failed.</summary>
+    public DatabaseHealthBannerViewModel DatabaseHealth { get; }
 
     /// <summary>The window title.</summary>
     public string Title => Localization.GetLocal("App.Title");

@@ -95,6 +95,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<LayoutAViewModel>()
             .AddSingleton<LayoutCViewModel>()
             .AddSingleton<MainWindowLayouts>()
+            .AddSingleton<DatabaseHealthBannerViewModel>()
             .AddSingleton<MainWindowDialogs>()
             .AddSingleton<MainWindowViewModel>();
 }
