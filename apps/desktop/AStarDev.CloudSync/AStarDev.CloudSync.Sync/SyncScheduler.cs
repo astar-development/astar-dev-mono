@@ -28,6 +28,7 @@ internal sealed class SyncScheduler(SyncSchedulerReaders readers, IStaggerPolicy
     private TimeSpan dueInterval;
     private int checking;
     private int recheck;
+    private int offlineLogged;
 
     /// <summary>Releases the cancellation source of a scheduler that was not stopped.</summary>
     public void Dispose() => running?.Dispose();
@@ -45,6 +46,7 @@ internal sealed class SyncScheduler(SyncSchedulerReaders readers, IStaggerPolicy
             running = new CancellationTokenSource();
             var token = running.Token;
             timer = timeProvider.CreateTimer(_ => OnTick(token), null, options.CheckEvery, options.CheckEvery);
+            readers.Network.Changed += OnNetworkChanged;
         }
 
         return Task.CompletedTask;
@@ -66,6 +68,8 @@ internal sealed class SyncScheduler(SyncSchedulerReaders readers, IStaggerPolicy
         if (stopping is null || cancelling is null)
             return;
 
+        readers.Network.Changed -= OnNetworkChanged;
+
         await stopping.DisposeAsync().ConfigureAwait(false);
         await cancelling.CancelAsync().ConfigureAwait(false);
         await Task.WhenAll(passes.Keys).WaitAsync(cancellationToken).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
@@ -80,6 +84,21 @@ internal sealed class SyncScheduler(SyncSchedulerReaders readers, IStaggerPolicy
 
     private static DateTimeOffset FirstSlotAfter(DateTimeOffset first, TimeSpan interval, DateTimeOffset moment) =>
         moment < first ? first : first + (interval * (Math.Floor((moment - first) / interval) + 1));
+
+    private void OnNetworkChanged(object? sender, EventArgs e)
+    {
+        CancellationToken token;
+        lock (gate)
+        {
+            if (running is null)
+                return;
+
+            token = running.Token;
+        }
+
+        if (readers.Network.Availability is NetworkAvailability.Available)
+            OnTick(token);
+    }
 
     private void OnTick(CancellationToken token)
     {
@@ -112,8 +131,17 @@ internal sealed class SyncScheduler(SyncSchedulerReaders readers, IStaggerPolicy
         while (Volatile.Read(ref recheck) == 1 && Interlocked.CompareExchange(ref checking, 1, 0) == 0);
     }
 
-    private Task<Unit> CheckAsync(CancellationToken token) =>
-        readers.Settings.GetAsync(token).MatchAsync(schedule => ApplyAsync(schedule, token), _ => Task.FromResult(Warn("The sync schedule could not be read, so no scheduled passes were started.")));
+    private Task<Unit> CheckAsync(CancellationToken token)
+    {
+        if (readers.Network.Availability is NetworkAvailability.Unavailable)
+            return Task.FromResult(WaitForNetwork());
+
+        _ = Interlocked.Exchange(ref offlineLogged, 0);
+
+        return readers.Settings.GetAsync(token).MatchAsync(schedule => ApplyAsync(schedule, token), _ => Task.FromResult(Warn("The sync schedule could not be read, so no scheduled passes were started.")));
+    }
+
+    private Unit WaitForNetwork() => Interlocked.Exchange(ref offlineLogged, 1) == 0 ? Info("Scheduled syncs are waiting: the operating system reports no network. They run when it returns.") : Unit.Instance;
 
     private Task<Unit> ApplyAsync(SyncSchedule schedule, CancellationToken token)
     {
