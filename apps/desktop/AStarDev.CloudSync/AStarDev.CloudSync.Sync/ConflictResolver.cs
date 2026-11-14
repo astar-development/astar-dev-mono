@@ -71,7 +71,7 @@ internal sealed class ConflictResolver(IAccountSyncLock syncLock, ISyncAttention
 
     private async Task<int> ApplyAsync(AccountId accountId, SyncAttentionItem.Conflict chosen, IReadOnlyList<SyncAttentionItem.Conflict> members, ResolutionPlan plan, ConflictStrategy strategy, Tally tally, CancellationToken cancellationToken)
     {
-        var done = await Try.RunAsync(() => steps.RunAsync(accountId, chosen.Path, plan, cancellationToken), cancellationToken)
+        var done = await Try.RunAsync(() => steps.RunAsync(accountId, chosen, plan, cancellationToken), cancellationToken)
             .MatchAsync(result => result, _ => Result.Failure<Unit, ResolutionFailure>(ResolutionFailureFactory.CreateUnexpected())).ConfigureAwait(false);
 
         return await done.MatchAsync(_ => CloseAllAsync(members, ResolutionOf(strategy), tally, cancellationToken), failure => Task.FromResult(Fail(members, failure, tally))).ConfigureAwait(false);

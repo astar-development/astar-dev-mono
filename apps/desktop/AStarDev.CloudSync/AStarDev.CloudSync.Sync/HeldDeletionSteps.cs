@@ -81,6 +81,8 @@ internal sealed class HeldDeletionSteps(ResolutionTransfers transfers, ILocalFil
                 items.Add(UploadPlanItemFactory.CreateUploadNewFile(path, file.Length, new DateTimeOffset(file.LastWriteTimeUtc, TimeSpan.Zero)));
             else if (ResolutionTransfers.LocalDirectory(context, path).Exists)
                 items.Add(UploadPlanItemFactory.CreateEnsureRemoteFolder(path));
+            else
+                return Task.FromResult(Failed(ResolutionFailureFactory.CreateLocalFileMissing()));
         }
 
         return transfers.RunAsync(context, items, cancellationToken);
@@ -97,7 +99,7 @@ internal sealed class HeldDeletionSteps(ResolutionTransfers transfers, ILocalFil
         return ResolutionTransfers.RemoteItem(context, path).Match(
             remote => remote.Kind is RemoteItemKind.Folder
                 ? files.CreateFolderAsync(ResolutionTransfers.LocalDirectory(context, path), cancellationToken).MatchAsync(_ => Done(), failure => Failed(ResolutionFailureFactory.CreateLocal(failure)))
-                : transfers.DownloadAsync(context, path, cancellationToken),
+                : transfers.DownloadAsync(context, path, Option.None<ContentTag>(), cancellationToken),
             () => Task.FromResult(Failed(ResolutionFailureFactory.CreateRemoteFileMissing())));
     }
 }

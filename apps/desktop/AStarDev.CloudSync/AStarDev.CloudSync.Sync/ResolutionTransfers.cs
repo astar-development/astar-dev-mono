@@ -38,19 +38,17 @@ internal sealed class ResolutionTransfers(UploadPassProviders providers, UploadP
             .BindAsync(resolved => inputs.LoadForPathsAsync(accountId, paths, cancellationToken).BindAsync(input => Task.FromResult(Result.Success<ResolutionContext, UploadPassFailure>(new ResolutionContext(accountId, input, resolved)))))
             .MatchAsync(Result.Success<ResolutionContext, ResolutionFailure>, failure => Result.Failure<ResolutionContext, ResolutionFailure>(FailureOf(failure)));
 
-    internal Task<Result<Unit, ResolutionFailure>> ReplaceAsync(ResolutionContext context, RelativeSyncPath path, CancellationToken cancellationToken)
+    internal Task<Result<Unit, ResolutionFailure>> ReplaceAsync(ResolutionContext context, RelativeSyncPath path, Option<ContentTag> seen, CancellationToken cancellationToken)
     {
         var file = LocalFile(context, path);
         if (!file.Exists)
             return Task.FromResult(Failed(ResolutionFailureFactory.CreateLocalFileMissing()));
 
-        return RemoteItem(context, path).Match(
-            remote => remote.Kind is RemoteItemKind.File current
-                ? UploadPreconditionFactory.CreateMustMatch(current.CTag).Match(
-                    precondition => RunAsync(context, [UploadPlanItemFactory.CreateUploadReplace(path, remote.Id, file.Length, WrittenAt(file), precondition)], cancellationToken),
-                    _ => Task.FromResult(Failed(ResolutionFailureFactory.CreateUnexpected())))
-                : Task.FromResult(Failed(ResolutionFailureFactory.CreateRemoteFileMissing())),
-            () => Task.FromResult(Failed(ResolutionFailureFactory.CreateRemoteFileMissing())));
+        return CheckedFile(context, path, seen).Match(
+            found => UploadPreconditionFactory.CreateMustMatch(found.File.CTag).Match(
+                precondition => RunAsync(context, [UploadPlanItemFactory.CreateUploadReplace(path, found.Item.Id, file.Length, WrittenAt(file), precondition)], cancellationToken),
+                _ => Task.FromResult(Failed(ResolutionFailureFactory.CreateUnexpected()))),
+            failure => Task.FromResult(Failed(failure)));
     }
 
     internal Task<Result<Unit, ResolutionFailure>> UploadNewAsync(ResolutionContext context, RelativeSyncPath path, CancellationToken cancellationToken)
@@ -62,26 +60,32 @@ internal sealed class ResolutionTransfers(UploadPassProviders providers, UploadP
             : Task.FromResult(Failed(ResolutionFailureFactory.CreateLocalFileMissing()));
     }
 
-    internal Task<Result<Unit, ResolutionFailure>> RemoveRemoteAsync(ResolutionContext context, RelativeSyncPath path, CancellationToken cancellationToken) =>
-        RemoteItem(context, path).Match(
-            remote => remote.Kind is RemoteItemKind.File current
-                ? RemovePreconditionFactory.CreateMustMatchContent(current.CTag).Match(
-                    precondition => RunAsync(context, [UploadPlanItemFactory.CreateRemoveRemote(path, remote.Id, precondition)], cancellationToken),
-                    _ => Task.FromResult(Failed(ResolutionFailureFactory.CreateUnexpected())))
-                : Task.FromResult(Failed(ResolutionFailureFactory.CreateRemoteFileMissing())),
-            () => Task.FromResult(Failed(ResolutionFailureFactory.CreateRemoteFileMissing())));
+    internal Task<Result<Unit, ResolutionFailure>> RemoveRemoteAsync(ResolutionContext context, RelativeSyncPath path, Option<ContentTag> seen, CancellationToken cancellationToken) =>
+        CheckedFile(context, path, seen).Match(
+            found => RemovePreconditionFactory.CreateMustMatchContent(found.File.CTag).Match(
+                precondition => RunAsync(context, [UploadPlanItemFactory.CreateRemoveRemote(path, found.Item.Id, precondition)], cancellationToken),
+                _ => Task.FromResult(Failed(ResolutionFailureFactory.CreateUnexpected()))),
+            failure => Task.FromResult(Failed(failure)));
 
     internal async Task<Result<Unit, ResolutionFailure>> RunAsync(ResolutionContext context, IReadOnlyList<UploadPlanItem> items, CancellationToken cancellationToken) =>
         await uploads.ExecuteAsync(context.AccountId, UploadPlanFactory.Create(items), context.Input, context.Providers, cancellationToken)
             .MatchAsync(Settled, failure => Failed(FailureOf(failure)))
             .ConfigureAwait(false);
 
-    internal Task<Result<Unit, ResolutionFailure>> DownloadAsync(ResolutionContext context, RelativeSyncPath path, CancellationToken cancellationToken) =>
+    internal Task<Result<Unit, ResolutionFailure>> DownloadAsync(ResolutionContext context, RelativeSyncPath path, Option<ContentTag> seen, CancellationToken cancellationToken) =>
+        CheckedFile(context, path, seen).Match(
+            found => DownloadFileAsync(context, path, found.Item, found.File, cancellationToken),
+            failure => Task.FromResult(Failed(failure)));
+
+    private static Result<(RemoteItemSnapshot Item, RemoteItemKind.File File), ResolutionFailure> CheckedFile(ResolutionContext context, RelativeSyncPath path, Option<ContentTag> seen) =>
         RemoteItem(context, path).Match(
-            remote => remote.Kind is RemoteItemKind.File current
-                ? DownloadFileAsync(context, path, remote, current, cancellationToken)
-                : Task.FromResult(Failed(ResolutionFailureFactory.CreateRemoteFileMissing())),
-            () => Task.FromResult(Failed(ResolutionFailureFactory.CreateRemoteFileMissing())));
+            item => item.Kind is RemoteItemKind.File file ? Seen(item, file, seen) : Result.Failure<(RemoteItemSnapshot, RemoteItemKind.File), ResolutionFailure>(ResolutionFailureFactory.CreateRemoteFileMissing()),
+            () => Result.Failure<(RemoteItemSnapshot, RemoteItemKind.File), ResolutionFailure>(ResolutionFailureFactory.CreateRemoteFileMissing()));
+
+    private static Result<(RemoteItemSnapshot Item, RemoteItemKind.File File), ResolutionFailure> Seen(RemoteItemSnapshot item, RemoteItemKind.File file, Option<ContentTag> seen) =>
+        seen.Match(tag => tag != file.CTag, () => false)
+            ? Result.Failure<(RemoteItemSnapshot, RemoteItemKind.File), ResolutionFailure>(ResolutionFailureFactory.CreateRemoteChanged())
+            : Result.Success<(RemoteItemSnapshot, RemoteItemKind.File), ResolutionFailure>((item, file));
 
     private static Result<Unit, ResolutionFailure> Done() => Result.Success<Unit, ResolutionFailure>(Unit.Instance);
 
