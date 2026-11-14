@@ -316,11 +316,21 @@ public class GivenAConflictList
     {
         var fixture = new Fixture();
         fixture.Reader.Add(Photos.Id, AttentionItems.CreateConflict(Photos.Id, "a.jpg"));
-        fixture.Resolver.Outcome = (_, _, _, _) => throw new OperationCanceledException();
+        var started = new TaskCompletionSource();
+        fixture.Resolver.Outcome = async (_, _, _, cancellationToken) =>
+        {
+            started.SetResult();
+            await Task.Delay(Timeout.Infinite, cancellationToken);
+
+            return Result.Success<ResolutionSummary, ErrorResponse>(ResolutionSummaryFactory.Create(0, [], 0));
+        };
         await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
 
         var item = fixture.List.Groups.Single().Items.Single();
-        _ = await Task.WhenAny(item.Options[0].Command.ExecuteAsync(null));
+        var running = item.Options[0].Command.ExecuteAsync(null);
+        await started.Task;
+        item.Options[0].Command.Cancel();
+        _ = await Task.WhenAny(running);
 
         item.HasError.ShouldBeFalse();
         item.IsBusy.ShouldBeFalse();
@@ -450,9 +460,11 @@ public class GivenAConflictList
     public async Task when_the_load_is_cancelled_then_the_cancellation_is_not_swallowed()
     {
         var fixture = new Fixture();
-        fixture.Reader.Throws = _ => new OperationCanceledException();
+        using var cancellation = new CancellationTokenSource();
+        fixture.Reader.Throws = _ => new OperationCanceledException(cancellation.Token);
+        await cancellation.CancelAsync();
 
-        await Should.ThrowAsync<OperationCanceledException>(() => fixture.List.LoadAsync(TestContext.Current.CancellationToken));
+        await Should.ThrowAsync<OperationCanceledException>(() => fixture.List.LoadAsync(cancellation.Token));
     }
 
     [Fact]
