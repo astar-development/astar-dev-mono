@@ -36,7 +36,7 @@ internal sealed class LocalTrash(TimeProvider timeProvider, LocalTrashOptions op
 
     internal int Purge(IDirectoryInfo root) => Try.Run(() => PurgeExpired(root)).Match(count => count, _ => 0);
 
-    private static string FirstSegment(string relative, IPath path) => relative.Split(path.DirectorySeparatorChar, path.AltDirectorySeparatorChar)[0];
+    private static string FirstSegment(string relative, IPath path) => relative.Split([path.DirectorySeparatorChar, path.AltDirectorySeparatorChar])[0];
 
     private static bool DeleteQuietly(IDirectoryInfo entry) => Try.Run(() =>
     {
@@ -56,6 +56,8 @@ internal sealed class LocalTrash(TimeProvider timeProvider, LocalTrashOptions op
 
         var cutoff = timeProvider.GetUtcNow() - options.Retention;
 
-        return trash.EnumerateDirectories().Where(entry => IsOlderThan(entry.Name, cutoff)).ToList().Count(DeleteQuietly);
+        IDirectoryInfo[] expired = [.. trash.EnumerateDirectories().Where(entry => IsOlderThan(entry.Name, cutoff))];
+
+        return expired.Count(DeleteQuietly);
     }
 }
