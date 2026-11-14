@@ -1,6 +1,8 @@
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Sync;
 using AStarDev.FunctionalParadigm;
+using AStarDev.LoggingExtensions;
+using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync.Overview;
 
@@ -8,13 +10,25 @@ namespace AStarDev.CloudSync.Overview;
 /// <param name="database">Is migrated before the accounts are read, so a failed migration shows as a failed overview.</param>
 /// <param name="accountStore">Reads the saved accounts.</param>
 /// <param name="readers">The readers for sign-in states, pairs, runs, pauses, baseline counts and activity.</param>
-internal sealed class AccountStoreSyncOverviewSource(ICloudSyncDatabase database, IAccountStore accountStore, SyncOverviewReaders readers) : ISyncOverviewSource
+/// <param name="logger">Reports an activity feed that could not be read, without details.</param>
+internal sealed class AccountStoreSyncOverviewSource(ICloudSyncDatabase database, IAccountStore accountStore, SyncOverviewReaders readers, ILogger<AccountStoreSyncOverviewSource> logger) : ISyncOverviewSource
 {
     /// <inheritdoc />
     public Task<Result<SyncOverview, ErrorResponse>> GetOverviewAsync(CancellationToken cancellationToken) =>
         database.MigrateAsync(cancellationToken)
             .BindAsync(_ => accountStore.GetAllAsync(cancellationToken))
-            .BindAsync(accounts => readers.Paused.GetPausedAsync(cancellationToken).BindAsync(paused => readers.Activity.GetRecentAsync(Option.None<AccountId>(), OverviewActivityLimit.EntryCount, cancellationToken).BindAsync(activity => BuildAsync(accounts, paused, activity, cancellationToken))));
+            .BindAsync(accounts => readers.Paused.GetPausedAsync(cancellationToken).BindAsync(paused => RecentActivityAsync(cancellationToken).BindAsync(activity => BuildAsync(accounts, paused, activity, cancellationToken))));
+
+    private Task<Result<IReadOnlyList<ActivityEntry>, ErrorResponse>> RecentActivityAsync(CancellationToken cancellationToken) =>
+        readers.Activity.GetRecentAsync(Option.None<AccountId>(), OverviewActivityLimit.EntryCount, cancellationToken)
+            .MatchAsync(Result.Success<IReadOnlyList<ActivityEntry>, ErrorResponse>, _ => EmptyFeed());
+
+    private Result<IReadOnlyList<ActivityEntry>, ErrorResponse> EmptyFeed()
+    {
+        LogMessage.Warning(logger, nameof(AccountStoreSyncOverviewSource), "The activity feed could not be read and is shown empty.");
+
+        return Result.Success<IReadOnlyList<ActivityEntry>, ErrorResponse>([]);
+    }
 
     private async Task<Result<SyncOverview, ErrorResponse>> BuildAsync(IReadOnlyList<StoredAccount> accounts, IReadOnlyList<AccountId> paused, IReadOnlyList<ActivityEntry> activity, CancellationToken cancellationToken)
     {

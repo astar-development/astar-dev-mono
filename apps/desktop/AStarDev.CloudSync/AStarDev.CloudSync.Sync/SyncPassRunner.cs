@@ -41,18 +41,19 @@ internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps st
     private async Task<Result<SyncPassSummary, SyncPassFailure>> RunHoldingAsync(SyncLease lease, AccountId accountId, SyncTrigger trigger, CancellationToken cancellationToken)
     {
         var started = timeProvider.GetTimestamp();
+        var tally = new SyncPassTally();
         RunningPass pass;
         Result<SyncPassSummary, SyncPassFailure> outcome;
         using (lease)
         {
             pass = registry.Begin(accountId, trigger, cancellationToken);
-            var running = StepsAsync(accountId, pass.Token);
+            var running = StepsAsync(accountId, tally, pass.Token);
             await ((Task)running).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
             outcome = running.IsCompletedSuccessfully ? await running.ConfigureAwait(false) : Abandoned(running);
             await RefreshQuotaAsync(accountId, outcome, pass.Token).ConfigureAwait(false);
+            await steps.Activity.RecordAsync(accountId, outcome, tally.Download).ConfigureAwait(false);
         }
 
-        await steps.Activity.RecordAsync(accountId, outcome).ConfigureAwait(false);
         registry.End(pass, outcome);
         LogEnd(trigger, outcome, timeProvider.GetElapsedTime(started));
 
@@ -95,12 +96,12 @@ internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps st
         LogMessage.Information(logger, Location, message);
     }
 
-    private Task<Result<SyncPassSummary, SyncPassFailure>> StepsAsync(AccountId accountId, CancellationToken cancellationToken) =>
+    private Task<Result<SyncPassSummary, SyncPassFailure>> StepsAsync(AccountId accountId, SyncPassTally tally, CancellationToken cancellationToken) =>
         TimedAsync(accountId, "remote index", SyncPhaseFactory.CreateUpdatingRemoteIndex(), () => UpdateIndexAsync(accountId, cancellationToken))
             .BindAsync(remote => TimedAsync(accountId, "local scan", SyncPhaseFactory.CreateScanningLocal(), () => ScanAsync(accountId, cancellationToken))
                 .BindAsync(changes => ClearAsync(accountId, changes, cancellationToken)
                     .BindAsync(_ => TimedAsync(accountId, "download", SyncPhaseFactory.CreateDownloading(), () => DownloadAsync(accountId, changes, cancellationToken)))
-                    .BindAsync(downloaded => RecordDownloadAsync(accountId, downloaded, cancellationToken))
+                    .BindAsync(downloaded => RecordDownloadAsync(accountId, tally, downloaded, cancellationToken))
                     .BindAsync(downloaded => TimedAsync(accountId, "upload", SyncPhaseFactory.CreateUploading(), () => UploadAsync(accountId, changes, cancellationToken))
                         .BindAsync(uploaded => RecordUploadAsync(accountId, uploaded, cancellationToken))
                         .MatchAsync(uploaded => Result.Success<SyncPassSummary, SyncPassFailure>(SyncPassSummaryFactory.Create(remote, changes, downloaded, uploaded)), Stopped<SyncPassSummary>))));
@@ -108,8 +109,12 @@ internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps st
     private Task<Result<Unit, SyncPassFailure>> ClearAsync(AccountId accountId, LocalChangeSet changes, CancellationToken cancellationToken) =>
         steps.Attention.ClearAsync(accountId, changes, cancellationToken).MatchAsync(Result.Success<Unit, SyncPassFailure>, _ => AttentionFailed<Unit>());
 
-    private Task<Result<DownloadPassSummary, SyncPassFailure>> RecordDownloadAsync(AccountId accountId, DownloadPassSummary downloaded, CancellationToken cancellationToken) =>
-        steps.Attention.RecordAsync(accountId, downloaded.Conflicts, downloaded.Held, cancellationToken).MatchAsync(_ => Result.Success<DownloadPassSummary, SyncPassFailure>(downloaded), _ => AttentionFailed<DownloadPassSummary>());
+    private Task<Result<DownloadPassSummary, SyncPassFailure>> RecordDownloadAsync(AccountId accountId, SyncPassTally tally, DownloadPassSummary downloaded, CancellationToken cancellationToken)
+    {
+        tally.Download = Option.Some(downloaded);
+
+        return steps.Attention.RecordAsync(accountId, downloaded.Conflicts, downloaded.Held, cancellationToken).MatchAsync(_ => Result.Success<DownloadPassSummary, SyncPassFailure>(downloaded), _ => AttentionFailed<DownloadPassSummary>());
+    }
 
     private Task<Result<UploadPassSummary, SyncPassFailure>> RecordUploadAsync(AccountId accountId, UploadPassSummary uploaded, CancellationToken cancellationToken) =>
         steps.Attention.RecordAsync(accountId, uploaded.Conflicts, [], cancellationToken).MatchAsync(_ => Result.Success<UploadPassSummary, SyncPassFailure>(uploaded), _ => AttentionFailed<UploadPassSummary>());
