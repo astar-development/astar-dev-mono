@@ -10,6 +10,8 @@ namespace AStarDev.CloudSync.ViewModels.Conflicts;
 /// <summary>One set of held deletions of the list: the pair, the direction, the count and the paths, with Confirm, Restore and Decide later.</summary>
 public sealed class HeldDeletionItemViewModel : LocalizedObservableObject
 {
+    private const string ActionNameKey = "Conflict.Action.AutomationName";
+
     private readonly SyncAttentionItem.HeldDeletions held;
     private readonly string accountName;
     private readonly string pairName;
@@ -53,7 +55,7 @@ public sealed class HeldDeletionItemViewModel : LocalizedObservableObject
     public string ToggleText => Localization.GetLocal(isExpanded ? "Held.Hide" : "Held.Show");
 
     /// <summary>The accessible name of the show or hide button.</summary>
-    public string ToggleAutomationName => Localization.GetLocal("Conflict.Action.AutomationName", ToggleText, HeaderText);
+    public string ToggleAutomationName => Localization.GetLocal(ActionNameKey, ToggleText, HeaderText);
 
     /// <summary>Shows or hides the paths.</summary>
     public IRelayCommand ToggleCommand { get; }
@@ -68,13 +70,13 @@ public sealed class HeldDeletionItemViewModel : LocalizedObservableObject
     public string LaterText => Localization.GetLocal("Held.Later");
 
     /// <summary>The accessible name of the Confirm button.</summary>
-    public string ConfirmAutomationName => Localization.GetLocal("Conflict.Action.AutomationName", ConfirmText, HeaderText);
+    public string ConfirmAutomationName => Localization.GetLocal(ActionNameKey, ConfirmText, HeaderText);
 
     /// <summary>The accessible name of the Restore button.</summary>
-    public string RestoreAutomationName => Localization.GetLocal("Conflict.Action.AutomationName", RestoreText, HeaderText);
+    public string RestoreAutomationName => Localization.GetLocal(ActionNameKey, RestoreText, HeaderText);
 
     /// <summary>The accessible name of the Decide later button.</summary>
-    public string LaterAutomationName => Localization.GetLocal("Conflict.Action.AutomationName", LaterText, HeaderText);
+    public string LaterAutomationName => Localization.GetLocal(ActionNameKey, LaterText, HeaderText);
 
     /// <summary>Runs the held deletions. It cannot run while the set is being settled.</summary>
     public IAsyncRelayCommand ConfirmCommand { get; }
