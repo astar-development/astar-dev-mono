@@ -91,6 +91,7 @@ public static class SyncServiceCollectionExtensions
             .AddSingleton<IStaggerPolicy, StaggerPolicy>()
             .AddSingleton(SyncSchedulerOptionsFactory.CreateDefault())
             .AddSingleton<INetworkMonitor, SystemNetworkMonitor>()
+            .AddSingleton<ISyncNotificationPolicy, SyncNotificationPolicy>()
             .AddSingleton<SyncSchedulerReaders>()
             .AddSingleton<ISyncScheduler, SyncScheduler>()
             .AddSingleton<IInterruptedSyncRecovery, InterruptedSyncRecovery>();
