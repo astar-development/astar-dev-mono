@@ -15,10 +15,12 @@ public sealed class DisplaySettingsViewModel : LocalizedObservableObject
     /// <param name="store">Loads and saves the preferences.</param>
     /// <param name="themeApplier">Applies the theme to the running application.</param>
     /// <param name="plaintextCacheConsent">The setting that withdraws a remembered consent to the plaintext token file.</param>
+    /// <param name="schedule">The automatic sync interval setting.</param>
     /// <param name="localization">Supplies the text.</param>
-    public DisplaySettingsViewModel(IDisplayPreferencesStore store, IThemeApplier themeApplier, PlaintextCacheConsentSettingsViewModel plaintextCacheConsent, ILocalizationService localization) : base(localization)
+    public DisplaySettingsViewModel(IDisplayPreferencesStore store, IThemeApplier themeApplier, PlaintextCacheConsentSettingsViewModel plaintextCacheConsent, SyncScheduleSettingsViewModel schedule, ILocalizationService localization) : base(localization)
     {
         PlaintextCacheConsent = plaintextCacheConsent;
+        Schedule = schedule;
         this.store = store;
         this.themeApplier = themeApplier;
         preferences = store.Load();
@@ -51,6 +53,9 @@ public sealed class DisplaySettingsViewModel : LocalizedObservableObject
 
     /// <summary>The setting that withdraws a remembered consent to the plaintext token file.</summary>
     public PlaintextCacheConsentSettingsViewModel PlaintextCacheConsent { get; }
+
+    /// <summary>The automatic sync interval setting.</summary>
+    public SyncScheduleSettingsViewModel Schedule { get; }
 
     /// <summary>The settings panel title and settings button name.</summary>
     public string Title => Localization.GetLocal("Settings.Title");

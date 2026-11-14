@@ -1,0 +1,10 @@
+AStarDev.CloudSync.Accounts.OneDrive.TestsUnit
+AStarDev.CloudSync.Accounts.Sqlite.TestsIntegration
+AStarDev.CloudSync.Accounts.TestsUnit
+AStarDev.CloudSync.DisplaySettings.TestsUnit
+AStarDev.CloudSync.Overview.TestsUnit
+AStarDev.CloudSync.Sync.OneDrive.TestsUnit
+AStarDev.CloudSync.Sync.Sqlite.TestsIntegration
+AStarDev.CloudSync.Sync.TestsUnit
+AStarDev.CloudSync.TestsUnit
+AStarDev.CloudSync.ViewModels.TestsUnit

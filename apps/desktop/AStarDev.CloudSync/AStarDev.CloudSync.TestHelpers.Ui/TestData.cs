@@ -53,7 +53,9 @@ public static class TestData
 
     public static DisplaySettingsViewModel CreateDisplaySettings() => CreateDisplaySettings(new FakePlaintextCacheConsentSettings());
 
-    public static DisplaySettingsViewModel CreateDisplaySettings(FakePlaintextCacheConsentSettings plaintextCacheConsent) => new(new InMemoryDisplayPreferencesStore(), new RecordingThemeApplier(), CreatePlaintextCacheConsentSettings(plaintextCacheConsent), CreateLocalization());
+    public static DisplaySettingsViewModel CreateDisplaySettings(FakePlaintextCacheConsentSettings plaintextCacheConsent) => new(new InMemoryDisplayPreferencesStore(), new RecordingThemeApplier(), CreatePlaintextCacheConsentSettings(plaintextCacheConsent), CreateSyncScheduleSettings(), CreateLocalization());
+
+    public static SyncScheduleSettingsViewModel CreateSyncScheduleSettings() => new(new FakeSyncScheduleSettings(), CreateLocalization());
 
     public static PlaintextCacheConsentSettingsViewModel CreatePlaintextCacheConsentSettings() => CreatePlaintextCacheConsentSettings(new FakePlaintextCacheConsentSettings());
 

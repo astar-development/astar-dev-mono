@@ -226,6 +226,16 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
+    public void when_application_services_are_added_then_the_scheduler_and_the_interval_setting_resolve_and_the_setting_is_the_one_in_the_display_settings()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<ISyncScheduler>().ShouldBeSameAs(provider.GetRequiredService<ISyncScheduler>());
+        provider.GetRequiredService<AStarDev.CloudSync.ViewModels.DisplaySettings.DisplaySettingsViewModel>().Schedule.ShouldBeSameAs(provider.GetRequiredService<AStarDev.CloudSync.ViewModels.DisplaySettings.SyncScheduleSettingsViewModel>());
+        provider.GetRequiredService<ISyncScheduleSettings>().ShouldNotBeNull();
+    }
+
+    [Fact]
     public void when_application_services_are_added_then_the_placeholder_sync_actions_are_registered()
     {
         var services = CreateServices();
