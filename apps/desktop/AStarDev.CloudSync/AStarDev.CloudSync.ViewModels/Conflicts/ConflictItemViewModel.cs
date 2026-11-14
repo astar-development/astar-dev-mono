@@ -76,7 +76,7 @@ public sealed class ConflictItemViewModel : LocalizedObservableObject
     }
 
     /// <summary>The accessible name of the tick box, which names the file.</summary>
-    public string SelectAutomationName => throw new NotImplementedException($"{PathText}");
+    public string SelectAutomationName => Localization.GetLocal("Conflict.Select.AutomationName", PathText);
 
     /// <summary>The text shown for a skipped conflict.</summary>
     public string SkippedText => Localization.GetLocal("Conflict.Skipped");

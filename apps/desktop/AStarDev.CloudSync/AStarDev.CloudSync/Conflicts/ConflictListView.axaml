@@ -65,6 +65,99 @@
                     <TextBlock Text="{Binding EmptyText}"
                                TextWrapping="Wrap"
                                IsVisible="{Binding IsEmpty}" />
+                    <StackPanel Spacing="8" IsVisible="{Binding HasHeld}">
+                        <TextBlock Text="{Binding HeldTitleText}" FontWeight="SemiBold" />
+                        <ItemsControl ItemsSource="{Binding HeldDeletions}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Spacing="8" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vmConflicts:HeldDeletionItemViewModel">
+                                    <Border Classes="conflict-card">
+                                        <StackPanel Spacing="8">
+                                            <StackPanel Spacing="2">
+                                                <TextBlock Text="{Binding HeaderText}" FontWeight="Medium" TextWrapping="Wrap" />
+                                                <TextBlock Classes="muted" Text="{Binding SummaryText}" TextWrapping="Wrap" />
+                                            </StackPanel>
+                                            <WrapPanel ItemSpacing="6" LineSpacing="6">
+                                                <Button Content="{Binding ConfirmText}"
+                                                        Command="{Binding ConfirmCommand}"
+                                                        AutomationProperties.Name="{Binding ConfirmAutomationName}" />
+                                                <Button Content="{Binding RestoreText}"
+                                                        Command="{Binding RestoreCommand}"
+                                                        AutomationProperties.Name="{Binding RestoreAutomationName}" />
+                                                <Button Content="{Binding LaterText}"
+                                                        Command="{Binding LaterCommand}"
+                                                        AutomationProperties.Name="{Binding LaterAutomationName}" />
+                                                <Button Classes="secondary"
+                                                        Content="{Binding ToggleText}"
+                                                        Command="{Binding ToggleCommand}"
+                                                        AutomationProperties.Name="{Binding ToggleAutomationName}" />
+                                            </WrapPanel>
+                                            <ItemsControl ItemsSource="{Binding PathTexts}" IsVisible="{Binding IsExpanded}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="x:String">
+                                                        <TextBlock Classes="muted" Text="{Binding}" TextWrapping="Wrap" />
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                            <TextBlock Classes="muted"
+                                                       Text="{Binding DeferredText}"
+                                                       TextWrapping="Wrap"
+                                                       IsVisible="{Binding IsDeferred}" />
+                                            <TextBlock Text="{Binding ErrorText}"
+                                                       TextWrapping="Wrap"
+                                                       FontWeight="Medium"
+                                                       Foreground="{DynamicResource CloudSyncWarnBrush}"
+                                                       IsVisible="{Binding HasError}" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                    <StackPanel Spacing="8" IsVisible="{Binding HasConflicts}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button Classes="secondary"
+                                    Content="{Binding SelectAllText}"
+                                    Command="{Binding SelectAllCommand}"
+                                    AutomationProperties.Name="{Binding SelectAllText}" />
+                            <Button Classes="secondary"
+                                    Content="{Binding ClearSelectionText}"
+                                    Command="{Binding ClearSelectionCommand}"
+                                    AutomationProperties.Name="{Binding ClearSelectionText}" />
+                            <TextBlock Classes="muted" Text="{Binding SelectedText}" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Classes="muted" Text="{Binding BulkLabelText}" VerticalAlignment="Center" />
+                            <ItemsControl ItemsSource="{Binding BulkOptions}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="6" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="vmConflicts:ConflictBulkOptionViewModel">
+                                        <Button Content="{Binding Text}"
+                                                Command="{Binding Command}"
+                                                AutomationProperties.Name="{Binding AutomationName}" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                        <Button Content="{Binding DefaultText}"
+                                Command="{Binding DefaultCommand}"
+                                AutomationProperties.Name="{Binding DefaultAutomationName}"
+                                HorizontalAlignment="Left"
+                                IsVisible="{Binding HasDefault}" />
+                        <TextBlock Text="{Binding BulkErrorText}"
+                                   TextWrapping="Wrap"
+                                   FontWeight="Medium"
+                                   Foreground="{DynamicResource CloudSyncWarnBrush}"
+                                   IsVisible="{Binding BulkErrorText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                    </StackPanel>
                     <ItemsControl ItemsSource="{Binding Groups}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>

@@ -213,12 +213,21 @@ public class GivenHeldDeletionsInTheConflictList
         await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
         var held = fixture.List.HeldDeletions.Single();
 
-        var attempts = Enumerable.Range(0, 20).Select(_ => Task.Run(() => held.ConfirmCommand.ExecuteAsync(null), TestContext.Current.CancellationToken)).ToList();
-        await Task.Delay(100, TestContext.Current.CancellationToken);
+        var first = held.ConfirmCommand.ExecuteAsync(null);
+        await Task.WhenAll(Enumerable.Range(0, 20).Select(_ => Task.Run(() => TryRun(held), TestContext.Current.CancellationToken)));
         release.SetResult();
-        await Task.WhenAll(attempts);
+        await first;
 
         fixture.Decider.Calls.Count.ShouldBe(1);
+    }
+
+    private static void TryRun(HeldDeletionItemViewModel held)
+    {
+        if (held.ConfirmCommand.CanExecute(null))
+            held.ConfirmCommand.Execute(null);
+
+        if (held.RestoreCommand.CanExecute(null))
+            held.RestoreCommand.Execute(null);
     }
 
     [Fact]

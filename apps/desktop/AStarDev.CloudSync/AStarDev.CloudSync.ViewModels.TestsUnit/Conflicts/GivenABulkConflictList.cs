@@ -249,10 +249,22 @@ public class GivenABulkConflictList
         await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
         fixture.List.SelectAllCommand.Execute(null);
 
-        var first = Task.Run(() => fixture.List.BulkOptions[0].Command.ExecuteAsync(null), TestContext.Current.CancellationToken);
-        await Task.WhenAll(Enumerable.Range(0, 20).Select(_ => Task.Run(() => fixture.List.BulkOptions[0].Command.ExecuteAsync(null), TestContext.Current.CancellationToken)).Append(Task.Run(release.SetResult, TestContext.Current.CancellationToken)).Append(first));
+        var first = fixture.List.BulkOptions[0].Command.ExecuteAsync(null);
+        await Task.Run(async () =>
+        {
+            await Task.Yield();
+            await Task.WhenAll(Enumerable.Range(0, 20).Select(_ => Task.Run(() => TryRun(fixture.List.BulkOptions.Select(option => option.Command).Append(fixture.List.DefaultCommand)), TestContext.Current.CancellationToken)));
+        }, TestContext.Current.CancellationToken);
+        release.SetResult();
+        await first;
 
         fixture.Resolver.Calls.Count.ShouldBe(1);
+    }
+
+    private static void TryRun(IEnumerable<CommunityToolkit.Mvvm.Input.IAsyncRelayCommand> commands)
+    {
+        foreach (var command in commands.Where(command => command.CanExecute(null)))
+            command.Execute(null);
     }
 
     [Fact]

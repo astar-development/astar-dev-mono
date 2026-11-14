@@ -17,10 +17,10 @@ public sealed class ConflictBulkOptionViewModel : LocalizedObservableObject
     public ConflictStrategy Strategy { get; }
 
     /// <summary>The button text.</summary>
-    public string Text => throw new NotImplementedException($"{Strategy}");
+    public string Text => Localization.GetLocal(ConflictTexts.StrategyKey(Strategy));
 
     /// <summary>The accessible name.</summary>
-    public string AutomationName => throw new NotImplementedException($"{Strategy}");
+    public string AutomationName => Localization.GetLocal("Conflict.Bulk.AutomationName", Text);
 
     /// <summary>Applies the strategy to the ticked conflicts.</summary>
     public IAsyncRelayCommand Command { get; }
