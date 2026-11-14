@@ -109,4 +109,171 @@ public sealed class GivenADownloadPassForFirstSyncLinks
 
         (second.Downloaded, second.SentToConflicts, second.LinkedExisting).ShouldBe((0, 0, 0));
     }
+
+    private const string EmptyQuickXorHash = "AAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+
+    private static byte[] Pattern(int length) => [.. Enumerable.Range(0, length).Select(index => (byte)((index * 31 + 7) % 251))];
+
+    private static string LockedPath => "/sync/root/Docs/a.txt";
+
+    [Theory]
+    [InlineData(81919, "byNif6NoVt6rhiKRiw8FumiqYVA=")]
+    [InlineData(81920, "byNif6NoVt6rhiKRdHAFumiqQUA=")]
+    [InlineData(81921, "zyNif6NoVt6rhiKRdXAFumiqQUA=")]
+    [InlineData(163840, "+nhA2wRcIFY4lNWKQcuAHcsLaCs=")]
+    [InlineData(200000, "0lppLlE1sn/syuQ/kvKFqzJQT90=")]
+    public async Task when_a_file_crosses_the_read_buffer_boundary_and_matches_the_cloud_hash_then_it_is_linked(int length, string cloudHash)
+    {
+        using var fixture = await CreateAsync(CancellationToken);
+        fixture.Docs();
+        _ = fixture.Write("Docs/big.bin", string.Empty);
+        fixture.FileSystem.File.WriteAllBytes("/sync/root/Docs/big.bin", Pattern(length));
+        fixture.Remote.File("Docs/big.bin", "a", "c1", length, cloudHash);
+
+        var summary = Summary(await fixture.RunAsync(Changes(AddedFile("Docs/big.bin", length)), CancellationToken));
+
+        (summary.LinkedExisting, summary.SentToConflicts).ShouldBe((1, 0));
+    }
+
+    [Fact]
+    public async Task when_both_sides_added_an_empty_file_then_it_is_linked()
+    {
+        using var fixture = await CreateAsync(CancellationToken);
+        fixture.Docs();
+        _ = fixture.Write("Docs/empty.txt", string.Empty);
+        fixture.Remote.File("Docs/empty.txt", "a", "c1", 0, EmptyQuickXorHash);
+
+        var summary = Summary(await fixture.RunAsync(Changes(AddedFile("Docs/empty.txt", 0)), CancellationToken));
+
+        (summary.LinkedExisting, summary.SentToConflicts).ShouldBe((1, 0));
+        fixture.Baseline.Has("Docs/empty.txt").ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task when_the_local_file_cannot_be_read_then_the_item_fails_and_no_conflict_is_recorded()
+    {
+        using var fixture = await CreateAsync(CancellationToken);
+        fixture.Docs();
+        _ = fixture.Write("Docs/a.txt", "hello");
+        fixture.Remote.File("Docs/a.txt", "a", "c1", 5, HelloQuickXorHash);
+        using var handle = fixture.FileSystem.File.Open(LockedPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+
+        var summary = Summary(await fixture.RunAsync(Changes(AddedFile("Docs/a.txt", 5)), CancellationToken));
+
+        summary.Outcomes.ShouldHaveSingleItem().ShouldBeOfType<DownloadItemOutcome.Failed>().Failure.ShouldBeOfType<DownloadFailure.Local>().Failure.ShouldBeOfType<LocalOperationFailure.Locked>();
+        (summary.SentToConflicts, summary.LinkedExisting, summary.Conflicts.Count).ShouldBe((0, 0, 0));
+        fixture.Baseline.Has("Docs/a.txt").ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task when_the_local_file_was_unreadable_and_is_readable_on_the_next_pass_then_it_is_linked()
+    {
+        using var fixture = await CreateAsync(CancellationToken);
+        fixture.Docs();
+        _ = fixture.Write("Docs/a.txt", "hello");
+        fixture.Remote.File("Docs/a.txt", "a", "c1", 5, HelloQuickXorHash);
+        var handle = fixture.FileSystem.File.Open(LockedPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+        _ = await fixture.RunAsync(Changes(AddedFile("Docs/a.txt", 5)), CancellationToken);
+        handle.Dispose();
+
+        var second = Summary(await fixture.RunAsync(Changes(AddedFile("Docs/a.txt", 5)), CancellationToken));
+
+        (second.LinkedExisting, second.SentToConflicts, second.Failed).ShouldBe((1, 0, 0));
+    }
+
+    [Fact]
+    public async Task when_the_local_file_changed_size_since_the_scan_then_the_item_fails_as_target_changed_and_is_not_a_conflict()
+    {
+        using var fixture = await CreateAsync(CancellationToken);
+        fixture.Docs();
+        _ = fixture.Write("Docs/a.txt", "hello!");
+        fixture.Remote.File("Docs/a.txt", "a", "c1", 5, HelloQuickXorHash);
+
+        var summary = Summary(await fixture.RunAsync(Changes(AddedFile("Docs/a.txt", 5)), CancellationToken));
+
+        summary.Outcomes.ShouldHaveSingleItem().ShouldBeOfType<DownloadItemOutcome.Failed>().Failure.ShouldBeOfType<DownloadFailure.Local>().Failure.ShouldBeOfType<LocalOperationFailure.TargetChanged>();
+        fixture.Baseline.Has("Docs/a.txt").ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task when_the_run_is_cancelled_while_a_file_is_being_linked_then_the_cancel_propagates_and_nothing_is_linked_or_recorded()
+    {
+        using var fixture = await CreateAsync(CancellationToken);
+        fixture.Docs();
+        _ = fixture.Write("Docs/big.bin", string.Empty);
+        fixture.FileSystem.File.WriteAllBytes("/sync/root/Docs/big.bin", Pattern(200000));
+        fixture.Remote.File("Docs/big.bin", "a", "c1", 200000, "0lppLlE1sn/syuQ/kvKFqzJQT90=");
+        using var cancel = CancellationTokenSource.CreateLinkedTokenSource(CancellationToken);
+        fixture.Feed.ProgressChanged += (_, _) => cancel.Cancel();
+
+        var run = fixture.RunAsync(Changes(AddedFile("Docs/big.bin", 200000)), cancel.Token);
+
+        await Should.ThrowAsync<OperationCanceledException>(() => run);
+        fixture.Baseline.Has("Docs/big.bin").ShouldBeFalse();
+        fixture.Attention.Calls.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task when_a_file_is_linked_then_the_progress_reports_its_bytes_against_a_total_that_includes_it()
+    {
+        using var fixture = await CreateAsync(CancellationToken);
+        fixture.Docs();
+        _ = fixture.Write("Docs/a.txt", "hello");
+        fixture.Remote.File("Docs/a.txt", "a", "c1", 5, HelloQuickXorHash);
+        List<SyncProgress> seen = [];
+        fixture.Feed.ProgressChanged += (_, args) => seen.Add(args.Progress);
+
+        _ = await fixture.RunAsync(Changes(AddedFile("Docs/a.txt", 5)), CancellationToken);
+
+        seen.ShouldContain(progress => progress.BytesDone == 5 && progress.BytesTotal == 5);
+    }
+
+    [Fact]
+    public async Task when_the_baseline_cannot_be_written_with_a_link_in_the_batch_then_the_pass_stops_unexpected_and_the_link_is_not_stored()
+    {
+        using var fixture = await CreateAsync(CancellationToken);
+        fixture.Docs();
+        _ = fixture.Write("Docs/secret-a.txt", "hello");
+        fixture.Remote.File("Docs/secret-a.txt", "a", "c1", 5, HelloQuickXorHash);
+        fixture.Baseline.UpsertFails = true;
+
+        var result = await fixture.RunAsync(Changes(AddedFile("Docs/secret-a.txt", 5)), CancellationToken);
+
+        result.Match(_ => (object)"ran", failure => failure).ShouldBe(DownloadPassFailureFactory.CreateUnexpected());
+        fixture.Baseline.Has("Docs/secret-a.txt").ShouldBeFalse();
+        fixture.Logs.Logger.Messages.ShouldNotContain(message => message.Contains("secret-a", StringComparison.Ordinal) || message.Contains("/sync/root", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task when_the_cloud_path_differs_in_case_from_the_local_path_then_the_file_is_linked_under_the_local_path()
+    {
+        using var fixture = await CreateAsync(CancellationToken);
+        fixture.Docs();
+        _ = fixture.Write("Docs/A.txt", "hello");
+        fixture.Remote.File("docs/a.TXT", "a", "c1", 5, HelloQuickXorHash);
+
+        var summary = Summary(await fixture.RunAsync(Changes(AddedFile("Docs/A.txt", 5)), CancellationToken));
+
+        (summary.LinkedExisting, summary.SentToConflicts).ShouldBe((1, 0));
+        fixture.Baseline.Find("docs/a.txt").Path.Value.ShouldBe("Docs/A.txt");
+    }
+
+    [Fact]
+    public async Task when_twenty_files_both_sides_added_are_linked_in_one_pass_then_every_one_is_linked_and_stored_once()
+    {
+        using var fixture = await CreateAsync(CancellationToken, DownloadPassOptionsFactory.Create(4, 0, 3));
+        fixture.Docs();
+        List<LocalChange> added = [];
+        foreach (var index in Enumerable.Range(0, 20))
+        {
+            _ = fixture.Write($"Docs/f{index}.txt", "hello");
+            fixture.Remote.File($"Docs/f{index}.txt", $"id{index}", "c1", 5, HelloQuickXorHash);
+            added.Add(AddedFile($"Docs/f{index}.txt", 5));
+        }
+
+        var summary = Summary(await Task.Run(() => fixture.RunAsync(Changes([.. added]), CancellationToken), CancellationToken));
+
+        (summary.LinkedExisting, summary.SentToConflicts, summary.Failed).ShouldBe((20, 0, 0));
+        fixture.Baseline.All.Count(entry => entry.Kind is SyncBaselineKind.File).ShouldBe(20);
+    }
 }
