@@ -86,6 +86,19 @@ public sealed class GivenAnOneDriveQuotaRefresher : IDisposable
     }
 
     [Fact]
+    public async Task when_graph_returns_a_very_long_error_code_then_the_logged_code_is_capped()
+    {
+        var longCode = new string('x', 500) + "jane.doe@example.com";
+        graph.Respond = _ => GraphScript.Json(HttpStatusCode.InternalServerError, "{\"error\":{\"code\":\"" + longCode + "\",\"message\":\"m\"}}");
+        var account = await AddAccountAsync();
+
+        _ = await Refresher().RefreshAsync(account, CancellationToken);
+
+        logs.Logger.Messages.ShouldContain(message => message.Contains(new string('x', 64), StringComparison.Ordinal));
+        logs.Logger.Messages.ShouldAllBe(message => !message.Contains(new string('x', 65), StringComparison.Ordinal) && !message.Contains(Email, StringComparison.Ordinal));
+    }
+
+    [Fact]
     public async Task when_the_request_times_out_without_the_caller_cancelling_then_the_error_is_transient()
     {
         graph.Respond = _ => throw new TaskCanceledException("The request timed out.");

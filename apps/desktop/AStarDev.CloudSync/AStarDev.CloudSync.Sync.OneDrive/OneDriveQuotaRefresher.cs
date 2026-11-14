@@ -55,7 +55,7 @@ internal sealed class OneDriveQuotaRefresher(OneDriveGraphAccess graphAccess, Ti
     private Result<StorageUsage, ProviderError> Faulted(Exception exception)
     {
         var (error, statusCode, errorCode) = GraphErrorMapper.Map(exception, timeProvider);
-        OneDriveQuotaLog.ReadFailed(logger, statusCode, errorCode, exception.GetType().Name);
+        OneDriveQuotaLog.ReadFailed(logger, statusCode, OneDriveQuotaLog.Capped(errorCode), exception.GetType().Name);
 
         return Result.Failure<StorageUsage, ProviderError>(error);
     }

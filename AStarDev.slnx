@@ -5,9 +5,6 @@
         <Project Path="apps/desktop/AStarDev.Clock/AStarDev.Clock/AStarDev.Clock.csproj" />
         <Project Path="apps/desktop/AStarDev.ClockControls/AStarDev.ClockControls.TestsUnit/AStarDev.ClockControls.TestsUnit.csproj" />
         <Project Path="apps/desktop/AStarDev.ClockControls/AStarDev.ClockControls/AStarDev.ClockControls.csproj" />
-        <Project Path="apps/desktop/AStarDev.OneDriveSyncClient.TestsIntegration/AStarDev.OneDriveSyncClient.TestsIntegration.csproj" />
-        <Project Path="apps/desktop/AStarDev.OneDriveSyncClient.TestsUnit/AStarDev.OneDriveSyncClient.TestsUnit.csproj" />
-        <Project Path="apps/desktop/AStarDev.OneDriveSyncClient/AStarDev.OneDriveSyncClient.csproj" />
     </Folder>
     <Folder Name="/apps/desktop/AStarDev.Clock/" />
     <Folder Name="/apps/desktop/AStarDev.ClockControls/" />

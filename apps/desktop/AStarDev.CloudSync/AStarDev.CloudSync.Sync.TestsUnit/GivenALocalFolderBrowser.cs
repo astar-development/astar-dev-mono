@@ -199,6 +199,47 @@ public sealed class GivenALocalFolderBrowser
         await Should.ThrowAsync<OperationCanceledException>(listing);
     }
 
+    [Fact]
+    public async Task when_the_listing_hits_an_io_error_then_the_listing_is_unexpected()
+    {
+        Prepare("a");
+
+        var result = await Browser(new ThrowingFilter(new IOException())).GetChildFoldersAsync(Account, LocalRelativePathFactory.Root, CancellationToken);
+
+        result.Match(_ => false, error => error is LocalFolderError.Unexpected).ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task when_the_listing_hits_a_missing_directory_then_it_is_not_found()
+    {
+        Prepare("a");
+
+        var result = await Browser(new ThrowingFilter(new DirectoryNotFoundException())).GetChildFoldersAsync(Account, LocalRelativePathFactory.Root, CancellationToken);
+
+        result.Match(_ => (object)"listed", error => error).ShouldBe(LocalFolderErrorFactory.CreateNotFound());
+    }
+
+    [Fact]
+    public async Task when_the_listing_is_denied_then_access_is_denied()
+    {
+        Prepare("a");
+
+        var result = await Browser(new ThrowingFilter(new UnauthorizedAccessException())).GetChildFoldersAsync(Account, LocalRelativePathFactory.Root, CancellationToken);
+
+        result.Match(_ => (object)"listed", error => error).ShouldBe(LocalFolderErrorFactory.CreateAccessDenied());
+    }
+
+    [Fact]
+    public async Task when_a_child_folder_hits_an_io_error_then_it_is_still_listed_without_sub_folders_and_a_warning_is_logged()
+    {
+        Prepare("a/inner");
+
+        var result = await Browser(new ThrowingFilter(new IOException(), "inner")).GetChildFoldersAsync(Account, LocalRelativePathFactory.Root, CancellationToken);
+
+        result.Match(folders => folders.Select(folder => (folder.Name, folder.Children)), _ => []).ShouldBe([("a", LocalFolderChildrenFactory.CreateNoChildFolders())]);
+        logger.Entries.Count(entry => entry.Level == LogLevel.Warning).ShouldBe(1);
+    }
+
     private static List<string> Names(Result<IReadOnlyList<LocalFolder>, LocalFolderError> result) => [.. result.Match(folders => folders.Select(folder => folder.Name), _ => [])];
 
     private static LocalRelativePath Path(string value) => LocalRelativePathFactory.Create(value).Match(path => path, _ => throw new InvalidOperationException("The test path must be valid."));
@@ -248,6 +289,12 @@ public sealed class GivenALocalFolderBrowser
 
             return LocalFolderVisibilityFactory.CreateVisible();
         }
+    }
+
+    private sealed class ThrowingFilter(Exception failure, string? onlyForFolder = null) : ILocalFolderFilter
+    {
+        public LocalFolderVisibility ShouldSkip(IDirectoryInfo folder) =>
+            onlyForFolder is not null && !string.Equals(folder.Name, onlyForFolder, StringComparison.Ordinal) ? LocalFolderVisibilityFactory.CreateVisible() : throw failure;
     }
 
     private sealed class DeletingFilter(MockFileSystem fileSystem, string pathToDelete) : ILocalFolderFilter

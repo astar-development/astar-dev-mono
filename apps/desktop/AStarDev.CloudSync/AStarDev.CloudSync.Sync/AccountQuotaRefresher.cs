@@ -22,7 +22,14 @@ internal sealed class AccountQuotaRefresher(IProviderCapability<IQuotaRefresher>
 
     private Task<Result<StorageUsage, ProviderError>> SaveAsync(AccountId accountId, StorageUsage usage, CancellationToken cancellationToken) =>
         accountStore.UpdateStorageAsync(accountId, usage, cancellationToken)
-            .MatchAsync(_ => Result.Success<StorageUsage, ProviderError>(usage), _ => Result.Failure<StorageUsage, ProviderError>(ProviderErrorFactory.CreateTransient()));
+            .MatchAsync(_ => Result.Success<StorageUsage, ProviderError>(usage), _ => SaveFailed());
+
+    private Result<StorageUsage, ProviderError> SaveFailed()
+    {
+        LogMessage.Warning(logger, Location, "The refreshed storage usage could not be saved by the account store.");
+
+        return Result.Failure<StorageUsage, ProviderError>(ProviderErrorFactory.CreateTransient());
+    }
 
     private Result<StorageUsage, ProviderError> Failed(ProviderError error)
     {

@@ -1,5 +1,6 @@
 using System.IO.Abstractions;
 using System.Text.Json;
+using AStarDev.FunctionalParadigm;
 using AStarDev.LoggingExtensions;
 using Microsoft.Extensions.Logging;
 
@@ -14,35 +15,40 @@ internal sealed class JsonDisplayPreferencesStore(IFileInfo settingsFile, ILogge
     public DisplayPreferences Load()
     {
         settingsFile.Refresh();
-        if (!settingsFile.Exists)
-            return DisplayPreferencesFactory.CreateDefault();
 
-        try
-        {
-            var stored = JsonSerializer.Deserialize<StoredPreferences>(settingsFile.FileSystem.File.ReadAllText(settingsFile.FullName));
-
-            return DisplayPreferencesFactory.Create(MainLayoutFactory.FromKey(stored?.Layout), AppThemeFactory.FromKey(stored?.Theme));
-        }
-        catch (Exception exception) when (exception is JsonException or IOException or UnauthorizedAccessException)
-        {
-            DisplayPreferencesLog.PreferencesUnreadable(logger, exception.ErrorType());
-
-            return DisplayPreferencesFactory.CreateDefault();
-        }
+        return settingsFile.Exists ? Try.Run(Read).Match(preferences => preferences, Unreadable) : DisplayPreferencesFactory.CreateDefault();
     }
 
     /// <inheritdoc />
-    public void Save(DisplayPreferences preferences)
+    public void Save(DisplayPreferences preferences) => _ = Try.Run(() => Write(preferences)).Match(written => written, NotSaved);
+
+    private DisplayPreferences Read()
     {
-        try
-        {
-            settingsFile.Directory?.Create();
-            settingsFile.FileSystem.File.WriteAllText(settingsFile.FullName, JsonSerializer.Serialize(new StoredPreferences(preferences.Layout.ToKey(), preferences.Theme.ToKey())));
-        }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
-        {
-            DisplayPreferencesLog.PreferencesNotSaved(logger, exception.ErrorType());
-        }
+        var stored = JsonSerializer.Deserialize<StoredPreferences>(settingsFile.FileSystem.File.ReadAllText(settingsFile.FullName));
+
+        return DisplayPreferencesFactory.Create(MainLayoutFactory.FromKey(stored?.Layout), AppThemeFactory.FromKey(stored?.Theme));
+    }
+
+    private Unit Write(DisplayPreferences preferences)
+    {
+        settingsFile.Directory?.Create();
+        settingsFile.FileSystem.File.WriteAllText(settingsFile.FullName, JsonSerializer.Serialize(new StoredPreferences(preferences.Layout.ToKey(), preferences.Theme.ToKey())));
+
+        return Unit.Instance;
+    }
+
+    private DisplayPreferences Unreadable(Exception exception)
+    {
+        DisplayPreferencesLog.PreferencesUnreadable(logger, exception.ErrorType());
+
+        return DisplayPreferencesFactory.CreateDefault();
+    }
+
+    private Unit NotSaved(Exception exception)
+    {
+        DisplayPreferencesLog.PreferencesNotSaved(logger, exception.ErrorType());
+
+        return Unit.Instance;
     }
 
     private sealed record StoredPreferences(string Layout, string Theme);

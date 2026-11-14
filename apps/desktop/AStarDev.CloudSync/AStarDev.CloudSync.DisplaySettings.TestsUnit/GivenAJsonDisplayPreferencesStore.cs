@@ -9,6 +9,8 @@ namespace AStarDev.CloudSync.DisplaySettings.TestsUnit;
 public class GivenAJsonDisplayPreferencesStore
 {
     private const string SettingsPath = "/home/user/.config/AStarDev.CloudSync/display-preferences.json";
+    private const string WindowsFolder = "C:\\Users\\user\\AStarDev.CloudSync";
+    private const string WindowsSettingsPath = WindowsFolder + "\\display-preferences.json";
 
     [Fact]
     public void when_nothing_has_been_saved_then_the_defaults_are_loaded()
@@ -87,12 +89,59 @@ public class GivenAJsonDisplayPreferencesStore
         logger.ValuesOf("PreferencesUnreadable")["ErrorType"].ShouldBe(typeof(System.Text.Json.JsonException).FullName);
     }
 
+    [Fact]
+    public void when_the_saved_file_is_locked_then_the_defaults_are_loaded_and_the_warning_carries_the_io_error_type()
+    {
+        var fileSystem = new MockFileSystem();
+        fileSystem.Directory.CreateDirectory("/home/user/.config/AStarDev.CloudSync");
+        fileSystem.File.WriteAllText(SettingsPath, "{}");
+        var loggerProvider = new RecordingLoggerProvider();
+        using var lockedFile = fileSystem.File.Open(SettingsPath, FileMode.Open, FileAccess.Read, FileShare.None);
+
+        var preferences = CreateStore(fileSystem, loggerProvider).Load();
+
+        preferences.ShouldBe(DisplayPreferencesFactory.CreateDefault());
+        loggerProvider.Logger.ValuesOf("PreferencesUnreadable")["ErrorType"].ShouldBe(typeof(IOException).FullName);
+    }
+
+    [Fact]
+    public void when_the_saved_file_is_not_readable_then_the_defaults_are_loaded_and_the_warning_carries_the_access_error_type()
+    {
+        var fileSystem = new MockFileSystem(options => options.SimulatingOperatingSystem(SimulationMode.Windows));
+        fileSystem.Directory.CreateDirectory(WindowsFolder);
+        fileSystem.File.WriteAllText(WindowsSettingsPath, "{}");
+        fileSystem.WithAccessControlStrategy(new DenyAccess(WindowsSettingsPath));
+        var loggerProvider = new RecordingLoggerProvider();
+
+        var preferences = CreateStore(fileSystem, loggerProvider, WindowsSettingsPath).Load();
+
+        preferences.ShouldBe(DisplayPreferencesFactory.CreateDefault());
+        loggerProvider.Logger.ValuesOf("PreferencesUnreadable")["ErrorType"].ShouldBe(typeof(UnauthorizedAccessException).FullName);
+    }
+
+    [Fact]
+    public void when_the_save_hits_an_io_error_then_a_warning_names_the_io_error_type()
+    {
+        var fileSystem = new MockFileSystem();
+        _ = fileSystem.Intercept.Creating(FileSystemTypes.File, _ => throw new IOException());
+        var loggerProvider = new RecordingLoggerProvider();
+
+        CreateStore(fileSystem, loggerProvider).Save(DisplayPreferencesFactory.CreateDefault());
+
+        loggerProvider.Logger.ValuesOf("PreferencesNotSaved")["ErrorType"].ShouldBe(typeof(IOException).FullName);
+    }
+
     private static IDisplayPreferencesStore CreateStore(MockFileSystem fileSystem) => CreateStore(fileSystem, new RecordingLoggerProvider());
 
-    private static IDisplayPreferencesStore CreateStore(MockFileSystem fileSystem, RecordingLoggerProvider loggerProvider) =>
+    private static IDisplayPreferencesStore CreateStore(MockFileSystem fileSystem, RecordingLoggerProvider loggerProvider, string settingsPath = SettingsPath) =>
         new ServiceCollection()
             .AddLogging(logging => logging.ClearProviders().AddProvider(loggerProvider))
-            .AddDisplayPreferences(_ => fileSystem.FileInfo.New(SettingsPath))
+            .AddDisplayPreferences(_ => fileSystem.FileInfo.New(settingsPath))
             .BuildServiceProvider()
             .GetRequiredService<IDisplayPreferencesStore>();
+
+    private sealed class DenyAccess(string deniedPath) : Testably.Abstractions.Testing.FileSystem.IAccessControlStrategy
+    {
+        public bool IsAccessGranted(string fullPath, Testably.Abstractions.Helpers.IFileSystemExtensibility extensibility) => !string.Equals(fullPath, deniedPath, StringComparison.OrdinalIgnoreCase);
+    }
 }

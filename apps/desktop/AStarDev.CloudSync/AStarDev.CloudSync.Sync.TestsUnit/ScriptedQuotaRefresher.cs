@@ -23,11 +23,16 @@ public sealed class ScriptedQuotaRefresher : IQuotaRefresher, IAccountQuotaRefre
 
     public Option<TaskCompletionSource> Block { get; set; } = Option.None<TaskCompletionSource>();
 
+    public Option<(TaskCompletionSource Release, TaskCompletionSource<Exception?> LateFailure)> Ignoring { get; set; } = Option.None<(TaskCompletionSource, TaskCompletionSource<Exception?>)>();
+
     public Task<Result<StorageUsage, ProviderError>> RefreshAsync(AccountId accountId, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         lock (gate)
             calls.Add(accountId);
+
+        if (Ignoring.Match(ignoring => ignoring, () => default) is { Release: { } release, LateFailure: { } lateFailure })
+            return IgnoreAsync(release, lateFailure, cancellationToken);
 
         return Throws.Match(exception => throw exception, () => Block.Match(block => WaitAsync(block, cancellationToken), () => Task.FromResult(Outcome)));
     }
@@ -35,6 +40,15 @@ public sealed class ScriptedQuotaRefresher : IQuotaRefresher, IAccountQuotaRefre
     private async Task<Result<StorageUsage, ProviderError>> WaitAsync(TaskCompletionSource block, CancellationToken cancellationToken)
     {
         await block.Task.WaitAsync(cancellationToken);
+
+        return Outcome;
+    }
+
+    private async Task<Result<StorageUsage, ProviderError>> IgnoreAsync(TaskCompletionSource release, TaskCompletionSource<Exception?> lateFailure, CancellationToken cancellationToken)
+    {
+        await release.Task;
+        var failure = Try.Run(() => cancellationToken.WaitHandle);
+        lateFailure.SetResult(failure.Match(_ => (Exception?)null, exception => exception));
 
         return Outcome;
     }
