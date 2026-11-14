@@ -43,6 +43,7 @@ public partial class App : Application, IDisposable
             _ = services.GetRequiredService<SignInStateOverviewReloader>();
             _ = services.GetRequiredService<SyncScheduleSettingsViewModel>().LoadAsync(CancellationToken.None);
             _ = services.GetRequiredService<TrashRetentionSettingsViewModel>().LoadAsync(CancellationToken.None);
+            _ = Task.Run(() => services.GetRequiredService<IInterruptedSyncRecovery>().RecoverAsync(CancellationToken.None), CancellationToken.None);
             _ = services.GetRequiredService<ISyncScheduler>().StartAsync(CancellationToken.None);
             _ = services.GetRequiredService<SyncRunOverviewReloader>();
             _ = Task.Run(() => services.GetRequiredService<ISignInStateRefresher>().RefreshAllAsync(CancellationToken.None), CancellationToken.None);

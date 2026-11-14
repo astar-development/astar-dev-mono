@@ -1,4 +1,5 @@
 using AStarDev.CloudSync.Accounts;
+using AStarDev.CloudSync.TestHelpers.Accounts;
 using AStarDev.CloudSync.TestHelpers.Common;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -10,7 +11,10 @@ public sealed class SyncRunServices : IDisposable
 {
     private readonly ServiceProvider provider;
 
-    public SyncRunServices() =>
+    public SyncRunServices(InMemorySyncRunJournal? journal = null, InMemorySyncBaseline? baseline = null)
+    {
+        Journal = journal ?? new InMemorySyncRunJournal(Time);
+        Baseline = baseline ?? new InMemorySyncBaseline();
         provider = new ServiceCollection()
             .AddLogging(logging => logging.ClearProviders().AddProvider(Logs))
             .AddSingleton<TimeProvider>(Time)
@@ -21,6 +25,7 @@ public sealed class SyncRunServices : IDisposable
             .AddSingleton<ISyncBaselineReader>(Baseline)
             .AddSingleton<IRemoteIndexReader>(Remote)
             .AddSingleton<IActivityLogWriter>(ActivityLog)
+            .AddSingleton<ISyncRunJournal>(Journal)
             .AddCloudSync()
             .AddSingleton<IRemoteIndexUpdater>(Steps)
             .AddSingleton<ILocalChangeDetector>(Steps)
@@ -28,6 +33,7 @@ public sealed class SyncRunServices : IDisposable
             .AddSingleton<IUploadPass>(Steps)
             .AddSingleton<IAccountQuotaRefresher>(Quota)
             .BuildServiceProvider();
+    }
 
     public AccountId Personal { get; } = AccountIdFactory.Create(Guid.Parse("11111111-1111-1111-1111-111111111111"));
 
@@ -39,7 +45,9 @@ public sealed class SyncRunServices : IDisposable
 
     public RecordingAttentionWriter Attention { get; } = new();
 
-    public InMemorySyncBaseline Baseline { get; } = new();
+    public InMemorySyncBaseline Baseline { get; }
+
+    public InMemorySyncRunJournal Journal { get; }
 
     public ScriptedRemoteIndex Remote { get; } = new();
 
@@ -50,6 +58,8 @@ public sealed class SyncRunServices : IDisposable
     public FakeTimeProvider Time { get; } = new(new DateTimeOffset(2026, 11, 14, 9, 0, 0, TimeSpan.Zero));
 
     public RecordingLoggerProvider Logs { get; } = new();
+
+    public IInterruptedSyncRecovery Recovery => provider.GetRequiredService<IInterruptedSyncRecovery>();
 
     public ISyncPassRunner Runner => provider.GetRequiredService<ISyncPassRunner>();
 

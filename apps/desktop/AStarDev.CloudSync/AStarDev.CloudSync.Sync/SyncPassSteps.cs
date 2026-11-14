@@ -6,9 +6,8 @@ namespace AStarDev.CloudSync.Sync;
 /// <param name="download">Step 3: remote to local.</param>
 /// <param name="upload">Step 4: local to remote.</param>
 /// <param name="attention">Closes settled conflicts before the passes and records what they found.</param>
-/// <param name="quota">Refreshes the account's storage usage after the passes.</param>
-/// <param name="activity">Writes what the finished run did to the activity log.</param>
-internal sealed class SyncPassSteps(IRemoteIndexUpdater remoteIndex, ILocalChangeDetector localChanges, IDownloadPass download, IUploadPass upload, SyncPassAttention attention, IAccountQuotaRefresher quota, SyncPassActivity activity)
+/// <param name="after">What the run does after the four steps: the quota refresh, the activity log and the run journal.</param>
+internal sealed class SyncPassSteps(IRemoteIndexUpdater remoteIndex, ILocalChangeDetector localChanges, IDownloadPass download, IUploadPass upload, SyncPassAttention attention, SyncPassAftermath after)
 {
     /// <summary>Step 1: brings the remote index up to date.</summary>
     public IRemoteIndexUpdater RemoteIndex { get; } = remoteIndex;
@@ -25,9 +24,6 @@ internal sealed class SyncPassSteps(IRemoteIndexUpdater remoteIndex, ILocalChang
     /// <summary>The attention queue: conflicts and held deletions.</summary>
     public SyncPassAttention Attention { get; } = attention;
 
-    /// <summary>Refreshes the account's storage usage after the passes.</summary>
-    public IAccountQuotaRefresher Quota { get; } = quota;
-
-    /// <summary>The activity log: what a finished run did.</summary>
-    public SyncPassActivity Activity { get; } = activity;
+    /// <summary>What the run does after the four steps.</summary>
+    public SyncPassAftermath After { get; } = after;
 }

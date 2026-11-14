@@ -19,7 +19,8 @@ public class GivenAnActivityItemViewModel
         { "deleted-one", "Deleted 1 file" },
         { "deleted-many", "Deleted 5 files" },
         { "conflict", "Conflict: holiday-042.jpg" },
-        { "authenticated", "Authenticated" }
+        { "authenticated", "Authenticated" },
+        { "interrupted", "The last sync of Captain Flint was interrupted. Resuming now." }
     };
 
     [Theory]
@@ -49,7 +50,7 @@ public class GivenAnActivityItemViewModel
         var entry = ActivityEntryFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), Option.None<SyncPairId>(), kind, occurredAt);
         var localization = TestData.CreateLocalization();
 
-        return new ActivityItemViewModel(entry, new ProviderViewModel(CloudProviderFactory.CreateOneDrive(), localization), localization, TestData.CreateTime());
+        return new ActivityItemViewModel(entry, "Captain Flint", new ProviderViewModel(CloudProviderFactory.CreateOneDrive(), localization), localization, TestData.CreateTime());
     }
 
     private static ActivityKind KindFor(string kindName) => kindName switch
@@ -62,6 +63,7 @@ public class GivenAnActivityItemViewModel
         "deleted-one" => ActivityKindFactory.CreateDeleted(1),
         "deleted-many" => ActivityKindFactory.CreateDeleted(5),
         "conflict" => ActivityKindFactory.CreateConflictDetected("holiday-042.jpg"),
+        "interrupted" => ActivityKindFactory.CreateSyncInterrupted(),
         _ => ActivityKindFactory.CreateAuthenticated()
     };
 }

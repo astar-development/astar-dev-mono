@@ -17,10 +17,9 @@ public sealed class GivenASyncRunStatusSource : IDisposable
     private Task<Result<SyncPassSummary, SyncPassFailure>> RunAsync(AccountId accountId) => services.Runner.RunAsync(accountId, Manual, CancellationToken);
 
     [Fact]
-    public void when_no_run_has_ended_then_the_account_is_up_to_date_and_never_synced()
+    public void when_no_run_has_ended_then_the_account_is_up_to_date()
     {
         services.Status.StatusOf(Personal).ShouldBe(SyncStatusFactory.CreateUpToDate());
-        services.Status.LastSyncOf(Personal).ShouldBe(Option.None<DateTimeOffset>());
     }
 
     [Fact]
@@ -39,14 +38,13 @@ public sealed class GivenASyncRunStatusSource : IDisposable
     }
 
     [Fact]
-    public async Task when_a_run_finishes_with_nothing_waiting_then_the_account_is_up_to_date_and_the_finish_time_is_kept()
+    public async Task when_a_run_finishes_with_nothing_waiting_then_the_account_is_up_to_date()
     {
         services.Time.Advance(TimeSpan.FromMinutes(5));
 
         await RunAsync(Personal);
 
         services.Status.StatusOf(Personal).ShouldBe(SyncStatusFactory.CreateUpToDate());
-        services.Status.LastSyncOf(Personal).ShouldBe(Option.Some(services.Time.GetUtcNow()));
     }
 
     [Fact]
@@ -59,7 +57,6 @@ public sealed class GivenASyncRunStatusSource : IDisposable
         await RunAsync(Personal);
 
         services.Status.StatusOf(Personal).ShouldBe(SyncStatusFactory.CreateNeedsAttention(2, 1));
-        services.Status.LastSyncOf(Personal).Match(_ => true, () => false).ShouldBeTrue();
     }
 
     [Fact]
@@ -80,7 +77,6 @@ public sealed class GivenASyncRunStatusSource : IDisposable
         await RunAsync(Personal);
 
         services.Status.StatusOf(Personal).ShouldBe(SyncStatusFactory.CreateFailed(SyncFailureReasonFactory.CreateRootUnavailable()));
-        services.Status.LastSyncOf(Personal).ShouldBe(Option.None<DateTimeOffset>());
     }
 
     [Fact]
@@ -125,7 +121,6 @@ public sealed class GivenASyncRunStatusSource : IDisposable
         await running.WaitAsync(Limit, CancellationToken);
 
         services.Status.StatusOf(Personal).ShouldBe(SyncStatusFactory.CreateCancelled());
-        services.Status.LastSyncOf(Personal).ShouldBe(Option.None<DateTimeOffset>());
     }
 
     [Fact]

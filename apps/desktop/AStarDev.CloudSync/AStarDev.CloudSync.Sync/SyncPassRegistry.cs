@@ -11,7 +11,6 @@ internal sealed class SyncPassRegistry(TimeProvider timeProvider, SyncProgressFe
 {
     private readonly ConcurrentDictionary<AccountId, RunningPass> running = new();
     private readonly ConcurrentDictionary<AccountId, SyncStatus> lastStatus = new();
-    private readonly ConcurrentDictionary<AccountId, DateTimeOffset> lastSync = new();
 
     /// <inheritdoc />
     public event EventHandler<SyncPassStartedEventArgs>? PassStarted;
@@ -26,9 +25,6 @@ internal sealed class SyncPassRegistry(TimeProvider timeProvider, SyncProgressFe
     /// <inheritdoc />
     public SyncStatus StatusOf(AccountId accountId) =>
         running.ContainsKey(accountId) ? SyncStatusFactory.CreateSyncing(progress.ProgressOf(accountId).Match(current => current.PercentComplete(), () => 0)) : lastStatus.GetValueOrDefault(accountId, SyncStatusFactory.CreateUpToDate());
-
-    /// <inheritdoc />
-    public Option<DateTimeOffset> LastSyncOf(AccountId accountId) => lastSync.TryGetValue(accountId, out var finished) ? Option.Some(finished) : Option.None<DateTimeOffset>();
 
     /// <inheritdoc />
     public Task CancelAsync(AccountId accountId, CancellationToken cancellationToken)
@@ -62,9 +58,6 @@ internal sealed class SyncPassRegistry(TimeProvider timeProvider, SyncProgressFe
     {
         if (outcome.ToStatus() is Option<SyncStatus>.Some recorded)
             lastStatus[pass.AccountId] = recorded.Value;
-
-        if (outcome.Match(_ => true, _ => false))
-            lastSync[pass.AccountId] = timeProvider.GetUtcNow();
 
         _ = running.TryRemove(new KeyValuePair<AccountId, RunningPass>(pass.AccountId, pass));
         progress.Reset(pass.AccountId);

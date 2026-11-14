@@ -64,6 +64,9 @@ internal sealed class SqliteActivityLogStore(IDbContextFactory<SyncDbContext> db
             case ActivityKind.Authenticated:
                 row.Kind = nameof(ActivityKind.Authenticated);
                 break;
+            case ActivityKind.SyncInterrupted:
+                row.Kind = nameof(ActivityKind.SyncInterrupted);
+                break;
             default:
                 row.Kind = nameof(ActivityKind.DetectingChanges);
                 break;
@@ -86,6 +89,7 @@ internal sealed class SqliteActivityLogStore(IDbContextFactory<SyncDbContext> db
         nameof(ActivityKind.Deleted) => ActivityKindFactory.CreateDeleted(row.FileCount),
         nameof(ActivityKind.ConflictDetected) => ActivityKindFactory.CreateConflictDetected(row.FileName ?? string.Empty),
         nameof(ActivityKind.Authenticated) => ActivityKindFactory.CreateAuthenticated(),
+        nameof(ActivityKind.SyncInterrupted) => ActivityKindFactory.CreateSyncInterrupted(),
         _ => ActivityKindFactory.CreateDetectingChanges(),
     };
 

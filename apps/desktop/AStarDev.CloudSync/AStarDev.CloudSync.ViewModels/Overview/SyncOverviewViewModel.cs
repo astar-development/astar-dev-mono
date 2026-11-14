@@ -104,7 +104,7 @@ public sealed class SyncOverviewViewModel(ISyncOverviewSource source, ISyncActio
 
         Accounts = [.. overview.Accounts.Select(account => new AccountViewModel(account, overview.Activity, accountCommands, Localization, timeProvider))];
         SyncPairs = [.. overview.SyncPairs.Where(pair => accountsById.ContainsKey(pair.AccountId)).Select(pair => new SyncPairViewModel(pair, accountsById[pair.AccountId], ruleWriter, LoadAsync, Localization, timeProvider))];
-        Activity = [.. overview.Activity.Where(entry => accountsById.ContainsKey(entry.AccountId)).OrderByDescending(entry => entry.OccurredAt).Select(entry => new ActivityItemViewModel(entry, new ProviderViewModel(accountsById[entry.AccountId].Provider, Localization), Localization, timeProvider))];
+        Activity = [.. overview.Activity.Where(entry => accountsById.ContainsKey(entry.AccountId)).OrderByDescending(entry => entry.OccurredAt).Select(entry => new ActivityItemViewModel(entry, accountsById[entry.AccountId].DisplayName, new ProviderViewModel(accountsById[entry.AccountId].Provider, Localization), Localization, timeProvider))];
         Conflicts = [.. overview.Conflicts.Select(conflict => new ConflictViewModel(conflict, pairNamesById.GetValueOrDefault(conflict.SyncPairId, string.Empty), syncActions, Localization))];
         Stats = CreateStats();
         Throughput = new ThroughputViewModel(overview.Throughput, Localization);

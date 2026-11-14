@@ -308,6 +308,39 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
                         });
                 });
 
+            modelBuilder.Entity("AStarDev.CloudSync.Sync.Sqlite.SyncRunEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FailureReason")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long?>("FinishedAtUtcTicks")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Outcome")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("StartedAtUtcTicks")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Trigger")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FinishedAtUtcTicks");
+
+                    b.HasIndex("AccountId", "StartedAtUtcTicks");
+
+                    b.ToTable("SyncRuns", (string)null);
+                });
+
             modelBuilder.Entity("AStarDev.CloudSync.Sync.Sqlite.SyncScheduleEntity", b =>
                 {
                     b.Property<int>("Id")

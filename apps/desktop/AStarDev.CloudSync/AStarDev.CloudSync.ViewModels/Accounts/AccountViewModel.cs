@@ -41,7 +41,7 @@ public sealed class AccountViewModel : LocalizedObservableObject
         Status = new StatusViewModel(account.Status, account.SignIn, localization);
         Storage = new StorageViewModel(account.Storage, localization);
         ChangeSyncFolderCommand = new AsyncRelayCommand(cancellationToken => commands.ChangeSyncFolderAsync(this, cancellationToken), () => !Status.IsSyncing);
-        RecentActivity = [.. activity.Where(entry => entry.AccountId == account.Id).OrderByDescending(entry => entry.OccurredAt).Take(RecentActivityLimit).Select(entry => new ActivityItemViewModel(entry, Provider, localization, timeProvider))];
+        RecentActivity = [.. activity.Where(entry => entry.AccountId == account.Id).OrderByDescending(entry => entry.OccurredAt).Take(RecentActivityLimit).Select(entry => new ActivityItemViewModel(entry, account.DisplayName, Provider, localization, timeProvider))];
     }
 
     /// <summary>The account id.</summary>
