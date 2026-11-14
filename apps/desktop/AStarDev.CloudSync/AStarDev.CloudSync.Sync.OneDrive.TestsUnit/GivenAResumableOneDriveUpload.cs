@@ -204,6 +204,68 @@ public sealed class GivenAResumableOneDriveUpload : IDisposable
     }
 
     [Fact]
+    public async Task when_the_saved_session_has_only_seconds_left_then_it_is_deleted_and_the_upload_starts_again()
+    {
+        _ = await fixture.BuildAsync(CancellationToken);
+        var source = LargeFile();
+        fixture.UploadSessions.Seed(fixture.Account, source, Saved(source, expires: fixture.Time.GetUtcNow().AddSeconds(30)));
+        ScriptFreshSession(source.Length);
+
+        _ = await UploadAsync(source);
+
+        fixture.Graph.Requests.Select(request => request.Method.Method).Take(3).ShouldBe(["DELETE", "POST", "PUT"]);
+    }
+
+    [Fact]
+    public async Task when_the_provider_reports_no_ranges_left_then_the_saved_session_is_deleted_and_the_upload_starts_again()
+    {
+        _ = await fixture.BuildAsync(CancellationToken);
+        var source = LargeFile();
+        fixture.UploadSessions.Seed(fixture.Account, source, Saved(source));
+        fixture.Graph.Respond = request => request.Method.Method switch
+        {
+            "GET" => RecordingGraphHandler.Json(HttpStatusCode.OK, "{\"nextExpectedRanges\":[]}"),
+            "POST" => RecordingGraphHandler.Json(HttpStatusCode.OK, SessionJson()),
+            "DELETE" => new HttpResponseMessage(HttpStatusCode.NoContent),
+            _ => FragmentResponse(request, source.Length),
+        };
+
+        _ = await UploadAsync(source);
+
+        fixture.Graph.Requests.Select(request => request.Method.Method).Take(4).ShouldBe(["GET", "DELETE", "POST", "PUT"]);
+    }
+
+    [Fact]
+    public async Task when_the_provider_reports_an_offset_at_the_end_of_the_file_then_the_saved_session_is_deleted_and_the_upload_starts_again()
+    {
+        _ = await fixture.BuildAsync(CancellationToken);
+        var source = LargeFile();
+        fixture.UploadSessions.Seed(fixture.Account, source, Saved(source));
+        ScriptResumeFrom(source.Length, source.Length);
+
+        _ = await UploadAsync(source);
+
+        fixture.Graph.Requests.Select(request => request.Method.Method).Take(4).ShouldBe(["GET", "DELETE", "POST", "PUT"]);
+    }
+
+    [Fact]
+    public async Task when_the_provider_gives_no_expiry_then_no_session_is_saved()
+    {
+        _ = await fixture.BuildAsync(CancellationToken);
+        var source = LargeFile();
+        fixture.Graph.Respond = request => request.Method.Method switch
+        {
+            "POST" => RecordingGraphHandler.Json(HttpStatusCode.OK, "{\"uploadUrl\":\"" + UploadUrl + "\"}"),
+            _ => FragmentResponse(request, source.Length),
+        };
+
+        var result = await UploadAsync(source);
+
+        Describe(result).ShouldStartWith("ok");
+        fixture.UploadSessions.Saves.ShouldBe(0);
+    }
+
+    [Fact]
     public async Task when_the_file_changed_in_size_then_the_old_session_is_deleted_and_the_upload_restarts()
     {
         _ = await fixture.BuildAsync(CancellationToken);
