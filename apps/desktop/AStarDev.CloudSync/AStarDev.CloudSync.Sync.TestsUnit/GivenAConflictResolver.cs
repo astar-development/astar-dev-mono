@@ -436,6 +436,17 @@ public sealed class GivenAConflictResolver : IDisposable
     }
 
     [Fact]
+    public async Task when_the_queue_cannot_be_read_then_the_read_failure_is_logged_without_details()
+    {
+        var run = await StartAsync();
+        run.Attention.ReadFails = true;
+
+        _ = await run.Resolver.ResolveAsync(run.Account, [new ConflictId(Guid.NewGuid())], ConflictStrategyFactory.CreateLocalWins(), CancellationToken);
+
+        run.Logs.Logger.Messages.Where(message => message.Contains("could not be read", StringComparison.Ordinal)).ShouldHaveSingleItem();
+    }
+
+    [Fact]
     public async Task when_a_sync_pass_is_running_then_the_call_is_refused_without_touching_anything()
     {
         var run = await StartAsync();

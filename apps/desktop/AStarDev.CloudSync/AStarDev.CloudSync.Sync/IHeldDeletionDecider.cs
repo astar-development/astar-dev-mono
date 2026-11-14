@@ -10,13 +10,13 @@ public interface IHeldDeletionDecider
     /// <param name="accountId">The account.</param>
     /// <param name="id">The held set.</param>
     /// <param name="cancellationToken">Cancels the call.</param>
-    /// <returns>Success, or why the set stays open.</returns>
-    Task<Result<Unit, ErrorResponse>> ConfirmAsync(AccountId accountId, HeldDeletionId id, CancellationToken cancellationToken);
+    /// <returns>Success, or the refusal that says why the set stays open.</returns>
+    Task<Result<Unit, HeldDeletionRefusal>> ConfirmAsync(AccountId accountId, HeldDeletionId id, CancellationToken cancellationToken);
 
     /// <summary>Undoes the held deletions: files deleted locally are downloaded again, files deleted in the cloud are uploaded again. The set is closed only when every path was done.</summary>
     /// <param name="accountId">The account.</param>
     /// <param name="id">The held set.</param>
     /// <param name="cancellationToken">Cancels the call.</param>
-    /// <returns>Success, or why the set stays open.</returns>
-    Task<Result<Unit, ErrorResponse>> RestoreAsync(AccountId accountId, HeldDeletionId id, CancellationToken cancellationToken);
+    /// <returns>Success, or the refusal that says why the set stays open.</returns>
+    Task<Result<Unit, HeldDeletionRefusal>> RestoreAsync(AccountId accountId, HeldDeletionId id, CancellationToken cancellationToken);
 }

@@ -116,7 +116,7 @@ public class GivenHeldDeletionsInTheConflictList
         {
             fixture.Reader.RemoveHeld(id);
 
-            return Task.FromResult(Result.Success<Unit, ErrorResponse>(Unit.Instance));
+            return Task.FromResult(Result.Success<Unit, HeldDeletionRefusal>(Unit.Instance));
         };
         await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
 
@@ -139,7 +139,7 @@ public class GivenHeldDeletionsInTheConflictList
         {
             fixture.Reader.RemoveHeld(id);
 
-            return Task.FromResult(Result.Success<Unit, ErrorResponse>(Unit.Instance));
+            return Task.FromResult(Result.Success<Unit, HeldDeletionRefusal>(Unit.Instance));
         };
         await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
 
@@ -156,7 +156,7 @@ public class GivenHeldDeletionsInTheConflictList
     {
         var fixture = new ConflictListFixture();
         fixture.Reader.Add(Photos.Id, AttentionItems.CreateHeld(Photos.Id, CameraRoll, DeletionDirectionFactory.CreateDeleteLocal(), "a.jpg"));
-        fixture.Decider.Outcome = (_, _, _) => Task.FromResult(Result.Failure<Unit, ErrorResponse>(new ErrorResponse("busy")));
+        fixture.Decider.Outcome = (_, _, _) => Task.FromResult(Result.Failure<Unit, HeldDeletionRefusal>(HeldDeletionRefusalFactory.CreateNotSettled()));
         await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
 
         await fixture.List.HeldDeletions.Single().ConfirmCommand.ExecuteAsync(null);
@@ -164,6 +164,24 @@ public class GivenHeldDeletionsInTheConflictList
         var held = fixture.List.HeldDeletions.Single();
         held.HasError.ShouldBeTrue();
         held.ErrorText.ShouldBe("These deletions were not settled and are still held. A sync may be running for this account. Try again when it has finished.");
+    }
+
+    [Fact]
+    public async Task when_the_decider_refuses_then_the_set_shows_the_text_of_that_refusal()
+    {
+        var fixture = new ConflictListFixture();
+        fixture.Reader.Add(Photos.Id, AttentionItems.CreateHeld(Photos.Id, CameraRoll, DeletionDirectionFactory.CreateDeleteLocal(), "a.jpg"));
+        await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
+        var texts = new List<string>();
+
+        foreach (var refusal in new[] { HeldDeletionRefusalFactory.CreateBusy(), HeldDeletionRefusalFactory.CreateDraining(), HeldDeletionRefusalFactory.CreateQueueUnreadable(), HeldDeletionRefusalFactory.CreateNoLongerHeld() })
+        {
+            fixture.Decider.Outcome = (_, _, _) => Task.FromResult(Result.Failure<Unit, HeldDeletionRefusal>(refusal));
+            await fixture.List.HeldDeletions.Single().ConfirmCommand.ExecuteAsync(null);
+            texts.Add(fixture.List.HeldDeletions.Single().ErrorText);
+        }
+
+        texts.ShouldBe(["A sync is running for this account. Try again when it has finished.", "Sync is paused for an update or an account removal. Try again later.", "The held deletions could not be read, so nothing was changed. Try again.", "These deletions are no longer held. Refresh the list."]);
     }
 
     [Fact]
@@ -210,7 +228,7 @@ public class GivenHeldDeletionsInTheConflictList
         {
             await release.Task;
 
-            return Result.Success<Unit, ErrorResponse>(Unit.Instance);
+            return Result.Success<Unit, HeldDeletionRefusal>(Unit.Instance);
         };
         await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
         var held = fixture.List.HeldDeletions.Single();
@@ -244,7 +262,7 @@ public class GivenHeldDeletionsInTheConflictList
             started.SetResult();
             await release.Task;
 
-            return Result.Success<Unit, ErrorResponse>(Unit.Instance);
+            return Result.Success<Unit, HeldDeletionRefusal>(Unit.Instance);
         };
         await fixture.List.LoadAsync(TestContext.Current.CancellationToken);
         var held = fixture.List.HeldDeletions.Single();

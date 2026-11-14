@@ -473,8 +473,8 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
 
     private Task RestoreHeldAsync(HeldDeletionItemViewModel item, CancellationToken cancellationToken) => SettleHeldAsync(item, () => heldDecider.RestoreAsync(item.AccountId, item.Id, cancellationToken), cancellationToken);
 
-    private async Task SettleHeldAsync(HeldDeletionItemViewModel item, Func<Task<Result<Unit, ErrorResponse>>> settle, CancellationToken cancellationToken) =>
-        await await RunAsync(settle, result => result.Match(_ => HeldSettledAsync(item, cancellationToken), _ => HeldNotSettledAsync(item)), exception => HeldThrewAsync(item, exception), cancellationToken);
+    private async Task SettleHeldAsync(HeldDeletionItemViewModel item, Func<Task<Result<Unit, HeldDeletionRefusal>>> settle, CancellationToken cancellationToken) =>
+        await await RunAsync(settle, result => result.Match(_ => HeldSettledAsync(item, cancellationToken), refusal => HeldNotSettledAsync(item, refusal)), exception => HeldThrewAsync(item, exception), cancellationToken);
 
     private Task HeldSettledAsync(HeldDeletionItemViewModel item, CancellationToken cancellationToken)
     {
@@ -484,10 +484,10 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
         return LoadAsync(cancellationToken);
     }
 
-    private Task HeldNotSettledAsync(HeldDeletionItemViewModel item)
+    private Task HeldNotSettledAsync(HeldDeletionItemViewModel item, HeldDeletionRefusal refusal)
     {
         ConflictListLog.HeldNotSettled(logger);
-        RememberHeld(item, ConflictTexts.HeldNotSettledKey);
+        RememberHeld(item, ConflictTexts.HeldRefusedKey(refusal));
 
         return Task.CompletedTask;
     }

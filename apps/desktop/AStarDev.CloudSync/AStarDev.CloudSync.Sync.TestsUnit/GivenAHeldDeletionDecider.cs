@@ -20,7 +20,7 @@ public sealed class GivenAHeldDeletionDecider : IDisposable
 
         var result = await run.Decider.ConfirmAsync(run.Account, id, CancellationToken);
 
-        (result.Match(_ => "ok", error => error.Message), run.FilesUnder("Docs"), run.TrashedFiles().Count, run.Baseline.Has("Docs/a.txt"), run.Attention.Closed.Single()).ShouldBe(("ok", "", 2, false, id));
+        (result.Match(_ => "ok", refusal => refusal.GetType().Name), run.FilesUnder("Docs"), run.TrashedFiles().Count, run.Baseline.Has("Docs/a.txt"), run.Attention.Closed.Single()).ShouldBe(("ok", "", 2, false, id));
     }
 
     [Fact]
@@ -46,7 +46,7 @@ public sealed class GivenAHeldDeletionDecider : IDisposable
 
         var result = await run.Decider.ConfirmAsync(run.Account, id, CancellationToken);
 
-        (result.Match(_ => "ok", error => error.Message), run.Remover.Calls.Single(), run.Baseline.Has("Docs/a.txt"), run.Attention.Closed.Single()).ShouldBe(("ok", (RemoteIds.Of("id-a"), ResolutionFixture.RemoveMustMatchContent("c-a")), false, id));
+        (result.Match(_ => "ok", refusal => refusal.GetType().Name), run.Remover.Calls.Single(), run.Baseline.Has("Docs/a.txt"), run.Attention.Closed.Single()).ShouldBe(("ok", (RemoteIds.Of("id-a"), ResolutionFixture.RemoveMustMatchContent("c-a")), false, id));
     }
 
     [Fact]
@@ -73,7 +73,7 @@ public sealed class GivenAHeldDeletionDecider : IDisposable
 
         var result = await run.Decider.ConfirmAsync(run.Account, id, CancellationToken);
 
-        (result.Match(_ => "ok", _ => "failed"), run.Attention.Closed.Count).ShouldBe(("failed", 0));
+        (Refusal(result), run.Attention.Closed.Count).ShouldBe((HeldDeletionRefusalFactory.CreateNotSettled(), 0));
     }
 
     [Fact]
@@ -88,7 +88,7 @@ public sealed class GivenAHeldDeletionDecider : IDisposable
 
         var result = await run.Decider.RestoreAsync(run.Account, id, CancellationToken);
 
-        (result.Match(_ => "ok", error => error.Message), run.FileSystem.File.ReadAllText(ResolutionFixture.FullPath("Docs/a.txt")), run.Attention.Closed.Single()).ShouldBe(("ok", "one", id));
+        (result.Match(_ => "ok", refusal => refusal.GetType().Name), run.FileSystem.File.ReadAllText(ResolutionFixture.FullPath("Docs/a.txt")), run.Attention.Closed.Single()).ShouldBe(("ok", "one", id));
     }
 
     [Fact]
@@ -115,7 +115,7 @@ public sealed class GivenAHeldDeletionDecider : IDisposable
 
         var result = await run.Decider.RestoreAsync(run.Account, id, CancellationToken);
 
-        (result.Match(_ => "ok", _ => "failed"), run.Attention.Closed.Count).ShouldBe(("failed", 0));
+        (Refusal(result), run.Attention.Closed.Count).ShouldBe((HeldDeletionRefusalFactory.CreateNotSettled(), 0));
     }
 
     [Fact]
@@ -128,7 +128,7 @@ public sealed class GivenAHeldDeletionDecider : IDisposable
 
         var result = await run.Decider.RestoreAsync(run.Account, id, CancellationToken);
 
-        (result.Match(_ => "ok", error => error.Message), run.Uploader.Calls.Single().Precondition, run.Attention.Closed.Single()).ShouldBe(("ok", UploadPreconditionFactory.CreateMustNotExist(), id));
+        (result.Match(_ => "ok", refusal => refusal.GetType().Name), run.Uploader.Calls.Single().Precondition, run.Attention.Closed.Single()).ShouldBe(("ok", UploadPreconditionFactory.CreateMustNotExist(), id));
     }
 
     [Fact]
@@ -142,7 +142,7 @@ public sealed class GivenAHeldDeletionDecider : IDisposable
 
         var result = await run.Decider.RestoreAsync(run.Account, id, CancellationToken);
 
-        (result.Match(_ => "ok", _ => "failed"), run.Attention.Closed.Count).ShouldBe(("failed", 0));
+        (Refusal(result), run.Attention.Closed.Count).ShouldBe((HeldDeletionRefusalFactory.CreateNotSettled(), 0));
     }
 
     [Fact]
@@ -223,5 +223,53 @@ public sealed class GivenAHeldDeletionDecider : IDisposable
         fixture = await ResolutionFixture.CreateAsync(CancellationToken);
 
         return fixture;
+    }
+
+    private static HeldDeletionRefusal Refusal(Result<Unit, HeldDeletionRefusal> result) => result.Match(_ => throw new InvalidOperationException("The call was not refused."), refusal => refusal);
+
+    [Fact]
+    public async Task when_a_sync_pass_is_running_then_the_held_set_is_refused_as_busy()
+    {
+        var run = await StartAsync();
+        var id = run.Hold(DeletionDirectionFactory.CreateDeleteRemote(), "Docs/a.txt");
+        using var pass = ((SyncLockAttempt.Acquired)run.SyncLock.TryAcquire(run.Account)).Lease;
+
+        var result = await run.Decider.ConfirmAsync(run.Account, id, CancellationToken);
+
+        (Refusal(result), run.Remover.Calls.Count, run.Attention.Closed.Count).ShouldBe((HeldDeletionRefusalFactory.CreateBusy(), 0, 0));
+    }
+
+    [Fact]
+    public async Task when_the_lock_is_draining_then_the_held_set_is_refused_as_draining()
+    {
+        var run = await StartAsync();
+        var id = run.Hold(DeletionDirectionFactory.CreateDeleteRemote(), "Docs/a.txt");
+        using var drain = await run.SyncLock.DrainAsync(CancellationToken);
+
+        var result = await run.Decider.RestoreAsync(run.Account, id, CancellationToken);
+
+        Refusal(result).ShouldBe(HeldDeletionRefusalFactory.CreateDraining());
+    }
+
+    [Fact]
+    public async Task when_the_queue_cannot_be_read_then_the_held_set_is_refused_and_the_read_failure_is_logged()
+    {
+        var run = await StartAsync();
+        var id = run.Hold(DeletionDirectionFactory.CreateDeleteRemote(), "Docs/a.txt");
+        run.Attention.ReadFails = true;
+
+        var result = await run.Decider.ConfirmAsync(run.Account, id, CancellationToken);
+
+        (Refusal(result), run.Logs.Logger.Messages.Any(message => message.Contains("could not be read", StringComparison.Ordinal))).ShouldBe((HeldDeletionRefusalFactory.CreateQueueUnreadable(), true));
+    }
+
+    [Fact]
+    public async Task when_the_held_set_is_not_in_the_queue_then_it_is_refused_as_no_longer_held()
+    {
+        var run = await StartAsync();
+
+        var result = await run.Decider.ConfirmAsync(run.Account, new HeldDeletionId(Guid.NewGuid()), CancellationToken);
+
+        Refusal(result).ShouldBe(HeldDeletionRefusalFactory.CreateNoLongerHeld());
     }
 }

@@ -59,6 +59,7 @@ public static class SyncServiceCollectionExtensions
             .AddSingleton<IKeepBothNamer, KeepBothNamer>()
             .AddSingleton<ResolutionTransfers>()
             .AddSingleton<MoveTargetSteps>()
+            .AddSingleton<MovedItemLocator>()
             .AddSingleton<ResolutionSteps>()
             .AddSingleton<HeldDeletionSteps>()
             .AddSingleton<IConflictResolver, ConflictResolver>()

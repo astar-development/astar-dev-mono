@@ -15,57 +15,63 @@ namespace AStarDev.CloudSync.Sync;
 internal sealed class HeldDeletionDecider(IAccountSyncLock syncLock, ISyncAttentionReader reader, ISyncAttentionCloser closer, ResolutionTransfers transfers, HeldDeletionSteps steps, ILogger<HeldDeletionDecider> logger) : IHeldDeletionDecider
 {
     private const string Location = nameof(HeldDeletionDecider);
-    private const string NotInQueue = "The held deletions are not in the queue any more.";
-    private const string NotSettled = "The held deletions were not settled and stay in the queue.";
-
     private delegate Task<Result<Unit, ResolutionFailure>> Operation(ResolutionContext context, SyncAttentionItem.HeldDeletions held, CancellationToken cancellationToken);
 
     /// <inheritdoc />
-    public Task<Result<Unit, ErrorResponse>> ConfirmAsync(AccountId accountId, HeldDeletionId id, CancellationToken cancellationToken) =>
+    public Task<Result<Unit, HeldDeletionRefusal>> ConfirmAsync(AccountId accountId, HeldDeletionId id, CancellationToken cancellationToken) =>
         SettleAsync(accountId, id, steps.ConfirmAsync, AttentionResolutionFactory.CreateConfirmDeletions(), cancellationToken);
 
     /// <inheritdoc />
-    public Task<Result<Unit, ErrorResponse>> RestoreAsync(AccountId accountId, HeldDeletionId id, CancellationToken cancellationToken) =>
+    public Task<Result<Unit, HeldDeletionRefusal>> RestoreAsync(AccountId accountId, HeldDeletionId id, CancellationToken cancellationToken) =>
         SettleAsync(accountId, id, steps.RestoreAsync, AttentionResolutionFactory.CreateRestoreItems(), cancellationToken);
 
-    private static Result<Unit, ErrorResponse> Failed(string message) => Result.Failure<Unit, ErrorResponse>(new ErrorResponse(message));
+    private static Result<Unit, HeldDeletionRefusal> Refused(HeldDeletionRefusal refusal) => Result.Failure<Unit, HeldDeletionRefusal>(refusal);
 
-    private async Task<Result<Unit, ErrorResponse>> SettleAsync(AccountId accountId, HeldDeletionId id, Operation operation, AttentionResolution resolution, CancellationToken cancellationToken)
+    private async Task<Result<Unit, HeldDeletionRefusal>> SettleAsync(AccountId accountId, HeldDeletionId id, Operation operation, AttentionResolution resolution, CancellationToken cancellationToken)
     {
         var attempt = syncLock.TryAcquire(accountId);
         if (attempt is not SyncLockAttempt.Acquired acquired)
-            return Result.Failure<Unit, ErrorResponse>(ResolutionRefusal.For(attempt));
+            return Refused(attempt is SyncLockAttempt.Busy ? HeldDeletionRefusalFactory.CreateBusy() : HeldDeletionRefusalFactory.CreateDraining());
 
         using var lease = acquired.Lease;
 
         return await reader.GetOpenAsync(accountId, cancellationToken)
-            .BindAsync(open => open.OfType<SyncAttentionItem.HeldDeletions>().FirstOrNone(held => held.Id == id).Match(
-                held => RunAsync(accountId, held, operation, resolution, cancellationToken),
-                () => Task.FromResult(Failed(NotInQueue))))
+            .MatchAsync(
+                open => open.OfType<SyncAttentionItem.HeldDeletions>().FirstOrNone(held => held.Id == id).Match(
+                    held => RunAsync(accountId, held, operation, resolution, cancellationToken),
+                    () => Task.FromResult(Refused(HeldDeletionRefusalFactory.CreateNoLongerHeld()))),
+                _ => Task.FromResult(QueueUnreadable()))
             .ConfigureAwait(false);
     }
 
-    private Task<Result<Unit, ErrorResponse>> RunAsync(AccountId accountId, SyncAttentionItem.HeldDeletions held, Operation operation, AttentionResolution resolution, CancellationToken cancellationToken) =>
+    private Task<Result<Unit, HeldDeletionRefusal>> RunAsync(AccountId accountId, SyncAttentionItem.HeldDeletions held, Operation operation, AttentionResolution resolution, CancellationToken cancellationToken) =>
         Try.RunAsync(() => transfers.LoadAsync(accountId, held.Paths, cancellationToken).BindAsync(context => operation(context, held, cancellationToken)), cancellationToken)
             .MatchAsync(done => done, _ => Result.Failure<Unit, ResolutionFailure>(ResolutionFailureFactory.CreateUnexpected()))
             .MatchAsync(_ => CloseAsync(held, resolution, cancellationToken), failure => Task.FromResult(NotDone(failure)));
 
-    private Result<Unit, ErrorResponse> NotDone(ResolutionFailure failure)
+    private Result<Unit, HeldDeletionRefusal> NotDone(ResolutionFailure failure)
     {
         var message = $"A held deletion set was not settled ({failure.GetType().Name}).";
         LogMessage.Warning(logger, Location, message);
 
-        return Failed(NotSettled);
+        return Refused(HeldDeletionRefusalFactory.CreateNotSettled());
     }
 
-    private Task<Result<Unit, ErrorResponse>> CloseAsync(SyncAttentionItem.HeldDeletions held, AttentionResolution resolution, CancellationToken cancellationToken) =>
+    private Result<Unit, HeldDeletionRefusal> QueueUnreadable()
+    {
+        LogMessage.Warning(logger, Location, "The held deletions could not be read, so none was settled.");
+
+        return Refused(HeldDeletionRefusalFactory.CreateQueueUnreadable());
+    }
+
+    private Task<Result<Unit, HeldDeletionRefusal>> CloseAsync(SyncAttentionItem.HeldDeletions held, AttentionResolution resolution, CancellationToken cancellationToken) =>
         closer.CloseAsync(held.Id, resolution, cancellationToken).MatchAsync(
             _ =>
             {
                 var message = $"A held deletion set of {held.Paths.Count} items was settled.";
                 LogMessage.Information(logger, Location, message);
 
-                return Result.Success<Unit, ErrorResponse>(Unit.Instance);
+                return Result.Success<Unit, HeldDeletionRefusal>(Unit.Instance);
             },
-            _ => Failed(NotSettled));
+            _ => Refused(HeldDeletionRefusalFactory.CreateNotSettled()));
 }
