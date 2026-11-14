@@ -34,7 +34,7 @@ public partial class App : Application, IDisposable
         {
             var guard = services.GetRequiredService<ISingleInstanceGuard>();
             var options = services.GetRequiredService<SingleInstanceOptions>();
-            var claim = Task.Run(() => guard.ClaimAsync(options, CancellationToken.None)).GetAwaiter().GetResult();
+            var claim = Task.Run(() => guard.ClaimAsync(options, CancellationToken.None), CancellationToken.None).GetAwaiter().GetResult();
             if (claim is InstanceClaim.HandedOff or InstanceClaim.NotAnswered)
                 ExitAsSecondInstance();
 
@@ -50,7 +50,7 @@ public partial class App : Application, IDisposable
             _ = services.GetRequiredService<SyncRunOverviewReloader>();
             _ = Task.Run(() => services.GetRequiredService<ISignInStateRefresher>().RefreshAllAsync(CancellationToken.None), CancellationToken.None);
 
-            _ = services.GetRequiredService<IUpdateNotificationService>().CheckAndNotifyAsync();
+            _ = services.GetRequiredService<IUpdateNotificationService>().CheckAndNotifyAsync(shutdown.Token);
         }
 
         base.OnFrameworkInitializationCompleted();
@@ -77,7 +77,7 @@ public partial class App : Application, IDisposable
         shutdown.Cancel();
         StopScheduler();
         services?.Dispose();
-        Task.Run(() => instance.DisposeAsync().AsTask()).GetAwaiter().GetResult();
+        Task.Run(() => instance.DisposeAsync().AsTask(), CancellationToken.None).GetAwaiter().GetResult();
     }
 
     private void StopScheduler()

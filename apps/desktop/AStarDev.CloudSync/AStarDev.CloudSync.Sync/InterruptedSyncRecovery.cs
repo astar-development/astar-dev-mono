@@ -43,7 +43,7 @@ internal sealed class InterruptedSyncRecovery(ISyncRunJournal journal, IActivity
             _ = await journal.FinishAsync(run.Id, SyncRunOutcomeFactory.CreateInterrupted(), cancellationToken).MatchAsync(done => done, _ => Warn("An interrupted run could not be marked.")).ConfigureAwait(false);
 
         _ = await TellUserAsync(accounts, cancellationToken).ConfigureAwait(false);
-        var pausedIds = await paused.GetPausedAsync(cancellationToken).MatchAsync(found => (IReadOnlyList<AccountId>)found, _ => HoldAll(accounts)).ConfigureAwait(false);
+        var pausedIds = await paused.GetPausedAsync(cancellationToken).MatchAsync(found => found, _ => HoldAll(accounts)).ConfigureAwait(false);
         var resumable = accounts.Where(account => !pausedIds.Contains(account)).ToList();
         var offsets = stagger.OffsetsFor(resumable, RecoveryStagger.Window);
         var held = accounts.Where(pausedIds.Contains).Select(RecoveryOutcomeFactory.CreateHeld);
