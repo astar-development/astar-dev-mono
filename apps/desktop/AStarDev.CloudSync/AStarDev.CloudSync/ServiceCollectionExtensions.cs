@@ -13,6 +13,7 @@ using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.Sync.OneDrive;
 using AStarDev.CloudSync.Sync.Sqlite;
 using AStarDev.CloudSync.Theming;
+using AStarDev.CloudSync.Tray;
 using AStarDev.CloudSync.ViewModels;
 using AStarDev.CloudSync.ViewModels.Accounts;
 using AStarDev.CloudSync.ViewModels.Common;
@@ -21,6 +22,7 @@ using AStarDev.CloudSync.ViewModels.DisplaySettings;
 using AStarDev.CloudSync.ViewModels.FolderSelection;
 using AStarDev.CloudSync.ViewModels.Layouts;
 using AStarDev.CloudSync.ViewModels.SyncRestart;
+using AStarDev.CloudSync.ViewModels.Tray;
 using AStarDev.CloudSync.ViewModels.Overview;
 using AStarDev.Localization;
 using AStarDev.SingleInstance;
@@ -60,6 +62,12 @@ public static class ServiceCollectionExtensions
             .AddSyncOverview()
             .AddSingleton<ISyncActions, PlaceholderSyncActions>()
             .AddSingleton<IUiDispatcher, AvaloniaUiDispatcher>()
+            .AddSingleton<MainWindowVisibility>()
+            .AddSingleton<IMainWindowVisibility>(provider => provider.GetRequiredService<MainWindowVisibility>())
+            .AddSingleton<IApplicationExit, DesktopApplicationExit>()
+            .AddSingleton<IAppShutdown, AppShutdown>()
+            .AddSingleton<TrayMenuModel>()
+            .AddSingleton<TrayIconService>()
             .AddSingleton<TokenCacheConsentViewModel>()
             .AddSingleton<ITokenCacheConsent>(provider => provider.GetRequiredService<TokenCacheConsentViewModel>())
             .AddSingleton<ConfirmSyncRestartViewModel>()
