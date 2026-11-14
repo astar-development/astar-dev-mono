@@ -4,14 +4,15 @@ using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.Sync;
 
-/// <summary>Carries out the three <see cref="ConflictKind.MoveTargetTaken"/> plans (#1615). The cloud item sits at the target path in the remote index and its baseline row is still at the old path, so after a plan the next sync pass follows the move on its own; nothing here rewrites that row.</summary>
+/// <summary>Carries out the three <see cref="ConflictKind.MoveTargetTaken"/> plans (#1615). The cloud item sits at the target path in the remote index and its baseline row is still at the old path. After Keep cloud or Keep both the plan moves the local file from the old path to the target and rewrites that row, undoing the move if the row cannot be written; if it cannot be applied the next sync pass follows the move on its own. After Keep local the next pass follows the cloud rename.</summary>
 /// <param name="transfers">Checks the cloud item and uploads the renamed copy.</param>
 /// <param name="renamers">Finds the cloud rename capability.</param>
 /// <param name="files">Moves the local item aside.</param>
 /// <param name="namer">Names the Keep Both copy.</param>
 /// <param name="time">Stamps the Keep Both name.</param>
-/// <param name="baseline">Drops the baseline row of the item that used to sit at the target.</param>
-internal sealed class MoveTargetSteps(ResolutionTransfers transfers, IProviderCapability<IRemoteItemRenamer> renamers, ILocalFileOperations files, IKeepBothNamer namer, TimeProvider time, ISyncBaselineWriter baseline)
+/// <param name="baseline">Drops the baseline row of the item that used to sit at the target and moves the baseline row of the moved item.</param>
+/// <param name="locator">Finds the moved item's old baseline row and the cloud names beside it.</param>
+internal sealed class MoveTargetSteps(ResolutionTransfers transfers, IProviderCapability<IRemoteItemRenamer> renamers, ILocalFileOperations files, IKeepBothNamer namer, TimeProvider time, ISyncBaselineWriter baseline, MovedItemLocator locator)
 {
     internal Task<Result<Unit, ResolutionFailure>> RenameRemoteAsync(ResolutionContext context, RelativeSyncPath path, Option<ContentTag> seen, CancellationToken cancellationToken) =>
         ResolutionTransfers.CheckedFile(context, path, seen).Match(
@@ -20,14 +21,15 @@ internal sealed class MoveTargetSteps(ResolutionTransfers transfers, IProviderCa
 
     internal Task<Result<Unit, ResolutionFailure>> RenameLocalAsync(ResolutionContext context, RelativeSyncPath path, Option<ContentTag> seen, CancellationToken cancellationToken) =>
         ResolutionTransfers.CheckedFile(context, path, seen).Match(
-            found => MoveAsideAsync(context, path, cancellationToken).BindAsync(_ => ForgetOtherAsync(context, path, found.Item.Id, cancellationToken)),
+            found => MoveAsideAsync(context, path, cancellationToken).BindAsync(_ => ForgetOtherAsync(context, path, found.Item.Id, cancellationToken)).BindAsync(_ => SettleMovedItemAsync(context, path, found.Item.Id, cancellationToken)),
             failure => Task.FromResult(Failed(failure)));
 
     internal Task<Result<Unit, ResolutionFailure>> RenameLocalAndUploadAsync(ResolutionContext context, RelativeSyncPath path, Option<ContentTag> seen, CancellationToken cancellationToken) =>
         ResolutionTransfers.CheckedFile(context, path, seen).Match(
             found => MoveAsideAsync(context, path, cancellationToken)
                 .BindAsync(copy => copy.Match(copyPath => UploadOrRollBackAsync(context, path, copyPath, cancellationToken), () => Task.FromResult(Done())))
-                .BindAsync(_ => ForgetOtherAsync(context, path, found.Item.Id, cancellationToken)),
+                .BindAsync(_ => ForgetOtherAsync(context, path, found.Item.Id, cancellationToken))
+                .BindAsync(_ => SettleMovedItemAsync(context, path, found.Item.Id, cancellationToken)),
             failure => Task.FromResult(Failed(failure)));
 
     private static Result<Unit, ResolutionFailure> Done() => Result.Success<Unit, ResolutionFailure>(Unit.Instance);
@@ -42,7 +44,10 @@ internal sealed class MoveTargetSteps(ResolutionTransfers transfers, IProviderCa
             .Match(Result.Success<IReadOnlyCollection<string>, ResolutionFailure>, _ => Result.Failure<IReadOnlyCollection<string>, ResolutionFailure>(ResolutionFailureFactory.CreateLocal(LocalOperationFailureFactory.CreateUnexpected())));
     }
 
-    private async Task<Result<Unit, ResolutionFailure>> RenameItemAsync(ResolutionContext context, RelativeSyncPath path, RemoteItemSnapshot item, IReadOnlyCollection<string> names, CancellationToken cancellationToken)
+    private Task<Result<Unit, ResolutionFailure>> RenameItemAsync(ResolutionContext context, RelativeSyncPath path, RemoteItemSnapshot item, IReadOnlyCollection<string> localNames, CancellationToken cancellationToken) =>
+        locator.SiblingNamesAsync(context.AccountId, item.ParentId, cancellationToken).BindAsync(remoteNames => RenameNamedAsync(context, path, item, [.. localNames, .. remoteNames], cancellationToken));
+
+    private async Task<Result<Unit, ResolutionFailure>> RenameNamedAsync(ResolutionContext context, RelativeSyncPath path, RemoteItemSnapshot item, IReadOnlyCollection<string> names, CancellationToken cancellationToken)
     {
         var newName = namer.Name(item.Name, time.GetUtcNow(), names);
         var forgotten = await ForgetOtherAsync(context, path, item.Id, cancellationToken).ConfigureAwait(false);
@@ -88,4 +93,38 @@ internal sealed class MoveTargetSteps(ResolutionTransfers transfers, IProviderCa
         context.Input.Baseline.TryGetValue(path, out var row) && row.ItemId != movedItem
             ? baseline.RemoveAsync(context.AccountId, [path], cancellationToken).MatchAsync(_ => Done(), _ => Failed(ResolutionFailureFactory.CreateNotRecorded()))
             : Task.FromResult(Done());
+
+    private async Task<Result<Unit, ResolutionFailure>> SettleMovedItemAsync(ResolutionContext context, RelativeSyncPath target, RemoteItemId movedItem, CancellationToken cancellationToken)
+    {
+        var oldRow = await locator.FindBaselineRowAsync(context.AccountId, movedItem, target, cancellationToken).ConfigureAwait(false);
+
+        return await oldRow.Match(row => MoveToTargetAsync(context, row, target, cancellationToken), () => Task.FromResult(Done())).ConfigureAwait(false);
+    }
+
+    private Task<Result<Unit, ResolutionFailure>> MoveToTargetAsync(ResolutionContext context, SyncBaselineEntry oldRow, RelativeSyncPath target, CancellationToken cancellationToken)
+    {
+        var oldLocal = ResolutionTransfers.LocalFile(context, oldRow.Path);
+        if (!oldLocal.Exists || ResolutionTransfers.LocalFile(context, target).Exists || ResolutionTransfers.LocalDirectory(context, target).Exists)
+            return Task.FromResult(Done());
+
+        return files.MoveAsync(oldLocal, ResolutionTransfers.FullPath(context, target), cancellationToken)
+            .MatchAsync(_ => RecordMoveAsync(context, oldRow, target, cancellationToken), _ => Task.FromResult(Done()));
+    }
+
+    private async Task<Result<Unit, ResolutionFailure>> RecordMoveAsync(ResolutionContext context, SyncBaselineEntry oldRow, RelativeSyncPath target, CancellationToken cancellationToken)
+    {
+        var moved = SyncBaselineEntryFactory.Create(context.AccountId, target, oldRow.ItemId, oldRow.Kind);
+
+        return await baseline.UpsertAsync(context.AccountId, [moved], cancellationToken)
+            .BindAsync(_ => baseline.RemoveAsync(context.AccountId, [oldRow.Path], cancellationToken))
+            .MatchAsync(_ => Task.FromResult(Done()), _ => UndoMoveAsync(context, oldRow.Path, target))
+            .ConfigureAwait(false);
+    }
+
+    private async Task<Result<Unit, ResolutionFailure>> UndoMoveAsync(ResolutionContext context, RelativeSyncPath oldPath, RelativeSyncPath target)
+    {
+        _ = await baseline.RemoveAsync(context.AccountId, [target], CancellationToken.None).MatchAsync(_ => Done(), _ => Done()).ConfigureAwait(false);
+
+        return await files.MoveAsync(ResolutionTransfers.LocalFile(context, target), ResolutionTransfers.FullPath(context, oldPath), CancellationToken.None).MatchAsync(_ => Done(), _ => Done()).ConfigureAwait(false);
+    }
 }
