@@ -25,5 +25,5 @@ internal sealed class RecordingTrayHost : IMainWindowVisibility, IAppShutdown, I
         return Task.CompletedTask;
     }
 
-    public void Exit() => Exits++;
+    public void Shutdown() => Exits++;
 }

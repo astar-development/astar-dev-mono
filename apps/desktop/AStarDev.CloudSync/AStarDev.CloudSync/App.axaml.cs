@@ -1,9 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using AStarDev.CloudSync.Sync;
+using AStarDev.CloudSync.Tray;
 using AStarDev.CloudSync.ViewModels;
 using AStarDev.CloudSync.ViewModels.DisplaySettings;
 using AStarDev.CloudSync.ViewModels.Overview;
+using AStarDev.CloudSync.ViewModels.Tray;
 using AStarDev.LoggingOTel;
 using AStarDev.SingleInstance;
 using Avalonia;
@@ -40,6 +42,7 @@ public partial class App : Application, IDisposable
 
             var window = new MainWindow { DataContext = services.GetRequiredService<MainWindowViewModel>() };
             desktop.MainWindow = window;
+            KeepRunningInTray(window);
             KeepAsRunningInstance(claim, window, desktop);
             _ = services.GetRequiredService<SyncOverviewViewModel>().LoadAsync(CancellationToken.None);
             _ = services.GetRequiredService<SignInStateOverviewReloader>();
@@ -54,6 +57,26 @@ public partial class App : Application, IDisposable
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private void KeepRunningInTray(Window window)
+    {
+        if (services is null)
+            return;
+
+        services.GetRequiredService<MainWindowVisibility>().Attach(window);
+        var shutdownRequests = services.GetRequiredService<IAppShutdown>();
+        window.Closing += (_, closing) => HideInsteadOfClosing(window, shutdownRequests, closing);
+        services.GetRequiredService<TrayIconService>().Start(this);
+    }
+
+    private static void HideInsteadOfClosing(Window window, IAppShutdown shutdownRequests, WindowClosingEventArgs closing)
+    {
+        if (shutdownRequests.State is not ShutdownState.Running || closing.CloseReason != WindowCloseReason.WindowClosing)
+            return;
+
+        closing.Cancel = true;
+        window.Hide();
     }
 
     private void ExitAsSecondInstance()
