@@ -15,6 +15,11 @@ public sealed class SyncRunServices : IDisposable
             .AddLogging(logging => logging.ClearProviders().AddProvider(Logs))
             .AddSingleton<TimeProvider>(Time)
             .AddSingleton<IConfirmSyncRestartDialog>(Dialog)
+            .AddSingleton<ISyncAttentionWriter>(Attention)
+            .AddSingleton<ISyncAttentionReader>(Attention)
+            .AddSingleton<ISyncAttentionCloser>(Attention)
+            .AddSingleton<ISyncBaselineReader>(Baseline)
+            .AddSingleton<IRemoteIndexReader>(Remote)
             .AddCloudSync()
             .AddSingleton<IRemoteIndexUpdater>(Steps)
             .AddSingleton<ILocalChangeDetector>(Steps)
@@ -27,6 +32,12 @@ public sealed class SyncRunServices : IDisposable
     public AccountId Work { get; } = AccountIdFactory.Create(Guid.Parse("22222222-2222-2222-2222-222222222222"));
 
     public ScriptedSyncSteps Steps { get; } = new();
+
+    public RecordingAttentionWriter Attention { get; } = new();
+
+    public InMemorySyncBaseline Baseline { get; } = new();
+
+    public ScriptedRemoteIndex Remote { get; } = new();
 
     public ScriptedRestartDialog Dialog { get; } = new();
 

@@ -51,10 +51,21 @@ public abstract record DownloadItemOutcome
     /// <summary>The path went to the attention queue.</summary>
     public sealed record SentToConflicts : DownloadItemOutcome
     {
-        internal SentToConflicts(ConflictKind kind) => Kind = kind;
+        internal SentToConflicts(ConflictFinding finding) => Finding = finding;
+
+        /// <summary>The conflict with both sides' snapshots.</summary>
+        public ConflictFinding Finding { get; }
 
         /// <summary>Why the path conflicts.</summary>
-        public ConflictKind Kind { get; }
+        public ConflictKind Kind => Finding.Kind;
+    }
+
+    /// <summary>A file both sides added with the same size and content hash was linked in the baseline instead of becoming a conflict (#1534).</summary>
+    public sealed record LinkedExisting : DownloadItemOutcome
+    {
+        internal LinkedExisting()
+        {
+        }
     }
 
     /// <summary>The item was left alone.</summary>

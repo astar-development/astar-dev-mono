@@ -119,7 +119,7 @@ internal sealed class DownloadExecutor(DownloadFileStep fileStep, ILocalFileOper
     private async Task<Result<IReadOnlyList<DownloadItemOutcome>, DownloadPassFailure>> FinishAsync(AccountId accountId, IDirectoryInfo root, DownloadPlan plan, IReadOnlyDictionary<RelativeSyncPath, SyncBaselineEntry> byPath, BaselineBatch batch, IReadOnlyList<DownloadItemOutcome> sofar, CancellationToken cancellationToken)
     {
         List<DownloadItemOutcome> outcomes = [.. sofar];
-        outcomes.AddRange(plan.Items.OfType<DownloadPlanItem.SendToConflicts>().Select(item => DownloadItemOutcomeFactory.CreateSentToConflicts(item.Kind)));
+        outcomes.AddRange(plan.Items.OfType<DownloadPlanItem.SendToConflicts>().Select(item => DownloadItemOutcomeFactory.CreateSentToConflicts(item.Finding)));
         foreach (var deletion in plan.Items.OfType<DownloadPlanItem.DeleteLocal>())
             outcomes.Add(await DeleteAsync(root, deletion, byPath, batch, cancellationToken).ConfigureAwait(false));
 

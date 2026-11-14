@@ -16,7 +16,7 @@ public class GivenADownloadPassSummary
             DownloadItemOutcomeFactory.CreateFolderCreated(),
             DownloadItemOutcomeFactory.CreateMoved(),
             DownloadItemOutcomeFactory.CreateDeletedLocally(),
-            DownloadItemOutcomeFactory.CreateSentToConflicts(ConflictKindFactory.CreateBothAdded()),
+            DownloadItemOutcomeFactory.CreateSentToConflicts(ConflictFindings.Of("Docs/a.txt", ConflictKindFactory.CreateBothAdded())),
             DownloadItemOutcomeFactory.CreateSkipped(DownloadSkipReasonFactory.CreateRemoteGone()),
             DownloadItemOutcomeFactory.CreateFailed(DownloadFailureFactory.CreateLocal(LocalOperationFailureFactory.CreateLocked())),
         ];

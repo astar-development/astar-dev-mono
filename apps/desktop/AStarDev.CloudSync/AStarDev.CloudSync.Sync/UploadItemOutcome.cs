@@ -65,17 +65,16 @@ public abstract record UploadItemOutcome
     /// <summary>Both sides changed, so the path went to conflict handling and nothing was touched.</summary>
     public sealed record SentToConflicts : UploadItemOutcome
     {
-        internal SentToConflicts(RelativeSyncPath path, ConflictKind kind)
-        {
-            Path = path;
-            Kind = kind;
-        }
+        internal SentToConflicts(ConflictFinding finding) => Finding = finding;
+
+        /// <summary>The conflict with both sides' snapshots.</summary>
+        public ConflictFinding Finding { get; }
 
         /// <inheritdoc />
-        public override RelativeSyncPath Path { get; }
+        public override RelativeSyncPath Path => Finding.Path;
 
         /// <summary>What kind of conflict it is.</summary>
-        public ConflictKind Kind { get; }
+        public ConflictKind Kind => Finding.Kind;
     }
 
     /// <summary>The file changed while it was read, so it waits for the next pass.</summary>

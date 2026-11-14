@@ -47,7 +47,7 @@ internal sealed class UploadPlanner(ISyncSelectionEvaluator evaluator) : IUpload
 
     private static Option<UploadPlanItem> Some(UploadPlanItem item) => Option.Some(item);
 
-    private static Option<UploadPlanItem> Conflict(RelativeSyncPath path, ConflictKind kind) => Some(UploadPlanItemFactory.CreateSendToConflicts(path, kind));
+    private static Option<UploadPlanItem> Conflict(LocalChange change, ConflictKind kind, Option<RemoteItemSnapshot> remote) => Some(UploadPlanItemFactory.CreateSendToConflicts(ConflictSides.Finding(change.Path, kind, Option.Some(change), remote), remote));
 
     private static Option<RemoteItemSnapshot> RemoteAt(IReadOnlyDictionary<RelativeSyncPath, RemoteItemSnapshot> remote, RelativeSyncPath path) => remote.TryGetValue(path, out var found) ? Option.Some(found) : Option.None<RemoteItemSnapshot>();
 
@@ -88,24 +88,24 @@ internal sealed class UploadPlanner(ISyncSelectionEvaluator evaluator) : IUpload
     private static Option<UploadPlanItem> AddedOverExisting(LocalChange.Added added, RemoteItemSnapshot existing) =>
         added.Kind is LocalItemKind.Folder && existing.Kind is RemoteItemKind.Folder
             ? Some(UploadPlanItemFactory.CreateLinkExisting(added.Path, existing.Id))
-            : Conflict(added.Path, ConflictKindFactory.CreateBothAdded());
+            : Conflict(added, ConflictKindFactory.CreateBothAdded(), Option.Some(existing));
 
     private static Option<UploadPlanItem> PlanModified(LocalChange.Modified modified, IReadOnlyDictionary<RelativeSyncPath, SyncBaselineEntry> baseline, IReadOnlyDictionary<RelativeSyncPath, RemoteItemSnapshot> remote, IRemoteNamePolicy names) =>
         names.Check(NameOf(modified.Path), modified.Path, modified.Size).Match(
-            _ => BaselineAt(baseline, modified.Path).Match(entry => ModifiedAgainstBaseline(modified, entry, RemoteAt(remote, modified.Path)), () => Conflict(modified.Path, ConflictKindFactory.CreateBothAdded())),
+            _ => BaselineAt(baseline, modified.Path).Match(entry => ModifiedAgainstBaseline(modified, entry, RemoteAt(remote, modified.Path)), () => Conflict(modified, ConflictKindFactory.CreateBothAdded(), RemoteAt(remote, modified.Path))),
             reason => Some(UploadPlanItemFactory.CreateRejected(modified.Path, reason)));
 
     private static Option<UploadPlanItem> ModifiedAgainstBaseline(LocalChange.Modified modified, SyncBaselineEntry entry, Option<RemoteItemSnapshot> remote) =>
         remote.Match(
             snapshot => entry.Kind is SyncBaselineKind.File file && snapshot.Kind is RemoteItemKind.File current && snapshot.Id == entry.ItemId && current.CTag == file.CTag
-                ? Replace(modified, snapshot.Id, file.CTag)
-                : Conflict(modified.Path, ConflictKindFactory.CreateBothModified()),
-            () => Conflict(modified.Path, ConflictKindFactory.CreateLocalModifiedRemoteDeleted()));
+                ? Replace(modified, snapshot, file.CTag)
+                : Conflict(modified, ConflictKindFactory.CreateBothModified(), remote),
+            () => Conflict(modified, ConflictKindFactory.CreateLocalModifiedRemoteDeleted(), remote));
 
-    private static Option<UploadPlanItem> Replace(LocalChange.Modified modified, RemoteItemId itemId, ContentTag cTag) =>
+    private static Option<UploadPlanItem> Replace(LocalChange.Modified modified, RemoteItemSnapshot snapshot, ContentTag cTag) =>
         UploadPreconditionFactory.CreateMustMatch(cTag).Match(
-            precondition => Some(UploadPlanItemFactory.CreateUploadReplace(modified.Path, itemId, modified.Size, modified.LastWriteUtc, precondition)),
-            _ => Conflict(modified.Path, ConflictKindFactory.CreateBothModified()));
+            precondition => Some(UploadPlanItemFactory.CreateUploadReplace(modified.Path, snapshot.Id, modified.Size, modified.LastWriteUtc, precondition)),
+            _ => Conflict(modified, ConflictKindFactory.CreateBothModified(), Option.Some(snapshot)));
 
     private static Option<UploadPlanItem> PlanDeleted(LocalChange.Deleted deleted, IReadOnlyDictionary<RelativeSyncPath, SyncBaselineEntry> baseline, IReadOnlyDictionary<RelativeSyncPath, RemoteItemSnapshot> remote) =>
         BaselineAt(baseline, deleted.Path).Match(
@@ -114,7 +114,7 @@ internal sealed class UploadPlanner(ISyncSelectionEvaluator evaluator) : IUpload
 
     private static Option<UploadPlanItem> DeletedAgainstRemote(LocalChange.Deleted deleted, SyncBaselineEntry entry, RemoteItemSnapshot snapshot, IReadOnlyDictionary<RelativeSyncPath, SyncBaselineEntry> baseline, IReadOnlyDictionary<RelativeSyncPath, RemoteItemSnapshot> remote)
     {
-        var conflict = Conflict(deleted.Path, ConflictKindFactory.CreateLocalDeletedRemoteModified());
+        var conflict = Conflict(deleted, ConflictKindFactory.CreateLocalDeletedRemoteModified(), Option.Some(snapshot));
         if (snapshot.Id != entry.ItemId)
             return conflict;
 

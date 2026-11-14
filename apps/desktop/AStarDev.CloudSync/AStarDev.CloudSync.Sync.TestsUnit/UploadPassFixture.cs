@@ -46,7 +46,7 @@ public sealed class UploadPassFixture : IDisposable
 
     public UploadPassFixture() => Recorder = new FakeUploadRecorder(Baseline);
 
-    public UploadPassFixture AddedFile(string path) => Local(LocalChangeFactory.CreateAdded(UploadPlanFixture.At(path), LocalItemKindFactory.CreateFile(), 10, Written));
+    public UploadPassFixture AddedFile(string path, long size = 10) => Local(LocalChangeFactory.CreateAdded(UploadPlanFixture.At(path), LocalItemKindFactory.CreateFile(), size, Written));
 
     public UploadPassFixture AddedFolder(string path) => Local(LocalChangeFactory.CreateAdded(UploadPlanFixture.At(path), LocalItemKindFactory.CreateFolder(), 0, Written));
 

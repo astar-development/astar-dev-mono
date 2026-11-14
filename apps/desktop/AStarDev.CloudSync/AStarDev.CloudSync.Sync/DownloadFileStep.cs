@@ -38,6 +38,15 @@ internal sealed class DownloadFileStep(IProviderCapability<IRemoteFileDownloader
         ? (DownloadItemOutcomeFactory.CreateSkipped(DownloadSkipReasonFactory.CreateRemoteGone()), Option.None<SyncBaselineEntry>())
         : Failed(DownloadFailureFactory.CreateProvider(error));
 
+    private static SideSnapshot LocalSnapshotOf(IFileInfo target)
+    {
+        target.Refresh();
+
+        return target.Exists
+            ? SideSnapshotFactory.CreatePresent(target.Length, new DateTimeOffset(target.LastWriteTimeUtc, TimeSpan.Zero), Option.None<ContentHash>(), Option.None<ContentTag>())
+            : SideSnapshotFactory.CreateAbsent();
+    }
+
     private static Option<ConflictKind> TargetChanged(IFileInfo target, Option<SyncBaselineEntry> baseline)
     {
         target.Refresh();
@@ -86,7 +95,7 @@ internal sealed class DownloadFileStep(IProviderCapability<IRemoteFileDownloader
 
         var changed = TargetChanged(attempt.Target, attempt.Baseline);
         if (changed.Match(_ => true, () => false))
-            return changed.Match(kind => (DownloadItemOutcomeFactory.CreateSentToConflicts(kind), Option.None<SyncBaselineEntry>()), () => Failed(DownloadFailureFactory.CreateLocal(LocalOperationFailureFactory.CreateUnexpected())));
+            return changed.Match(kind => (DownloadItemOutcomeFactory.CreateSentToConflicts(ConflictFindingFactory.Create(attempt.Plan.Path, kind, LocalSnapshotOf(attempt.Target), ConflictSides.Remote(attempt.Plan.Item))), Option.None<SyncBaselineEntry>()), () => Failed(DownloadFailureFactory.CreateLocal(LocalOperationFailureFactory.CreateUnexpected())));
 
         return await files.ReplaceAsync(attempt.Temp, attempt.Target, attempt.Plan.Item.LastModified, cancellationToken)
             .MatchAsync(_ => HashAsync(attempt, downloaded, cancellationToken), failure => Task.FromResult(Failed(DownloadFailureFactory.CreateLocal(failure))))

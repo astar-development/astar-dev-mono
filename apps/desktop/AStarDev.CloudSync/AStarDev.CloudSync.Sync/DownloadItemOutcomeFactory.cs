@@ -19,7 +19,10 @@ public static class DownloadItemOutcomeFactory
     public static DownloadItemOutcome CreateHeldByGuard() => new DownloadItemOutcome.HeldByGuard();
 
     /// <summary>Creates the <see cref="DownloadItemOutcome.SentToConflicts"/> case.</summary>
-    public static DownloadItemOutcome CreateSentToConflicts(ConflictKind kind) => new DownloadItemOutcome.SentToConflicts(kind);
+    public static DownloadItemOutcome CreateSentToConflicts(ConflictFinding finding) => new DownloadItemOutcome.SentToConflicts(finding);
+
+    /// <summary>Creates the <see cref="DownloadItemOutcome.LinkedExisting"/> case.</summary>
+    public static DownloadItemOutcome CreateLinkedExisting() => new DownloadItemOutcome.LinkedExisting();
 
     /// <summary>Creates the <see cref="DownloadItemOutcome.Skipped"/> case.</summary>
     public static DownloadItemOutcome CreateSkipped(DownloadSkipReason reason) => new DownloadItemOutcome.Skipped(reason);

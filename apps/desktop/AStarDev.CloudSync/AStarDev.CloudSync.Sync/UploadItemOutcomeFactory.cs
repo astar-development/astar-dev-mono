@@ -16,7 +16,7 @@ public static class UploadItemOutcomeFactory
     public static UploadItemOutcome CreateRemovedRemotely(RelativeSyncPath path) => new UploadItemOutcome.RemovedRemotely(path);
 
     /// <summary>Creates the <see cref="UploadItemOutcome.SentToConflicts"/> case.</summary>
-    public static UploadItemOutcome CreateSentToConflicts(RelativeSyncPath path, ConflictKind kind) => new UploadItemOutcome.SentToConflicts(path, kind);
+    public static UploadItemOutcome CreateSentToConflicts(ConflictFinding finding) => new UploadItemOutcome.SentToConflicts(finding);
 
     /// <summary>Creates the <see cref="UploadItemOutcome.Deferred"/> case.</summary>
     public static UploadItemOutcome CreateDeferred(RelativeSyncPath path) => new UploadItemOutcome.Deferred(path);

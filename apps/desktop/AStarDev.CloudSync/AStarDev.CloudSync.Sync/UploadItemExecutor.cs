@@ -76,10 +76,18 @@ internal sealed class UploadItemExecutor(IUploadRecorder recorder, ISyncBaseline
 
     private static UploadItemOutcome Reported(UploadPlanItem item) => item switch
     {
-        UploadPlanItem.SendToConflicts conflict => UploadItemOutcomeFactory.CreateSentToConflicts(conflict.Path, conflict.Kind),
+        UploadPlanItem.SendToConflicts conflict => UploadItemOutcomeFactory.CreateSentToConflicts(conflict.Finding),
         UploadPlanItem.Rejected rejected => UploadItemOutcomeFactory.CreateRejected(rejected.Path, rejected.Reason),
         _ => UploadItemOutcomeFactory.CreateFailed(item.Path, ProviderErrorFactory.CreateUnexpected()),
     };
+
+    private static ConflictFinding FindingFor(PassRun run, RelativeSyncPath path, ConflictKind kind)
+    {
+        var change = run.Input.Changes.Changes.FirstOrNone(candidate => candidate.Path == path);
+        var remote = run.Input.Remote.TryGetValue(path, out var found) ? Option.Some(found) : Option.None<RemoteItemSnapshot>();
+
+        return ConflictSides.Finding(path, kind, change, remote);
+    }
 
     private static IFileInfo SourceOf(PassRun run, RelativeSyncPath path) => run.Input.Root.FileSystem.FileInfo.New(run.Input.Root.FileSystem.Path.Join(run.Input.Root.FullName, path.Value));
 
@@ -90,7 +98,7 @@ internal sealed class UploadItemExecutor(IUploadRecorder recorder, ISyncBaseline
 
         return error switch
         {
-            ProviderError.PreconditionFailed or ProviderError.NameConflict => UploadItemOutcomeFactory.CreateSentToConflicts(item.Path, isReplace ? ConflictKindFactory.CreateBothModified() : ConflictKindFactory.CreateBothAdded()),
+            ProviderError.PreconditionFailed or ProviderError.NameConflict => UploadItemOutcomeFactory.CreateSentToConflicts(FindingFor(run, item.Path, isReplace ? ConflictKindFactory.CreateBothModified() : ConflictKindFactory.CreateBothAdded())),
             ProviderError.SourceChanged => UploadItemOutcomeFactory.CreateDeferred(item.Path),
             _ => UploadItemOutcomeFactory.CreateFailed(item.Path, error),
         };
@@ -173,7 +181,7 @@ internal sealed class UploadItemExecutor(IUploadRecorder recorder, ISyncBaseline
         run.Observe(error);
 
         return error is ProviderError.PreconditionFailed
-            ? UploadItemOutcomeFactory.CreateSentToConflicts(path, ConflictKindFactory.CreateLocalDeletedRemoteModified())
+            ? UploadItemOutcomeFactory.CreateSentToConflicts(FindingFor(run, path, ConflictKindFactory.CreateLocalDeletedRemoteModified()))
             : UploadItemOutcomeFactory.CreateFailed(path, error);
     }
 

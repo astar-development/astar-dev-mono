@@ -20,7 +20,7 @@ public sealed record UploadPassSummary
     /// <summary>Remote folders created or found.</summary>
     public int FoldersCreated => Outcomes.OfType<UploadItemOutcome.FolderCreated>().Count();
 
-    /// <summary>Existing remote folders linked.</summary>
+    /// <summary>Existing remote folders linked, and files both sides added that were linked because size and hash match.</summary>
     public int Linked => Outcomes.OfType<UploadItemOutcome.Linked>().Count();
 
     /// <summary>Remote items deleted, or already gone.</summary>
@@ -28,6 +28,9 @@ public sealed record UploadPassSummary
 
     /// <summary>Paths handed to conflict handling.</summary>
     public int SentToConflicts => Outcomes.OfType<UploadItemOutcome.SentToConflicts>().Count();
+
+    /// <summary>The conflicts the pass found, each with both sides' snapshots, for the runner to record.</summary>
+    public IReadOnlyList<ConflictFinding> Conflicts => [.. Outcomes.OfType<UploadItemOutcome.SentToConflicts>().Select(outcome => outcome.Finding)];
 
     /// <summary>Files that changed while read and wait for the next pass.</summary>
     public int Deferred => Outcomes.OfType<UploadItemOutcome.Deferred>().Count();

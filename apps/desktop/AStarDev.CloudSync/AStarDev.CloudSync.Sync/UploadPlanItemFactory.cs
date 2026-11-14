@@ -1,3 +1,5 @@
+using AStarDev.FunctionalParadigm;
+
 namespace AStarDev.CloudSync.Sync;
 
 /// <summary>Creates <see cref="UploadPlanItem"/> cases.</summary>
@@ -22,7 +24,7 @@ public static class UploadPlanItemFactory
     public static UploadPlanItem CreateForgetBaseline(RelativeSyncPath path) => new UploadPlanItem.ForgetBaseline(path);
 
     /// <summary>Creates the <see cref="UploadPlanItem.SendToConflicts"/> case.</summary>
-    public static UploadPlanItem CreateSendToConflicts(RelativeSyncPath path, ConflictKind kind) => new UploadPlanItem.SendToConflicts(path, kind);
+    public static UploadPlanItem CreateSendToConflicts(ConflictFinding finding, Option<RemoteItemSnapshot> remoteItem) => new UploadPlanItem.SendToConflicts(finding, remoteItem);
 
     /// <summary>Creates the <see cref="UploadPlanItem.Rejected"/> case.</summary>
     public static UploadPlanItem CreateRejected(RelativeSyncPath path, InvalidRemoteName reason) => new UploadPlanItem.Rejected(path, reason);

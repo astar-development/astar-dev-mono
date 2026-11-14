@@ -1,3 +1,5 @@
+using AStarDev.FunctionalParadigm;
+
 namespace AStarDev.CloudSync.Sync;
 
 /// <summary>Creates <see cref="DownloadPlanItem"/> values.</summary>
@@ -16,5 +18,5 @@ public static class DownloadPlanItemFactory
     public static DownloadPlanItem CreateDeleteLocal(RelativeSyncPath path, RemoteItemId itemId) => new DownloadPlanItem.DeleteLocal(path, itemId);
 
     /// <summary>Creates the <see cref="DownloadPlanItem.SendToConflicts"/> case.</summary>
-    public static DownloadPlanItem CreateSendToConflicts(RelativeSyncPath path, ConflictKind kind) => new DownloadPlanItem.SendToConflicts(path, kind);
+    public static DownloadPlanItem CreateSendToConflicts(ConflictFinding finding, Option<RemoteItemSnapshot> remoteItem) => new DownloadPlanItem.SendToConflicts(finding, remoteItem);
 }

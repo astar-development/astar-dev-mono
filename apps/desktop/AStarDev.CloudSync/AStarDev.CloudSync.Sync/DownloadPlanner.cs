@@ -16,7 +16,7 @@ internal sealed class DownloadPlanner(ISyncSelectionEvaluator evaluator) : IDown
         return Guard(state, OnePerPath(items));
     }
 
-    private static IEnumerable<DownloadPlanItem> Conflict(RelativeSyncPath path, ConflictKind kind) => [DownloadPlanItemFactory.CreateSendToConflicts(path, kind)];
+    private static IEnumerable<DownloadPlanItem> Conflict(RelativeSyncPath path, ConflictKind kind, Option<LocalChange> local, Option<RemoteItemSnapshot> remote) => [DownloadPlanItemFactory.CreateSendToConflicts(ConflictSides.Finding(path, kind, local, remote), remote)];
 
     private static IEnumerable<DownloadPlanItem> Fetch(RemoteIndexEntry entry) =>
         entry.Item.Kind is RemoteItemKind.File ? [DownloadPlanItemFactory.CreateDownloadFile(entry.Path, entry.Item)] : [DownloadPlanItemFactory.CreateCreateLocalFolder(entry.Path, entry.Item.Id)];
@@ -55,14 +55,14 @@ internal sealed class DownloadPlanner(ISyncSelectionEvaluator evaluator) : IDown
     private static IEnumerable<DownloadPlanItem> NewOverLocal(RemoteIndexEntry entry, LocalChange change) => change switch
     {
         LocalChange.Added added when IsFolder(entry) && added.Kind is LocalItemKind.Folder => Fetch(entry),
-        LocalChange.Added => Conflict(entry.Path, ConflictKindFactory.CreateBothAdded()),
-        LocalChange.Modified => Conflict(entry.Path, ConflictKindFactory.CreateBothModified()),
-        LocalChange.Deleted => Conflict(entry.Path, ConflictKindFactory.CreateLocalDeletedRemoteModified()),
+        LocalChange.Added => Conflict(entry.Path, ConflictKindFactory.CreateBothAdded(), Option.Some(change), Option.Some(entry.Item)),
+        LocalChange.Modified => Conflict(entry.Path, ConflictKindFactory.CreateBothModified(), Option.Some(change), Option.Some(entry.Item)),
+        LocalChange.Deleted => Conflict(entry.Path, ConflictKindFactory.CreateLocalDeletedRemoteModified(), Option.Some(change), Option.Some(entry.Item)),
         _ => [],
     };
 
     private static IEnumerable<DownloadPlanItem> Replace(RemoteIndexEntry entry, SyncBaselineEntry stale) =>
-        IsFolder(entry) == stale.Kind is SyncBaselineKind.Folder ? Fetch(entry) : Conflict(entry.Path, ConflictKindFactory.CreateBothModified());
+        IsFolder(entry) == stale.Kind is SyncBaselineKind.Folder ? Fetch(entry) : Conflict(entry.Path, ConflictKindFactory.CreateBothModified(), Option.None<LocalChange>(), Option.Some(entry.Item));
 
     private static IEnumerable<DownloadFolderMove> FolderMoves(DownloadPlanState state) =>
         state.Remote.Where(IsFolder).SelectMany(entry => state.BaselineOf(entry.Item.Id).Match<IEnumerable<DownloadFolderMove>>(baseline => MoveOf(state, baseline, entry), () => []));
@@ -87,15 +87,15 @@ internal sealed class DownloadPlanner(ISyncSelectionEvaluator evaluator) : IDown
     {
         (RemoteItemKind.File remote, SyncBaselineKind.File synced) => UnchangedFile(state, entry, remote.CTag != synced.CTag),
         (RemoteItemKind.Folder, SyncBaselineKind.Folder) => [],
-        _ => Conflict(entry.Path, ConflictKindFactory.CreateBothModified()),
+        _ => Conflict(entry.Path, ConflictKindFactory.CreateBothModified(), state.LocalAt(entry.Path), Option.Some(entry.Item)),
     };
 
     private static IEnumerable<DownloadPlanItem> UnchangedFile(DownloadPlanState state, RemoteIndexEntry entry, bool remoteChanged) =>
         state.LocalAt(entry.Path).Match(
             change => change switch
             {
-                LocalChange.Modified when remoteChanged => Conflict(entry.Path, ConflictKindFactory.CreateBothModified()),
-                LocalChange.Deleted when remoteChanged => Conflict(entry.Path, ConflictKindFactory.CreateLocalDeletedRemoteModified()),
+                LocalChange.Modified when remoteChanged => Conflict(entry.Path, ConflictKindFactory.CreateBothModified(), Option.Some(change), Option.Some(entry.Item)),
+                LocalChange.Deleted when remoteChanged => Conflict(entry.Path, ConflictKindFactory.CreateLocalDeletedRemoteModified(), Option.Some(change), Option.Some(entry.Item)),
                 _ => [],
             },
             () => remoteChanged || (state.IsMissingLocally(entry.Path) && state.QuarantineAt(entry.Path) is PathQuarantineState.Clear) ? Fetch(entry) : []);
@@ -111,16 +111,16 @@ internal sealed class DownloadPlanner(ISyncSelectionEvaluator evaluator) : IDown
         if (own.Match(WaitsForNextPass, () => false) || below.Any(WaitsForNextPass))
             return [];
 
-        return own.Match(change => change is LocalChange.Deleted ? Conflict(from, ConflictKindFactory.CreateLocalDeletedRemoteModified()) : Conflict(from, ConflictKindFactory.CreateBothModified()), () => MovedUnchangedItself(state, entry, baseline, below, moves));
+        return own.Match(change => change is LocalChange.Deleted ? Conflict(from, ConflictKindFactory.CreateLocalDeletedRemoteModified(), own, Option.Some(entry.Item)) : Conflict(from, ConflictKindFactory.CreateBothModified(), own, Option.Some(entry.Item)), () => MovedUnchangedItself(state, entry, baseline, below, moves));
     }
 
     private static IEnumerable<DownloadPlanItem> MovedUnchangedItself(DownloadPlanState state, RemoteIndexEntry entry, SyncBaselineEntry baseline, IReadOnlyList<LocalChange> below, IReadOnlyList<DownloadFolderMove> moves)
     {
         if (below.Any(ChangesData))
-            return Conflict(baseline.Path, ConflictKindFactory.CreateBothModified());
+            return Conflict(baseline.Path, ConflictKindFactory.CreateBothModified(), state.LocalAt(baseline.Path), Option.Some(entry.Item));
 
         if (IsTargetTaken(state, entry, baseline))
-            return Conflict(entry.Path, ConflictKindFactory.CreateMoveTargetTaken());
+            return Conflict(entry.Path, ConflictKindFactory.CreateMoveTargetTaken(), state.LocalAt(entry.Path), Option.Some(entry.Item));
 
         return moves.Any(move => !move.Blocked && IsCoveredBy(move, baseline.Path, entry.Path)) ? [] : [DownloadPlanItemFactory.CreateMoveLocal(baseline.Path, entry.Path, entry.Item.Id)];
     }
@@ -133,7 +133,7 @@ internal sealed class DownloadPlanner(ISyncSelectionEvaluator evaluator) : IDown
         if (!state.Downloads(baseline.Path) || state.QuarantineAt(baseline.Path) is not PathQuarantineState.Clear || IsStillSelected(state, baseline) || state.RemoteAt(baseline.Path).Match(_ => true, () => false))
             return [];
 
-        return state.LocalAt(baseline.Path).Match(change => change is LocalChange.Modified ? Conflict(baseline.Path, ConflictKindFactory.CreateLocalModifiedRemoteDeleted()) : [], () => DeleteUnchanged(state, baseline));
+        return state.LocalAt(baseline.Path).Match(change => change is LocalChange.Modified ? Conflict(baseline.Path, ConflictKindFactory.CreateLocalModifiedRemoteDeleted(), Option.Some(change), Option.None<RemoteItemSnapshot>()) : [], () => DeleteUnchanged(state, baseline));
     }
 
     private static bool IsStillSelected(DownloadPlanState state, SyncBaselineEntry baseline) => state.RemoteOf(baseline.ItemId).Match(remote => state.Downloads(remote.Path), () => false);
