@@ -63,5 +63,5 @@ public class GivenTheFolderSelectionSnapshots
 
     private static SelectionRule Rule(string path, SyncDirection direction) => SelectionRuleFactory.Create(Account, RelativePaths.Of(path), Option.None<RemoteItemId>(), SelectionRuleKindFactory.CreateInclude(direction));
 
-    private static SyncPair SyncedPair(string path) => SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), Account, path, RelativePaths.Of(path), Option.None<RemoteItemId>(), SyncDirectionFactory.CreateUploadOnly(), SyncStatusFactory.CreateUpToDate(), 0, Option.Some(TestData.Now));
+    private static SyncPair SyncedPair(string path) => SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), Account, path, RelativePaths.Of(path), Option.None<RemoteItemId>(), SyncDirectionFactory.CreateUploadOnly(), SyncPairStateFactory.Create(SyncStatusFactory.CreateUpToDate(), 0, Option.Some(TestData.Now)));
 }

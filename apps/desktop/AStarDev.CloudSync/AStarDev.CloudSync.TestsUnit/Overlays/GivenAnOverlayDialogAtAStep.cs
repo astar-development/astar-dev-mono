@@ -63,7 +63,7 @@ public class GivenAnOverlayDialogAtAStep
         var tree = new FakeFolderTreeSource { Levels = _ => Result.Success<IReadOnlyList<FolderTreeNode>, FolderTreeFailure>([DocsNode()]) };
         var rules = new FakeSelectionRuleReader { Rules = Result.Success<IReadOnlyList<SelectionRule>, ErrorResponse>([SelectionRuleFactory.Create(Account, RelativePaths.Of("Docs"), Option.None<RemoteItemId>(), SelectionRuleKindFactory.CreateInclude(SyncDirectionFactory.CreateTwoWay()))]) };
         var writer = new FakeSelectionRuleWriter();
-        var pair = SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), Account, "Docs", RelativePaths.Of("Docs"), Option.None<RemoteItemId>(), SyncDirectionFactory.CreateTwoWay(), SyncStatusFactory.CreateUpToDate(), 0, Option.Some(TestData.Now));
+        var pair = SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), Account, "Docs", RelativePaths.Of("Docs"), Option.None<RemoteItemId>(), SyncDirectionFactory.CreateTwoWay(), SyncPairStateFactory.Create(SyncStatusFactory.CreateUpToDate(), 0, Option.Some(TestData.Now)));
         var pairs = new FakeSyncPairReader { Pairs = _ => Result.Success<IReadOnlyList<SyncPair>, ErrorResponse>([pair]) };
         var dialog = TestData.CreateFolderSelection(tree, rules, writer, pairs, new InMemoryAccountStore());
         var window = Show(new FolderSelectionView(), dialog);

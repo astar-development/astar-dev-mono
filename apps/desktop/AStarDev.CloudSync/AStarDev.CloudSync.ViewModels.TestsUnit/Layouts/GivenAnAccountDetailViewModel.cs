@@ -97,7 +97,7 @@ public class GivenAnAccountDetailViewModel
     {
         var localization = TestData.CreateLocalization();
         var cloudAccount = TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
-        var model = SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), cloudAccount.Id, "Documents", RelativePaths.Of("Documents"), Option.None<RemoteItemId>(), SyncDirectionFactory.CreateTwoWay(), SyncStatusFactory.CreateUpToDate(), 1, Option.None<DateTimeOffset>());
+        var model = SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), cloudAccount.Id, "Documents", RelativePaths.Of("Documents"), Option.None<RemoteItemId>(), SyncDirectionFactory.CreateTwoWay(), SyncPairStateFactory.Create(SyncStatusFactory.CreateUpToDate(), 1, Option.None<DateTimeOffset>()));
         var pair = new SyncPairViewModel(model, cloudAccount, localization, TestData.CreateTime());
         var account = new AccountViewModel(cloudAccount, [], localization, TestData.CreateTime());
 

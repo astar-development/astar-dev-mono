@@ -53,5 +53,5 @@ public sealed class PlaceholderSyncOverviewSource(TimeProvider timeProvider) : I
         return Task.FromResult(Result.Success<SyncOverview, ErrorResponse>(SyncOverviewFactory.Create([work, personal, photos, archive], [documents, projects, desktop, recipes, music, holidayPhotos, backups], activity, conflicts, throughput, BytesMovedToday, Option.Some(now.AddMinutes(-10)))));
     }
 
-    private static SyncPair CreatePair(CloudAccount account, string name, string remotePath, SyncDirection direction, SyncStatus status, int fileCount, Option<DateTimeOffset> lastSync) => SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), account.Id, name, RelativePaths.Of(remotePath.TrimStart('/')), Option.None<RemoteItemId>(), direction, status, fileCount, lastSync);
+    private static SyncPair CreatePair(CloudAccount account, string name, string remotePath, SyncDirection direction, SyncStatus status, int fileCount, Option<DateTimeOffset> lastSync) => SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), account.Id, name, RelativePaths.Of(remotePath.TrimStart('/')), Option.None<RemoteItemId>(), direction, SyncPairStateFactory.Create(status, fileCount, lastSync));
 }
