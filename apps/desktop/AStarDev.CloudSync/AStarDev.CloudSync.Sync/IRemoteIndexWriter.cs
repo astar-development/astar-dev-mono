@@ -24,4 +24,12 @@ public interface IRemoteIndexWriter
     /// <param name="cancellationToken">Cancels the write.</param>
     /// <returns>The missing items as deleted changes, or the error that stopped the write.</returns>
     Task<Result<RemoteIndexDelta, ErrorResponse>> CompleteResyncAsync(AccountId accountId, CancellationToken cancellationToken);
+
+    /// <summary>Renames one indexed item in place, after the cloud rename succeeded (#1626), so the index agrees with the cloud before the next change page. The cursor, the other rows and the item's folder are not touched. An item that is not indexed changes nothing.</summary>
+    /// <param name="accountId">The account.</param>
+    /// <param name="itemId">The renamed item.</param>
+    /// <param name="newName">The new name, without a path.</param>
+    /// <param name="cancellationToken">Cancels the write.</param>
+    /// <returns>Success, or the error that stopped the write.</returns>
+    Task<Result<Unit, ErrorResponse>> RenameItemAsync(AccountId accountId, RemoteItemId itemId, string newName, CancellationToken cancellationToken);
 }

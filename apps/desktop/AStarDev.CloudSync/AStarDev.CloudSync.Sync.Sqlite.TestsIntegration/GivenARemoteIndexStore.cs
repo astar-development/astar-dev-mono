@@ -373,4 +373,39 @@ public sealed class GivenARemoteIndexStore : IAsyncLifetime
 
         return (long)command.ExecuteScalar()!;
     }
+
+    [Fact]
+    public async Task when_an_item_is_renamed_then_only_its_name_changes_and_the_cursor_stays()
+    {
+        _ = await Apply(FirstAccount, Caught("d1", Folder("a", "root-id", "Docs"), File("f", "a", "new.txt")));
+
+        var renamed = await Database.IndexWriter.RenameItemAsync(FirstAccount, Id("f"), "new-copy.txt", CancellationToken);
+
+        var item = (await Database.IndexReader.GetAsync(FirstAccount, Id("f"), CancellationToken)).Match(found => found.Match(snapshot => snapshot, () => throw new InvalidOperationException("The item must exist.")), _ => throw new InvalidOperationException("The read must work."));
+        var cursor = (await Database.IndexReader.GetCursorAsync(FirstAccount, CancellationToken)).Match(found => found.Match(value => value, () => throw new InvalidOperationException("The cursor must exist.")), _ => throw new InvalidOperationException("The read must work."));
+        (renamed.Match(_ => "ok", error => error.Message), item.Name, item.ParentId, item.ETag, cursor).ShouldBe(("ok", "new-copy.txt", Option.Some(Id("a")), ETag("e-f"), Cursor("d1")));
+    }
+
+    [Fact]
+    public async Task when_an_item_is_renamed_then_the_same_item_id_of_another_account_is_untouched()
+    {
+        _ = await Apply(FirstAccount, Caught("d1", Folder("a", "root-id", "Docs"), File("f", "a", "new.txt")));
+        _ = await Apply(SecondAccount, Caught("d2", Folder("a", "root-id", "Docs"), File("f", "a", "new.txt")));
+
+        _ = await Database.IndexWriter.RenameItemAsync(FirstAccount, Id("f"), "other.txt", CancellationToken);
+
+        var other = (await Database.IndexReader.GetAsync(SecondAccount, Id("f"), CancellationToken)).Match(found => found.Match(snapshot => snapshot.Name, () => string.Empty), _ => string.Empty);
+        other.ShouldBe("new.txt");
+    }
+
+    [Fact]
+    public async Task when_an_item_that_is_not_indexed_is_renamed_then_nothing_changes_and_it_is_not_an_error()
+    {
+        _ = await Apply(FirstAccount, Caught("d1", Folder("a", "root-id", "Docs")));
+
+        var renamed = await Database.IndexWriter.RenameItemAsync(FirstAccount, Id("missing"), "x.txt", CancellationToken);
+
+        var item = (await Database.IndexReader.GetAsync(FirstAccount, Id("missing"), CancellationToken)).Match(found => found.Match(_ => true, () => false), _ => true);
+        (renamed.Match(_ => "ok", error => error.Message), item).ShouldBe(("ok", false));
+    }
 }

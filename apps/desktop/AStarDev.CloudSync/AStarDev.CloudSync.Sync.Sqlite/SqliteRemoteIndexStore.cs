@@ -63,6 +63,9 @@ internal sealed class SqliteRemoteIndexStore(IDbContextFactory<SyncDbContext> db
             .MatchAsync(delta => Result.Success<RemoteIndexDelta, ErrorResponse>(delta), exception => Failed<RemoteIndexDelta>(exception, "The resync could not be completed."));
 
     /// <inheritdoc />
+    public Task<Result<Unit, ErrorResponse>> RenameItemAsync(AccountId accountId, RemoteItemId itemId, string newName, CancellationToken cancellationToken) => throw new NotImplementedException($"{accountId}{itemId}{newName}{cancellationToken}");
+
+    /// <inheritdoc />
     public Task<Result<Unit, ErrorResponse>> RemoveAccountDataAsync(AccountId accountId, CancellationToken cancellationToken) =>
         Try.RunAsync(() => DeleteAsync(accountId, cancellationToken), cancellationToken)
             .MatchAsync(Result.Success<Unit, ErrorResponse>, exception => Failed<Unit>(exception, "The account's remote index could not be removed."));
