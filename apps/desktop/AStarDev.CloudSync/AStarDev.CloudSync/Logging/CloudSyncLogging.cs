@@ -1,6 +1,5 @@
 using AStarDev.CloudSync.Sync;
 using AStarDev.LoggingExtensions;
-using AStarDev.Utilities;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry.Logs;
 
@@ -21,8 +20,8 @@ public static class CloudSyncLogging
     /// <summary>The most the log files may take up together: 100 MB.</summary>
     public const long MaxTotalBytes = 100L * 1024 * 1024;
 
-    /// <summary>The folder for the log files: <c>logs</c> inside the application's data folder.</summary>
-    public static string FolderPath() => "AStarDev.CloudSync".ApplicationDirectory().CombinePath("logs");
+    /// <summary>The folder for the log files on this platform (see <see cref="LogFolderResolver"/>).</summary>
+    public static string FolderPath() => LogFolderResolver.Resolve(LogEnvironmentFactory.CreateCurrent());
 
     /// <summary>Sets up what goes where. Every entry is offered to the local file, which writes an account's entries below warning level only when that account is verbose (<see cref="AccountLogLevelFilter"/>). Application Insights gets warnings and above only, so verbose output stays on the machine.</summary>
     /// <param name="logging">The logging builder. It already has the OpenTelemetry provider.</param>

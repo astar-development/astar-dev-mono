@@ -38,11 +38,9 @@ public sealed class GivenCloudSyncLogging : IDisposable
     }
 
     [Fact]
-    public void when_the_folder_is_asked_then_it_is_a_logs_folder_inside_the_application_data_folder()
+    public void when_the_folder_is_asked_then_it_is_the_resolved_log_folder_of_this_platform()
     {
-        var folder = CloudSyncLogging.FolderPath();
-
-        (Path.GetFileName(folder), folder.Contains("AStarDev.CloudSync", StringComparison.Ordinal)).ShouldBe(("logs", true));
+        CloudSyncLogging.FolderPath().ShouldBe(LogFolderResolver.Resolve(LogEnvironmentFactory.CreateCurrent()));
     }
 
     [Fact]

@@ -48,7 +48,7 @@ public partial class App : Application, IDisposable
 
             var window = new MainWindow { DataContext = services.GetRequiredService<MainWindowViewModel>() };
             desktop.MainWindow = window;
-            window.AddHandler(InputElement.KeyDownEvent, OpenLogViewerOnHotkey, RoutingStrategies.Tunnel);
+            LogViewerHotkey.Attach(window, () => services.GetRequiredService<LogViewerLauncher>().Open());
             KeepRunningInTray(window);
             StartHiddenWhenAutostarted(window, desktop.Args);
             _ = services.GetRequiredService<SyncNotifier>();
@@ -80,19 +80,10 @@ public partial class App : Application, IDisposable
             window.Opened += (_, _) => window.Hide();
     }
 
-    private void OpenLogViewerOnHotkey(object? sender, KeyEventArgs keyEvent)
-    {
-        if (!LogViewerHotkey.Matches(keyEvent) || services is null)
-            return;
-
-        services.GetRequiredService<LogViewerLauncher>().Open();
-        keyEvent.Handled = true;
-    }
-
     private void SweepLogFiles()
     {
         var sweeper = services?.GetRequiredService<LogFileSweeper>();
-        var folder = services?.GetRequiredService<System.IO.Abstractions.IFileSystem>().DirectoryInfo.New(CloudSyncLogging.FolderPath());
+        var folder = services?.GetRequiredService<ILogFileLocator>().GetLogFolder();
         if (sweeper is not null && folder is not null)
         {
             _ = sweeper.DeleteOlderThan(folder, CloudSyncLogging.FileNamePrefix, CloudSyncLogging.Retention);

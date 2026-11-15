@@ -1,6 +1,7 @@
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Conflicts;
 using AStarDev.CloudSync.DisplaySettings;
+using AStarDev.CloudSync.Logging;
 using AStarDev.CloudSync.Layouts;
 using AStarDev.CloudSync.TestHelpers.Accounts;
 using AStarDev.CloudSync.TestHelpers.Common;
@@ -10,7 +11,9 @@ using AStarDev.CloudSync.ViewModels;
 using AStarDev.CloudSync.ViewModels.Accounts;
 using AStarDev.CloudSync.ViewModels.Overview;
 using Avalonia.Controls;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Input;
 using Avalonia.VisualTree;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -280,6 +283,44 @@ public class GivenAMainWindow
         window.Show();
 
         FindSingle<ConflictListView>(window).IsEffectivelyVisible.ShouldBeFalse();
+    }
+
+    [AvaloniaTheory]
+    [InlineData("A")]
+    [InlineData("B")]
+    [InlineData("C")]
+    public async Task when_the_log_viewer_hotkey_is_pressed_in_any_layout_then_the_viewer_opens_once(string key)
+    {
+        var viewModel = await CreateViewModelAsync();
+        var window = new MainWindow { DataContext = viewModel };
+        var opened = 0;
+        LogViewerHotkey.Attach(window, () => opened++);
+        window.Show();
+        viewModel.DisplaySettings.SelectLayout(MainLayoutFactory.FromKey(key));
+        window.UpdateLayout();
+
+        window.KeyPress(Key.L, RawInputModifiers.Control | RawInputModifiers.Shift | RawInputModifiers.Alt, PhysicalKey.L, "L");
+
+        opened.ShouldBe(1);
+    }
+
+    [AvaloniaTheory]
+    [InlineData("A")]
+    [InlineData("B")]
+    [InlineData("C")]
+    public async Task when_another_combination_is_pressed_in_any_layout_then_the_viewer_does_not_open(string key)
+    {
+        var viewModel = await CreateViewModelAsync();
+        var window = new MainWindow { DataContext = viewModel };
+        var opened = 0;
+        LogViewerHotkey.Attach(window, () => opened++);
+        window.Show();
+        viewModel.DisplaySettings.SelectLayout(MainLayoutFactory.FromKey(key));
+        window.UpdateLayout();
+
+        window.KeyPress(Key.L, RawInputModifiers.Control | RawInputModifiers.Shift, PhysicalKey.L, "L");
+
+        opened.ShouldBe(0);
     }
 
     private static T FindSingle<T>(Window window) where T : Control => window.GetVisualDescendants().OfType<T>().ShouldHaveSingleItem();
