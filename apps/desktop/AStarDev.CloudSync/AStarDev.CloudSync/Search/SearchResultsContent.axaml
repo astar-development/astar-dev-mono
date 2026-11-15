@@ -9,6 +9,16 @@
              VerticalContentAlignment="Stretch"
              HorizontalContentAlignment="Stretch"
              Foreground="{DynamicResource CloudSyncTextPrimaryBrush}">
+    <UserControl.Styles>
+        <Style Selector="Button.search-result">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="Padding" Value="8" />
+            <Setter Property="Margin" Value="0,0,0,4" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+    </UserControl.Styles>
     <Grid RowDefinitions="Auto,*"
           HorizontalAlignment="Stretch"
           VerticalAlignment="Stretch">
@@ -33,13 +43,18 @@
                     <ItemsControl ItemsSource="{Binding Accounts}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="vmAccounts:AccountViewModel">
-                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10" Margin="0,0,0,8">
-                                    <accounts:ProviderBadge Grid.Column="0" DataContext="{Binding Provider}" VerticalAlignment="Center" />
-                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding Name}" FontWeight="Medium" />
-                                        <TextBlock Classes="muted" Text="{Binding Email}" TextTrimming="CharacterEllipsis" />
-                                    </StackPanel>
-                                </Grid>
+                                <Button Classes="search-result"
+                                        Command="{Binding $parent[UserControl].((vmSearch:SearchResultsViewModel)DataContext).OpenAccountCommand}"
+                                        CommandParameter="{Binding}"
+                                        AutomationProperties.Name="{Binding Name}">
+                                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                        <accounts:ProviderBadge Grid.Column="0" DataContext="{Binding Provider}" VerticalAlignment="Center" />
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Name}" FontWeight="Medium" />
+                                            <TextBlock Classes="muted" Text="{Binding Email}" TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Button>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
@@ -50,13 +65,18 @@
                     <ItemsControl ItemsSource="{Binding Folders}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="vmSyncPairs:SyncPairViewModel">
-                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10" Margin="0,0,0,8">
-                                    <accounts:ProviderBadge Grid.Column="0" DataContext="{Binding Provider}" VerticalAlignment="Center" />
-                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding Name}" FontWeight="Medium" />
-                                        <TextBlock Classes="muted" Text="{Binding RemotePath}" TextTrimming="CharacterEllipsis" />
-                                    </StackPanel>
-                                </Grid>
+                                <Button Classes="search-result"
+                                        Command="{Binding $parent[UserControl].((vmSearch:SearchResultsViewModel)DataContext).OpenFolderCommand}"
+                                        CommandParameter="{Binding}"
+                                        AutomationProperties.Name="{Binding Name}">
+                                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                                        <accounts:ProviderBadge Grid.Column="0" DataContext="{Binding Provider}" VerticalAlignment="Center" />
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Name}" FontWeight="Medium" />
+                                            <TextBlock Classes="muted" Text="{Binding RemotePath}" TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Button>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>

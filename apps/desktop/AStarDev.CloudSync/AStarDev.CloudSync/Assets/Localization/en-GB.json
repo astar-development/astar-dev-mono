@@ -239,7 +239,7 @@
   "LayoutA.StatusBar.Checked": "{0} · checked {1}",
   "LayoutA.StatusBar.NeverChecked": "{0} · never checked",
   "LayoutA.StatusBar.CheckedTooltip": "Most recent sync check across all accounts",
-  "LayoutC.CommandSearch.Placeholder": "Search files, folders, accounts or run a command",
+  "LayoutC.CommandSearch.Placeholder": "Search accounts and folders",
   "LayoutC.CommandSearch.Shortcut": "Ctrl K",
   "LayoutC.NewSyncPair": "+ New sync pair",
   "LayoutC.StatusLabel": "STATUS",
