@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AStarDev.CloudSync.Sync.Sqlite;
 
-/// <summary>Maps <see cref="SyncBaselineEntity"/> to the <c>SyncBaseline</c> table: one row per account and path key, which matches paths ignoring case.</summary>
+/// <summary>Maps <see cref="SyncBaselineEntity"/> to the <c>SyncBaseline</c> table: one row per account and path key, which matches paths ignoring case, and an index on the account and cloud item id so a row can be found by item (#1626).</summary>
 [ExcludeFromCodeCoverage]
 internal sealed class SyncBaselineEntityConfiguration : IEntityTypeConfiguration<SyncBaselineEntity>
 {
@@ -16,5 +16,6 @@ internal sealed class SyncBaselineEntityConfiguration : IEntityTypeConfiguration
         builder.Property(item => item.Path).IsRequired();
         builder.Property(item => item.PathKey).IsRequired();
         builder.Property(item => item.RemoteItemId).IsRequired();
+        builder.HasIndex(item => new { item.AccountId, item.RemoteItemId });
     }
 }
