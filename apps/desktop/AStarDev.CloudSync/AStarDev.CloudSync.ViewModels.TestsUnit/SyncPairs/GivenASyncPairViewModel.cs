@@ -112,6 +112,76 @@ public class GivenASyncPairViewModel
         pair.ChangeDirectionText.ShouldBe("Change direction");
     }
 
+    [Fact]
+    public async Task when_remove_is_chosen_then_it_asks_first_and_nothing_is_saved()
+    {
+        var writer = new FakeSelectionRuleWriter();
+        var pair = CreateChangeable(SyncDirectionFactory.CreateTwoWay(), writer, _ => Task.CompletedTask);
+
+        await pair.RemoveCommand.ExecuteAsync(null);
+
+        (pair.IsConfirmingRemove, writer.Applied.Count).ShouldBe((true, 0));
+    }
+
+    [Fact]
+    public async Task when_the_removal_is_cancelled_then_nothing_is_saved_and_the_question_closes()
+    {
+        var writer = new FakeSelectionRuleWriter();
+        var pair = CreateChangeable(SyncDirectionFactory.CreateTwoWay(), writer, _ => Task.CompletedTask);
+        await pair.RemoveCommand.ExecuteAsync(null);
+
+        await pair.CancelRemoveCommand.ExecuteAsync(null);
+
+        (pair.IsConfirmingRemove, writer.Applied.Count).ShouldBe((false, 0));
+    }
+
+    [Fact]
+    public async Task when_the_removal_is_confirmed_then_the_folder_stops_syncing_and_the_overview_is_reloaded()
+    {
+        var writer = new FakeSelectionRuleWriter();
+        var reloads = 0;
+        var pair = CreateChangeable(SyncDirectionFactory.CreateTwoWay(), writer, _ => { reloads++; return Task.CompletedTask; });
+        await pair.RemoveCommand.ExecuteAsync(null);
+
+        await pair.ConfirmRemoveCommand.ExecuteAsync(null);
+
+        var change = writer.Applied.Single().ShouldHaveSingleItem().ShouldBeOfType<SelectionChange.ExcludeFolder>();
+        change.Path.Value.ShouldBe("Documents");
+        (pair.IsConfirmingRemove, pair.HasRemoveError, reloads).ShouldBe((false, false, 1));
+    }
+
+    [Fact]
+    public async Task when_confirming_without_being_asked_then_nothing_is_saved()
+    {
+        var writer = new FakeSelectionRuleWriter();
+        var pair = CreateChangeable(SyncDirectionFactory.CreateTwoWay(), writer, _ => Task.CompletedTask);
+
+        await pair.ConfirmRemoveCommand.ExecuteAsync(null);
+
+        writer.Applied.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_saving_the_removal_fails_then_the_error_is_shown_the_question_closes_and_the_overview_is_not_reloaded()
+    {
+        var writer = new FakeSelectionRuleWriter { Outcome = Result.Failure<Unit, ErrorResponse>(new ErrorResponse("database is locked")) };
+        var reloads = 0;
+        var pair = CreateChangeable(SyncDirectionFactory.CreateTwoWay(), writer, _ => { reloads++; return Task.CompletedTask; });
+        await pair.RemoveCommand.ExecuteAsync(null);
+
+        await pair.ConfirmRemoveCommand.ExecuteAsync(null);
+
+        (pair.IsConfirmingRemove, pair.HasRemoveError, pair.RemoveErrorText, reloads).ShouldBe((false, true, "Could not stop syncing the folder. Try again.", 0));
+    }
+
+    [Fact]
+    public void when_created_then_the_remove_texts_are_localised()
+    {
+        var pair = CreatePair(SyncDirectionFactory.CreateTwoWay(), SyncStatusFactory.CreateUpToDate());
+
+        (pair.RemoveText, pair.RemoveTitleText, pair.RemovePromptText, pair.ConfirmRemoveText, pair.CancelRemoveText).ShouldBe(("Remove", "Stop syncing this folder?", "This folder stops syncing. Your copies on this computer are kept, and nothing is deleted on this computer or in the cloud.", "Stop syncing", "Cancel"));
+    }
+
     private static SyncDirection ParseDirection(string name) => name switch
     {
         "UploadOnly" => SyncDirectionFactory.CreateUploadOnly(),

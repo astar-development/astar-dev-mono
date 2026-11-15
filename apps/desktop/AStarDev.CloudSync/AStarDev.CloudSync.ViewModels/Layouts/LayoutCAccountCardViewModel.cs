@@ -28,6 +28,14 @@ public sealed class LayoutCAccountCardViewModel(AccountViewModel account, Action
     /// <summary>Selects this account, or clears the selection when it is already selected.</summary>
     public ICommand SelectCommand => field ??= new RelayCommand(() => select(this));
 
+    /// <summary>The card action: "Cancel" while syncing, otherwise "Sync now".</summary>
+    public string ActionText => Localization.GetLocal(account.Status.IsSyncing ? "LayoutA.Card.Cancel" : "LayoutA.Card.SyncNow");
+
+    /// <summary>The card action: cancels the account's sync while syncing, otherwise syncs it now. Cannot run while the account needs sign-in.</summary>
+    public IAsyncRelayCommand ActionCommand => field ??= new AsyncRelayCommand(RunActionAsync, () => account.CanPause);
+
     /// <summary>Pauses the account's scheduled syncing, or resumes it when paused. Cannot run while the account needs sign-in.</summary>
     public IAsyncRelayCommand PauseCommand => field ??= new AsyncRelayCommand(cancellationToken => syncActions.PauseAsync(account.Id, cancellationToken), () => account.CanPause);
+
+    private Task RunActionAsync(CancellationToken cancellationToken) => account.Status.IsSyncing ? syncActions.CancelSyncAsync(account.Id, cancellationToken) : syncActions.SyncNowAsync(account.Id, cancellationToken);
 }
