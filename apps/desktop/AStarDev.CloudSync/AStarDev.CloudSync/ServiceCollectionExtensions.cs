@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using System.Globalization;
 using System.IO.Abstractions;
 using AStar.Dev.Velopack.Publishing;
@@ -78,7 +79,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IAutostartRegistration>(provider => AutostartRegistrationFor(provider))
             .AddSingleton<AutostartSettingsViewModel>()
             .AddSingleton<IWindowPresence, WindowPresenceReader>()
-            .AddSingleton<INotificationSender>(_ => OperatingSystem.IsLinux() ? new LinuxNotificationSender() : new UnsupportedNotificationSender())
+            .AddSingleton<INotificationSender>(_ => NotificationSenderFactory.Create(RuntimeInformation.IsOSPlatform))
             .AddSingleton<SyncNotifier>()
             .AddSingleton<IMainWindowVisibility>(provider => provider.GetRequiredService<MainWindowVisibility>())
             .AddSingleton<IApplicationExit, DesktopApplicationExit>()
