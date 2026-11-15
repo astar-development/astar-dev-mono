@@ -129,6 +129,23 @@ public class GivenAnAccountDetailViewModel
         activityReader.Requests.ShouldBeEmpty();
     }
 
+    [Fact]
+    public void when_the_account_is_paused_then_the_pause_action_reads_resume_and_otherwise_pause()
+    {
+        var running = CreateDetailWithStatus(SyncStatusFactory.CreateUpToDate());
+        var paused = CreateDetailWithStatus(SyncStatusFactory.CreatePaused());
+
+        (running.PauseText, paused.PauseText).ShouldBe(("Pause", "Resume"));
+    }
+
+    private static AccountDetailViewModel CreateDetailWithStatus(SyncStatus status)
+    {
+        var localization = TestData.CreateLocalization();
+        var account = new AccountViewModel(TestData.CreateAccount(status, Option.None<DateTimeOffset>()), [], localization, TestData.CreateTime());
+
+        return new AccountDetailViewModel(account, [], [], TestData.CreateLocalPathFormatter(), new RecordingSyncActions(), TestData.CreateAccountDetailTabs(), localization);
+    }
+
     private static AccountDetailViewModel CreateDetailWithConflicts(FakeAttentionReader reader) => CreateDetail(reader, new FakeFolderTreeSource());
 
     private static AccountDetailViewModel CreateDetail(FakeAttentionReader reader, FakeFolderTreeSource tree) => CreateDetail(reader, tree, new FakeActivityLogReader());

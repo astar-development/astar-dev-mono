@@ -176,7 +176,7 @@ public sealed class LayoutCViewModel : LocalizedObservableObject
     private void RebuildAccountCards()
     {
         selectedAccountId = selectedAccountId.Match(id => Overview.Accounts.Any(account => account.Id == id) ? Option.Some(id) : Option.None<AccountId>(), () => Option.None<AccountId>());
-        allAccountCards = [.. Overview.Accounts.Select(account => new LayoutCAccountCardViewModel(account, SelectAccount) { IsSelected = selectedAccountId.Match(id => id == account.Id, () => false) })];
+        allAccountCards = [.. Overview.Accounts.Select(account => new LayoutCAccountCardViewModel(account, SelectAccount, syncActions, Localization) { IsSelected = selectedAccountId.Match(id => id == account.Id, () => false) })];
         ShowSearchedAccountCards();
         OnPropertyChanged(nameof(SyncPairs));
         OnPropertyChanged(nameof(IsAllPairsSelected));
