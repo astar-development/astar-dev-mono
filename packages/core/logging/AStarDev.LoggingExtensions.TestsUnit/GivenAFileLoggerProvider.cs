@@ -135,6 +135,57 @@ public sealed class GivenAFileLoggerProvider : IDisposable
     }
 
     [Fact]
+    public void when_a_days_file_reaches_the_size_limit_then_entries_go_to_the_next_numbered_file()
+    {
+        using var limited = new FileLoggerProvider(directory, "sized", clock, null, 200);
+        var logger = limited.CreateLogger("Some.Category");
+
+        for (var count = 0; count < 6; count++)
+            logger.LogInformation("an entry that is a fair bit longer than ten characters");
+
+        var names = Directory.GetFiles(directory, "sized-*").Select(Path.GetFileName).Order(StringComparer.Ordinal).ToList();
+        names.ShouldBe(["sized-20260930-2.log", "sized-20260930-3.log", "sized-20260930.log"]);
+    }
+
+    [Fact]
+    public void when_the_size_limit_splits_the_day_then_no_entry_is_lost_or_cut()
+    {
+        using var limited = new FileLoggerProvider(directory, "whole", clock, null, 200);
+        var logger = limited.CreateLogger("Some.Category");
+
+        for (var count = 0; count < 6; count++)
+            logger.LogInformation("entry that is long enough to split the file");
+
+        var lines = Directory.GetFiles(directory, "whole-*").SelectMany(File.ReadAllLines).ToList();
+        lines.Count.ShouldBe(6);
+        lines.ShouldAllBe(line => line.Contains("that is long enough to split the file", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void when_there_is_no_size_limit_then_one_file_takes_every_entry()
+    {
+        var logger = provider.CreateLogger("Some.Category");
+
+        for (var count = 0; count < 50; count++)
+            logger.LogInformation("an entry that is a fair bit longer than ten characters");
+
+        Directory.GetFiles(directory).Length.ShouldBe(1);
+    }
+
+    [Fact]
+    public void when_the_app_restarts_on_a_full_file_then_the_next_entry_goes_to_the_next_file()
+    {
+        using (var first = new FileLoggerProvider(directory, "again", clock, null, 200))
+            for (var count = 0; count < 4; count++)
+                first.CreateLogger("Some.Category").LogInformation("an entry that is a fair bit longer than ten characters");
+
+        using var second = new FileLoggerProvider(directory, "again", clock, null, 200);
+        second.CreateLogger("Some.Category").LogInformation("after the restart");
+
+        File.ReadAllText(Path.Combine(directory, "again-20260930-3.log")).ShouldContain("after the restart");
+    }
+
+    [Fact]
     public void when_a_filter_admits_by_level_then_only_those_entries_are_written()
     {
         using var warningsOnly = new FileLoggerProvider(directory, "levels", clock, (level, _) => level >= LogLevel.Warning);

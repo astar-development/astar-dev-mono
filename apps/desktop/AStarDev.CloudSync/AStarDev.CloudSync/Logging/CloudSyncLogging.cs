@@ -13,7 +13,13 @@ public static class CloudSyncLogging
     public const string FileNamePrefix = "cloudsync";
 
     /// <summary>How long a log file is kept.</summary>
-    public static readonly TimeSpan Retention = TimeSpan.FromDays(14);
+    public static readonly TimeSpan Retention = TimeSpan.FromDays(7);
+
+    /// <summary>The size one log file may reach before the day's entries go to a new file: 10 MB.</summary>
+    public const long MaxFileBytes = 10L * 1024 * 1024;
+
+    /// <summary>The most the log files may take up together: 100 MB.</summary>
+    public const long MaxTotalBytes = 100L * 1024 * 1024;
 
     /// <summary>The folder for the log files: <c>logs</c> inside the application's data folder.</summary>
     public static string FolderPath() => "AStarDev.CloudSync".ApplicationDirectory().CombinePath("logs");
@@ -25,5 +31,5 @@ public static class CloudSyncLogging
     public static ILoggingBuilder Configure(ILoggingBuilder logging, AccountLogLevels levels, string folder) =>
         logging.SetMinimumLevel(LogLevel.Trace)
             .AddFilter<OpenTelemetryLoggerProvider>(level => level >= LogLevel.Warning)
-            .AddFileLogging(folder, FileNamePrefix, (level, scope) => AccountLogLevelFilter.Admits(levels, level, scope));
+            .AddFileLogging(folder, FileNamePrefix, (level, scope) => AccountLogLevelFilter.Admits(levels, level, scope), MaxFileBytes);
 }

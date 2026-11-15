@@ -47,6 +47,55 @@ public sealed class GivenALogFileSweeper
         (deleted, Remaining()).ShouldBe((1, "notes.txt,other-20261001.log"));
     }
 
+    private void WriteSized(string name, int bytes, int daysOld)
+    {
+        _ = fileSystem.Directory.CreateDirectory(Folder);
+        var path = $"{Folder}/{name}";
+        fileSystem.File.WriteAllBytes(path, new byte[bytes]);
+        fileSystem.File.SetLastWriteTimeUtc(path, time.GetUtcNow().UtcDateTime.AddDays(-daysOld));
+    }
+
+    [Fact]
+    public void when_the_log_files_take_more_than_the_total_then_the_oldest_are_deleted_until_they_fit()
+    {
+        WriteSized("cloudsync-20261110.log", 40, 4);
+        WriteSized("cloudsync-20261111.log", 40, 3);
+        WriteSized("cloudsync-20261112.log", 40, 2);
+        WriteSized("cloudsync-20261113.log", 40, 1);
+
+        var deleted = LogFileSweeper.DeleteBeyondTotalSize(fileSystem.DirectoryInfo.New(Folder), "cloudsync", 100);
+
+        (deleted, Remaining()).ShouldBe((2, "cloudsync-20261112.log,cloudsync-20261113.log"));
+    }
+
+    [Fact]
+    public void when_the_log_files_fit_the_total_then_none_is_deleted()
+    {
+        WriteSized("cloudsync-20261112.log", 50, 2);
+        WriteSized("cloudsync-20261113.log", 50, 1);
+
+        var deleted = LogFileSweeper.DeleteBeyondTotalSize(fileSystem.DirectoryInfo.New(Folder), "cloudsync", 100);
+
+        (deleted, Remaining()).ShouldBe((0, "cloudsync-20261112.log,cloudsync-20261113.log"));
+    }
+
+    [Fact]
+    public void when_other_files_are_large_then_they_are_not_counted_or_deleted()
+    {
+        WriteSized("cloudsync-20261113.log", 50, 1);
+        WriteSized("notes.txt", 500, 9);
+
+        var deleted = LogFileSweeper.DeleteBeyondTotalSize(fileSystem.DirectoryInfo.New(Folder), "cloudsync", 100);
+
+        (deleted, Remaining()).ShouldBe((0, "cloudsync-20261113.log,notes.txt"));
+    }
+
+    [Fact]
+    public void when_the_folder_is_missing_then_the_total_size_sweep_deletes_nothing()
+    {
+        LogFileSweeper.DeleteBeyondTotalSize(fileSystem.DirectoryInfo.New("/missing"), "cloudsync", 100).ShouldBe(0);
+    }
+
     [Fact]
     public void when_the_folder_does_not_exist_then_nothing_is_deleted_and_nothing_fails()
     {

@@ -17,7 +17,7 @@ public sealed class LogEntryReader(ILogFileLocator locator) : ILogEntryReader
         if (!folder.Exists)
             yield break;
 
-        foreach (var file in folder.EnumerateFiles($"{CloudSyncLogging.FileNamePrefix}-*.log").OrderBy(file => file.Name, StringComparer.Ordinal))
+        foreach (var file in folder.EnumerateFiles($"{CloudSyncLogging.FileNamePrefix}-*.log").OrderBy(file => DayOf(file.Name), StringComparer.Ordinal).ThenBy(file => IndexOf(file.Name)))
         {
             cancellationToken.ThrowIfCancellationRequested();
             using var reader = new StreamReader(Open(file));
@@ -26,6 +26,12 @@ public sealed class LogEntryReader(ILogFileLocator locator) : ILogEntryReader
                     yield return line;
         }
     }
+
+    private static string DayOf(string name) => Segments(name).ElementAtOrDefault(1) ?? string.Empty;
+
+    private static int IndexOf(string name) => int.TryParse(Segments(name).ElementAtOrDefault(2), out var index) ? index : 1;
+
+    private static string[] Segments(string name) => Path.GetFileNameWithoutExtension(name).Split('-');
 
     private static Stream Open(IFileInfo file) => Try.Run(() => file.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite)).Match(stream => stream, _ => Stream.Null);
 
