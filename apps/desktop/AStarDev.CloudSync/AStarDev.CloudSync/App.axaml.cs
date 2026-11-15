@@ -36,6 +36,7 @@ public partial class App : Application, IDisposable
     public override void OnFrameworkInitializationCompleted()
     {
         services = BuildServices();
+        _ = services.GetRequiredService<TelemetryProviders>();
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
@@ -64,6 +65,7 @@ public partial class App : Application, IDisposable
             _ = services.GetRequiredService<SyncRunOverviewReloader>();
             _ = Task.Run(() => services.GetRequiredService<ISignInStateRefresher>().RefreshAllAsync(CancellationToken.None), CancellationToken.None);
 
+            services.GetRequiredService<IWorkflowTelemetry>().Record(TelemetryWorkflowFactory.CreateStartup(), TelemetryOutcomeFactory.CreateSucceeded());
             _ = services.GetRequiredService<IUpdateScheduler>().RunAsync(shutdown.Token);
             _ = Task.Run(SweepLogFiles, CancellationToken.None);
             _ = Task.Run(() => services.GetRequiredService<IUploadSessionStore>().RemoveExpiredAsync(services.GetRequiredService<TimeProvider>().GetUtcNow(), shutdown.Token), shutdown.Token);
@@ -173,6 +175,7 @@ public partial class App : Application, IDisposable
         var services = new ServiceCollection();
         _ = services.AddSingleton(logLevels);
         _ = services.AddLogging(logging => CloudSyncLogging.Configure(logging.ConfigureOTelLogging(configuration, serviceName: "AStarDev.CloudSync"), logLevels, CloudSyncLogging.FolderPath()));
+        _ = services.AddSingleton(_ => OTelTelemetryConfigurator.ConfigureOTelTelemetry(configuration, "AStarDev.CloudSync", WorkflowTelemetry.SourceName, WorkflowTelemetry.SourceName));
         _ = services.AddApplicationServices(configuration);
 
         return services.BuildServiceProvider();

@@ -58,6 +58,7 @@ public static class SyncServiceCollectionExtensions
             .AddSingleton<ILeasedSelectionRuleWriter, LeasedSelectionRuleWriter>()
             .AddSingleton<IAccountSyncLock, InMemoryAccountSyncLock>()
             .AddSingleton<IConflictResolutionPlanner, ConflictResolutionPlanner>()
+            .AddSingleton<IWorkflowTelemetry, WorkflowTelemetry>()
             .AddSingleton<IKeepBothNamer, KeepBothNamer>()
             .AddSingleton<ResolutionTransfers>()
             .AddSingleton<KeepBothNaming>()

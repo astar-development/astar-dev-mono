@@ -127,6 +127,28 @@
             <param name="connectionStringConfigurationKey">The configuration key holding the Azure Monitor connection string.</param>
             <returns>The original instance of <see cref="T:Microsoft.Extensions.Logging.ILoggingBuilder" /> for further method chaining.</returns>
         </member>
+        <member name="T:AStarDev.LoggingOTel.OTelTelemetryConfigurator">
+            <summary>Wires up OpenTelemetry metrics and traces for an application that is not hosted by the generic host.</summary>
+        </member>
+        <member name="M:AStarDev.LoggingOTel.OTelTelemetryConfigurator.ConfigureOTelTelemetry(Microsoft.Extensions.Configuration.IConfigurationRoot,System.String,System.String,System.String,System.String)">
+            <summary>
+                Starts exporting the named meter and activity source. Metrics and traces go to the OTLP endpoint in
+                <see cref="F:AStarDev.LoggingOTel.OTelLoggingConfigurator.OtlpEndpointConfigurationKey" /> when it is configured, and to Azure Monitor when the connection string is configured.
+                With neither configured nothing is exported, but the providers still run.
+            </summary>
+            <param name="configuration">The configuration providing the endpoint and the connection string.</param>
+            <param name="serviceName">The <c>service.name</c> reported on every metric and span; when blank, the entry assembly name is used.</param>
+            <param name="meterName">The name of the <see cref="T:System.Diagnostics.Metrics.Meter" /> to export.</param>
+            <param name="activitySourceName">The name of the <see cref="T:System.Diagnostics.ActivitySource" /> to export.</param>
+            <param name="connectionStringConfigurationKey">The configuration key holding the Azure Monitor connection string.</param>
+            <returns>The running providers. Dispose it to flush and stop exporting.</returns>
+        </member>
+        <member name="T:AStarDev.LoggingOTel.TelemetryProviders">
+            <summary>The running metric and trace providers started by <see cref="T:AStarDev.LoggingOTel.OTelTelemetryConfigurator" />.</summary>
+        </member>
+        <member name="M:AStarDev.LoggingOTel.TelemetryProviders.Dispose">
+            <summary>Flushes and stops both providers.</summary>
+        </member>
         <member name="T:System.Text.RegularExpressions.Generated.EmailRegex_0">
             <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the EmailRegex method.</summary>
         </member>
