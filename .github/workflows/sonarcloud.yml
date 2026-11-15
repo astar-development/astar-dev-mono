@@ -128,8 +128,13 @@ jobs:
         run: |
           mkdir -p TestResults
 
-          find . -name '*.Tests*.csproj' \( ! -name '*.TestsIntegration.csproj' -o -name 'AStarDev.CloudSync.*.TestsIntegration.csproj' \) -print0 \
+          find . -name '*.Tests*.csproj' \( ! -name '*.TestsIntegration.csproj' -o -name 'AStarDev.CloudSync.*.TestsIntegration.csproj' \) ! -name 'AStarDev.CloudSync.TestsUnit.csproj' -print0 \
             | xargs -0 -n 1 -P 4 .github/scripts/run-test-project.sh
+
+      - name: 🧪 Test (headless UI project on its own)
+        run: |
+          find . -name 'AStarDev.CloudSync.TestsUnit.csproj' -print0 \
+            | xargs -0 -n 1 .github/scripts/run-test-project.sh
 
       - name: 🏁 End ☁️ SonarCloud scan
         env:

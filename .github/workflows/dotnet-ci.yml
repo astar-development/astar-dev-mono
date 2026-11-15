@@ -95,8 +95,13 @@ jobs:
         run: |
           mkdir -p TestResults
 
-          find . -name '*.Tests*.csproj' ! -name '*.TestsIntegration.csproj' -print0 \
+          find . -name '*.Tests*.csproj' ! -name '*.TestsIntegration.csproj' ! -name 'AStarDev.CloudSync.TestsUnit.csproj' -print0 \
             | TEST_RUNNER="xvfb-run -a" xargs -0 -n 1 -P 4 .github/scripts/run-test-project.sh
+
+      - name: Test (headless UI project on its own)
+        run: |
+          find . -name 'AStarDev.CloudSync.TestsUnit.csproj' -print0 \
+            | TEST_RUNNER="xvfb-run -a" xargs -0 -n 1 .github/scripts/run-test-project.sh
 
       - name: Upload snapshot diffs
         uses: actions/upload-artifact@v7.0.2
