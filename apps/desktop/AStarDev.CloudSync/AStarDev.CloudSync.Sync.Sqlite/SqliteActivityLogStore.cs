@@ -64,6 +64,9 @@ internal sealed class SqliteActivityLogStore(IDbContextFactory<SyncDbContext> db
             case ActivityKind.Authenticated:
                 row.Kind = nameof(ActivityKind.Authenticated);
                 break;
+            case ActivityKind.NothingChanged:
+                row.Kind = nameof(ActivityKind.NothingChanged);
+                break;
             case ActivityKind.SyncInterrupted:
                 row.Kind = nameof(ActivityKind.SyncInterrupted);
                 break;
@@ -93,6 +96,7 @@ internal sealed class SqliteActivityLogStore(IDbContextFactory<SyncDbContext> db
         nameof(ActivityKind.Deleted) => ActivityKindFactory.CreateDeleted(row.FileCount),
         nameof(ActivityKind.ConflictDetected) => ActivityKindFactory.CreateConflictDetected(row.FileName ?? string.Empty),
         nameof(ActivityKind.Authenticated) => ActivityKindFactory.CreateAuthenticated(),
+        nameof(ActivityKind.NothingChanged) => ActivityKindFactory.CreateNothingChanged(),
         nameof(ActivityKind.SyncInterrupted) => ActivityKindFactory.CreateSyncInterrupted(),
         nameof(ActivityKind.RecoveryBlocked) => BlockerOf(row.FileName).Match(ActivityKindFactory.CreateRecoveryBlocked, ActivityKindFactory.CreateDetectingChanges),
         _ => ActivityKindFactory.CreateDetectingChanges(),
@@ -120,11 +124,26 @@ internal sealed class SqliteActivityLogStore(IDbContextFactory<SyncDbContext> db
             _ = await dbContext.ActivityLog.Where(row => row.AccountId == accountId && row.Id < id).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
     }
 
+    private static async Task AddOrRefreshAsync(SyncDbContext dbContext, ActivityEntry entry, CancellationToken cancellationToken)
+    {
+        var row = ToEntity(entry);
+        var newest = entry.Kind is ActivityKind.NothingChanged
+            ? await dbContext.ActivityLog.Where(existing => existing.AccountId == row.AccountId).OrderByDescending(existing => existing.Id).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false)
+            : null;
+
+        if (newest?.Kind == row.Kind)
+            newest.OccurredAtUtcTicks = row.OccurredAtUtcTicks;
+        else
+            _ = dbContext.ActivityLog.Add(row);
+    }
+
     private async Task<Unit> StoreAsync(IReadOnlyList<ActivityEntry> entries, CancellationToken cancellationToken)
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using var transaction = await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken).ConfigureAwait(false);
-        dbContext.ActivityLog.AddRange(entries.Select(ToEntity));
+        foreach (var entry in entries)
+            await AddOrRefreshAsync(dbContext, entry, cancellationToken).ConfigureAwait(false);
+
         _ = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         foreach (var accountId in entries.Select(entry => entry.AccountId.Value).Distinct())

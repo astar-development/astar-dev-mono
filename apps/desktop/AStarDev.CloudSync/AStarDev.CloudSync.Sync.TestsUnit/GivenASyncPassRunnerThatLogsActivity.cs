@@ -49,11 +49,12 @@ public sealed class GivenASyncPassRunnerThatLogsActivity : IDisposable
     }
 
     [Fact]
-    public async Task when_a_run_changes_nothing_then_nothing_is_appended()
+    public async Task when_a_run_changes_nothing_then_a_nothing_changed_entry_is_appended_for_the_account_at_the_run_time()
     {
         _ = await RunAsync();
 
-        services.ActivityLog.Calls.ShouldBe(0);
+        services.ActivityLog.Appended.ShouldAllBe(entry => entry.AccountId == Personal && entry.OccurredAt == services.Time.GetUtcNow());
+        services.ActivityLog.Appended.Select(entry => entry.Kind).ShouldBe([ActivityKindFactory.CreateNothingChanged()]);
     }
 
     [Fact]

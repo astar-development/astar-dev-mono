@@ -22,6 +22,9 @@ public static class ActivityKindFactory
     /// <summary>Creates an authenticated entry.</summary>
     public static ActivityKind CreateAuthenticated() => new ActivityKind.Authenticated();
 
+    /// <summary>Creates a nothing-changed entry.</summary>
+    public static ActivityKind CreateNothingChanged() => new ActivityKind.NothingChanged();
+
     /// <summary>Creates a recovery-blocked entry.</summary>
     /// <param name="blocker">What has to be fixed first.</param>
     public static ActivityKind CreateRecoveryBlocked(RecoveryBlocker blocker) => new ActivityKind.RecoveryBlocked(blocker);

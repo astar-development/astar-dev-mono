@@ -75,6 +75,14 @@ public abstract record ActivityKind
         }
     }
 
+    /// <summary>A sync run finished and found nothing to upload, download or delete.</summary>
+    public sealed record NothingChanged : ActivityKind
+    {
+        internal NothingChanged()
+        {
+        }
+    }
+
     /// <summary>The interrupted sync could not be resumed until the user fixes <see cref="Blocker"/> (#1612).</summary>
     public sealed record RecoveryBlocked : ActivityKind
     {

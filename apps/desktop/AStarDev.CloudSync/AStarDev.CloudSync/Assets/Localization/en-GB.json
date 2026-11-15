@@ -79,6 +79,7 @@
   "Activity.Deleted.Many": "Deleted {0} files",
   "Activity.Conflict": "Conflict: {0}",
   "Activity.Authenticated": "Authenticated",
+  "Activity.NothingChanged": "Nothing changed",
   "Activity.RecoveryBlocked.DatabaseUnreadable": "The interrupted sync of {0} could not resume: the CloudSync database could not be read. Nothing is synced until it is fixed.",
   "Activity.RecoveryBlocked.SignInRequired": "The interrupted sync of {0} could not resume: sign in again. It carries on by itself once you have.",
   "Activity.RecoveryBlocked.SyncFolderMissing": "The interrupted sync of {0} could not resume: its sync folder is missing. It carries on by itself once the folder is back.",

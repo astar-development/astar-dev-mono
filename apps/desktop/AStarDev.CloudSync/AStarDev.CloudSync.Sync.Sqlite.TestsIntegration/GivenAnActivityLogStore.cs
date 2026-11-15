@@ -25,6 +25,8 @@ public sealed class GivenAnActivityLogStore : IAsyncLifetime
 
     private static ActivityEntry Downloaded(AccountId account, int minute) => ActivityEntryFactory.Create(account, Option.None<SyncPairId>(), ActivityKindFactory.CreateDownloaded(minute), Start.AddMinutes(minute));
 
+    private static ActivityEntry NothingChanged(AccountId account, int minute) => ActivityEntryFactory.Create(account, Option.None<SyncPairId>(), ActivityKindFactory.CreateNothingChanged(), Start.AddMinutes(minute));
+
     private static IEnumerable<ActivityEntry> Many(AccountId account, int from, int to) => Enumerable.Range(from, to - from + 1).Select(minute => Downloaded(account, minute));
 
     private async Task<object> AppendAsync(params ActivityEntry[] entries) => (await Database.ActivityWriter.AppendAsync(entries, CancellationToken)).Match(_ => (object)"stored", error => error);
@@ -52,6 +54,7 @@ public sealed class GivenAnActivityLogStore : IAsyncLifetime
             ActivityEntryFactory.Create(FirstAccount, Option.None<SyncPairId>(), ActivityKindFactory.CreateDetectingChanges(), Start.AddMinutes(5)),
             ActivityEntryFactory.Create(FirstAccount, Option.None<SyncPairId>(), ActivityKindFactory.CreateAuthenticated(), Start.AddMinutes(6)),
             ActivityEntryFactory.Create(FirstAccount, Option.None<SyncPairId>(), ActivityKindFactory.CreateSyncInterrupted(), Start.AddMinutes(7)),
+            ActivityEntryFactory.Create(FirstAccount, Option.None<SyncPairId>(), ActivityKindFactory.CreateNothingChanged(), Start.AddMinutes(8)),
         };
 
         _ = await AppendAsync(entries);
@@ -99,6 +102,47 @@ public sealed class GivenAnActivityLogStore : IAsyncLifetime
         _ = await AppendAsync(Downloaded(FirstAccount, 1), Downloaded(SecondAccount, 2));
 
         (await RecentOfAsync(SecondAccount)).Select(entry => entry.AccountId).ShouldBe([SecondAccount]);
+    }
+
+    [Fact]
+    public async Task when_nothing_changed_follows_nothing_changed_then_one_entry_remains_with_the_newer_time()
+    {
+        _ = await AppendAsync(NothingChanged(FirstAccount, 1));
+
+        _ = await AppendAsync(NothingChanged(FirstAccount, 2));
+
+        (await RecentOfAsync(FirstAccount)).ShouldBe([NothingChanged(FirstAccount, 2)]);
+    }
+
+    [Fact]
+    public async Task when_nothing_changed_follows_a_change_then_both_entries_remain()
+    {
+        _ = await AppendAsync(Downloaded(FirstAccount, 1));
+
+        _ = await AppendAsync(NothingChanged(FirstAccount, 2));
+
+        (await RecentOfAsync(FirstAccount)).ShouldBe([NothingChanged(FirstAccount, 2), Downloaded(FirstAccount, 1)]);
+    }
+
+    [Fact]
+    public async Task when_a_change_follows_nothing_changed_then_both_entries_remain()
+    {
+        _ = await AppendAsync(NothingChanged(FirstAccount, 1));
+
+        _ = await AppendAsync(Downloaded(FirstAccount, 2));
+
+        (await RecentOfAsync(FirstAccount)).ShouldBe([Downloaded(FirstAccount, 2), NothingChanged(FirstAccount, 1)]);
+    }
+
+    [Fact]
+    public async Task when_nothing_changed_is_logged_for_two_accounts_then_each_keeps_its_own_entry()
+    {
+        _ = await AppendAsync(NothingChanged(FirstAccount, 1), NothingChanged(SecondAccount, 2));
+
+        _ = await AppendAsync(NothingChanged(FirstAccount, 3));
+
+        (await RecentOfAsync(FirstAccount)).ShouldBe([NothingChanged(FirstAccount, 3)]);
+        (await RecentOfAsync(SecondAccount)).ShouldBe([NothingChanged(SecondAccount, 2)]);
     }
 
     [Fact]
