@@ -24,6 +24,8 @@ internal sealed class InterruptedSyncRecovery(ISyncRunJournal journal, IActivity
         if (health is not DatabaseHealthStatus.Healthy)
             return DatabaseNotSound(health);
 
+        await checks.Live.WhenStartsSettledAsync(cancellationToken).ConfigureAwait(false);
+
         return await journal.GetInterruptedAsync(cancellationToken).MatchAsync(runs => RecoverRunsAsync(runs, cancellationToken), _ => NothingRecovered()).ConfigureAwait(false);
     }
 
