@@ -63,7 +63,9 @@ internal sealed class SqliteRemoteIndexStore(IDbContextFactory<SyncDbContext> db
             .MatchAsync(delta => Result.Success<RemoteIndexDelta, ErrorResponse>(delta), exception => Failed<RemoteIndexDelta>(exception, "The resync could not be completed."));
 
     /// <inheritdoc />
-    public Task<Result<Unit, ErrorResponse>> RenameItemAsync(AccountId accountId, RemoteItemId itemId, string newName, CancellationToken cancellationToken) => throw new NotImplementedException($"{accountId}{itemId}{newName}{cancellationToken}");
+    public Task<Result<Unit, ErrorResponse>> RenameItemAsync(AccountId accountId, RemoteItemId itemId, string newName, CancellationToken cancellationToken) =>
+        Try.RunAsync(() => RenameAsync(accountId, itemId, newName, cancellationToken), cancellationToken)
+            .MatchAsync(Result.Success<Unit, ErrorResponse>, exception => Failed<Unit>(exception, "The remote item could not be renamed in the index."));
 
     /// <inheritdoc />
     public Task<Result<Unit, ErrorResponse>> RemoveAccountDataAsync(AccountId accountId, CancellationToken cancellationToken) =>
@@ -123,6 +125,14 @@ internal sealed class SqliteRemoteIndexStore(IDbContextFactory<SyncDbContext> db
 
     private static bool PlaceChanged(RemoteItemEntity stored, RemoteItemSnapshot snapshot) =>
         !string.Equals(stored.ParentId, snapshot.ParentId.Match(parent => (string?)parent.Value, () => null), StringComparison.Ordinal) || !string.Equals(stored.Name, snapshot.Name, StringComparison.Ordinal);
+
+    private async Task<Unit> RenameAsync(AccountId accountId, RemoteItemId itemId, string newName, CancellationToken cancellationToken)
+    {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        _ = await dbContext.RemoteItems.Where(item => item.AccountId == accountId.Value && item.RemoteItemId == itemId.Value).ExecuteUpdateAsync(set => set.SetProperty(item => item.Name, newName), cancellationToken).ConfigureAwait(false);
+
+        return Unit.Instance;
+    }
 
     private async Task<Option<ChangeCursor>> ReadCursorAsync(AccountId accountId, CancellationToken cancellationToken)
     {
