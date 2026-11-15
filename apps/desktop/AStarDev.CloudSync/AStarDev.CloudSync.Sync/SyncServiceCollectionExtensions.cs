@@ -60,6 +60,7 @@ public static class SyncServiceCollectionExtensions
             .AddSingleton<IConflictResolutionPlanner, ConflictResolutionPlanner>()
             .AddSingleton<IKeepBothNamer, KeepBothNamer>()
             .AddSingleton<ResolutionTransfers>()
+            .AddSingleton<KeepBothNaming>()
             .AddSingleton<MoveTargetSteps>()
             .AddSingleton<MovedItemLocator>()
             .AddSingleton<ResolutionSteps>()

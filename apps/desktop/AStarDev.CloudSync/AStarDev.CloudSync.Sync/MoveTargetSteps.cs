@@ -8,12 +8,11 @@ namespace AStarDev.CloudSync.Sync;
 /// <param name="transfers">Checks the cloud item and uploads the renamed copy.</param>
 /// <param name="renamers">Finds the cloud rename capability.</param>
 /// <param name="files">Moves the local item aside.</param>
-/// <param name="namer">Names the Keep Both copy.</param>
-/// <param name="time">Stamps the Keep Both name.</param>
+/// <param name="naming">Names the Keep Both copy.</param>
 /// <param name="baseline">Drops the baseline row of the item that used to sit at the target and moves the baseline row of the moved item.</param>
 /// <param name="locator">Finds the moved item's old baseline row and the cloud names beside it.</param>
 /// <param name="index">Renames the item in the remote index once the cloud rename succeeded.</param>
-internal sealed class MoveTargetSteps(ResolutionTransfers transfers, IProviderCapability<IRemoteItemRenamer> renamers, ILocalFileOperations files, IKeepBothNamer namer, TimeProvider time, ISyncBaselineWriter baseline, MovedItemLocator locator, IRemoteIndexWriter index)
+internal sealed class MoveTargetSteps(ResolutionTransfers transfers, IProviderCapability<IRemoteItemRenamer> renamers, ILocalFileOperations files, KeepBothNaming naming, ISyncBaselineWriter baseline, MovedItemLocator locator, IRemoteIndexWriter index)
 {
     internal Task<Result<Unit, ResolutionFailure>> RenameRemoteAsync(ResolutionContext context, RelativeSyncPath path, Option<ContentTag> seen, CancellationToken cancellationToken) =>
         ResolutionTransfers.CheckedFile(context, path, seen).Match(
@@ -50,7 +49,7 @@ internal sealed class MoveTargetSteps(ResolutionTransfers transfers, IProviderCa
 
     private async Task<Result<Unit, ResolutionFailure>> RenameNamedAsync(ResolutionContext context, RelativeSyncPath path, RemoteItemSnapshot item, IReadOnlyCollection<string> names, CancellationToken cancellationToken)
     {
-        var newName = namer.Name(item.Name, time.GetUtcNow(), names);
+        var newName = naming.NameNow(item.Name, names);
         var forgotten = await ForgetOtherAsync(context, path, item.Id, cancellationToken).ConfigureAwait(false);
 
         return await forgotten.BindAsync(_ => renamers.ForAccountAsync(context.AccountId, cancellationToken)
@@ -78,7 +77,7 @@ internal sealed class MoveTargetSteps(ResolutionTransfers transfers, IProviderCa
 
     private Task<Result<Option<RelativeSyncPath>, ResolutionFailure>> MoveNamedAsync(ResolutionContext context, RelativeSyncPath path, IFileInfo local, IReadOnlyCollection<string> names, CancellationToken cancellationToken)
     {
-        var copyPath = ResolutionSteps.SiblingPath(path, namer.Name(local.Name, time.GetUtcNow(), names));
+        var copyPath = ResolutionSteps.SiblingPath(path, naming.NameNow(local.Name, names));
 
         return files.MoveAsync(local, ResolutionTransfers.FullPath(context, copyPath), cancellationToken)
             .MatchAsync(_ => Result.Success<Option<RelativeSyncPath>, ResolutionFailure>(Option.Some(copyPath)), failure => Result.Failure<Option<RelativeSyncPath>, ResolutionFailure>(ResolutionFailureFactory.CreateLocal(failure)));
