@@ -15,13 +15,17 @@ namespace AStarDev.CloudSync.ViewModels;
 /// <summary>View model for the CloudSync main window: shows the layout chosen in the display settings and the add-account dialog over it.</summary>
 public sealed class MainWindowViewModel : LocalizedObservableObject
 {
+    private readonly AppVersion version;
+
     /// <summary>Creates the view model and follows layout changes in the display settings.</summary>
     /// <param name="localization">The localisation service supplying the window's text.</param>
     /// <param name="displaySettings">The layout and theme choices.</param>
     /// <param name="layouts">The three layouts.</param>
     /// <param name="dialogs">The dialogs and screens shown over the layout.</param>
-    public MainWindowViewModel(ILocalizationService localization, DisplaySettingsViewModel displaySettings, MainWindowLayouts layouts, MainWindowDialogs dialogs) : base(localization)
+    /// <param name="version">The running version, shown in the title.</param>
+    public MainWindowViewModel(ILocalizationService localization, DisplaySettingsViewModel displaySettings, MainWindowLayouts layouts, MainWindowDialogs dialogs, AppVersion version) : base(localization)
     {
+        this.version = version;
         DisplaySettings = displaySettings;
         LayoutA = layouts.LayoutA;
         LayoutB = layouts.LayoutB;
@@ -45,8 +49,8 @@ public sealed class MainWindowViewModel : LocalizedObservableObject
     /// <summary>The banner shown while the database integrity check has failed.</summary>
     public DatabaseHealthBannerViewModel DatabaseHealth { get; }
 
-    /// <summary>The window title.</summary>
-    public string Title => Localization.GetLocal("App.Title");
+    /// <summary>The window title: the product name and the running version, e.g. "AStar Dev Cloud Sync V1.71.1".</summary>
+    public string Title => Localization.GetLocal("App.WindowTitle", version.Text);
 
     /// <summary>The layout and theme choices.</summary>
     public DisplaySettingsViewModel DisplaySettings { get; }

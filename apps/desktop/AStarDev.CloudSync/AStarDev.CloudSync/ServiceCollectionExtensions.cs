@@ -1,3 +1,4 @@
+using System.Reflection;
 using AStarDev.CloudSync.ViewModels.Logging;
 using System.Runtime.InteropServices;
 using System.Globalization;
@@ -144,6 +145,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<MainWindowLayouts>()
             .AddSingleton<DatabaseHealthBannerViewModel>()
             .AddSingleton<MainWindowDialogs>()
+            .AddSingleton(_ => AppVersionFactory.Create(typeof(ServiceCollectionExtensions).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion))
             .AddSingleton<MainWindowViewModel>();
 
     private static IAutostartRegistration AutostartRegistrationFor(IServiceProvider provider)
