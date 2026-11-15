@@ -28,7 +28,7 @@ public sealed class GivenASyncNotifier : IDisposable
 
     private SyncNotifier Create()
     {
-        var notifier = new SyncNotifier(activity, host, host, accounts, host, TestData.CreateLocalization(), logger, time);
+        var notifier = new SyncNotifier(activity, new PassNotificationDecider(host, host), accounts, host, TestData.CreateLocalization(), logger, time);
         created.Add(notifier);
 
         return notifier;

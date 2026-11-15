@@ -14,8 +14,7 @@ public sealed class SyncNotifier : IDisposable
     private const string Location = nameof(SyncNotifier);
 
     private readonly ISyncActivitySource activity;
-    private readonly ISyncNotificationPolicy policy;
-    private readonly IWindowPresence presence;
+    private readonly PassNotificationDecider decider;
     private readonly IAccountStore accounts;
     private readonly INotificationSender sender;
     private readonly ILocalizationService localization;
@@ -28,18 +27,16 @@ public sealed class SyncNotifier : IDisposable
 
     /// <summary>Starts listening to finished passes.</summary>
     /// <param name="activity">Raises an event when a pass finishes.</param>
-    /// <param name="policy">Decides whether a pass is worth a notification.</param>
-    /// <param name="presence">Tells whether the window is in front.</param>
+    /// <param name="decider">Decides whether a pass is worth a notification.</param>
     /// <param name="accounts">Supplies the account's display name.</param>
     /// <param name="sender">Shows the notification.</param>
     /// <param name="localization">Supplies the text.</param>
     /// <param name="logger">Reports a sender that failed, once, without details.</param>
     /// <param name="time">Times the window in which finished passes are combined.</param>
-    public SyncNotifier(ISyncActivitySource activity, ISyncNotificationPolicy policy, IWindowPresence presence, IAccountStore accounts, INotificationSender sender, ILocalizationService localization, ILogger<SyncNotifier> logger, TimeProvider time)
+    public SyncNotifier(ISyncActivitySource activity, PassNotificationDecider decider, IAccountStore accounts, INotificationSender sender, ILocalizationService localization, ILogger<SyncNotifier> logger, TimeProvider time)
     {
         this.activity = activity;
-        this.policy = policy;
-        this.presence = presence;
+        this.decider = decider;
         this.accounts = accounts;
         this.sender = sender;
         this.localization = localization;
@@ -58,7 +55,7 @@ public sealed class SyncNotifier : IDisposable
     /// <param name="finished">The pass that finished.</param>
     /// <param name="cancellationToken">Cancels the call.</param>
     public Task HandleAsync(SyncPassFinishedEventArgs finished, CancellationToken cancellationToken) =>
-        policy.Decide(finished.Outcome, presence.Current).Match(
+        decider.Decide(finished.Outcome).Match(
             notification => notification is SyncNotification.Synced synced ? Combine(finished.AccountId, synced.Files) : Try.RunAsync(() => DeliverAsync(finished.AccountId, notification, cancellationToken), cancellationToken).MatchAsync(done => done, _ => Warn("A desktop notification could not be prepared.")),
             () => Task.CompletedTask);
 
