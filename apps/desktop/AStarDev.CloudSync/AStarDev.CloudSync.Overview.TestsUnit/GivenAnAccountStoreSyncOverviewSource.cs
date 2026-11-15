@@ -251,6 +251,30 @@ public class GivenAnAccountStoreSyncOverviewSource
     }
 
     [Fact]
+    public async Task when_an_account_has_synced_then_the_overview_last_checked_is_its_last_sync()
+    {
+        var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]) };
+        var time = new Microsoft.Extensions.Time.Testing.FakeTimeProvider(new DateTimeOffset(2026, 11, 14, 9, 0, 0, TimeSpan.Zero));
+        var journal = new InMemorySyncRunJournal(time);
+        var run = (await journal.StartAsync(FlintId, SyncTriggerFactory.CreateScheduled(), TestContext.Current.CancellationToken)).Match(id => id, _ => throw new InvalidOperationException("The run must start."));
+        _ = await journal.FinishAsync(run, SyncRunOutcomeFactory.CreateCompleted(), TestContext.Current.CancellationToken);
+
+        var overview = await CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), new FakeSyncPairReader(), new FakeSyncRunStatusSource(), new FakeAccountPauseReader(), new FakeSyncBaselineCounter(), new FakeActivityLogReader(), null, journal).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(loaded => loaded, failure => throw new InvalidOperationException(failure.Message));
+
+        overview.LastChecked.ShouldBe(Option.Some(time.GetUtcNow()));
+    }
+
+    [Fact]
+    public async Task when_no_account_has_synced_then_the_overview_has_no_last_checked()
+    {
+        var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]) };
+
+        var overview = await CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), new FakeSyncPairReader(), new FakeSyncRunStatusSource(), new FakeAccountPauseReader(), new FakeSyncBaselineCounter(), new FakeActivityLogReader(), null, new InMemorySyncRunJournal()).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(loaded => loaded, failure => throw new InvalidOperationException(failure.Message));
+
+        overview.LastChecked.ShouldBe(Option.None<DateTimeOffset>());
+    }
+
+    [Fact]
     public async Task when_the_journal_cannot_be_read_then_the_overview_still_loads_with_no_last_sync_and_a_warning_without_details()
     {
         var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]) };
