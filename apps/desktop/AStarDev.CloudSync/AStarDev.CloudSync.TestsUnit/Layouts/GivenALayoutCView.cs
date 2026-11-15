@@ -52,6 +52,35 @@ public class GivenALayoutCView
     }
 
     [AvaloniaFact]
+    public async Task when_shown_then_every_account_card_has_a_sync_now_or_cancel_button()
+    {
+        var window = await CreateShownWindowAsync();
+
+        var texts = window.GetVisualDescendants().OfType<Button>().Select(button => button.Content).OfType<string>().Where(text => text is "Sync now" or "Cancel").ToList();
+
+        texts.Count(text => text == "Sync now").ShouldBe(3);
+        texts.Count(text => text == "Cancel").ShouldBe(1);
+    }
+
+    [AvaloniaFact]
+    public async Task when_remove_is_clicked_on_a_tile_then_the_question_shows_and_cancelling_hides_it()
+    {
+        var window = await CreateShownWindowAsync();
+        var tile = window.GetVisualDescendants().OfType<Border>().First(border => border.Classes.Contains("pair-tile"));
+        var pair = tile.DataContext.ShouldBeOfType<AStarDev.CloudSync.ViewModels.SyncPairs.SyncPairViewModel>();
+        var question = tile.GetVisualDescendants().OfType<Border>().Single(border => border.Classes.Contains("remove-question"));
+        var before = question.IsEffectivelyVisible;
+
+        tile.GetVisualDescendants().OfType<Button>().Single(button => Equals(button.Content, "Remove")).Command!.Execute(null);
+        Dispatcher.UIThread.RunJobs();
+        var asked = question.IsEffectivelyVisible;
+        pair.CancelRemoveCommand.Execute(null);
+        Dispatcher.UIThread.RunJobs();
+
+        (before, asked, question.IsEffectivelyVisible).ShouldBe((false, true, false));
+    }
+
+    [AvaloniaFact]
     public async Task when_shown_then_the_all_pairs_chip_is_highlighted_and_the_provider_chips_are_not()
     {
         var window = await CreateShownWindowAsync();

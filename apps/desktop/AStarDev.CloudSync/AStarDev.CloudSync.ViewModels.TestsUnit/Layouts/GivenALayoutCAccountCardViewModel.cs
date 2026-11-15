@@ -42,4 +42,37 @@ public class GivenALayoutCAccountCardViewModel
 
         passed.ShouldBeSameAs(card);
     }
+
+    [Fact]
+    public async Task when_the_action_command_runs_while_the_account_is_not_syncing_then_the_account_syncs_now()
+    {
+        var syncActions = new RecordingSyncActions();
+        var account = new AccountViewModel(TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>()), [], TestData.CreateLocalization(), TestData.CreateTime());
+        var card = new LayoutCAccountCardViewModel(account, _ => { }, syncActions, TestData.CreateLocalization());
+
+        await card.ActionCommand.ExecuteAsync(null);
+
+        (card.ActionText, syncActions.Calls).ShouldBe(("Sync now", [$"SyncNowAsync:{account.Id}"]));
+    }
+
+    [Fact]
+    public async Task when_the_action_command_runs_while_the_account_is_syncing_then_the_sync_is_cancelled()
+    {
+        var syncActions = new RecordingSyncActions();
+        var account = new AccountViewModel(TestData.CreateAccount(SyncStatusFactory.CreateSyncing(25), Option.None<DateTimeOffset>()), [], TestData.CreateLocalization(), TestData.CreateTime());
+        var card = new LayoutCAccountCardViewModel(account, _ => { }, syncActions, TestData.CreateLocalization());
+
+        await card.ActionCommand.ExecuteAsync(null);
+
+        (card.ActionText, syncActions.Calls).ShouldBe(("Cancel", [$"CancelSyncAsync:{account.Id}"]));
+    }
+
+    [Fact]
+    public void when_the_account_needs_sign_in_then_the_action_command_cannot_run()
+    {
+        var account = TestData.CreateAccountViewModel(TestData.CreateAccountNeedingSignIn(), new RecordingAccountCommands());
+        var card = new LayoutCAccountCardViewModel(account, _ => { }, new RecordingSyncActions(), TestData.CreateLocalization());
+
+        card.ActionCommand.CanExecute(null).ShouldBeFalse();
+    }
 }
