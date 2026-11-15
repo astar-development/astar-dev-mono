@@ -21,4 +21,11 @@ public interface ISyncBaselineReader
     /// <param name="cancellationToken">Cancels the read.</param>
     /// <returns>The page, or the error that stopped the read. A failure is never an empty or short page: a stored row that is invalid fails the whole read.</returns>
     Task<Result<IReadOnlyList<SyncBaselineEntry>, ErrorResponse>> GetUnderAsync(AccountId accountId, RelativeSyncPath under, Option<RelativeSyncPath> after, int limit, CancellationToken cancellationToken);
+
+    /// <summary>Reads every baseline row of one cloud item, by its id and not by a scan (#1626). An item is normally at one path, but a half-finished move can leave two.</summary>
+    /// <param name="accountId">The account.</param>
+    /// <param name="itemId">The cloud item.</param>
+    /// <param name="cancellationToken">Cancels the read.</param>
+    /// <returns>The rows sorted by path ignoring case; empty when the item has none; or the error that stopped the read.</returns>
+    Task<Result<IReadOnlyList<SyncBaselineEntry>, ErrorResponse>> GetByItemAsync(AccountId accountId, RemoteItemId itemId, CancellationToken cancellationToken);
 }

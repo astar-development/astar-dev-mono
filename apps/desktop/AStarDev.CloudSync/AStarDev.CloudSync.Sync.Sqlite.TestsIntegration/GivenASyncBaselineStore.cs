@@ -353,6 +353,45 @@ public sealed class GivenASyncBaselineStore : IAsyncLifetime
         _ = await command.ExecuteNonQueryAsync(CancellationToken);
     }
 
+    [Fact]
+    public async Task when_an_item_is_read_by_id_then_every_row_of_that_item_comes_back_sorted_by_path()
+    {
+        _ = await Database.BaselineWriter.UpsertAsync(FirstAccount, [FileEntry(FirstAccount, "Docs/b.txt", "item-1"), FileEntry(FirstAccount, "Docs/a.txt", "item-1"), FileEntry(FirstAccount, "Docs/c.txt", "item-2"), FolderEntry(FirstAccount, "Docs", "folder-1")], CancellationToken);
+
+        var read = await Database.BaselineReader.GetByItemAsync(FirstAccount, Id("item-1"), CancellationToken);
+
+        read.Match(rows => rows.Select(row => row.Path.Value).ToList(), _ => ["failed"]).ShouldBe(["Docs/a.txt", "Docs/b.txt"]);
+    }
+
+    [Fact]
+    public async Task when_an_item_is_read_by_id_then_the_same_id_in_another_account_is_not_returned()
+    {
+        _ = await Database.BaselineWriter.UpsertAsync(FirstAccount, [FileEntry(FirstAccount, "Docs/a.txt", "item-1")], CancellationToken);
+        _ = await Database.BaselineWriter.UpsertAsync(SecondAccount, [FileEntry(SecondAccount, "Other/a.txt", "item-1")], CancellationToken);
+
+        var read = await Database.BaselineReader.GetByItemAsync(FirstAccount, Id("item-1"), CancellationToken);
+
+        read.Match(rows => rows.Select(row => row.Path.Value).ToList(), _ => ["failed"]).ShouldBe(["Docs/a.txt"]);
+    }
+
+    [Fact]
+    public async Task when_an_item_has_no_baseline_row_then_the_read_by_id_is_empty_and_not_an_error()
+    {
+        var read = await Database.BaselineReader.GetByItemAsync(FirstAccount, Id("missing"), CancellationToken);
+
+        read.Match(rows => rows.Count, _ => -1).ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task when_an_item_is_read_by_id_then_a_folder_row_comes_back_as_a_folder()
+    {
+        _ = await Database.BaselineWriter.UpsertAsync(FirstAccount, [FolderEntry(FirstAccount, "Docs", "folder-1")], CancellationToken);
+
+        var read = await Database.BaselineReader.GetByItemAsync(FirstAccount, Id("folder-1"), CancellationToken);
+
+        read.Match(rows => rows.Select(row => row.Kind).ToList(), _ => []).ShouldBe([SyncBaselineKindFactory.CreateFolder()]);
+    }
+
     private static RelativeSyncPath Path(string value) => RelativeSyncPathFactory.Create(value).Match(path => path, _ => throw new InvalidOperationException("The test path must be valid."));
 
     private static SyncBaselineEntry FileEntry(AccountId account, string path, string itemId, long size = 10, string hash = "hash-1", string cTag = "c-1", string eTag = "e-1") =>

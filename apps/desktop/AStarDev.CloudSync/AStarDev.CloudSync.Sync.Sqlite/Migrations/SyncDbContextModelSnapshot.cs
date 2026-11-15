@@ -280,6 +280,8 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
 
                     b.HasKey("AccountId", "PathKey");
 
+                    b.HasIndex("AccountId", "RemoteItemId");
+
                     b.ToTable("SyncBaseline", (string)null);
                 });
 

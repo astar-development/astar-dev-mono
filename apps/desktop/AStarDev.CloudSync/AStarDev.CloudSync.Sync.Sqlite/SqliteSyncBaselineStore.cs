@@ -28,6 +28,11 @@ internal sealed class SqliteSyncBaselineStore(IDbContextFactory<SyncDbContext> d
             .MatchAsync(page => Result.Success<IReadOnlyList<SyncBaselineEntry>, ErrorResponse>(page), exception => Failed<IReadOnlyList<SyncBaselineEntry>>(exception, "The baseline could not be read."));
 
     /// <inheritdoc />
+    public Task<Result<IReadOnlyList<SyncBaselineEntry>, ErrorResponse>> GetByItemAsync(AccountId accountId, RemoteItemId itemId, CancellationToken cancellationToken) =>
+        Try.RunAsync(() => ReadByItemAsync(accountId, itemId, cancellationToken), cancellationToken)
+            .MatchAsync(rows => Result.Success<IReadOnlyList<SyncBaselineEntry>, ErrorResponse>(rows), exception => Failed<IReadOnlyList<SyncBaselineEntry>>(exception, "The baseline could not be read."));
+
+    /// <inheritdoc />
     public Task<Result<BaselineCounts, ErrorResponse>> CountAsync(AccountId accountId, CancellationToken cancellationToken) =>
         Try.RunAsync(() => CountRowsAsync(accountId, cancellationToken), cancellationToken)
             .MatchAsync(Result.Success<BaselineCounts, ErrorResponse>, exception => Failed<BaselineCounts>(exception, "The baseline could not be counted."));
@@ -111,6 +116,14 @@ internal sealed class SqliteSyncBaselineStore(IDbContextFactory<SyncDbContext> d
         var entity = await dbContext.SyncBaseline.AsNoTracking().Where(item => item.AccountId == accountId.Value && item.PathKey == key).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
 
         return entity is null ? Option.None<SyncBaselineEntry>() : Option.Some(ToEntry(entity));
+    }
+
+    private async Task<IReadOnlyList<SyncBaselineEntry>> ReadByItemAsync(AccountId accountId, RemoteItemId itemId, CancellationToken cancellationToken)
+    {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        var entities = await dbContext.SyncBaseline.AsNoTracking().Where(item => item.AccountId == accountId.Value && item.RemoteItemId == itemId.Value).OrderBy(item => item.PathKey).ToListAsync(cancellationToken).ConfigureAwait(false);
+
+        return [.. entities.Select(ToEntry)];
     }
 
     private async Task<IReadOnlyList<SyncBaselineEntry>> ReadPageAsync(AccountId accountId, string under, string? after, int limit, CancellationToken cancellationToken)
