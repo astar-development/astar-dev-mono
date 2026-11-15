@@ -370,6 +370,28 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
                     b.ToTable("SyncSchedule", (string)null);
                 });
 
+            modelBuilder.Entity("AStarDev.CloudSync.Sync.Sqlite.ThroughputSampleEntity", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("AtUtcTicks")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("Bytes")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("ElapsedTicks")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AtUtcTicks");
+
+                    b.ToTable("ThroughputSamples", (string)null);
+                });
+
             modelBuilder.Entity("AStarDev.CloudSync.Sync.Sqlite.TransferConcurrencyEntity", b =>
                 {
                     b.Property<Guid>("AccountId")

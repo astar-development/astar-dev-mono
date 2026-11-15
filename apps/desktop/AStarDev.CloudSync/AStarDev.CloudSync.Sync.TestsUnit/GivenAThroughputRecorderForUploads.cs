@@ -1,3 +1,5 @@
+using AStarDev.FunctionalParadigm;
+
 namespace AStarDev.CloudSync.Sync.TestsUnit;
 
 public sealed class GivenAThroughputRecorderForUploads : IDisposable
