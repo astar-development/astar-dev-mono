@@ -17,7 +17,7 @@ public sealed class LocalScanFixture : IDisposable
 
     private readonly ServiceProvider provider;
 
-    public LocalScanFixture(bool windows = false)
+    public LocalScanFixture(bool windows = false, Action<ILoggingBuilder>? sink = null)
     {
         Root = windows ? @"C:\sync\root" : RootPath;
         FileSystem = new MockFileSystem(options => options.SimulatingOperatingSystem(windows ? SimulationMode.Windows : SimulationMode.Linux));
@@ -28,7 +28,11 @@ public sealed class LocalScanFixture : IDisposable
         Roots.Root = Option.Some(FileSystem.Directory.CreateDirectory(Root));
         RuleWriter = new ApplyingRuleWriter(Rules);
         provider = new ServiceCollection()
-            .AddLogging(logging => logging.ClearProviders().AddProvider(Logs))
+            .AddLogging(logging =>
+            {
+                _ = logging.ClearProviders().AddProvider(Logs);
+                sink?.Invoke(logging);
+            })
             .AddSingleton<System.TimeProvider>(Time)
             .AddSingleton<ISyncRootReader>(Roots)
             .AddSingleton<ISelectionRuleReader>(Rules)

@@ -54,6 +54,8 @@ public sealed class UploadPassFixture : IDisposable
         set => Concurrency.Value = value;
     }
 
+    public Action<ILoggingBuilder>? Sink { get; set; }
+
     public AccountId Account { get; private set; }
 
     public UploadPassFixture() => Recorder = new FakeUploadRecorder(Baseline);
@@ -95,7 +97,11 @@ public sealed class UploadPassFixture : IDisposable
         var oneDrive = CloudProviderFactory.CreateOneDrive();
         var roots = new FixedSyncRootReader { Root = HasRoot ? Option.Some(FileSystem.DirectoryInfo.New("/sync")) : Option.None<System.IO.Abstractions.IDirectoryInfo>() };
         provider = new ServiceCollection()
-            .AddLogging(logging => logging.ClearProviders().AddProvider(Logs))
+            .AddLogging(logging =>
+            {
+                _ = logging.ClearProviders().AddProvider(Logs);
+                Sink?.Invoke(logging);
+            })
             .AddSingleton<System.TimeProvider>(Time)
             .AddCloudSync()
             .AddSingleton(Classifier)
