@@ -81,6 +81,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<AutostartSettingsViewModel>()
             .AddSingleton<IWindowPresence, WindowPresenceReader>()
             .AddSingleton<INotificationSender>(_ => NotificationSenderFactory.Create(RuntimeInformation.IsOSPlatform))
+            .AddSingleton<PassNotificationDecider>()
             .AddSingleton<SyncNotifier>()
             .AddSingleton<IMainWindowVisibility>(provider => provider.GetRequiredService<MainWindowVisibility>())
             .AddSingleton<IApplicationExit, DesktopApplicationExit>()
