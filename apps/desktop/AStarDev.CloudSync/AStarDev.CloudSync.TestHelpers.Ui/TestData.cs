@@ -57,7 +57,11 @@ public static class TestData
 
     public static DisplaySettingsViewModel CreateDisplaySettings() => CreateDisplaySettings(new FakePlaintextCacheConsentSettings());
 
-    public static DisplaySettingsViewModel CreateDisplaySettings(FakePlaintextCacheConsentSettings plaintextCacheConsent) => new(new InMemoryDisplayPreferencesStore(), new RecordingThemeApplier(), CreatePlaintextCacheConsentSettings(plaintextCacheConsent), CreateSyncScheduleSettings(), CreateTrashRetentionSettings(), CreateAutostartSettings(), CreateLocalization());
+    public static DisplaySettingsViewModel CreateDisplaySettings(FakePlaintextCacheConsentSettings plaintextCacheConsent) => new(new InMemoryDisplayPreferencesStore(), new RecordingThemeApplier(), CreatePlaintextCacheConsentSettings(plaintextCacheConsent), CreateDisplaySettingsSections(), CreateLocalization());
+
+    public static DisplaySettingsSections CreateDisplaySettingsSections() => DisplaySettingsSectionsFactory.Create(CreateSyncScheduleSettings(), CreateTrashRetentionSettings(), CreateAutostartSettings(), CreateAccountLogLevels());
+
+    public static AccountLogLevelsViewModel CreateAccountLogLevels() => new(new SyncOverviewViewModel(new PlaceholderSyncOverviewSource(CreateTime()), CreateLocalization(), CreateTime(), NullLogger<SyncOverviewViewModel>.Instance), new FakeAccountLogLevelSettings(), CreateLocalization());
 
     public static AutostartSettingsViewModel CreateAutostartSettings() => new(new FakeAutostartRegistration(), CreateLocalization());
 

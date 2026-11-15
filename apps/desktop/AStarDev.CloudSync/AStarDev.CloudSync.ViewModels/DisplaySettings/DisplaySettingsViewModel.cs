@@ -16,15 +16,15 @@ public sealed class DisplaySettingsViewModel : LocalizedObservableObject
     /// <param name="store">Loads and saves the preferences.</param>
     /// <param name="themeApplier">Applies the theme to the running application.</param>
     /// <param name="plaintextCacheConsent">The setting that withdraws a remembered consent to the plaintext token file.</param>
-    /// <param name="schedule">The automatic sync interval setting.</param>
-    /// <param name="trashRetention">The sync trash retention setting.</param>
+    /// <param name="sections">The schedule, trash retention, start at login and verbose logging settings.</param>
     /// <param name="localization">Supplies the text.</param>
-    public DisplaySettingsViewModel(IDisplayPreferencesStore store, IThemeApplier themeApplier, PlaintextCacheConsentSettingsViewModel plaintextCacheConsent, SyncScheduleSettingsViewModel schedule, TrashRetentionSettingsViewModel trashRetention, AutostartSettingsViewModel autostart, ILocalizationService localization) : base(localization)
+    public DisplaySettingsViewModel(IDisplayPreferencesStore store, IThemeApplier themeApplier, PlaintextCacheConsentSettingsViewModel plaintextCacheConsent, DisplaySettingsSections sections, ILocalizationService localization) : base(localization)
     {
         PlaintextCacheConsent = plaintextCacheConsent;
-        Schedule = schedule;
-        TrashRetention = trashRetention;
-        Autostart = autostart;
+        Schedule = sections.Schedule;
+        TrashRetention = sections.TrashRetention;
+        Autostart = sections.Autostart;
+        LogLevels = sections.LogLevels;
         this.store = store;
         this.themeApplier = themeApplier;
         preferences = store.Load();
@@ -67,6 +67,9 @@ public sealed class DisplaySettingsViewModel : LocalizedObservableObject
 
     /// <summary>The start at login setting.</summary>
     public AutostartSettingsViewModel Autostart { get; }
+
+    /// <summary>The per-account verbose logging setting.</summary>
+    public AccountLogLevelsViewModel LogLevels { get; }
 
     /// <summary>The settings panel title and settings button name.</summary>
     public string Title => Localization.GetLocal("Settings.Title");

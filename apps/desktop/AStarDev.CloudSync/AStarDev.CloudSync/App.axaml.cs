@@ -55,6 +55,7 @@ public partial class App : Application, IDisposable
             _ = services.GetRequiredService<AutostartSettingsViewModel>().LoadAsync(CancellationToken.None);
             _ = services.GetRequiredService<TrashRetentionSettingsViewModel>().LoadAsync(CancellationToken.None);
             _ = Task.Run(() => services.GetRequiredService<AccountLogLevels>().LoadAsync(services.GetRequiredService<IAccountLogLevelSettings>(), CancellationToken.None), CancellationToken.None);
+            _ = services.GetRequiredService<AccountLogLevelsViewModel>().LoadAsync(CancellationToken.None);
             recovery = Task.Run(() => services.GetRequiredService<IInterruptedSyncRecovery>().RecoverAsync(shutdown.Token), shutdown.Token);
             _ = services.GetRequiredService<ISyncScheduler>().StartAsync(CancellationToken.None);
             _ = services.GetRequiredService<SyncRunOverviewReloader>();
