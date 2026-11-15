@@ -466,7 +466,7 @@ internal sealed class OneDriveFileUploader(OneDriveTransferHttp http, IUploadSes
     {
         transfer.Attempts++;
         if (transfer.Attempts > MaxAttempts)
-            return Option.Some(await AbandonAsync(transfer, cause, cancellationToken).ConfigureAwait(false));
+            return Option.Some(await GiveUpAsync(transfer, cause, cancellationToken).ConfigureAwait(false));
 
         var session = transfer.Session.Match(found => found, () => throw new InvalidOperationException("The session is created before fragments are sent."));
         using var status = OneDriveTransferHttp.Anonymous(HttpMethod.Get, session);
@@ -517,6 +517,9 @@ internal sealed class OneDriveFileUploader(OneDriveTransferHttp http, IUploadSes
         return Result.Failure<UploadedFile, ProviderError>(ProviderErrorFactory.CreateSourceChanged());
     }
 
+    private async Task<Result<UploadedFile, ProviderError>> GiveUpAsync(Transfer transfer, ProviderError error, CancellationToken cancellationToken) =>
+        IsLarge(transfer) ? Result.Failure<UploadedFile, ProviderError>(error) : await AbandonAsync(transfer, error, cancellationToken).ConfigureAwait(false);
+
     private async Task<Result<UploadedFile, ProviderError>> AbandonAsync(Transfer transfer, ProviderError error, CancellationToken cancellationToken)
     {
         await DeleteSessionAsync(transfer, cancellationToken).ConfigureAwait(false);
@@ -527,7 +530,8 @@ internal sealed class OneDriveFileUploader(OneDriveTransferHttp http, IUploadSes
     private async Task CancelSessionAsync(Transfer transfer)
     {
         OneDriveTransferLog.UploadCancelled(logger);
-        await DeleteSessionAsync(transfer, CancellationToken.None).ConfigureAwait(false);
+        if (!IsLarge(transfer))
+            await DeleteSessionAsync(transfer, CancellationToken.None).ConfigureAwait(false);
     }
 
     private async Task DeleteSessionAsync(Transfer transfer, CancellationToken cancellationToken)

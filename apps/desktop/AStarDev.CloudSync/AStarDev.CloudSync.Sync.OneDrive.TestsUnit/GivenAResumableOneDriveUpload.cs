@@ -458,7 +458,7 @@ public sealed class GivenAResumableOneDriveUpload : IDisposable
     }
 
     [Fact]
-    public async Task when_a_resumed_upload_is_cancelled_then_the_provider_session_is_deleted_and_the_saved_session_forgotten()
+    public async Task when_a_resumed_upload_is_cancelled_then_the_provider_session_and_the_saved_session_are_kept()
     {
         _ = await fixture.BuildAsync(CancellationToken);
         var source = LargeFile();
@@ -480,8 +480,8 @@ public sealed class GivenAResumableOneDriveUpload : IDisposable
         var act = () => UploadAsync(source, cancellation.Token);
 
         await Should.ThrowAsync<OperationCanceledException>(act);
-        fixture.Graph.Requests[^1].Method.ShouldBe(HttpMethod.Delete);
-        fixture.UploadSessions.Sessions.ShouldBeEmpty();
+        fixture.Graph.Requests.ShouldNotContain(request => request.Method == HttpMethod.Delete);
+        fixture.UploadSessions.Sessions.Count.ShouldBe(1);
     }
 
     [Fact]
