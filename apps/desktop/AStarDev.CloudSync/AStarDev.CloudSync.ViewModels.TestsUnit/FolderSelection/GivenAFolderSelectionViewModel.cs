@@ -351,7 +351,7 @@ public class GivenAFolderSelectionViewModel
 
     private void Synced(string path)
     {
-        var pair = SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), Account, path, RelativePaths.Of(path), Option.None<RemoteItemId>(), SyncDirectionFactory.CreateTwoWay(), SyncStatusFactory.CreateUpToDate(), 0, Option.Some(TestData.Now));
+        var pair = SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), Account, path, RelativePaths.Of(path), Option.None<RemoteItemId>(), SyncDirectionFactory.CreateTwoWay(), SyncPairStateFactory.Create(SyncStatusFactory.CreateUpToDate(), 0, Option.Some(TestData.Now)));
         pairReader = new FakeSyncPairReader { Pairs = _ => Result.Success<IReadOnlyList<SyncPair>, ErrorResponse>([pair]) };
     }
 

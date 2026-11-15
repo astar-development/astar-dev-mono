@@ -31,7 +31,5 @@ public sealed class SyncPairReader(ISelectionRuleReader rules) : ISyncPairReader
             rule.Path,
             rule.RemoteId,
             rule.Kind is SelectionRuleKind.Include include ? include.Direction : SyncDirectionFactory.CreateTwoWay(),
-            SyncStatusFactory.CreateUpToDate(),
-            0,
-            Option.None<DateTimeOffset>());
+            SyncPairStateFactory.Create(SyncStatusFactory.CreateUpToDate(), 0, Option.None<DateTimeOffset>()));
 }

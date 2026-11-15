@@ -20,5 +20,5 @@ public static class AttentionItems
 
     public static SyncAttentionItem CreateHeld(AccountId accountId, SyncPairId pairId, DeletionDirection direction, params string[] paths) => SyncAttentionItemFactory.CreateHeldDeletions(new HeldDeletionId(Guid.NewGuid()), accountId, pairId, direction, [.. paths.Select(Path)], TestClock.Now.AddHours(-2));
 
-    public static SyncPair Pair(AccountId accountId, SyncPairId pairId, string name) => SyncPairFactory.Create(pairId, accountId, name, RelativePaths.Of(name), Option.None<RemoteItemId>(), SyncDirectionFactory.CreateTwoWay(), SyncStatusFactory.CreateUpToDate(), 0, Option.None<DateTimeOffset>());
+    public static SyncPair Pair(AccountId accountId, SyncPairId pairId, string name) => SyncPairFactory.Create(pairId, accountId, name, RelativePaths.Of(name), Option.None<RemoteItemId>(), SyncDirectionFactory.CreateTwoWay(), SyncPairStateFactory.Create(SyncStatusFactory.CreateUpToDate(), 0, Option.None<DateTimeOffset>()));
 }

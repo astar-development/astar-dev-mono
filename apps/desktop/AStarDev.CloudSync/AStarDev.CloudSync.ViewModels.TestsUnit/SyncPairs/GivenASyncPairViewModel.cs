@@ -60,7 +60,7 @@ public class GivenASyncPairViewModel
     public void when_created_then_the_last_sync_and_account_id_are_exposed()
     {
         var account = TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
-        var model = SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), account.Id, "Documents", RelativePaths.Of("Documents"), Option.None<RemoteItemId>(), SyncDirectionFactory.CreateTwoWay(), SyncStatusFactory.CreateUpToDate(), 1_118, Option.Some(TestData.Now.AddMinutes(-4)));
+        var model = SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), account.Id, "Documents", RelativePaths.Of("Documents"), Option.None<RemoteItemId>(), SyncDirectionFactory.CreateTwoWay(), SyncPairStateFactory.Create(SyncStatusFactory.CreateUpToDate(), 1_118, Option.Some(TestData.Now.AddMinutes(-4))));
 
         var pair = new SyncPairViewModel(model, account, TestData.CreateLocalization(), TestData.CreateTime());
 
@@ -122,7 +122,7 @@ public class GivenASyncPairViewModel
     private static SyncPairViewModel CreateChangeable(SyncDirection direction, FakeSelectionRuleWriter writer, Func<CancellationToken, Task> reload)
     {
         var account = TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
-        var model = SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), account.Id, "Documents", RelativePaths.Of("Documents"), Option.None<RemoteItemId>(), direction, SyncStatusFactory.CreateUpToDate(), 1_118, Option.Some(TestData.Now.AddMinutes(-4)));
+        var model = SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), account.Id, "Documents", RelativePaths.Of("Documents"), Option.None<RemoteItemId>(), direction, SyncPairStateFactory.Create(SyncStatusFactory.CreateUpToDate(), 1_118, Option.Some(TestData.Now.AddMinutes(-4))));
 
         return new SyncPairViewModel(model, account, writer, reload, TestData.CreateLocalization(), TestData.CreateTime());
     }
@@ -130,7 +130,7 @@ public class GivenASyncPairViewModel
     private static SyncPairViewModel CreatePair(SyncDirection direction, SyncStatus status)
     {
         var account = TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
-        var model = SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), account.Id, "Documents", RelativePaths.Of("Documents"), Option.None<RemoteItemId>(), direction, status, 1_118, Option.Some(TestData.Now.AddMinutes(-4)));
+        var model = SyncPairFactory.Create(SyncPairIdFactory.Create(Guid.NewGuid()), account.Id, "Documents", RelativePaths.Of("Documents"), Option.None<RemoteItemId>(), direction, SyncPairStateFactory.Create(status, 1_118, Option.Some(TestData.Now.AddMinutes(-4))));
         var localization = TestData.CreateLocalization();
 
         return new SyncPairViewModel(model, account, localization, TestData.CreateTime());
