@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 
 namespace AStarDev.CloudSync.Logging;
 
@@ -15,5 +16,14 @@ public static class LogViewerHotkey
     /// <summary>Opens the viewer when the hotkey is pressed anywhere in the window.</summary>
     /// <param name="window">The window to listen on.</param>
     /// <param name="open">Opens the viewer.</param>
-    public static void Attach(TopLevel window, Action open) => throw new NotImplementedException($"{window}{open}");
+    public static void Attach(TopLevel window, Action open) => window.AddHandler(InputElement.KeyDownEvent, (_, keyEvent) => OpenWhenMatched(keyEvent, open), RoutingStrategies.Tunnel);
+
+    private static void OpenWhenMatched(KeyEventArgs keyEvent, Action open)
+    {
+        if (!Matches(keyEvent))
+            return;
+
+        open();
+        keyEvent.Handled = true;
+    }
 }
