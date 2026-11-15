@@ -19,6 +19,22 @@ public class GivenAnOverlayDialog
     [InlineData("FolderSelection")]
     [InlineData("SyncRestart")]
     [InlineData("ConflictList")]
+    public async Task when_the_dialog_opens_then_every_interactive_control_has_a_screen_reader_name(string key)
+    {
+        var (window, view, vm, overlay, _) = await ShowAsync(key);
+
+        await overlay.Open(vm);
+        Dispatcher.UIThread.RunJobs();
+
+        ScreenReaderNames.Unnamed(view).ShouldBeEmpty();
+    }
+
+    [AvaloniaTheory]
+    [InlineData("AddAccount")]
+    [InlineData("AccountDialog")]
+    [InlineData("FolderSelection")]
+    [InlineData("SyncRestart")]
+    [InlineData("ConflictList")]
     public async Task when_the_dialog_opens_then_focus_moves_inside_it(string key)
     {
         var (window, view, vm, overlay, _) = await ShowAsync(key);
