@@ -123,4 +123,7 @@
     <Folder Name="/spikes/" />
     <Folder Name="/spikes/scrape-category-import-export-testing/" />
     <Folder Name="/tests/" />
+    <Folder Name="/z_scratch/">
+        <Project Path="z_scratch/AStarDev.Scratch.TestsUnit/AStarDev.Scratch.TestsUnit.csproj" />
+    </Folder>
   </Solution>
