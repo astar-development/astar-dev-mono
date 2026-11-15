@@ -77,7 +77,6 @@ jobs:
           key: nuget-${{ runner.os }}-${{ hashFiles('Directory.Packages.props') }}
           restore-keys: |
             nuget-${{ runner.os }}-
-          lookup-only: true
 
       - name: Authenticate GitHub Packages source
         run: dotnet nuget update source github --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
@@ -92,29 +91,12 @@ jobs:
             --configuration Release \
             -p:TreatWarningsAsErrors=true
 
-      - name: Test (per project)
+      - name: Test (projects in parallel)
         run: |
           mkdir -p TestResults
 
-          mapfile -t projects < <(find . -name '*.Tests*.csproj' ! -name '*.TestsIntegration.csproj')
-
-          for proj in "${projects[@]}"; do
-            echo "Running tests for $proj"
-
-            proj_dir=$(dirname "$proj")
-            proj_name=$(basename "$proj" .csproj)
-
-            cd "$proj_dir"
-
-            xvfb-run -a dotnet test \
-              --no-build \
-              --configuration Release \
-              --results-directory "$GITHUB_WORKSPACE/TestResults" \
-              --report-xunit-trx --report-xunit-trx-filename $proj_name.trx \
-              --coverage --coverage-output-format cobertura --coverage-output $proj_name.cobertura.xml
-
-            cd "$GITHUB_WORKSPACE"
-          done
+          find . -name '*.Tests*.csproj' ! -name '*.TestsIntegration.csproj' -print0 \
+            | TEST_RUNNER="xvfb-run -a" xargs -0 -n 1 -P 4 .github/scripts/run-test-project.sh
 
       - name: Upload snapshot diffs
         uses: actions/upload-artifact@v7.0.2
