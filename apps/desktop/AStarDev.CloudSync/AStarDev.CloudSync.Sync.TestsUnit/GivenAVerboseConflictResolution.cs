@@ -4,7 +4,7 @@ namespace AStarDev.CloudSync.Sync.TestsUnit;
 
 public sealed class GivenAVerboseConflictResolution
 {
-    private static readonly string[] PersonalValues = ["jane.doe@contoso.com", "Jane Doe", "passport-scan", "SecretClientFolder", "/sync/root"];
+    private static readonly IReadOnlyList<string> PersonalValues = PersonalData.All;
 
     private static CancellationToken CancellationToken => TestContext.Current.CancellationToken;
 
@@ -12,12 +12,12 @@ public sealed class GivenAVerboseConflictResolution
     public async Task when_conflicts_are_resolved_and_refused_over_personal_names_then_nothing_personal_is_in_any_log_entry()
     {
         using var run = await ResolutionFixture.CreateAsync(CancellationToken);
-        const string Mine = "Docs/SecretClientFolder/Jane Doe passport-scan mine.txt";
-        const string Theirs = "Docs/SecretClientFolder/Jane Doe passport-scan theirs.txt";
-        const string Both = "Docs/SecretClientFolder/jane.doe@contoso.com both.txt";
+        const string Mine = $"Docs/SecretClientFolder/{PersonalData.DisplayName} passport-scan {PersonalData.AccessToken} mine.txt";
+        const string Theirs = $"Docs/SecretClientFolder/{PersonalData.DisplayName} passport-scan {PersonalData.RefreshToken} theirs.txt";
+        const string Both = $"Docs/SecretClientFolder/{PersonalData.Email} {PersonalData.BearerToken} both.txt";
         const string Stale = "Docs/SecretClientFolder/passport-scan stale.txt";
         run.Local(Mine, "mine");
-        run.Remote.File(Mine, "id-mine", "c-seen", 4);
+        run.Remote.File(Mine, PersonalData.DownloadUrl, "c-seen", 4);
         run.Local(Theirs, "mine");
         run.Remote.File(Theirs, "id-theirs", "c-seen", 6);
         run.Downloader.Content["id-theirs"] = "theirs"u8.ToArray();

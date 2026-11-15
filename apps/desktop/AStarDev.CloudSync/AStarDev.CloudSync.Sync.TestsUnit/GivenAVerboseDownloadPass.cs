@@ -6,7 +6,7 @@ namespace AStarDev.CloudSync.Sync.TestsUnit;
 
 public sealed class GivenAVerboseDownloadPass
 {
-    private static readonly string[] PersonalValues = ["jane.doe@contoso.com", "Jane Doe", "passport-scan", "SecretClientFolder", "/sync/root", "Docs"];
+    private static readonly IReadOnlyList<string> PersonalValues = PersonalData.All;
 
     private static CancellationToken CancellationToken => TestContext.Current.CancellationToken;
 
@@ -18,10 +18,10 @@ public sealed class GivenAVerboseDownloadPass
         _ = fixture.SyncedFolder("Docs/SecretClientFolder", "secret-id");
         fixture.Remote.Folder("Docs");
         fixture.Remote.Folder("Docs/SecretClientFolder");
-        fixture.Remote.File("Docs/SecretClientFolder/Jane Doe passport-scan jane.doe@contoso.com.txt", "ok", "c1", 5);
-        fixture.Remote.File("Docs/SecretClientFolder/passport-scan Jane Doe refused.txt", "bad", "c2", 5);
-        fixture.Downloader.Content["ok"] = "hello"u8.ToArray();
-        fixture.Downloader.Failures["bad"] = ProviderErrorFactory.CreateTransient();
+        fixture.Remote.File($"Docs/SecretClientFolder/{PersonalData.DisplayName} passport-scan {PersonalData.Email} {PersonalData.AccessToken}.txt", PersonalData.DownloadUrl, "c1", 5);
+        fixture.Remote.File($"Docs/SecretClientFolder/passport-scan {PersonalData.DisplayName} {PersonalData.RefreshToken} {PersonalData.BearerToken} refused.txt", PersonalData.UploadUrl, "c2", 5);
+        fixture.Downloader.Content[PersonalData.DownloadUrl] = "hello"u8.ToArray();
+        fixture.Downloader.Failures[PersonalData.UploadUrl] = ProviderErrorFactory.CreateTransient();
         _ = fixture.Synced("Docs/SecretClientFolder/Jane Doe deleted-remotely.txt", "gone", "gone");
 
         _ = await fixture.RunAsync(CancellationToken);

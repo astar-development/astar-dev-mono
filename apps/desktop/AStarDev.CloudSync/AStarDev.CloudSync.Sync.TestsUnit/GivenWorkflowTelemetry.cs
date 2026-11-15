@@ -11,7 +11,7 @@ public sealed class GivenWorkflowTelemetry : IDisposable
     private readonly MeterListener listener = new();
     private readonly ActivityListener activities;
     private readonly List<(string Instrument, double Value, string Tags)> measurements = [];
-    private readonly List<Activity> finished = [];
+    private readonly List<System.Diagnostics.Activity> finished = [];
 
     public GivenWorkflowTelemetry()
     {
