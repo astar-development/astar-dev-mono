@@ -1,9 +1,12 @@
+using AStarDev.CloudSync.Overview;
+using AStarDev.FunctionalParadigm;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.CloudSync.TestHelpers.Overview;
 using AStarDev.CloudSync.TestHelpers.Ui;
 using AStarDev.CloudSync.ViewModels.Overview;
+using AStarDev.CloudSync.ViewModels.TestsUnit.Overview;
 using AStarDev.CloudSync.ViewModels.Tray;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -28,6 +31,80 @@ public class GivenATrayMenuModel
     }
 
     private TrayMenuModel Create(SyncOverviewViewModel overview) => new(overview, actions, host, host, TestData.CreateLocalization());
+
+    private static async Task<SyncOverviewViewModel> LoadedAsync(IReadOnlyList<CloudAccount> accounts, IReadOnlyList<SyncAttentionItem> conflicts)
+    {
+        var overview = SyncOverviewFactory.Create(accounts, [], [], conflicts, [], 0, Option.None<DateTimeOffset>());
+        var viewModel = new SyncOverviewViewModel(new FixedSyncOverviewSource(overview), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        await viewModel.LoadAsync(CancellationToken);
+
+        return viewModel;
+    }
+
+    private static CloudAccount SyncingAccount() => TestData.CreateAccount(SyncStatusFactory.CreateSyncing(40), Option.None<DateTimeOffset>());
+
+    [Theory]
+    [InlineData(1, "AStar Dev CloudSync: Syncing 1 account")]
+    [InlineData(2, "AStar Dev CloudSync: Syncing 2 accounts")]
+    public async Task when_accounts_are_syncing_then_the_tooltip_counts_them(int syncing, string expected)
+    {
+        var accounts = Enumerable.Range(0, syncing).Select(_ => SyncingAccount()).Append(Photos).ToList();
+
+        var model = Create(await LoadedAsync(accounts, []));
+
+        model.TooltipText.ShouldBe(expected);
+    }
+
+    [Theory]
+    [InlineData(1, "AStar Dev CloudSync: 1 item needs attention")]
+    [InlineData(3, "AStar Dev CloudSync: 3 items need attention")]
+    public async Task when_nothing_syncs_and_items_need_attention_then_the_tooltip_counts_them(int conflicts, string expected)
+    {
+        var items = Enumerable.Range(0, conflicts).Select(index => AttentionItems.CreateConflict(Photos.Id, $"Docs/{index}.txt")).ToList();
+
+        var model = Create(await LoadedAsync([Photos], items));
+
+        model.TooltipText.ShouldBe(expected);
+    }
+
+    [Fact]
+    public async Task when_accounts_sync_and_items_need_attention_then_the_tooltip_says_syncing()
+    {
+        var model = Create(await LoadedAsync([SyncingAccount()], [AttentionItems.CreateConflict(Photos.Id, "Docs/a.txt")]));
+
+        model.TooltipText.ShouldBe("AStar Dev CloudSync: Syncing 1 account");
+    }
+
+    [Fact]
+    public async Task when_an_account_needs_sign_in_then_the_tooltip_says_so_even_while_another_syncs()
+    {
+        var model = Create(await LoadedAsync([SyncingAccount(), TestData.CreateAccountNeedingSignIn()], []));
+
+        model.TooltipText.ShouldBe("AStar Dev CloudSync: Sign-in required");
+    }
+
+    [Fact]
+    public async Task when_the_overview_reloads_with_a_new_status_then_the_tooltip_changes_and_the_change_is_raised()
+    {
+        var source = new SwitchableOverviewSource(SyncOverviewFactory.Create([Photos], [], [], [], [], 0, Option.None<DateTimeOffset>()));
+        var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        await overview.LoadAsync(CancellationToken);
+        var model = Create(overview);
+        var changed = new List<string?>();
+        model.PropertyChanged += (_, e) => changed.Add(e.PropertyName);
+        source.Overview = SyncOverviewFactory.Create([SyncingAccount(), SyncingAccount()], [], [], [], [], 0, Option.None<DateTimeOffset>());
+
+        await overview.LoadAsync(CancellationToken);
+
+        (model.TooltipText, changed.Contains(nameof(TrayMenuModel.TooltipText))).ShouldBe(("AStar Dev CloudSync: Syncing 2 accounts", true));
+    }
+
+    private sealed class SwitchableOverviewSource(SyncOverview initial) : ISyncOverviewSource
+    {
+        public SyncOverview Overview { get; set; } = initial;
+
+        public Task<Result<SyncOverview, ErrorResponse>> GetOverviewAsync(CancellationToken cancellationToken) => Task.FromResult(Result.Success<SyncOverview, ErrorResponse>(Overview));
+    }
 
     [Fact]
     public async Task when_there_are_no_accounts_then_the_menu_is_open_and_quit()
