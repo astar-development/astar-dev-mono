@@ -11,6 +11,8 @@ public sealed class FakeSyncBaselineCounter : ISyncBaselineCounter
 
     public Func<AccountId, Result<BaselineCounts, ErrorResponse>> Counts { get; init; } = _ => Result.Success<BaselineCounts, ErrorResponse>(BaselineCountsFactory.Create(0, 0));
 
+    public Func<AccountId, LocalRelativePath, Result<int, ErrorResponse>> FilesUnder { get; set; } = (_, _) => Result.Success<int, ErrorResponse>(0);
+
     public IReadOnlyList<AccountId> Counted
     {
         get
@@ -19,6 +21,8 @@ public sealed class FakeSyncBaselineCounter : ISyncBaselineCounter
                 return [.. counted];
         }
     }
+
+    public Task<Result<int, ErrorResponse>> CountFilesUnderAsync(AccountId accountId, LocalRelativePath under, CancellationToken cancellationToken) => Task.FromResult(FilesUnder(accountId, under));
 
     public Task<Result<BaselineCounts, ErrorResponse>> CountAsync(AccountId accountId, CancellationToken cancellationToken)
     {
