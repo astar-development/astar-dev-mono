@@ -3,6 +3,7 @@
   "App.Title": "AStar Dev CloudSync",
   "Update.Title": "Update available",
   "Update.Message": "Version {0} is ready to install.",
+  "Update.ForcedMessage": "Version {0} has been waiting for a week, so it will be installed now. The app restarts once any running sync has finished.",
   "Update.ReleaseNotesLabel": "What's new",
   "Update.RestartNow": "Restart now",
   "Update.Later": "Later",

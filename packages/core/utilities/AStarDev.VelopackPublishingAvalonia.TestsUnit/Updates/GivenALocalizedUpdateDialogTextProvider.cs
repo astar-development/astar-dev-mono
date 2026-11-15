@@ -69,6 +69,15 @@ public sealed class GivenALocalizedUpdateDialogTextProvider
     }
 
     [Fact]
+    public void when_get_forced_message_is_called_then_it_forwards_to_localization_service_with_the_forced_message_key_and_version()
+    {
+        var (sut, localization) = CreateSut();
+        localization.GetLocal("Update.ForcedMessage", "1.2.3").Returns("Version 1.2.3 will be installed now.");
+
+        sut.GetForcedMessage("1.2.3").ShouldBe("Version 1.2.3 will be installed now.");
+    }
+
+    [Fact]
     public void when_culture_changed_is_raised_then_text_changed_is_raised()
     {
         var (sut, localization) = CreateSut();

@@ -14,6 +14,7 @@
 
   <PropertyGroup>
         <PackageReleaseNotes>
+        v1.3.0 feat(velopack,cloudsync): scheduled update check, deferral store and forced update (#1681)
         v1.2.0 feat(velopack,cloudsync): update apply gate, so an update waits for running syncs (#1679, #1680)
         v1.1.0 feat(velopack): pure update policy with deferral and action unions (#1678)
         v1.0.1 refactor(logging): replace interpolated free-text log messages with dedicated templates (#1372)
@@ -47,9 +48,11 @@
     <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Testably.Abstractions" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../functional/AStarDev.FunctionalParadigm/AStarDev.FunctionalParadigm.csproj" />
     <ProjectReference Include="../../logging/AStarDev.LoggingExtensions/AStarDev.LoggingExtensions.csproj" />
   </ItemGroup>
 

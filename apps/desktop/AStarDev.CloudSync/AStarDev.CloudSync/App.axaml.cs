@@ -59,7 +59,7 @@ public partial class App : Application, IDisposable
             _ = services.GetRequiredService<SyncRunOverviewReloader>();
             _ = Task.Run(() => services.GetRequiredService<ISignInStateRefresher>().RefreshAllAsync(CancellationToken.None), CancellationToken.None);
 
-            _ = services.GetRequiredService<IUpdateNotificationService>().CheckAndNotifyAsync(shutdown.Token);
+            _ = services.GetRequiredService<IUpdateScheduler>().RunAsync(shutdown.Token);
             _ = Task.Run(SweepLogFiles, CancellationToken.None);
         }
 

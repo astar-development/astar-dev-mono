@@ -44,6 +44,8 @@ public static class ServiceCollectionExtensions
 
     private static string SettingsFilePath => ApplicationName.ApplicationDirectory().CombinePath("display-preferences.json");
 
+    private static string UpdateDeferralFilePath => ApplicationName.ApplicationDirectory().CombinePath("update-deferral.json");
+
     private static string DatabaseFilePath => ApplicationName.ApplicationDirectory().CombinePath("cloudsync.db");
 
     private static string TokenCacheFolderPath => ApplicationName.ApplicationDirectory();
@@ -61,6 +63,8 @@ public static class ServiceCollectionExtensions
             .AddLocalizationService(typeof(ServiceCollectionExtensions).Assembly, new CultureInfo("en-GB"))
             .AddVelopackUpdates(configuration)
             .AddVelopackUpdateNotifications()
+            .AddVelopackUpdateScheduling()
+            .AddVelopackUpdateDeferral(provider => provider.GetRequiredService<IFileSystem>().FileInfo.New(UpdateDeferralFilePath))
             .AddSingleton<IUpdateApplyGate, CloudSyncUpdateApplyGate>()
             .AddSingleton<IUpdateDialogTextProvider, LocalizedUpdateDialogTextProvider>()
             .AddSingleton(TimeProvider.System)

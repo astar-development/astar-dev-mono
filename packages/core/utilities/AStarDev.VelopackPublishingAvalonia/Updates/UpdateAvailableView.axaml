@@ -89,6 +89,7 @@
                         BorderBrush="{DynamicResource BorderDefaultBrush}"
                         BorderThickness="1"
                         IsEnabled="{Binding !IsBusy}"
+                        IsVisible="{Binding CanDefer}"
                         Command="{Binding LaterCommand}"/>
 
                 <Button Grid.Column="3"

@@ -8,4 +8,7 @@ public sealed class UpdateAvailableViewModelFactory(IVelopackUpdateService updat
 {
     /// <inheritdoc />
     public UpdateAvailableViewModel Create(UpdateInfo updateInfo) => new(updateInfo, updateCheckService, applyGate, textProvider, logger);
+
+    /// <inheritdoc />
+    public UpdateAvailableViewModel CreateForced(UpdateInfo updateInfo) => new(updateInfo, updateCheckService, applyGate, textProvider, logger, UpdateActionFactory.CreateForceAfterWarning());
 }

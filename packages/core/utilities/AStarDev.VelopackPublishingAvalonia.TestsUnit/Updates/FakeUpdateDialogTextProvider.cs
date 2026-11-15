@@ -16,6 +16,8 @@ internal sealed class FakeUpdateDialogTextProvider : IUpdateDialogTextProvider
 
     public string GetMessage(string version) => $"Update.Message:{version}";
 
+    public string GetForcedMessage(string version) => $"Update.ForcedMessage:{version}";
+
     public event EventHandler? TextChanged
     {
         add

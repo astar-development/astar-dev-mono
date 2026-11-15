@@ -21,6 +21,9 @@ public interface IUpdateDialogTextProvider
     /// <summary>Returns the body message describing the available update, formatted with <paramref name="version"/>.</summary>
     string GetMessage(string version);
 
+    /// <summary>Returns the body message for an update that has been deferred too long and is about to be installed, formatted with <paramref name="version"/>.</summary>
+    string GetForcedMessage(string version);
+
     /// <summary>Raised when the underlying text source changes (e.g. a culture switch) so an open dialog can refresh.</summary>
     event EventHandler? TextChanged;
 }
