@@ -147,4 +147,25 @@ public class GivenALayoutAAccountCardViewModel
 
         return new LayoutAAccountCardViewModel(account, _ => { }, new RecordingSyncActions(), localization);
     }
+
+    [Fact]
+    public async Task when_the_pause_command_runs_then_the_account_is_paused_or_resumed()
+    {
+        var syncActions = new RecordingSyncActions();
+        var account = new AccountViewModel(TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>()), [], TestData.CreateLocalization(), TestData.CreateTime());
+        var card = new LayoutAAccountCardViewModel(account, _ => { }, syncActions, TestData.CreateLocalization());
+
+        await card.PauseCommand.ExecuteAsync(null);
+
+        syncActions.Calls.ShouldBe([$"PauseAsync:{account.Id}"]);
+    }
+
+    [Fact]
+    public void when_the_account_needs_sign_in_then_the_pause_command_cannot_run()
+    {
+        var account = TestData.CreateAccountViewModel(TestData.CreateAccountNeedingSignIn(), new RecordingAccountCommands());
+        var card = new LayoutAAccountCardViewModel(account, _ => { }, new RecordingSyncActions(), TestData.CreateLocalization());
+
+        card.PauseCommand.CanExecute(null).ShouldBeFalse();
+    }
 }

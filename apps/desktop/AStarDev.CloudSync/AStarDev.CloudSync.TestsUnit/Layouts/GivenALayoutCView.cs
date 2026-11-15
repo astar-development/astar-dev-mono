@@ -41,6 +41,17 @@ public class GivenALayoutCView
     }
 
     [AvaloniaFact]
+    public async Task when_shown_then_every_account_card_has_a_pause_or_resume_button_and_only_the_paused_account_reads_resume()
+    {
+        var window = await CreateShownWindowAsync();
+
+        var texts = window.GetVisualDescendants().OfType<Button>().Select(button => button.Content).OfType<string>().Where(text => text is "Pause" or "Resume").ToList();
+
+        texts.Count(text => text == "Pause").ShouldBe(3);
+        texts.Count(text => text == "Resume").ShouldBe(1);
+    }
+
+    [AvaloniaFact]
     public async Task when_shown_then_the_all_pairs_chip_is_highlighted_and_the_provider_chips_are_not()
     {
         var window = await CreateShownWindowAsync();

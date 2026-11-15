@@ -179,6 +179,17 @@ public class GivenALayoutAView
     }
 
     [AvaloniaFact]
+    public async Task when_shown_then_every_account_card_has_a_pause_or_resume_button_and_only_the_paused_account_reads_resume()
+    {
+        var window = await CreateShownWindowAsync();
+
+        var texts = window.GetVisualDescendants().OfType<Button>().Select(button => button.Content).OfType<string>().Where(text => text is "Pause" or "Resume").ToList();
+
+        texts.Count(text => text == "Pause").ShouldBe(3);
+        texts.Count(text => text == "Resume").ShouldBe(1);
+    }
+
+    [AvaloniaFact]
     public async Task when_the_search_rail_button_is_clicked_then_the_search_page_replaces_the_account_cards_and_typing_filters_it()
     {
         var window = await CreateShownWindowAsync();
