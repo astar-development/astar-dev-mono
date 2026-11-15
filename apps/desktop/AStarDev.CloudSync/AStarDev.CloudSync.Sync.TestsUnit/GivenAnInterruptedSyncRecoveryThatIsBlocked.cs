@@ -88,13 +88,24 @@ public sealed class GivenAnInterruptedSyncRecoveryThatIsBlocked : IDisposable
         (journal.Runs.Count(run => run.Outcome is Option<SyncRunOutcome>.None), journal.Runs.Count, next.ActivityLog.Calls, next.Steps.Steps.Count).ShouldBe((1, 1, 0, 0));
     }
 
+    private static async Task<T> FinishedAsync<T>(Task<T> task, Microsoft.Extensions.Time.Testing.FakeTimeProvider time)
+    {
+        while (!task.IsCompleted)
+        {
+            time.Advance(TimeSpan.FromMilliseconds(250));
+            await Task.Delay(5, CancellationToken);
+        }
+
+        return await task;
+    }
+
     [Fact]
     public async Task when_the_database_is_sound_again_at_the_next_start_then_the_interrupted_run_is_recovered()
     {
         await LeaveUnfinishedAsync(Personal);
         var damaged = Restart();
         damaged.Health.Answer = Result.Failure<Unit, DatabaseHealthFailure>(DatabaseHealthFailureFactory.CreateUnreadable());
-        _ = await damaged.Recovery.RecoverAsync(CancellationToken);
+        _ = await FinishedAsync(damaged.Recovery.RecoverAsync(CancellationToken), damaged.Time);
         var repaired = Restart();
 
         var outcomes = await repaired.Recovery.RecoverAsync(CancellationToken);

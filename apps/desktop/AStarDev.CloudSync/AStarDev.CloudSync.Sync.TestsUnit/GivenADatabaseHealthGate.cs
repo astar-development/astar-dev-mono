@@ -55,7 +55,7 @@ public sealed class GivenADatabaseHealthGate
         check.Answer = Result.Failure<Unit, DatabaseHealthFailure>(failure);
         var gate = CreateGate();
 
-        var status = await gate.CheckAsync(CancellationToken);
+        var status = await FinishedAsync(gate.CheckAsync(CancellationToken));
 
         status.ShouldBe(DatabaseHealthStatusFactory.CreateFailed(failure));
     }
