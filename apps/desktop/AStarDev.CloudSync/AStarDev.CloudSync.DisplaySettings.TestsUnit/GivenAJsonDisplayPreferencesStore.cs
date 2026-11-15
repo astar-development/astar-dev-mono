@@ -97,13 +97,13 @@ public class GivenAJsonDisplayPreferencesStore
     }
 
     [Fact]
-    public void when_preferences_are_saved_then_the_file_holds_the_original_json_format()
+    public void when_preferences_are_saved_then_the_file_keeps_the_original_keys_and_adds_the_locale()
     {
         var fileSystem = new MockFileSystem();
 
         CreateStore(fileSystem).Save(DisplayPreferencesFactory.Create(MainLayoutFactory.CreateSyncPairsFirst(), AppThemeFactory.CreateLight()));
 
-        fileSystem.File.ReadAllText(SettingsPath).ShouldBe("""{"Layout":"C","Theme":"Light"}""");
+        fileSystem.File.ReadAllText(SettingsPath).ShouldBe("""{"Layout":"C","Theme":"Light","Locale":"en-GB"}""");
     }
 
     [Theory]
