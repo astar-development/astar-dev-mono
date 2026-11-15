@@ -74,3 +74,7 @@ dotnet test packages/core/logging/AStarDev.LoggingOTel.TestsUnit
 5. Open a PR against `main`. CI runs automatically on push.
 
 Do **not** run `dotnet pack` or `dotnet nuget push` manually — releases are triggered by pushing a `v*` tag. See the repo-level [Releasing a new version](../../../docs/guides/releasing-a-new-version.md) guide.
+
+## Metrics and traces
+
+`OTelTelemetryConfigurator.ConfigureOTelTelemetry(configuration, serviceName, meterName, activitySourceName)` starts exporting one meter and one activity source, for applications that are not hosted by the generic host. It exports to the OTLP endpoint (`OpenTelemetry:OtlpEndpoint`) and to Azure Monitor (`ApplicationInsights:ConnectionString`) when they are configured. Dispose the returned `TelemetryProviders` to flush.
