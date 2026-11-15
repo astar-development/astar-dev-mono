@@ -129,8 +129,8 @@ public sealed class AccountDetailViewModel : LayoutBDetailViewModel
     /// <summary>Starts adding a sync pair for the account.</summary>
     public IAsyncRelayCommand AddFolderCommand { get; }
 
-    /// <summary>The pause action text.</summary>
-    public string PauseText => Localization.GetLocal("LayoutB.Pause");
+    /// <summary>The pause action text: "Resume" while the account is paused, otherwise "Pause".</summary>
+    public string PauseText => Account.PauseText;
 
     /// <summary>Whether Pause and Sync now can run; false while the account needs sign-in.</summary>
     public bool CanSync => !Account.NeedsSignIn;

@@ -86,12 +86,15 @@ public class GivenALayoutAView
         var layout = window.Content.ShouldBeOfType<LayoutAView>().DataContext.ShouldBeOfType<LayoutAViewModel>();
         var buttons = window.GetVisualDescendants().OfType<Button>().ToList();
 
-        var cardActions = buttons.Where(button => button.Classes.Contains("card-action") && !button.Classes.Contains("card-remove") && !button.Classes.Contains("card-sync-folder")).ToList();
+        var cardActions = buttons.Where(button => button.Classes.Contains("card-action") && !button.Classes.Contains("card-remove") && !button.Classes.Contains("card-sync-folder") && !button.Classes.Contains("card-pause")).ToList();
+        var pauseActions = buttons.Where(button => button.Classes.Contains("card-pause")).ToList();
         var removeActions = buttons.Where(button => button.Classes.Contains("card-remove")).ToList();
         var syncFolderActions = buttons.Where(button => button.Classes.Contains("card-sync-folder")).ToList();
 
         cardActions.ShouldNotBeEmpty();
         cardActions.ShouldAllBe(button => button.Command == ((LayoutAAccountCardViewModel)button.DataContext!).ActionCommand);
+        pauseActions.Count.ShouldBe(cardActions.Count);
+        pauseActions.ShouldAllBe(button => button.Command == ((LayoutAAccountCardViewModel)button.DataContext!).PauseCommand);
         removeActions.Count.ShouldBe(cardActions.Count);
         removeActions.ShouldAllBe(button => button.Command == ((LayoutAAccountCardViewModel)button.DataContext!).Account.RemoveCommand);
         syncFolderActions.Count.ShouldBe(cardActions.Count);

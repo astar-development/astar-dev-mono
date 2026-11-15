@@ -35,6 +35,9 @@ public sealed class LayoutAAccountCardViewModel(AccountViewModel account, Action
     /// <summary>The card action: "Cancel" while syncing, otherwise "Sync now".</summary>
     public string ActionText => account.NeedsSignIn ? account.SignInText : Localization.GetLocal(SyncActionKey);
 
+    /// <summary>Pauses the account's scheduled syncing, or resumes it when paused. Cannot run while the account needs sign-in.</summary>
+    public IAsyncRelayCommand PauseCommand => field ??= new AsyncRelayCommand(cancellationToken => syncActions.PauseAsync(account.Id, cancellationToken), () => account.CanPause);
+
     /// <summary>The card action: cancels the account's sync while syncing, otherwise syncs it now.</summary>
     public IAsyncRelayCommand ActionCommand => field ??= new AsyncRelayCommand(RunActionAsync);
 

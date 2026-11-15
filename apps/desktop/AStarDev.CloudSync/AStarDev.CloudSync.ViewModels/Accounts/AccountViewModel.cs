@@ -107,6 +107,12 @@ public sealed class AccountViewModel : LocalizedObservableObject
     /// <summary>The suggestion to lower the transfers at once; empty when there is none.</summary>
     public string ThrottleHintText => HasThrottleHint ? Localization.GetLocal("Throttle.Hint") : string.Empty;
 
+    /// <summary>The pause action text: "Resume" while the account is paused, otherwise "Pause".</summary>
+    public string PauseText => Localization.GetLocal(Status.IsPaused ? "Account.Resume" : "Account.Pause");
+
+    /// <summary>Whether the account can be paused or resumed; false while it needs sign-in.</summary>
+    public bool CanPause => !NeedsSignIn;
+
     /// <summary>The Sign in action's text.</summary>
     public string SignInText => Localization.GetLocal("Account.SignIn");
 
