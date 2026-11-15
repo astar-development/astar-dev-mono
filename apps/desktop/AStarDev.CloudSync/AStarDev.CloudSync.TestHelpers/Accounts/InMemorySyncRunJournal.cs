@@ -14,6 +14,8 @@ public sealed class InMemorySyncRunJournal(TimeProvider? timeProvider = null) : 
 
     public Action OnFinish { get; set; } = () => { };
 
+    public Func<Task> AfterRowAdded { get; set; } = () => Task.CompletedTask;
+
     public bool Killed { get; private set; }
 
     public void Kill() => Killed = true;
@@ -29,16 +31,18 @@ public sealed class InMemorySyncRunJournal(TimeProvider? timeProvider = null) : 
         }
     }
 
-    public Task<Result<SyncRunId, ErrorResponse>> StartAsync(AccountId accountId, SyncTrigger trigger, CancellationToken cancellationToken)
+    public async Task<Result<SyncRunId, ErrorResponse>> StartAsync(AccountId accountId, SyncTrigger trigger, CancellationToken cancellationToken)
     {
         if (Fails)
-            return Task.FromResult(Result.Failure<SyncRunId, ErrorResponse>(new ErrorResponse("locked")));
+            return Result.Failure<SyncRunId, ErrorResponse>(new ErrorResponse("locked"));
 
         var id = new SyncRunId(Guid.NewGuid());
         lock (gate)
             runs.Add(new JournaledRun(id, accountId, trigger, clock.GetUtcNow(), Option.None<DateTimeOffset>(), Option.None<SyncRunOutcome>()));
 
-        return Task.FromResult(Result.Success<SyncRunId, ErrorResponse>(id));
+        await AfterRowAdded().ConfigureAwait(false);
+
+        return Result.Success<SyncRunId, ErrorResponse>(id);
     }
 
     public Task<Result<Unit, ErrorResponse>> FinishAsync(SyncRunId runId, SyncRunOutcome outcome, CancellationToken cancellationToken)
