@@ -66,6 +66,7 @@ public partial class App : Application, IDisposable
 
             _ = services.GetRequiredService<IUpdateScheduler>().RunAsync(shutdown.Token);
             _ = Task.Run(SweepLogFiles, CancellationToken.None);
+            _ = Task.Run(() => services.GetRequiredService<IUploadSessionStore>().RemoveExpiredAsync(services.GetRequiredService<TimeProvider>().GetUtcNow(), shutdown.Token), shutdown.Token);
         }
 
         base.OnFrameworkInitializationCompleted();
