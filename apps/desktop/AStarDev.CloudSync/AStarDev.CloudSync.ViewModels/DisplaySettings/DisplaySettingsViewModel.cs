@@ -1,3 +1,4 @@
+using System.Globalization;
 using AStarDev.CloudSync.DisplaySettings;
 using AStarDev.CloudSync.ViewModels.Accounts;
 using AStarDev.Localization;
@@ -38,6 +39,7 @@ public sealed class DisplaySettingsViewModel : LocalizedObservableObject
             new DisplayOptionViewModel("Settings.Theme.Dark", () => SelectTheme(AppThemeFactory.CreateDark()), localization),
             new DisplayOptionViewModel("Settings.Theme.Light", () => SelectTheme(AppThemeFactory.CreateLight()), localization)
         ];
+        localization.Initialise(CultureInfo.GetCultureInfo(preferences.Locale));
         themeApplier.Apply(preferences.Theme);
         RefreshSelection();
     }
@@ -82,7 +84,7 @@ public sealed class DisplaySettingsViewModel : LocalizedObservableObject
         if (layout == preferences.Layout)
             return;
 
-        preferences = DisplayPreferencesFactory.Create(layout, preferences.Theme);
+        preferences = DisplayPreferencesFactory.Create(layout, preferences.Theme, preferences.Locale);
         store.Save(preferences);
         RefreshSelection();
         OnPropertyChanged(nameof(CurrentLayout));
@@ -95,7 +97,7 @@ public sealed class DisplaySettingsViewModel : LocalizedObservableObject
         if (theme == preferences.Theme)
             return;
 
-        preferences = DisplayPreferencesFactory.Create(preferences.Layout, theme);
+        preferences = DisplayPreferencesFactory.Create(preferences.Layout, theme, preferences.Locale);
         themeApplier.Apply(theme);
         store.Save(preferences);
         RefreshSelection();

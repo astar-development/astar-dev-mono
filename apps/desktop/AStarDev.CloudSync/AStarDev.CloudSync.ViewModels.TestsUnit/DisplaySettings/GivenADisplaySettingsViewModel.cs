@@ -1,7 +1,9 @@
 using AStarDev.CloudSync.DisplaySettings;
 using AStarDev.CloudSync.TestHelpers.DisplaySettings;
 using AStarDev.CloudSync.TestHelpers.Ui;
+using System.Globalization;
 using AStarDev.CloudSync.ViewModels.DisplaySettings;
+using AStarDev.Localization;
 
 namespace AStarDev.CloudSync.ViewModels.TestsUnit.DisplaySettings;
 
@@ -18,6 +20,17 @@ public class GivenADisplaySettingsViewModel
         settings.CurrentLayout.ShouldBeOfType<MainLayout.GroupedByProvider>();
         settings.CurrentTheme.ShouldBeOfType<AppTheme.Light>();
         themeApplier.Applied.ShouldHaveSingleItem().ShouldBeOfType<AppTheme.Light>();
+    }
+
+    [Fact]
+    public void when_created_then_the_saved_locale_is_restored_into_the_localisation_service()
+    {
+        var store = new InMemoryDisplayPreferencesStore();
+        var localization = Substitute.For<ILocalizationService>();
+
+        _ = new DisplaySettingsViewModel(store, new RecordingThemeApplier(), TestData.CreatePlaintextCacheConsentSettings(), TestData.CreateSyncScheduleSettings(), TestData.CreateTrashRetentionSettings(), TestData.CreateAutostartSettings(), localization);
+
+        localization.Received(1).Initialise(Arg.Is<CultureInfo>(culture => culture.Name == "en-GB"));
     }
 
     [Fact]
