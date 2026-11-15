@@ -194,6 +194,107 @@ public class GivenALayoutCViewModel
     }
 
     [Fact]
+    public async Task when_the_overview_is_loaded_then_there_is_one_account_card_per_account_and_none_is_selected()
+    {
+        var overview = await TestData.CreateLoadedOverviewViewModelAsync();
+        var viewModel = new LayoutCViewModel(overview, new RecordingSyncActions(), TestData.CreateLocalization());
+
+        viewModel.AccountCards.Select(card => card.Account).ShouldBe(overview.Accounts);
+        viewModel.AccountCards.ShouldAllBe(card => !card.IsSelected);
+    }
+
+    [Fact]
+    public async Task when_an_account_card_is_selected_then_it_is_highlighted_and_only_its_pairs_are_shown()
+    {
+        var viewModel = new LayoutCViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateLocalization());
+        var card = viewModel.AccountCards.First(candidate => viewModel.Overview.SyncPairs.Any(pair => pair.AccountId == candidate.Account.Id));
+
+        card.SelectCommand.Execute(null);
+
+        card.IsSelected.ShouldBeTrue();
+        viewModel.AccountCards.Count(candidate => candidate.IsSelected).ShouldBe(1);
+        viewModel.SyncPairs.ShouldNotBeEmpty();
+        viewModel.SyncPairs.ShouldAllBe(pair => pair.AccountId == card.Account.Id);
+        viewModel.SyncPairs.Count.ShouldBe(viewModel.Overview.SyncPairs.Count(pair => pair.AccountId == card.Account.Id));
+    }
+
+    [Fact]
+    public async Task when_a_different_account_card_is_selected_then_the_selection_moves_to_it()
+    {
+        var viewModel = new LayoutCViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateLocalization());
+        viewModel.AccountCards[0].SelectCommand.Execute(null);
+
+        viewModel.AccountCards[1].SelectCommand.Execute(null);
+
+        viewModel.AccountCards.Select(card => card.IsSelected).ShouldBe([false, true, false, false]);
+        viewModel.SyncPairs.ShouldAllBe(pair => pair.AccountId == viewModel.AccountCards[1].Account.Id);
+    }
+
+    [Fact]
+    public async Task when_the_selected_account_card_is_selected_again_then_every_pair_is_shown()
+    {
+        var viewModel = new LayoutCViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateLocalization());
+        viewModel.AccountCards[0].SelectCommand.Execute(null);
+
+        viewModel.AccountCards[0].SelectCommand.Execute(null);
+
+        viewModel.AccountCards.ShouldAllBe(card => !card.IsSelected);
+        viewModel.SyncPairs.Count.ShouldBe(7);
+    }
+
+    [Fact]
+    public async Task when_an_account_card_and_a_provider_filter_are_selected_then_only_pairs_passing_both_are_shown()
+    {
+        var viewModel = new LayoutCViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateLocalization());
+        var oneDriveFilter = viewModel.ProviderFilters[0];
+        var card = viewModel.AccountCards.First(candidate => viewModel.Overview.SyncPairs.Any(pair => pair.AccountId == candidate.Account.Id));
+
+        card.SelectCommand.Execute(null);
+        oneDriveFilter.SelectCommand.Execute(null);
+
+        viewModel.SyncPairs.ShouldNotBeEmpty();
+        viewModel.SyncPairs.ShouldAllBe(pair => pair.AccountId == card.Account.Id && oneDriveFilter.Matches(pair));
+    }
+
+    [Fact]
+    public async Task when_all_pairs_is_selected_after_an_account_card_then_the_account_selection_is_cleared()
+    {
+        var viewModel = new LayoutCViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateLocalization());
+        viewModel.AccountCards[0].SelectCommand.Execute(null);
+
+        viewModel.SelectAllPairsCommand.Execute(null);
+
+        viewModel.AccountCards.ShouldAllBe(card => !card.IsSelected);
+        viewModel.SyncPairs.Count.ShouldBe(7);
+    }
+
+    [Fact]
+    public async Task when_an_account_card_is_selected_then_property_changed_is_raised_for_the_pairs_and_the_all_pairs_highlight()
+    {
+        var viewModel = new LayoutCViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateLocalization());
+        var changed = new List<string?>();
+        viewModel.PropertyChanged += (_, args) => changed.Add(args.PropertyName);
+
+        viewModel.AccountCards[0].SelectCommand.Execute(null);
+
+        changed.ShouldContain(nameof(LayoutCViewModel.SyncPairs));
+        changed.ShouldContain(nameof(LayoutCViewModel.IsAllPairsSelected));
+    }
+
+    [Fact]
+    public async Task when_the_overview_loads_again_then_the_selected_account_stays_selected()
+    {
+        var overview = await TestData.CreateLoadedOverviewViewModelAsync();
+        var viewModel = new LayoutCViewModel(overview, new RecordingSyncActions(), TestData.CreateLocalization());
+        var selectedId = viewModel.AccountCards[1].Account.Id;
+        viewModel.AccountCards[1].SelectCommand.Execute(null);
+
+        await overview.LoadAsync(TestContext.Current.CancellationToken);
+
+        viewModel.AccountCards.Single(card => card.IsSelected).Account.Id.ShouldBe(selectedId);
+    }
+
+    [Fact]
     public void when_created_then_the_sort_options_are_needs_attention_first_and_name()
     {
         var viewModel = new LayoutCViewModel(CreateUnloadedOverview(), new RecordingSyncActions(), TestData.CreateLocalization());
