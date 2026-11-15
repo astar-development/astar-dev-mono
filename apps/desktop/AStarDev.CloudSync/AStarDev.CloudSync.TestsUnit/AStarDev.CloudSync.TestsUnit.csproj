@@ -9,6 +9,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <AssemblyMetadata Include="CloudSyncSourceFolder" Value="$(MSBuildProjectDirectory)/.." />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="../AStarDev.CloudSync/AStarDev.CloudSync.csproj" />
     <ProjectReference Include="../AStarDev.CloudSync.TestHelpers/AStarDev.CloudSync.TestHelpers.csproj" />
     <ProjectReference Include="../AStarDev.CloudSync.TestHelpers.Ui/AStarDev.CloudSync.TestHelpers.Ui.csproj" />
