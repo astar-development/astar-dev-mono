@@ -138,6 +138,9 @@ public static class ServiceCollectionExtensions
         if (OperatingSystem.IsWindows())
             return ActivatorUtilities.CreateInstance<WindowsAutostartRegistration>(provider, new RegistryRunKeyStore());
 
+        if (OperatingSystem.IsMacOS())
+            return ActivatorUtilities.CreateInstance<MacAutostartRegistration>(provider);
+
         return new UnsupportedAutostartRegistration();
     }
 }
