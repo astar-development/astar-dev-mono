@@ -98,8 +98,7 @@ public sealed class SyncPairViewModel : LocalizedObservableObject
     private async Task ChangeDirectionAsync(Func<CancellationToken, Task> reload, CancellationToken cancellationToken)
     {
         var change = SelectionChangeFactory.CreateChangeDirection(pair.Id, NextDirection());
-        _ = await Try.RunAsync(() => ruleWriter.ApplyAsync(account.Id, [change], cancellationToken), cancellationToken)
-            .MatchAsync(applied => applied.Match(_ => ReloadAsync(reload, cancellationToken), _ => Task.FromResult(SetFailed(true))), _ => Task.FromResult(SetFailed(true)));
+        _ = await await UiResumingTry.RunAsync(() => ruleWriter.ApplyAsync(account.Id, [change], cancellationToken), applied => applied.Match(_ => ReloadAsync(reload, cancellationToken), _ => Task.FromResult(SetFailed(true))), _ => Task.FromResult(SetFailed(true)), cancellationToken);
     }
 
     private async Task<Unit> ReloadAsync(Func<CancellationToken, Task> reload, CancellationToken cancellationToken)
