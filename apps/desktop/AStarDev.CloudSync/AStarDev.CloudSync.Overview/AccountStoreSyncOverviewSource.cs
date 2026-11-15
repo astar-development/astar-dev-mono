@@ -12,7 +12,7 @@ namespace AStarDev.CloudSync.Overview;
 /// <param name="readers">The readers for sign-in states, pairs, runs, pauses, baseline counts and activity.</param>
 /// <param name="throughput">Reads the throughput graph and the bytes moved today.</param>
 /// <param name="logger">Reports an activity feed that could not be read, without details.</param>
-internal sealed class AccountStoreSyncOverviewSource(ICloudSyncDatabase database, IAccountStore accountStore, SyncOverviewReaders readers, OverviewThroughput throughput, OverviewConflicts openConflicts, ILogger<AccountStoreSyncOverviewSource> logger) : ISyncOverviewSource
+internal sealed class AccountStoreSyncOverviewSource(ICloudSyncDatabase database, IAccountStore accountStore, SyncOverviewReaders readers, OverviewThroughput throughput, OverviewConflicts openConflicts, OverviewPairs pairStates, ILogger<AccountStoreSyncOverviewSource> logger) : ISyncOverviewSource
 {
     /// <inheritdoc />
     public Task<Result<SyncOverview, ErrorResponse>> GetOverviewAsync(CancellationToken cancellationToken) =>
@@ -51,9 +51,13 @@ internal sealed class AccountStoreSyncOverviewSource(ICloudSyncDatabase database
         foreach (var accountId in accounts.Select(account => account.Id))
             lastSyncs[accountId] = await LastSyncAsync(accountId, cancellationToken).ConfigureAwait(false);
 
+        List<SyncPair> pairs = [];
+        foreach (var account in accounts.Where(_ => failure.Match(_ => false, () => true)))
+            pairs.AddRange(await pairStates.StateAsync(pairsByAccount[account.Id], StatusOf(account.Id, paused.Contains(account.Id), conflictCounts.GetValueOrDefault(account.Id)), lastSyncs[account.Id], [.. conflicts.OfType<SyncAttentionItem.Conflict>().Where(conflict => conflict.AccountId == account.Id)], cancellationToken).ConfigureAwait(false));
+
         return failure.Match(
             error => Result.Failure<SyncOverview, ErrorResponse>(error),
-            () => Result.Success<SyncOverview, ErrorResponse>(SyncOverviewFactory.Create([.. accounts.Select(account => ToCloudAccount(account, countsByAccount[account.Id], paused.Contains(account.Id), lastSyncs[account.Id], conflictCounts.GetValueOrDefault(account.Id)))], [.. accounts.SelectMany(account => pairsByAccount[account.Id])], activity, conflicts, samples, bytesToday, LatestOf(lastSyncs.Values))));
+            () => Result.Success<SyncOverview, ErrorResponse>(SyncOverviewFactory.Create([.. accounts.Select(account => ToCloudAccount(account, countsByAccount[account.Id], paused.Contains(account.Id), lastSyncs[account.Id], conflictCounts.GetValueOrDefault(account.Id)))], pairs, activity, conflicts, samples, bytesToday, LatestOf(lastSyncs.Values))));
     }
 
     private static Option<DateTimeOffset> LatestOf(IEnumerable<Option<DateTimeOffset>> lastSyncs) =>

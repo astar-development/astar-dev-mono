@@ -175,6 +175,37 @@ public sealed class GivenASyncBaselineStore : IAsyncLifetime
     }
 
     [Fact]
+    public async Task when_files_under_a_folder_are_counted_then_only_files_inside_it_count_ignoring_case_and_not_folders_siblings_or_other_accounts()
+    {
+        _ = await Database.BaselineWriter.UpsertAsync(FirstAccount, [FolderEntry(FirstAccount, "Docs", "f1"), FolderEntry(FirstAccount, "Docs/Sub", "f2"), FileEntry(FirstAccount, "Docs/a.txt", "1"), FileEntry(FirstAccount, "docs/sub/b.txt", "2"), FileEntry(FirstAccount, "Docs2/c.txt", "3"), FileEntry(FirstAccount, "d.txt", "4")], CancellationToken);
+        _ = await Database.BaselineWriter.UpsertAsync(SecondAccount, [FileEntry(SecondAccount, "Docs/z.txt", "9")], CancellationToken);
+
+        var count = await Database.BaselineCounter.CountFilesUnderAsync(FirstAccount, FolderOf("DOCS"), CancellationToken);
+
+        count.Match(found => found, _ => -1).ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task when_files_under_the_root_are_counted_then_every_file_of_the_account_counts()
+    {
+        _ = await Database.BaselineWriter.UpsertAsync(FirstAccount, [FolderEntry(FirstAccount, "Docs", "f1"), FileEntry(FirstAccount, "Docs/a.txt", "1"), FileEntry(FirstAccount, "c.txt", "3")], CancellationToken);
+
+        var count = await Database.BaselineCounter.CountFilesUnderAsync(FirstAccount, FolderOf(string.Empty), CancellationToken);
+
+        count.Match(found => found, _ => -1).ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task when_files_under_a_folder_with_no_baseline_are_counted_then_the_count_is_zero()
+    {
+        var count = await Database.BaselineCounter.CountFilesUnderAsync(FirstAccount, FolderOf("Docs"), CancellationToken);
+
+        count.Match(found => found, _ => -1).ShouldBe(0);
+    }
+
+    private static LocalRelativePath FolderOf(string value) => LocalRelativePathFactory.Create(value).Match(path => path, _ => throw new InvalidOperationException("The test path must be valid."));
+
+    [Fact]
     public async Task when_an_account_has_no_baseline_then_the_counts_are_zero()
     {
         var counts = await Database.BaselineCounter.CountAsync(FirstAccount, CancellationToken);
