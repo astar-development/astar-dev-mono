@@ -105,7 +105,7 @@ public static class TestData
         var localization = CreateLocalization();
         var syncActions = new RecordingSyncActions();
 
-        return new MainWindowViewModel(localization, displaySettings, new MainWindowLayouts(new LayoutAViewModel(overview, syncActions, CreateConflictListFactory(), CreateFolderSelectionFactory(), CreateActivityListFactory(), localization), new LayoutBViewModel(overview, CreateLocalPathFormatter(), syncActions, CreateConflictListFactory(), CreateFolderSelectionFactory(), CreateActivityListFactory(), localization), new LayoutCViewModel(overview, syncActions, localization)), new MainWindowDialogs(addAccount, CreateAccountDialog(new FakeAccountActions()), folderSelection, new ConfirmSyncRestartViewModel(localization), CreateConflictList(), new DatabaseHealthBannerViewModel(new FakeDatabaseHealthGate(), new ImmediateUiDispatcher(), localization), new ConfirmQuitViewModel(localization)));
+        return new MainWindowViewModel(localization, displaySettings, new MainWindowLayouts(new LayoutAViewModel(overview, syncActions, CreateConflictListFactory(), CreateFolderSelectionFactory(), CreateActivityListFactory(), localization), new LayoutBViewModel(overview, CreateLocalPathFormatter(), syncActions, CreateConflictListFactory(), CreateFolderSelectionFactory(), CreateActivityListFactory(), localization), new LayoutCViewModel(overview, syncActions, localization)), new MainWindowDialogs(addAccount, CreateAccountDialog(new FakeAccountActions()), folderSelection, new ConfirmSyncRestartViewModel(localization), CreateConflictList(), new DatabaseHealthBannerViewModel(new FakeDatabaseHealthGate(), new ImmediateUiDispatcher(), localization), new ConfirmQuitViewModel(localization)), CreateAppVersion());
     }
 
     public static IFolderSelectionFactory CreateFolderSelectionFactory() => CreateFolderSelectionFactory(new FakeFolderTreeSource());
@@ -121,6 +121,8 @@ public static class TestData
     public static FolderSelectionViewModel CreateFolderSelection() => CreateFolderSelection(new FakeFolderTreeSource(), new FakeSelectionRuleReader(), new FakeSelectionRuleWriter(), new FakeSyncPairReader(), new InMemoryAccountStore());
 
     public static FolderSelectionViewModel CreateFolderSelection(FakeFolderTreeSource tree, FakeSelectionRuleReader rules, FakeSelectionRuleWriter writer, FakeSyncPairReader pairs, IAccountStore accounts) => new(tree, rules, writer, new SyncSelectionEvaluator(), pairs, accounts, CreateLocalization());
+
+    public static AppVersion CreateAppVersion() => AppVersionFactory.Create("0.1.0");
 
     public static IConflictListFactory CreateConflictListFactory() => CreateConflictListFactory(new FixedAccountsSource(), new FakeAttentionReader());
 
