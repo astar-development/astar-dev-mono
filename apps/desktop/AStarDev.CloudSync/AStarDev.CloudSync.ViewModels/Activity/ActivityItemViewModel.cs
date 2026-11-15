@@ -40,7 +40,8 @@ public sealed class ActivityItemViewModel(ActivityEntry entry, string accountNam
     {
         RecoveryBlocker.SyncFolderMissing => "Activity.RecoveryBlocked.SyncFolderMissing",
         RecoveryBlocker.DatabaseUnreadable => "Activity.RecoveryBlocked.DatabaseUnreadable",
-        _ => "Activity.RecoveryBlocked.SignInRequired"
+        RecoveryBlocker.SignInRequired => "Activity.RecoveryBlocked.SignInRequired",
+        _ => throw new System.Diagnostics.UnreachableException($"{blocker.GetType().Name} has no text. Add it here and to en-GB.json.")
     };
 
     /// <summary>When it happened, relative to now, e.g. "5 min ago".</summary>

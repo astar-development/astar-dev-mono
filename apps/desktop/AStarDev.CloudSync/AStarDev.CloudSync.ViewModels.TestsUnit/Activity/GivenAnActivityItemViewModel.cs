@@ -1,3 +1,4 @@
+using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.TestHelpers.Ui;
@@ -25,6 +26,15 @@ public class GivenAnActivityItemViewModel
         { "blocked-folder", "The interrupted sync of Captain Flint could not resume: its sync folder is missing. It carries on by itself once the folder is back." },
         { "blocked-database", "The interrupted sync of Captain Flint could not resume: the CloudSync database could not be read. Nothing is synced until it is fixed." }
     };
+
+    [Fact]
+    public void when_a_blocker_case_exists_then_its_text_is_localised_and_different_from_every_other_cases()
+    {
+        var texts = RecoveryBlockerCases.All().Select(blocker => CreateItem(ActivityKindFactory.CreateRecoveryBlocked(blocker), TestData.Now).Text).ToList();
+
+        texts.ShouldAllBe(text => !text.StartsWith("Activity.", StringComparison.Ordinal) && text.Length > 0);
+        texts.Distinct().Count().ShouldBe(RecoveryBlockerCases.Declared());
+    }
 
     [Theory]
     [MemberData(nameof(KindsAndTexts))]
