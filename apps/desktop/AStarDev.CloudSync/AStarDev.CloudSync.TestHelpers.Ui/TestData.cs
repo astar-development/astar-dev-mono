@@ -104,12 +104,16 @@ public static class TestData
         var localization = CreateLocalization();
         var syncActions = new RecordingSyncActions();
 
-        return new MainWindowViewModel(localization, displaySettings, new MainWindowLayouts(new LayoutAViewModel(overview, syncActions, localization), new LayoutBViewModel(overview, CreateLocalPathFormatter(), syncActions, localization), new LayoutCViewModel(overview, syncActions, localization)), new MainWindowDialogs(addAccount, CreateAccountDialog(new FakeAccountActions()), folderSelection, new ConfirmSyncRestartViewModel(localization), CreateConflictList(), new DatabaseHealthBannerViewModel(new FakeDatabaseHealthGate(), new ImmediateUiDispatcher(), localization), new ConfirmQuitViewModel(localization)));
+        return new MainWindowViewModel(localization, displaySettings, new MainWindowLayouts(new LayoutAViewModel(overview, syncActions, CreateConflictListFactory(), localization), new LayoutBViewModel(overview, CreateLocalPathFormatter(), syncActions, CreateConflictListFactory(), localization), new LayoutCViewModel(overview, syncActions, localization)), new MainWindowDialogs(addAccount, CreateAccountDialog(new FakeAccountActions()), folderSelection, new ConfirmSyncRestartViewModel(localization), CreateConflictList(), new DatabaseHealthBannerViewModel(new FakeDatabaseHealthGate(), new ImmediateUiDispatcher(), localization), new ConfirmQuitViewModel(localization)));
     }
 
     public static FolderSelectionViewModel CreateFolderSelection() => CreateFolderSelection(new FakeFolderTreeSource(), new FakeSelectionRuleReader(), new FakeSelectionRuleWriter(), new FakeSyncPairReader(), new InMemoryAccountStore());
 
     public static FolderSelectionViewModel CreateFolderSelection(FakeFolderTreeSource tree, FakeSelectionRuleReader rules, FakeSelectionRuleWriter writer, FakeSyncPairReader pairs, IAccountStore accounts) => new(tree, rules, writer, new SyncSelectionEvaluator(), pairs, accounts, CreateLocalization());
+
+    public static IConflictListFactory CreateConflictListFactory() => CreateConflictListFactory(new FixedAccountsSource(), new FakeAttentionReader());
+
+    public static IConflictListFactory CreateConflictListFactory(ISyncOverviewSource accounts, FakeAttentionReader reader) => new ConflictListFactory(new ConflictListSources(accounts, reader, new FakeSyncPairReader()), new FakeConflictResolver(), new FakeHeldDeletionDecider(), new ConflictResolutionPlanner(), CreateLocalization(), NullLogger<ConflictListViewModel>.Instance);
 
     public static ConflictListViewModel CreateConflictList() => CreateConflictList(new FixedAccountsSource(), new FakeAttentionReader(), new FakeConflictResolver());
 

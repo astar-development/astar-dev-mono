@@ -22,7 +22,7 @@ public class GivenTheUnknownCountSnapshots
         Assert.SkipUnless(OperatingSystem.IsLinux(), Snapshot.LinuxOnlyReason);
         var overview = await CreateOverviewAsync();
 
-        Snapshot.ShouldMatchBaseline(new Window { Content = new LayoutAView { DataContext = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateLocalization()) } }, ThemeOf(theme), $"layout-a-unknown-counts-{theme}");
+        Snapshot.ShouldMatchBaseline(new Window { Content = new LayoutAView { DataContext = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateLocalization()) } }, ThemeOf(theme), $"layout-a-unknown-counts-{theme}");
     }
 
     [AvaloniaTheory]
@@ -33,7 +33,7 @@ public class GivenTheUnknownCountSnapshots
         Assert.SkipUnless(OperatingSystem.IsLinux(), Snapshot.LinuxOnlyReason);
         var overview = await CreateOverviewAsync();
 
-        Snapshot.ShouldMatchBaseline(new Window { Content = new LayoutBView { DataContext = new LayoutBViewModel(overview, TestData.CreateLocalPathFormatter(), new RecordingSyncActions(), TestData.CreateLocalization()) } }, ThemeOf(theme), $"layout-b-unknown-counts-{theme}");
+        Snapshot.ShouldMatchBaseline(new Window { Content = new LayoutBView { DataContext = new LayoutBViewModel(overview, TestData.CreateLocalPathFormatter(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateLocalization()) } }, ThemeOf(theme), $"layout-b-unknown-counts-{theme}");
     }
 
     [AvaloniaTheory]

@@ -45,7 +45,7 @@ public class GivenALayoutAView
         source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([.. Enumerable.Range(0, 30).Select(_ => TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>()))], [], [], [], [], 0, Option.None<DateTimeOffset>()));
         var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         await overview.LoadAsync(TestContext.Current.CancellationToken);
-        var window = new Window { Width = 1280, Height = 800, Content = new LayoutAView { DataContext = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateLocalization()) } };
+        var window = new Window { Width = 1280, Height = 800, Content = new LayoutAView { DataContext = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateLocalization()) } };
 
         window.Show();
         Dispatcher.UIThread.RunJobs();
@@ -124,10 +124,47 @@ public class GivenALayoutAView
         backgrounds.Skip(1).ShouldAllBe(background => background is ISolidColorBrush && ((ISolidColorBrush)background).Color.A == 0);
     }
 
+    [AvaloniaFact]
+    public async Task when_shown_then_the_accounts_rail_button_is_active_and_the_conflicts_one_is_enabled()
+    {
+        var window = await CreateShownWindowAsync();
+
+        var rail = window.GetVisualDescendants().OfType<Button>().Where(button => button.Classes.Contains("rail")).ToList();
+
+        Avalonia.Automation.AutomationProperties.GetName(rail.Where(button => button.Classes.Contains("active")).ShouldHaveSingleItem()).ShouldBe("Dashboard");
+        rail.Single(button => Avalonia.Automation.AutomationProperties.GetName(button) == "Conflicts").IsEffectivelyEnabled.ShouldBeTrue();
+    }
+
+    [AvaloniaFact]
+    public async Task when_the_conflicts_rail_button_is_clicked_then_the_conflict_list_replaces_the_account_cards()
+    {
+        var window = await CreateShownWindowAsync();
+        var conflictsButton = window.GetVisualDescendants().OfType<Button>().Single(button => button.Classes.Contains("rail") && Avalonia.Automation.AutomationProperties.GetName(button) == "Conflicts");
+
+        conflictsButton.Command!.Execute(null);
+        Dispatcher.UIThread.RunJobs();
+
+        window.GetVisualDescendants().OfType<ScrollViewer>().Single(scrollViewer => scrollViewer.Name == "AccountCards").IsEffectivelyVisible.ShouldBeFalse();
+        window.GetVisualDescendants().OfType<Conflicts.ConflictListContent>().ShouldHaveSingleItem().IsEffectivelyVisible.ShouldBeTrue();
+        conflictsButton.Classes.ShouldContain("active");
+    }
+
+    [AvaloniaFact]
+    public async Task when_the_conflict_list_is_a_page_then_it_has_no_close_button()
+    {
+        var window = await CreateShownWindowAsync();
+        window.GetVisualDescendants().OfType<Button>().Single(button => button.Classes.Contains("rail") && Avalonia.Automation.AutomationProperties.GetName(button) == "Conflicts").Command!.Execute(null);
+        Dispatcher.UIThread.RunJobs();
+
+        var content = window.GetVisualDescendants().OfType<Conflicts.ConflictListContent>().Single();
+
+        content.GetVisualDescendants().OfType<Button>().Where(button => Equals(button.Content, "Close")).ShouldAllBe(button => !button.IsEffectivelyVisible);
+    }
+
     private static async Task<Window> CreateShownWindowAsync()
     {
         var overview = await TestData.CreateLoadedOverviewViewModelAsync();
-        var window = new Window { Width = 1280, Height = 800, Content = new LayoutAView { DataContext = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateLocalization()) } };
+        var window = new Window { Width = 1280, Height = 800, Content = new LayoutAView { DataContext = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateLocalization()) } };
         window.Show();
         Dispatcher.UIThread.RunJobs();
 

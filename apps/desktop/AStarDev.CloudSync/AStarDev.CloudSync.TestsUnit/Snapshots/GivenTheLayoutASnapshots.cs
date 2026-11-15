@@ -30,6 +30,6 @@ public class GivenTheLayoutASnapshots
     {
         var overview = await TestData.CreateLoadedOverviewViewModelAsync();
 
-        return new Window { Content = new LayoutAView { DataContext = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateLocalization()) } };
+        return new Window { Content = new LayoutAView { DataContext = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateLocalization()) } };
     }
 }
