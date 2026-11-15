@@ -129,7 +129,7 @@ internal sealed class OverlayBehavior<TViewModel> where TViewModel : class, INot
 
     private Control? InitialTarget() => focusName is null
         ? view.GetVisualDescendants().OfType<Control>().FirstOrDefault(candidate => candidate.Focusable && candidate.IsTabStop && candidate.IsEffectivelyVisible && candidate.IsEffectivelyEnabled)
-        : view.FindControl<Control>(focusName);
+        : view.FindControl<Control>(focusName) ?? view.GetVisualDescendants().OfType<Control>().FirstOrDefault(candidate => candidate.Name == focusName);
 
     private void RestoreOpener()
     {

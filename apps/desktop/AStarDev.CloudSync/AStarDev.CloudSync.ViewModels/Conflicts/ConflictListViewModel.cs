@@ -74,6 +74,9 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
         ];
     }
 
+    /// <summary>The only account whose conflicts are listed, or none for every account. Set when the list is created for one account's page.</summary>
+    internal Option<AccountId> AccountFilter { get; init; } = Option.None<AccountId>();
+
     /// <summary>Whether the screen is showing.</summary>
     public bool IsOpen => isOpen;
 
@@ -225,7 +228,7 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
         List<AccountQueue> queues = [];
         var failure = Option.None<ErrorResponse>();
 
-        foreach (var account in cloudAccounts)
+        foreach (var account in cloudAccounts.Where(IsListed))
         {
             failure = await ReadAccountAsync(queues, account, cancellationToken);
 
@@ -235,6 +238,8 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
 
         return failure.Match(error => Result.Failure<IReadOnlyList<AccountQueue>, ErrorResponse>(error), () => Result.Success<IReadOnlyList<AccountQueue>, ErrorResponse>(queues));
     }
+
+    private bool IsListed(CloudAccount account) => AccountFilter.Match(id => account.Id == id, () => true);
 
     private Task<Option<ErrorResponse>> ReadAccountAsync(List<AccountQueue> queues, CloudAccount account, CancellationToken cancellationToken) =>
         sources.Attention.GetOpenAsync(account.Id, cancellationToken)

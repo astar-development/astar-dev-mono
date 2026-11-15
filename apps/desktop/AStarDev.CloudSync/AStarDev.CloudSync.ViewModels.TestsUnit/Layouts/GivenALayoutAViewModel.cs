@@ -2,6 +2,8 @@ using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Overview;
 using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.TestHelpers.Common;
+using AStarDev.CloudSync.TestHelpers.Conflicts;
+using AStarDev.CloudSync.TestHelpers.Overview;
 using AStarDev.CloudSync.TestHelpers.Ui;
 using AStarDev.CloudSync.ViewModels.Layouts;
 using AStarDev.CloudSync.ViewModels.Overview;
@@ -18,7 +20,7 @@ public class GivenALayoutAViewModel
     {
         var source = new CountingSyncOverviewSource(await TestData.CreateOverviewAsync());
         var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
-        var layout = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateLocalization());
+        var layout = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateLocalization());
 
         await layout.AddAccountCommand.ExecuteAsync(null);
 
@@ -29,7 +31,7 @@ public class GivenALayoutAViewModel
     public async Task when_the_add_account_command_runs_then_an_account_is_added()
     {
         var syncActions = new RecordingSyncActions();
-        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), syncActions, TestData.CreateLocalization());
+        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), syncActions, TestData.CreateConflictListFactory(), TestData.CreateLocalization());
 
         await layout.AddAccountCommand.ExecuteAsync(null);
 
@@ -39,7 +41,7 @@ public class GivenALayoutAViewModel
     [Fact]
     public async Task when_created_then_the_rail_navigation_command_is_disabled_until_its_pages_exist()
     {
-        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateLocalization());
+        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateLocalization());
 
         layout.NavigateCommand.CanExecute(null).ShouldBeFalse();
     }
@@ -55,7 +57,7 @@ public class GivenALayoutAViewModel
     [Fact]
     public void when_the_overview_has_no_accounts_then_only_the_all_chip_is_shown()
     {
-        var layout = new LayoutAViewModel(new SyncOverviewViewModel(Substitute.For<ISyncOverviewSource>(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance), new RecordingSyncActions(), TestData.CreateLocalization());
+        var layout = new LayoutAViewModel(new SyncOverviewViewModel(Substitute.For<ISyncOverviewSource>(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateLocalization());
 
         layout.ProviderChips.Select(chip => chip.Label).ShouldBe(["All"]);
     }
@@ -104,7 +106,7 @@ public class GivenALayoutAViewModel
         var source = Substitute.For<ISyncOverviewSource>();
         source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateSyncing(50), Option.None<DateTimeOffset>())], [], [], [], [], 0, Option.None<DateTimeOffset>()));
         var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
-        var layout = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateLocalization());
+        var layout = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateLocalization());
 
         await overview.LoadAsync(TestContext.Current.CancellationToken);
 
@@ -117,7 +119,7 @@ public class GivenALayoutAViewModel
         var source = Substitute.For<ISyncOverviewSource>();
         source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>())], [], [], [], [], 0, Option.None<DateTimeOffset>()));
         var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
-        var layout = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateLocalization());
+        var layout = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateLocalization());
 
         await overview.LoadAsync(TestContext.Current.CancellationToken);
 
@@ -138,7 +140,7 @@ public class GivenALayoutAViewModel
         var source = Substitute.For<ISyncOverviewSource>();
         source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>())], [], [], [], [], 0, Option.Some(TestData.Now.AddMinutes(-10))));
         var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
-        var layout = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateLocalization());
+        var layout = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateLocalization());
 
         await overview.LoadAsync(TestContext.Current.CancellationToken);
 
@@ -159,7 +161,7 @@ public class GivenALayoutAViewModel
         var source = Substitute.For<ISyncOverviewSource>();
         source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>())], [], [], [], [], 0, Option.None<DateTimeOffset>()));
         var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
-        var layout = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateLocalization());
+        var layout = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateLocalization());
 
         await overview.LoadAsync(TestContext.Current.CancellationToken);
 
@@ -169,7 +171,7 @@ public class GivenALayoutAViewModel
     [Fact]
     public void when_created_then_the_pane_and_rail_text_is_localised()
     {
-        var layout = new LayoutAViewModel(new SyncOverviewViewModel(Substitute.For<ISyncOverviewSource>(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance), new RecordingSyncActions(), TestData.CreateLocalization());
+        var layout = new LayoutAViewModel(new SyncOverviewViewModel(Substitute.For<ISyncOverviewSource>(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateLocalization());
 
         layout.AccountsTitle.ShouldBe("Accounts");
         layout.AddAccountText.ShouldBe("+ Add account");
@@ -215,6 +217,65 @@ public class GivenALayoutAViewModel
     {
         var overview = await TestData.CreateLoadedOverviewViewModelAsync();
 
-        return new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateLocalization());
+        return new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateLocalization());
+    }
+
+    [Fact]
+    public async Task when_created_then_the_accounts_page_is_shown()
+    {
+        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateLocalization());
+
+        (layout.IsAccountsPageShown, layout.IsConflictsPageShown).ShouldBe((true, false));
+    }
+
+    [Fact]
+    public async Task when_the_conflicts_rail_button_is_chosen_then_the_conflicts_page_is_shown_and_every_accounts_conflicts_are_read()
+    {
+        var reader = new FakeAttentionReader();
+        var photos = AttentionItems.Account("Photos");
+        var work = AttentionItems.Account("Work");
+        reader.Add(photos.Id, AttentionItems.CreateConflict(photos.Id, "Camera/1.jpg"));
+        reader.Add(work.Id, AttentionItems.CreateConflict(work.Id, "Docs/a.docx"));
+        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateConflictListFactory(new FixedAccountsSource(photos, work), reader), TestData.CreateLocalization());
+
+        layout.ShowConflictsCommand.Execute(null);
+        await layout.ConflictList.RefreshCommand.ExecutionTask!;
+
+        (layout.IsAccountsPageShown, layout.IsConflictsPageShown).ShouldBe((false, true));
+        layout.ConflictList.Groups.Select(group => group.HeaderText).ShouldBe(["Photos · 1 conflict", "Work · 1 conflict"]);
+    }
+
+    [Fact]
+    public async Task when_the_accounts_rail_button_is_chosen_after_the_conflicts_then_the_accounts_page_is_shown_again()
+    {
+        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateLocalization());
+        layout.ShowConflictsCommand.Execute(null);
+
+        layout.ShowAccountsCommand.Execute(null);
+
+        (layout.IsAccountsPageShown, layout.IsConflictsPageShown).ShouldBe((true, false));
+    }
+
+    [Fact]
+    public async Task when_the_conflicts_page_is_chosen_again_then_the_conflicts_are_read_again()
+    {
+        var reader = new FakeAttentionReader();
+        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateConflictListFactory(new FixedAccountsSource(AttentionItems.Account("Photos")), reader), TestData.CreateLocalization());
+        layout.ShowConflictsCommand.Execute(null);
+        await layout.ConflictList.RefreshCommand.ExecutionTask!;
+
+        layout.ShowAccountsCommand.Execute(null);
+        layout.ShowConflictsCommand.Execute(null);
+        await layout.ConflictList.RefreshCommand.ExecutionTask!;
+
+        reader.Reads.ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task when_a_rail_page_does_not_exist_yet_then_its_navigation_stays_disabled()
+    {
+        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateLocalization());
+
+        layout.NavigateCommand.CanExecute(null).ShouldBeFalse();
     }
 }

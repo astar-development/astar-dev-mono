@@ -5,6 +5,7 @@
              xmlns:displaySettings="using:AStarDev.CloudSync.DisplaySettings"
              xmlns:overview="using:AStarDev.CloudSync.Overview"
              xmlns:common="using:AStarDev.CloudSync.Common"
+             xmlns:conflicts="using:AStarDev.CloudSync.Conflicts"
              xmlns:vmAccounts="using:AStarDev.CloudSync.ViewModels.Accounts"
              xmlns:vmActivity="using:AStarDev.CloudSync.ViewModels.Activity"
              xmlns:vmLayouts="using:AStarDev.CloudSync.ViewModels.Layouts"
@@ -185,7 +186,7 @@
                             <TextBlock Text="{Binding Account.ThrottleHintText}" FontSize="12" Foreground="{DynamicResource CloudSyncWarnBrush}" TextWrapping="Wrap" IsVisible="{Binding Account.HasThrottleHint}" />
                         </StackPanel>
 
-                        <TabControl Grid.Row="1" Margin="28,6,28,20" Padding="0">
+                        <TabControl Grid.Row="1" Margin="28,6,28,20" Padding="0" SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
                             <TabItem Header="{Binding OverviewTabText}">
                                 <Grid ColumnDefinitions="*,300" ColumnSpacing="20" Margin="0,20,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
 
@@ -290,7 +291,9 @@
                             </TabItem>
                             <TabItem Header="{Binding FoldersTabText}" />
                             <TabItem Header="{Binding ActivityTabText}" />
-                            <TabItem Header="{Binding ConflictsTabText}" />
+                            <TabItem Header="{Binding ConflictsTabText}">
+                                <conflicts:ConflictListContent DataContext="{Binding Conflicts}" IsEmbedded="True" Margin="0,12,0,0" />
+                            </TabItem>
                         </TabControl>
                     </Grid>
                 </DataTemplate>

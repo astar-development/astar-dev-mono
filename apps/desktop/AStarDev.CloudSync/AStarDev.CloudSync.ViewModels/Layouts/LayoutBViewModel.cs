@@ -3,8 +3,10 @@ using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.ViewModels.Accounts;
 using AStarDev.CloudSync.ViewModels.Common;
+using AStarDev.CloudSync.ViewModels.Conflicts;
 using AStarDev.CloudSync.ViewModels.Overview;
 using AStarDev.CloudSync.ViewModels.SyncPairs;
+using AStarDev.FunctionalParadigm;
 using AStarDev.Localization;
 using CommunityToolkit.Mvvm.Input;
 
@@ -15,6 +17,7 @@ public sealed class LayoutBViewModel : LocalizedObservableObject
 {
     private readonly LocalPathFormatter localPathFormatter;
     private readonly ISyncActions syncActions;
+    private readonly IConflictListFactory conflictLists;
     private LayoutBDetailViewModel detail;
     private string searchText = string.Empty;
     private AccountId shownAccountId;
@@ -23,12 +26,14 @@ public sealed class LayoutBViewModel : LocalizedObservableObject
     /// <param name="overview">The shared overview every layout binds to.</param>
     /// <param name="localPathFormatter">Shortens the synced folders' local paths.</param>
     /// <param name="syncActions">Carries out the account actions the user picks.</param>
+    /// <param name="conflictLists">Creates the conflict list of each account's Conflicts tab.</param>
     /// <param name="localization">Supplies the text and culture.</param>
-    public LayoutBViewModel(SyncOverviewViewModel overview, LocalPathFormatter localPathFormatter, ISyncActions syncActions, ILocalizationService localization) : base(localization)
+    public LayoutBViewModel(SyncOverviewViewModel overview, LocalPathFormatter localPathFormatter, ISyncActions syncActions, IConflictListFactory conflictLists, ILocalizationService localization) : base(localization)
     {
         Overview = overview;
         this.localPathFormatter = localPathFormatter;
         this.syncActions = syncActions;
+        this.conflictLists = conflictLists;
         ConnectProviderCommand = new AsyncRelayCommand(AddAccountAndReloadAsync);
         detail = new NoAccountDetailViewModel(localization);
         overview.PropertyChanged += OnOverviewChanged;
@@ -129,7 +134,7 @@ public sealed class LayoutBViewModel : LocalizedObservableObject
     private void Select(AccountViewModel account)
     {
         shownAccountId = account.Id;
-        Detail = new AccountDetailViewModel(account, [.. Overview.SyncPairs.Where(pair => pair.AccountId == account.Id && (AccountMatches(account) || PairMatches(pair)))], Overview.Activity, localPathFormatter, syncActions, Localization);
+        Detail = new AccountDetailViewModel(account, [.. Overview.SyncPairs.Where(pair => pair.AccountId == account.Id && (AccountMatches(account) || PairMatches(pair)))], Overview.Activity, localPathFormatter, syncActions, conflictLists.Create(Option.Some(account.Id)), Localization);
     }
 
     private bool IsVisible(AccountViewModel account) => AccountMatches(account) || Overview.SyncPairs.Any(pair => pair.AccountId == account.Id && PairMatches(pair));
