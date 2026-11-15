@@ -122,8 +122,7 @@ public sealed partial class UpdateAvailableViewModel : ObservableObject, IDispos
             DownloadProgressText = string.Empty;
             var uiContext = SynchronizationContext.Current;
             await updateCheckService.DownloadUpdatesAsync(updateInfo, percent => PostToUi(uiContext, () => ReportProgress(percent)));
-            _ = applyGate;
-            updateCheckService.ApplyUpdatesAndRestart(updateInfo);
+            await ApplyWhenSafeAsync();
         }
         catch (Exception ex)
         {
@@ -133,6 +132,23 @@ public sealed partial class UpdateAvailableViewModel : ObservableObject, IDispos
         finally
         {
             IsBusy = false;
+        }
+    }
+
+    private async Task ApplyWhenSafeAsync()
+    {
+        var permit = await applyGate.WaitUntilSafeAsync(CancellationToken.None);
+        var applied = false;
+
+        try
+        {
+            updateCheckService.ApplyUpdatesAndRestart(updateInfo);
+            applied = true;
+        }
+        finally
+        {
+            if (!applied)
+                permit.Dispose();
         }
     }
 
