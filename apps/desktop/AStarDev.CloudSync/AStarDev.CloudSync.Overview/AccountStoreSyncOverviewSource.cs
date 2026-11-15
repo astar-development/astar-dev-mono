@@ -49,8 +49,11 @@ internal sealed class AccountStoreSyncOverviewSource(ICloudSyncDatabase database
 
         return failure.Match(
             error => Result.Failure<SyncOverview, ErrorResponse>(error),
-            () => Result.Success<SyncOverview, ErrorResponse>(SyncOverviewFactory.Create([.. accounts.Select(account => ToCloudAccount(account, countsByAccount[account.Id], paused.Contains(account.Id), lastSyncs[account.Id]))], [.. accounts.SelectMany(account => pairsByAccount[account.Id])], activity, [], [], 0, Option.None<DateTimeOffset>())));
+            () => Result.Success<SyncOverview, ErrorResponse>(SyncOverviewFactory.Create([.. accounts.Select(account => ToCloudAccount(account, countsByAccount[account.Id], paused.Contains(account.Id), lastSyncs[account.Id]))], [.. accounts.SelectMany(account => pairsByAccount[account.Id])], activity, [], [], 0, LatestOf(lastSyncs.Values))));
     }
+
+    private static Option<DateTimeOffset> LatestOf(IEnumerable<Option<DateTimeOffset>> lastSyncs) =>
+        lastSyncs.Aggregate(Option.None<DateTimeOffset>(), (latest, next) => next.Match(time => latest.Match(current => Option.Some(time > current ? time : current), () => Option.Some(time)), () => latest));
 
     private async Task<Option<ErrorResponse>> ReadAsync(AccountId accountId, Dictionary<AccountId, IReadOnlyList<SyncPair>> pairsByAccount, Dictionary<AccountId, Option<BaselineCounts>> countsByAccount, CancellationToken cancellationToken)
     {
