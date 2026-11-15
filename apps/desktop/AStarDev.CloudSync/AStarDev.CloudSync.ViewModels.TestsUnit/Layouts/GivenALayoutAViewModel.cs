@@ -353,4 +353,34 @@ public class GivenALayoutAViewModel
 
         reader.Requests.Count.ShouldBe(2);
     }
+
+    [Fact]
+    public async Task when_an_account_search_result_is_opened_then_that_account_is_selected_with_every_provider_shown_and_the_accounts_page_appears()
+    {
+        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), TestData.CreateLocalization());
+        var archive = layout.Overview.Accounts.Single(account => account.Name == "Archive");
+        layout.ShowSearchCommand.Execute(null);
+
+        layout.Search.OpenAccountCommand.Execute(archive);
+
+        layout.VisibleAccounts.Single(card => card.IsSelected).Account.Id.ShouldBe(archive.Id);
+        layout.ProviderChips[0].IsSelected.ShouldBeTrue();
+        (layout.IsAccountsPageShown, layout.IsSearchPageShown).ShouldBe((true, false));
+    }
+
+    [Fact]
+    public async Task when_a_folder_search_result_is_opened_then_its_account_is_selected_and_the_folders_page_reads_that_accounts_folders()
+    {
+        var tree = new FakeFolderTreeSource();
+        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(tree), TestData.CreateActivityListFactory(), TestData.CreateLocalization());
+        var recipes = layout.Overview.SyncPairs.Single(pair => pair.Name == "Recipes");
+        layout.ShowSearchCommand.Execute(null);
+
+        layout.Search.OpenFolderCommand.Execute(recipes);
+        await layout.Folders.ShowAccountCommand.ExecutionTask!;
+
+        layout.VisibleAccounts.Single(card => card.IsSelected).Account.Id.ShouldBe(recipes.AccountId);
+        layout.IsFoldersPageShown.ShouldBeTrue();
+        tree.RequestedAccounts.ShouldBe([recipes.AccountId]);
+    }
 }
