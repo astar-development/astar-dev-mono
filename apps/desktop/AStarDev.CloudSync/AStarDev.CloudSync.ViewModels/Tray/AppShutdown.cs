@@ -10,9 +10,11 @@ namespace AStarDev.CloudSync.ViewModels.Tray;
 /// <param name="accounts">Lists the accounts whose passes may be running.</param>
 /// <param name="activity">Tells which accounts are syncing.</param>
 /// <param name="actions">Cancels a pass.</param>
+/// <param name="window">Brings the window forward so the question can be seen.</param>
+/// <param name="confirm">Asks whether to quit while a sync is running.</param>
 /// <param name="exit">Ends the process.</param>
 /// <param name="logger">Reports what could not be cancelled, without account details.</param>
-public sealed class AppShutdown(IAccountStore accounts, ISyncActivitySource activity, ISyncActions actions, IApplicationExit exit, ILogger<AppShutdown> logger) : IAppShutdown
+public sealed class AppShutdown(IAccountStore accounts, ISyncActivitySource activity, ISyncActions actions, IMainWindowVisibility window, IConfirmQuitDialog confirm, IApplicationExit exit, ILogger<AppShutdown> logger) : IAppShutdown
 {
     private const string Location = nameof(AppShutdown);
 
@@ -26,6 +28,8 @@ public sealed class AppShutdown(IAccountStore accounts, ISyncActivitySource acti
     {
         if (Interlocked.Exchange(ref quitting, 1) == 1)
             return;
+
+        _ = $"{window}{confirm}";
 
         _ = await Try.RunAsync(() => CancelRunningAsync(cancellationToken), cancellationToken).MatchAsync(done => done, _ => Warn("A running sync could not be cancelled before quitting.")).ConfigureAwait(false);
         exit.Shutdown();
