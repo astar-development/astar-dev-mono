@@ -28,6 +28,19 @@ public class GivenALayoutCView
     }
 
     [AvaloniaFact]
+    public async Task when_text_is_typed_in_the_command_search_box_then_only_matching_pair_tiles_and_account_cards_remain()
+    {
+        var window = await CreateShownWindowAsync();
+        var searchBox = window.GetVisualDescendants().OfType<TextBox>().Single(textBox => textBox.Name == "CommandSearchBox");
+
+        searchBox.Text = "recipes";
+        Dispatcher.UIThread.RunJobs();
+
+        window.GetVisualDescendants().OfType<Border>().Count(border => border.Classes.Contains("pair-tile")).ShouldBe(1);
+        window.GetVisualDescendants().OfType<Border>().Count(border => border.Classes.Contains("account-card")).ShouldBe(1);
+    }
+
+    [AvaloniaFact]
     public async Task when_shown_then_the_all_pairs_chip_is_highlighted_and_the_provider_chips_are_not()
     {
         var window = await CreateShownWindowAsync();

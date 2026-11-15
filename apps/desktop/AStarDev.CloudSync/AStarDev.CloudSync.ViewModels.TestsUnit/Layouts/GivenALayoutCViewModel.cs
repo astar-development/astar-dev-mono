@@ -296,6 +296,77 @@ public class GivenALayoutCViewModel
     }
 
     [Fact]
+    public async Task when_the_search_text_matches_a_pair_then_only_matching_pairs_are_shown()
+    {
+        var viewModel = new LayoutCViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateLocalization());
+
+        viewModel.SearchText = "  RECIPES ";
+
+        viewModel.SyncPairs.Select(pair => pair.Name).ShouldBe(["Recipes"]);
+    }
+
+    [Fact]
+    public async Task when_the_search_text_matches_an_account_then_all_of_its_pairs_are_shown()
+    {
+        var viewModel = new LayoutCViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateLocalization());
+        var archive = viewModel.Overview.Accounts.Single(account => account.Name == "Archive");
+
+        viewModel.SearchText = "archive@example";
+
+        viewModel.SyncPairs.ShouldNotBeEmpty();
+        viewModel.SyncPairs.ShouldAllBe(pair => pair.AccountId == archive.Id);
+        viewModel.SyncPairs.Count.ShouldBe(viewModel.Overview.SyncPairs.Count(pair => pair.AccountId == archive.Id));
+    }
+
+    [Fact]
+    public async Task when_the_search_text_is_blank_again_then_every_pair_and_account_card_is_shown()
+    {
+        var viewModel = new LayoutCViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateLocalization());
+        viewModel.SearchText = "recipes";
+
+        viewModel.SearchText = "   ";
+
+        (viewModel.SyncPairs.Count, viewModel.AccountCards.Count).ShouldBe((7, 4));
+    }
+
+    [Fact]
+    public async Task when_the_search_text_is_set_then_only_accounts_that_match_or_own_a_matching_pair_keep_a_card()
+    {
+        var viewModel = new LayoutCViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateLocalization());
+        var owner = viewModel.Overview.SyncPairs.Single(pair => pair.Name == "Recipes").AccountId;
+
+        viewModel.SearchText = "recipes";
+
+        viewModel.AccountCards.Select(card => card.Account.Id).ShouldBe([owner]);
+    }
+
+    [Fact]
+    public async Task when_the_search_text_changes_then_property_changed_is_raised_for_the_pairs_and_the_account_cards()
+    {
+        var viewModel = new LayoutCViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateLocalization());
+        var changed = new List<string?>();
+        viewModel.PropertyChanged += (_, args) => changed.Add(args.PropertyName);
+
+        viewModel.SearchText = "recipes";
+
+        changed.ShouldContain(nameof(LayoutCViewModel.SyncPairs));
+        changed.ShouldContain(nameof(LayoutCViewModel.AccountCards));
+    }
+
+    [Fact]
+    public async Task when_the_search_text_and_a_provider_chip_and_an_account_card_are_combined_then_every_filter_applies()
+    {
+        var viewModel = new LayoutCViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateLocalization());
+        var owner = viewModel.Overview.SyncPairs.Single(pair => pair.Name == "Recipes").AccountId;
+        viewModel.ProviderFilters[0].SelectCommand.Execute(null);
+
+        viewModel.SearchText = "recipes";
+        viewModel.AccountCards.Single(card => card.Account.Id == owner).SelectCommand.Execute(null);
+
+        viewModel.SyncPairs.Select(pair => pair.Name).ShouldBe(["Recipes"]);
+    }
+
+    [Fact]
     public void when_created_then_the_sort_options_are_needs_attention_first_and_name()
     {
         var viewModel = new LayoutCViewModel(CreateUnloadedOverview(), new RecordingSyncActions(), TestData.CreateLocalization());

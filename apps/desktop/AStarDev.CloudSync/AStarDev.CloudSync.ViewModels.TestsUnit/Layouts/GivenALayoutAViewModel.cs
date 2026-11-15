@@ -40,11 +40,26 @@ public class GivenALayoutAViewModel
     }
 
     [Fact]
-    public async Task when_created_then_the_rail_navigation_command_is_disabled_until_its_pages_exist()
+    public async Task when_the_search_rail_button_is_chosen_then_only_the_search_page_is_shown()
     {
         var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), TestData.CreateLocalization());
 
-        layout.NavigateCommand.CanExecute(null).ShouldBeFalse();
+        layout.ShowSearchCommand.Execute(null);
+
+        (layout.IsSearchPageShown, layout.IsAccountsPageShown, layout.IsFoldersPageShown, layout.IsActivityPageShown, layout.IsConflictsPageShown).ShouldBe((true, false, false, false, false));
+    }
+
+    [Fact]
+    public async Task when_the_search_page_is_shown_then_it_lists_every_account_and_folder_until_text_is_typed()
+    {
+        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), TestData.CreateLocalization());
+        layout.ShowSearchCommand.Execute(null);
+        var before = (layout.Search.Accounts.Count, layout.Search.Folders.Count);
+
+        layout.Search.SearchText = "recipes";
+
+        before.ShouldBe((4, 7));
+        layout.Search.Folders.Select(folder => folder.Name).ShouldBe(["Recipes"]);
     }
 
     [Fact]
@@ -270,14 +285,6 @@ public class GivenALayoutAViewModel
         await layout.ConflictList.RefreshCommand.ExecutionTask!;
 
         reader.Reads.ShouldBe(2);
-    }
-
-    [Fact]
-    public async Task when_a_rail_page_does_not_exist_yet_then_its_navigation_stays_disabled()
-    {
-        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), TestData.CreateLocalization());
-
-        layout.NavigateCommand.CanExecute(null).ShouldBeFalse();
     }
 
     [Fact]
