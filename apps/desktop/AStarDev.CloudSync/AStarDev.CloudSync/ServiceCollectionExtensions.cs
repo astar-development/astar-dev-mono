@@ -84,6 +84,8 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IApplicationExit, DesktopApplicationExit>()
             .AddSingleton<ITrayNoticeStore>(provider => ActivatorUtilities.CreateInstance<FileTrayNoticeStore>(provider, provider.GetRequiredService<IFileSystem>().FileInfo.New(TrayNoticeFilePath)))
             .AddSingleton<TrayCloseNotice>()
+            .AddSingleton<ITrayAvailability, DesktopTrayAvailability>()
+            .AddSingleton<WindowClosePolicy>()
             .AddSingleton<ConfirmQuitViewModel>()
             .AddSingleton<IConfirmQuitDialog>(provider => provider.GetRequiredService<ConfirmQuitViewModel>())
             .AddSingleton<IAppShutdown, AppShutdown>()

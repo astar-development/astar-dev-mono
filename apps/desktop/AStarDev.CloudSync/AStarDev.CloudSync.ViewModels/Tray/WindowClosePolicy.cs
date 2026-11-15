@@ -8,5 +8,17 @@ public sealed class WindowClosePolicy(IMainWindowVisibility window, ITrayAvailab
 {
     /// <summary>Handles a close request. It never throws.</summary>
     /// <param name="cancellationToken">Cancels the notice.</param>
-    public Task CloseAsync(CancellationToken cancellationToken) => throw new NotImplementedException($"{window} {tray} {notice} {cancellationToken}");
+    public Task CloseAsync(CancellationToken cancellationToken)
+    {
+        if (tray.Check() is TrayAvailability.Missing)
+        {
+            window.Minimise();
+
+            return Task.CompletedTask;
+        }
+
+        window.Hide();
+
+        return notice.ShowAsync(cancellationToken);
+    }
 }

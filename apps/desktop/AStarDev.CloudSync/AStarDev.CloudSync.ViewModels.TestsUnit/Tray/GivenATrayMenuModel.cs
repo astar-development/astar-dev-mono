@@ -153,7 +153,7 @@ public class GivenATrayMenuModel
     }
 
     [Fact]
-    public async Task when_the_overview_reloads_then_the_menu_and_tooltip_are_announced_as_changed()
+    public async Task when_the_overview_reloads_then_the_menu_tooltip_and_icon_are_announced_as_changed()
     {
         var overview = await LoadedAsync(Photos);
         var model = Create(overview);
@@ -162,7 +162,7 @@ public class GivenATrayMenuModel
 
         await overview.LoadAsync(CancellationToken);
 
-        changed.ShouldBe([nameof(TrayMenuModel.Items), nameof(TrayMenuModel.TooltipText)], ignoreOrder: true);
+        changed.ShouldBe([nameof(TrayMenuModel.Items), nameof(TrayMenuModel.TooltipText), nameof(TrayMenuModel.IconState)], ignoreOrder: true);
     }
 
     [Fact]
