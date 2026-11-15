@@ -22,7 +22,7 @@ public sealed class GivenUpdateAvailableViewDisplay
         var textProvider = new FakeUpdateDialogTextProvider();
         var logger = Substitute.For<ILogger<UpdateAvailableViewModel>>();
 
-        return new UpdateAvailableViewModel(updateInfo ?? CreateUpdateInfo(), updateCheckService, textProvider, logger);
+        return new UpdateAvailableViewModel(updateInfo ?? CreateUpdateInfo(), updateCheckService, new ImmediateUpdateApplyGate(), textProvider, logger);
     }
 
     private static UpdateAvailableView CreateViewWithViewModel(UpdateAvailableViewModel viewModel)

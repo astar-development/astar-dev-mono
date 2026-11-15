@@ -19,9 +19,93 @@ public sealed class GivenAnUpdateAvailableViewModel
         var updateCheckService = Substitute.For<IVelopackUpdateService>();
         var textProvider = new FakeUpdateDialogTextProvider();
         var logger = Substitute.For<ILogger<UpdateAvailableViewModel>>();
-        var viewModel = new UpdateAvailableViewModel(updateInfo ?? CreateUpdateInfo(), updateCheckService, textProvider, logger);
+        var viewModel = new UpdateAvailableViewModel(updateInfo ?? CreateUpdateInfo(), updateCheckService, new ImmediateUpdateApplyGate(), textProvider, logger);
 
         return (viewModel, updateCheckService);
+    }
+
+    private static UpdateAvailableViewModel CreateSutWithGate(IUpdateApplyGate gate, IVelopackUpdateService updateCheckService)
+        => new(CreateUpdateInfo(), updateCheckService, gate, new FakeUpdateDialogTextProvider(), Substitute.For<ILogger<UpdateAvailableViewModel>>());
+
+    private sealed class ProbePermit : IDisposable
+    {
+        public bool Disposed { get; private set; }
+
+        public void Dispose() => Disposed = true;
+    }
+
+    private sealed class ScriptedGate(Task<IDisposable> answer) : IUpdateApplyGate
+    {
+        public int Waits { get; private set; }
+
+        public Task<IDisposable> WaitUntilSafeAsync(CancellationToken cancellationToken)
+        {
+            Waits++;
+
+            return answer;
+        }
+    }
+
+    [Fact]
+    public async Task when_restart_now_is_chosen_then_the_update_is_applied_only_after_the_gate_lets_it()
+    {
+        var updateCheckService = Substitute.For<IVelopackUpdateService>();
+        var release = new TaskCompletionSource<IDisposable>();
+        using var viewModel = CreateSutWithGate(new ScriptedGate(release.Task), updateCheckService);
+
+        var running = viewModel.RestartNowCommand.ExecuteAsync(null);
+        await Task.Delay(50, TestContext.Current.CancellationToken);
+        updateCheckService.DidNotReceive().ApplyUpdatesAndRestart(Arg.Any<UpdateInfo>());
+        using var permit = new ProbePermit();
+        release.SetResult(permit);
+        await running;
+
+        updateCheckService.Received(1).ApplyUpdatesAndRestart(Arg.Any<UpdateInfo>());
+    }
+
+    [Fact]
+    public async Task when_the_update_is_applied_then_the_permit_is_still_held_so_the_app_stays_safe_until_it_restarts()
+    {
+        using var permit = new ProbePermit();
+        using var viewModel = CreateSutWithGate(new ScriptedGate(Task.FromResult<IDisposable>(permit)), Substitute.For<IVelopackUpdateService>());
+
+        await viewModel.RestartNowCommand.ExecuteAsync(null);
+
+        permit.Disposed.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task when_applying_the_update_fails_then_the_permit_is_released_so_the_app_carries_on()
+    {
+        using var permit = new ProbePermit();
+        var updateCheckService = Substitute.For<IVelopackUpdateService>();
+        updateCheckService.When(service => service.ApplyUpdatesAndRestart(Arg.Any<UpdateInfo>())).Do(_ => throw new InvalidOperationException("apply failed"));
+        using var viewModel = CreateSutWithGate(new ScriptedGate(Task.FromResult<IDisposable>(permit)), updateCheckService);
+
+        await viewModel.RestartNowCommand.ExecuteAsync(null);
+
+        (permit.Disposed, viewModel.ErrorMessage).ShouldBe((true, "apply failed"));
+    }
+
+    [Fact]
+    public async Task when_the_gate_fails_then_nothing_is_applied_and_the_error_is_shown()
+    {
+        var updateCheckService = Substitute.For<IVelopackUpdateService>();
+        using var viewModel = CreateSutWithGate(new ScriptedGate(Task.FromException<IDisposable>(new InvalidOperationException("gate failed"))), updateCheckService);
+
+        await viewModel.RestartNowCommand.ExecuteAsync(null);
+
+        updateCheckService.DidNotReceive().ApplyUpdatesAndRestart(Arg.Any<UpdateInfo>());
+        (viewModel.ErrorMessage, viewModel.IsBusy).ShouldBe(("gate failed", false));
+    }
+
+    [Fact]
+    public async Task when_the_default_gate_is_used_then_it_does_not_wait()
+    {
+        using var permit = await new ImmediateUpdateApplyGate().WaitUntilSafeAsync(TestContext.Current.CancellationToken);
+
+        permit.ShouldNotBeNull();
+        Should.NotThrow(permit.Dispose);
     }
 
     [Fact]

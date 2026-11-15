@@ -19,7 +19,7 @@ public sealed class GivenAnUpdateNotificationService
         var textProvider = new FakeUpdateDialogTextProvider();
         var logger = Substitute.For<ILogger<UpdateAvailableViewModel>>();
 
-        return new UpdateAvailableViewModel(updateInfo, updateCheckService, textProvider, logger);
+        return new UpdateAvailableViewModel(updateInfo, updateCheckService, new ImmediateUpdateApplyGate(), textProvider, logger);
     }
 
     private static (UpdateNotificationService Sut, IVelopackUpdateService UpdateCheckService, IUpdateAvailableViewModelFactory ViewModelFactory, IUpdateAvailableDialogService DialogService) CreateSut()
