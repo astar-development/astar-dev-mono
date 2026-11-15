@@ -22,6 +22,8 @@ public sealed class UploadPassFixture : IDisposable
 
     public Microsoft.Extensions.Time.Testing.FakeTimeProvider Time { get; } = new(new DateTimeOffset(2026, 11, 13, 12, 0, 0, TimeSpan.Zero));
 
+    public RecordingThroughputWriter Throughput { get; } = new();
+
     public ISyncProgressFeed Feed => provider!.GetRequiredService<ISyncProgressFeed>();
 
     public RemoteTreeIndex Remote { get; } = new();
@@ -114,6 +116,7 @@ public sealed class UploadPassFixture : IDisposable
             .AddSingleton<IRemoteIndexReader>(Remote)
             .AddSingleton<IUploadRecorder>(Recorder)
             .AddSingleton<ITransferConcurrencyReader>(Concurrency)
+            .AddSingleton<IThroughputWriter>(Throughput)
             .AddKeyedSingleton<IRemoteFileUploader>(oneDrive, Uploader)
             .AddKeyedSingleton<IRemoteFolderCreator>(oneDrive, Folders)
             .AddKeyedSingleton<IRemoteItemRemover>(oneDrive, Remover)

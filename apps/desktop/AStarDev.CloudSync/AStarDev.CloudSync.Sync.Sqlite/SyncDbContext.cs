@@ -44,6 +44,9 @@ internal sealed class SyncDbContext(DbContextOptions<SyncDbContext> options) : D
     /// <summary>The activity log, newest 1,000 entries per account.</summary>
     public DbSet<ActivityLogEntity> ActivityLog => Set<ActivityLogEntity>();
 
+    /// <summary>The transfer samples of the last day (#1767), not tied to an account.</summary>
+    public DbSet<ThroughputSampleEntity> ThroughputSamples => Set<ThroughputSampleEntity>();
+
     /// <summary>The run journal, newest 100 runs per account.</summary>
     public DbSet<SyncRunEntity> SyncRuns => Set<SyncRunEntity>();
 
@@ -66,6 +69,7 @@ internal sealed class SyncDbContext(DbContextOptions<SyncDbContext> options) : D
         modelBuilder.ApplyConfiguration(new SyncScheduleEntityConfiguration());
         modelBuilder.ApplyConfiguration(new TrashRetentionEntityConfiguration());
         modelBuilder.ApplyConfiguration(new ActivityLogEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new ThroughputSampleEntityConfiguration());
         modelBuilder.ApplyConfiguration(new SyncRunEntityConfiguration());
         modelBuilder.ApplyConfiguration(new UploadSessionEntityConfiguration());
     }
