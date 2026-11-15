@@ -10,6 +10,8 @@
   "Update.Downloading": "Downloading...",
   "Provider.OneDrive": "OneDrive",
   "Provider.OneDrive.Code": "OD",
+  "Provider.Unknown": "Unknown provider",
+  "Provider.Unknown.Code": "?",
   "Status.Syncing": "Syncing {0}%",
   "Status.UpToDate": "Up to date",
   "Status.Conflicts.One": "{0} conflict",
