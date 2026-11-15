@@ -87,17 +87,19 @@ public partial class App : Application, IDisposable
 
         services.GetRequiredService<MainWindowVisibility>().Attach(window);
         var shutdownRequests = services.GetRequiredService<IAppShutdown>();
-        window.Closing += (_, closing) => HideInsteadOfClosing(window, shutdownRequests, closing);
+        var closeNotice = services.GetRequiredService<TrayCloseNotice>();
+        window.Closing += (_, closing) => HideInsteadOfClosing(window, shutdownRequests, closeNotice, closing);
         services.GetRequiredService<TrayIconService>().Start(this);
     }
 
-    private static void HideInsteadOfClosing(Window window, IAppShutdown shutdownRequests, WindowClosingEventArgs closing)
+    private static void HideInsteadOfClosing(Window window, IAppShutdown shutdownRequests, TrayCloseNotice closeNotice, WindowClosingEventArgs closing)
     {
         if (shutdownRequests.State is not ShutdownState.Running || closing.CloseReason != WindowCloseReason.WindowClosing)
             return;
 
         closing.Cancel = true;
         window.Hide();
+        _ = closeNotice.ShowAsync(CancellationToken.None);
     }
 
     private void ExitAsSecondInstance()

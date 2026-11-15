@@ -44,6 +44,8 @@ public static class ServiceCollectionExtensions
 
     private static string SettingsFilePath => ApplicationName.ApplicationDirectory().CombinePath("display-preferences.json");
 
+    private static string TrayNoticeFilePath => ApplicationName.ApplicationDirectory().CombinePath("tray-notice-shown");
+
     private static string UpdateDeferralFilePath => ApplicationName.ApplicationDirectory().CombinePath("update-deferral.json");
 
     private static string DatabaseFilePath => ApplicationName.ApplicationDirectory().CombinePath("cloudsync.db");
@@ -80,6 +82,8 @@ public static class ServiceCollectionExtensions
             .AddSingleton<SyncNotifier>()
             .AddSingleton<IMainWindowVisibility>(provider => provider.GetRequiredService<MainWindowVisibility>())
             .AddSingleton<IApplicationExit, DesktopApplicationExit>()
+            .AddSingleton<ITrayNoticeStore>(provider => ActivatorUtilities.CreateInstance<FileTrayNoticeStore>(provider, provider.GetRequiredService<IFileSystem>().FileInfo.New(TrayNoticeFilePath)))
+            .AddSingleton<TrayCloseNotice>()
             .AddSingleton<ConfirmQuitViewModel>()
             .AddSingleton<IConfirmQuitDialog>(provider => provider.GetRequiredService<ConfirmQuitViewModel>())
             .AddSingleton<IAppShutdown, AppShutdown>()

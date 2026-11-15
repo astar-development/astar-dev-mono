@@ -1,3 +1,5 @@
+using AStarDev.CloudSync.ViewModels.Tray;
+using AStarDev.CloudSync.Tray;
 using AStar.Dev.Velopack.Publishing;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using AStarDev.CloudSync.Accounts;
@@ -60,6 +62,15 @@ public class GivenServiceCollectionExtensions
 
         provider.GetRequiredService<IUpdateScheduler>().ShouldBeOfType<UpdateScheduler>();
         provider.GetRequiredService<IUpdateDeferralStore>().ShouldBeOfType<JsonUpdateDeferralStore>();
+    }
+
+    [Fact]
+    public void when_application_services_are_added_then_the_tray_close_notice_and_its_marker_file_store_are_registered()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<ITrayNoticeStore>().ShouldBeOfType<FileTrayNoticeStore>();
+        provider.GetRequiredService<TrayCloseNotice>().ShouldNotBeNull();
     }
 
     [Fact]

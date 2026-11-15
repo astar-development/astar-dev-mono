@@ -1,4 +1,5 @@
 using AStarDev.CloudSync.Sync;
+using AStarDev.FunctionalParadigm;
 using AStarDev.Localization;
 
 namespace AStarDev.CloudSync.ViewModels.Tray;
@@ -11,5 +12,20 @@ public sealed class TrayCloseNotice(ITrayNoticeStore store, INotificationSender 
 {
     /// <summary>Shows the notice if it has not been shown yet, and records it once it was shown. A sender that fails leaves the notice pending, so the next close tries again. It never throws.</summary>
     /// <param name="cancellationToken">Cancels the call.</param>
-    public Task ShowAsync(CancellationToken cancellationToken) => throw new NotImplementedException($"{store}{sender}{localization}{cancellationToken}");
+    public Task ShowAsync(CancellationToken cancellationToken) =>
+        store.Read() is TrayNoticeState.Shown ? Task.CompletedTask : SendAsync(cancellationToken);
+
+    private Task<Unit> SendAsync(CancellationToken cancellationToken)
+    {
+        var message = DesktopNotificationFactory.Create(localization.GetLocal("App.Title"), localization.GetLocal("TrayNotice.Body"));
+
+        return sender.SendAsync(message, cancellationToken).MatchAsync(_ => MarkShown(), _ => Unit.Instance);
+    }
+
+    private Unit MarkShown()
+    {
+        store.MarkShown();
+
+        return Unit.Instance;
+    }
 }

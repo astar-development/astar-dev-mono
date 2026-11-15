@@ -1,5 +1,7 @@
 using System.IO.Abstractions;
 using AStarDev.CloudSync.ViewModels.Tray;
+using AStarDev.FunctionalParadigm;
+using AStarDev.LoggingExtensions;
 using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync.Tray;
@@ -9,9 +11,30 @@ namespace AStarDev.CloudSync.Tray;
 /// <param name="logger">Reports a marker that cannot be written, by exception type only.</param>
 public sealed class FileTrayNoticeStore(IFileInfo marker, ILogger<FileTrayNoticeStore> logger) : ITrayNoticeStore
 {
-    /// <inheritdoc />
-    public TrayNoticeState Read() => throw new NotImplementedException($"{marker}{logger}");
+    private const string Location = nameof(FileTrayNoticeStore);
 
     /// <inheritdoc />
-    public void MarkShown() => throw new NotImplementedException();
+    public TrayNoticeState Read()
+    {
+        marker.Refresh();
+
+        return marker.Exists ? TrayNoticeStateFactory.CreateShown() : TrayNoticeStateFactory.CreatePending();
+    }
+
+    /// <inheritdoc />
+    public void MarkShown() =>
+        _ = Try.Run(() =>
+        {
+            marker.Directory?.Create();
+            marker.FileSystem.File.WriteAllText(marker.FullName, string.Empty);
+
+            return Unit.Instance;
+        }).Match(written => written, NotWritten);
+
+    private Unit NotWritten(Exception exception)
+    {
+        LogMessage.ExceptionCaught(logger, Location, exception.ErrorType());
+
+        return Unit.Instance;
+    }
 }

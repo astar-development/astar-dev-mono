@@ -18,7 +18,8 @@ public sealed class GivenATrayCloseNotice
 
         await notice.ShowAsync(CancellationToken);
 
-        (host.Sent.Select(message => (message.Title, message.Body)).ToList(), store.Marked).ShouldBe(([("AStar Dev CloudSync", "CloudSync is still running in the tray.")], 1));
+        host.Sent.Select(message => (message.Title, message.Body)).ShouldBe([("AStar Dev CloudSync", "CloudSync is still running in the tray.")]);
+        store.Marked.ShouldBe(1);
     }
 
     [Fact]
