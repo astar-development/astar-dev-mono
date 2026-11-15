@@ -201,6 +201,25 @@ public sealed class GivenAnUpdateScheduler : IDisposable
         await Should.NotThrowAsync(() => running);
     }
 
+    [Fact]
+    public async Task when_stopped_while_checking_then_it_finishes_without_throwing()
+    {
+        updates.OnCheck = () => stop.Cancel();
+        updates.ThrowWhenCancelled = true;
+
+        await Should.NotThrowAsync(() => sut.RunAsync(stop.Token));
+    }
+
+    [Fact]
+    public async Task when_already_stopped_then_it_does_not_check()
+    {
+        await stop.CancelAsync();
+
+        await sut.RunAsync(stop.Token);
+
+        updates.Checks.ShouldBe(0);
+    }
+
     private sealed class DelayRecordingTimeProvider : FakeTimeProvider
     {
         private readonly Channel<TimeSpan> delays = Channel.CreateUnbounded<TimeSpan>();
@@ -222,6 +241,10 @@ public sealed class GivenAnUpdateScheduler : IDisposable
 
         public int Checks { get; private set; }
 
+        public Action OnCheck { get; set; } = () => { };
+
+        public bool ThrowWhenCancelled { get; set; }
+
         public int Downloaded { get; private set; }
 
         public int Applied { get; private set; }
@@ -235,6 +258,9 @@ public sealed class GivenAnUpdateScheduler : IDisposable
         public Task<UpdateCheckResult> CheckForUpdatesWithResultAsync(CancellationToken cancellationToken = default)
         {
             Checks++;
+            OnCheck();
+            if (ThrowWhenCancelled)
+                cancellationToken.ThrowIfCancellationRequested();
 
             return Task.FromResult(Result);
         }

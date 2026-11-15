@@ -17,13 +17,13 @@ public sealed class UpdateScheduler(IVelopackUpdateService updates, IUpdatePolic
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                var wait = await Try.RunAsync(() => CheckOnceAsync(cancellationToken)).MatchAsync(next => next, CheckFailed).ConfigureAwait(false);
+                var wait = await Try.RunAsync(() => CheckOnceAsync(cancellationToken), cancellationToken).MatchAsync(next => next, CheckFailed).ConfigureAwait(false);
                 _ = await Task.WhenAny(Task.Delay(wait, time, cancellationToken)).ConfigureAwait(false);
             }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            return;
+            UpdateSchedulerLog.Stopped(logger);
         }
     }
 

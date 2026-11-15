@@ -3,7 +3,7 @@ namespace AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 /// <summary>How the user left the update dialog (#1412).</summary>
 public abstract record UpdateDialogOutcome
 {
-    internal UpdateDialogOutcome()
+    private protected UpdateDialogOutcome()
     {
     }
 }
