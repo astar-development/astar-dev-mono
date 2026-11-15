@@ -8,4 +8,7 @@ public interface IMainWindowVisibility
 
     /// <summary>Hides the window. The app and its scheduled syncs keep running.</summary>
     void Hide();
+
+    /// <summary>Minimises the window to the task bar. It is used when there is no tray icon to come back from.</summary>
+    void Minimise();
 }

@@ -14,15 +14,16 @@ namespace AStarDev.CloudSync.Tray;
 [ExcludeFromCodeCoverage(Justification = "The platform tray cannot be driven from tests; the menu model is tested.")]
 internal sealed class TrayIconService(TrayMenuModel model, IMainWindowVisibility window) : IDisposable
 {
-    private const string IconUri = "avares://AStarDev.CloudSync/Assets/astar.ico";
+    private const string IconFolder = "avares://AStarDev.CloudSync/Assets/";
 
+    private readonly Dictionary<string, WindowIcon> icons = [];
     private TrayIcon? icon;
 
     /// <summary>Creates the tray icon and starts following the model.</summary>
     /// <param name="application">The application that owns the icon.</param>
     internal void Start(Application application)
     {
-        icon = new TrayIcon { Icon = new WindowIcon(AssetLoader.Open(new Uri(IconUri))), ToolTipText = model.TooltipText, Menu = BuildMenu(), IsVisible = true };
+        icon = new TrayIcon { Icon = IconFor(model.IconState), ToolTipText = model.TooltipText, Menu = BuildMenu(), IsVisible = true };
         icon.Clicked += (_, _) => window.Show();
         TrayIcon.SetIcons(application, [icon]);
         model.PropertyChanged += OnModelChanged;
@@ -43,7 +44,25 @@ internal sealed class TrayIconService(TrayMenuModel model, IMainWindowVisibility
             return;
 
         icon.ToolTipText = model.TooltipText;
+        icon.Icon = IconFor(model.IconState);
         icon.Menu = BuildMenu();
+    }
+
+    private static string IconFile(TrayIconState state) => state switch
+    {
+        TrayIconState.Syncing => "tray-syncing.ico",
+        TrayIconState.Attention => "tray-attention.ico",
+        TrayIconState.Faulted => "tray-faulted.ico",
+        _ => "astar.ico",
+    };
+
+    private WindowIcon IconFor(TrayIconState state)
+    {
+        var file = IconFile(state);
+        if (!icons.TryGetValue(file, out var cached))
+            icons[file] = cached = new WindowIcon(AssetLoader.Open(new Uri($"{IconFolder}{file}")));
+
+        return cached;
     }
 
     private NativeMenu BuildMenu()

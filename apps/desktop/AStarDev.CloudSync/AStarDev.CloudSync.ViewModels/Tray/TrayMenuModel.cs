@@ -37,6 +37,15 @@ public sealed class TrayMenuModel : LocalizedObservableObject
     /// <summary>The app name and the overall status with counts, for example "AStar Dev CloudSync: Syncing 2 accounts" or "AStar Dev CloudSync: 3 items need attention".</summary>
     public string TooltipText => Localization.GetLocal("Tray.Tooltip", Title, StatusText());
 
+    /// <summary>The icon to show: an error beats a sign-in, which beats syncing, which beats conflicts, which beats idle. It follows the tooltip.</summary>
+    public TrayIconState IconState => overview.Accounts switch
+    {
+        var accounts when accounts.Any(account => account.Status.IsFailed) => TrayIconStateFactory.CreateFaulted(),
+        var accounts when accounts.Any(account => account.NeedsSignIn) => TrayIconStateFactory.CreateAttention(),
+        var accounts when accounts.Any(account => account.Status.IsSyncing) => TrayIconStateFactory.CreateSyncing(),
+        _ => overview.ConflictCount > 0 ? TrayIconStateFactory.CreateAttention() : TrayIconStateFactory.CreateIdle(),
+    };
+
     private string Title => Localization.GetLocal("App.Title");
 
     private string StatusText()
@@ -61,6 +70,7 @@ public sealed class TrayMenuModel : LocalizedObservableObject
         Items = Build();
         OnPropertyChanged(nameof(Items));
         OnPropertyChanged(nameof(TooltipText));
+        OnPropertyChanged(nameof(IconState));
     }
 
     private TrayMenuItemViewModel[] Build() =>

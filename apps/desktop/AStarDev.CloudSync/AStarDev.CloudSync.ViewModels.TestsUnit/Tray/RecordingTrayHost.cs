@@ -8,6 +8,8 @@ internal sealed class RecordingTrayHost : IMainWindowVisibility, IAppShutdown, I
 
     public int Hidden { get; private set; }
 
+    public int Minimised { get; private set; }
+
     public int QuitRequests { get; private set; }
 
     public int Exits { get; private set; }
@@ -17,6 +19,8 @@ internal sealed class RecordingTrayHost : IMainWindowVisibility, IAppShutdown, I
     public void Show() => Shown++;
 
     public void Hide() => Hidden++;
+
+    public void Minimise() => Minimised++;
 
     public Task RequestQuitAsync(CancellationToken cancellationToken)
     {

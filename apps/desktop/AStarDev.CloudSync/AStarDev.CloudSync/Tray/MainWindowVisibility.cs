@@ -33,4 +33,11 @@ internal sealed class MainWindowVisibility : IMainWindowVisibility
 
     /// <inheritdoc />
     public void Hide() => Dispatcher.UIThread.Post(() => window?.Hide());
+
+    /// <inheritdoc />
+    public void Minimise() => Dispatcher.UIThread.Post(() =>
+    {
+        if (window is not null)
+            window.WindowState = WindowState.Minimized;
+    });
 }
