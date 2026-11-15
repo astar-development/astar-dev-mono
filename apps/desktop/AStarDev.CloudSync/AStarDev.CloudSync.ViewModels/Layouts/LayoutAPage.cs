@@ -15,6 +15,14 @@ public abstract record LayoutAPage
         }
     }
 
+    /// <summary>The search over accounts and folders.</summary>
+    public sealed record Search : LayoutAPage
+    {
+        internal Search()
+        {
+        }
+    }
+
     /// <summary>The activity of every account.</summary>
     public sealed record Activity : LayoutAPage
     {

@@ -193,6 +193,7 @@ public class GivenALayoutAView
         window.GetVisualDescendants().OfType<ScrollViewer>().Single(scrollViewer => scrollViewer.Name == "AccountCards").IsEffectivelyVisible.ShouldBeFalse();
         window.GetVisualDescendants().OfType<AStarDev.CloudSync.Search.SearchResultsContent>().ShouldHaveSingleItem().IsEffectivelyVisible.ShouldBeTrue();
         window.GetVisualDescendants().OfType<TextBlock>().Where(text => text.IsEffectivelyVisible && text.Text == "Recipes").ShouldHaveSingleItem();
+        window.GetVisualDescendants().OfType<AStarDev.CloudSync.Search.SearchResultsContent>().Single().GetVisualDescendants().OfType<TextBlock>().Where(text => text.IsEffectivelyVisible && text.Text == "Accounts").ShouldBeEmpty();
         searchButton.Classes.ShouldContain("active");
     }
 
