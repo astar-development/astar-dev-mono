@@ -362,7 +362,7 @@
                 BorderThickness="0,1,0,0">
             <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
                 <TextBlock Grid.Column="0" Classes="muted" Text="{Binding StatusSummaryText}" />
-                <TextBlock Grid.Column="1" Classes="muted" Text="{Binding StatusCheckedText}" />
+                <TextBlock Grid.Column="1" Classes="muted" Text="{Binding StatusCheckedText}" ToolTip.Tip="{Binding StatusCheckedTooltip}" />
             </Grid>
         </Border>
     </Grid>

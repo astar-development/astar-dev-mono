@@ -146,6 +146,14 @@ public class GivenALayoutAViewModel
     }
 
     [Fact]
+    public async Task when_the_overview_loads_then_the_status_check_tooltip_says_the_check_covers_all_accounts()
+    {
+        var layout = await CreateLoadedLayoutAsync();
+
+        layout.StatusCheckedTooltip.ShouldBe("Most recent sync check across all accounts");
+    }
+
+    [Fact]
     public async Task when_sync_has_never_been_checked_then_the_status_check_text_says_so()
     {
         var source = Substitute.For<ISyncOverviewSource>();

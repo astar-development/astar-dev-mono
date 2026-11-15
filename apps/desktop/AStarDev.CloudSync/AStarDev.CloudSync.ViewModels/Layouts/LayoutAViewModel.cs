@@ -59,6 +59,9 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
     /// <summary>The status bar check summary, e.g. "Up to date · checked 10 min ago".</summary>
     public string StatusCheckedText => Overview.LastChecked.Match(_ => Localization.GetLocal("LayoutA.StatusBar.Checked", Overview.OverallStatusText(), Overview.LastCheckedText), () => Localization.GetLocal("LayoutA.StatusBar.NeverChecked", Overview.OverallStatusText()));
 
+    /// <summary>The tooltip of the status bar check summary: it covers every account, not one.</summary>
+    public string StatusCheckedTooltip => Localization.GetLocal("LayoutA.StatusBar.CheckedTooltip");
+
     /// <summary>The accounts pane title.</summary>
     public string AccountsTitle => Localization.GetLocal("LayoutA.Accounts");
 
