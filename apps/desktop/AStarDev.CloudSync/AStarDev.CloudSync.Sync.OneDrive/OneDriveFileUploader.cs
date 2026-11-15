@@ -517,15 +517,15 @@ internal sealed class OneDriveFileUploader(OneDriveTransferHttp http, IUploadSes
         return Result.Failure<UploadedFile, ProviderError>(ProviderErrorFactory.CreateSourceChanged());
     }
 
-    private async Task<Result<UploadedFile, ProviderError>> GiveUpAsync(Transfer transfer, ProviderError error, CancellationToken cancellationToken) =>
-        IsLarge(transfer) ? Result.Failure<UploadedFile, ProviderError>(error) : await AbandonAsync(transfer, error, cancellationToken).ConfigureAwait(false);
-
     private async Task<Result<UploadedFile, ProviderError>> AbandonAsync(Transfer transfer, ProviderError error, CancellationToken cancellationToken)
     {
         await DeleteSessionAsync(transfer, cancellationToken).ConfigureAwait(false);
 
         return Result.Failure<UploadedFile, ProviderError>(error);
     }
+
+    private async Task<Result<UploadedFile, ProviderError>> GiveUpAsync(Transfer transfer, ProviderError error, CancellationToken cancellationToken) =>
+        IsLarge(transfer) ? Result.Failure<UploadedFile, ProviderError>(error) : await AbandonAsync(transfer, error, cancellationToken).ConfigureAwait(false);
 
     private async Task CancelSessionAsync(Transfer transfer)
     {
