@@ -182,6 +182,7 @@
                             </Grid>
                             <ProgressBar Classes="account-progress" Value="{Binding Progress}" AutomationProperties.Name="{Binding Account.Status.Text}" />
                             <TextBlock Text="{Binding Account.LayoutBFailureText}" FontSize="12" Foreground="{DynamicResource CloudSyncWarnBrush}" TextWrapping="Wrap" IsVisible="{Binding Account.HasFailure}" />
+                            <TextBlock Text="{Binding Account.ThrottleHintText}" FontSize="12" Foreground="{DynamicResource CloudSyncWarnBrush}" TextWrapping="Wrap" IsVisible="{Binding Account.HasThrottleHint}" />
                         </StackPanel>
 
                         <TabControl Grid.Row="1" Margin="28,6,28,20" Padding="0">

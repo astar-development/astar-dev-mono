@@ -102,10 +102,10 @@ public sealed class AccountViewModel : LocalizedObservableObject
     public string LayoutCFailureText => Status.FailureMessage("C");
 
     /// <summary>Whether to suggest fewer transfers at once because the provider keeps throttling the account (#1463).</summary>
-    public bool HasThrottleHint => throw new NotImplementedException($"{account}");
+    public bool HasThrottleHint => account.ThrottleHint is ThrottleHint.SuggestLowerConcurrency;
 
     /// <summary>The suggestion to lower the transfers at once; empty when there is none.</summary>
-    public string ThrottleHintText => throw new NotImplementedException($"{account}");
+    public string ThrottleHintText => HasThrottleHint ? Localization.GetLocal("Throttle.Hint") : string.Empty;
 
     /// <summary>The Sign in action's text.</summary>
     public string SignInText => Localization.GetLocal("Account.SignIn");

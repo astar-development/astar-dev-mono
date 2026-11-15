@@ -6,7 +6,7 @@ namespace AStarDev.CloudSync.Overview;
 /// <summary>Counts and times every overview refresh (#1518).</summary>
 /// <param name="inner">Builds the overview.</param>
 /// <param name="telemetry">Records the refresh.</param>
-internal sealed class InstrumentedSyncOverviewSource(AccountStoreSyncOverviewSource inner, IWorkflowTelemetry telemetry) : ISyncOverviewSource
+internal sealed class InstrumentedSyncOverviewSource(ThrottleHintingSyncOverviewSource inner, IWorkflowTelemetry telemetry) : ISyncOverviewSource
 {
     /// <inheritdoc />
     public Task<Result<SyncOverview, ErrorResponse>> GetOverviewAsync(CancellationToken cancellationToken) =>

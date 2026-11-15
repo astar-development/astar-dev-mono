@@ -11,6 +11,7 @@ internal sealed class AccountThrottleGate(TimeProvider timeProvider) : IAccountT
 
     private readonly Lock gate = new();
     private readonly Dictionary<AccountId, (DateTimeOffset PausedUntil, int ConsecutiveThrottles)> accounts = [];
+    private readonly Dictionary<AccountId, Queue<DateTimeOffset>> throttles = [];
 
     /// <inheritdoc />
     public async Task WaitAsync(AccountId accountId, CancellationToken cancellationToken)
@@ -39,6 +40,7 @@ internal sealed class AccountThrottleGate(TimeProvider timeProvider) : IAccountT
             }
 
             accounts[accountId] = (now + retryAfter.Match(Clamp, () => Backoff(consecutive)), consecutive + 1);
+            Recent(accountId, now).Enqueue(now);
         }
     }
 
@@ -53,7 +55,11 @@ internal sealed class AccountThrottleGate(TimeProvider timeProvider) : IAccountT
     }
 
     /// <inheritdoc />
-    public ThrottleHint HintFor(AccountId accountId) => throw new NotImplementedException($"{accountId}{timeProvider}");
+    public ThrottleHint HintFor(AccountId accountId)
+    {
+        lock (gate)
+            return Recent(accountId, timeProvider.GetUtcNow()).Count >= ThrottlePolicy.HintThrottleCount ? ThrottleHintFactory.CreateSuggestLowerConcurrency() : ThrottleHintFactory.CreateQuiet();
+    }
 
     private static DateTimeOffset Later(DateTimeOffset first, DateTimeOffset second) => first > second ? first : second;
 
@@ -66,6 +72,17 @@ internal sealed class AccountThrottleGate(TimeProvider timeProvider) : IAccountT
     }
 
     private static TimeSpan Backoff(int consecutiveThrottles) => TimeSpan.FromTicks(Math.Min(ThrottlePolicy.MaximumBackoff.Ticks, ThrottlePolicy.InitialBackoff.Ticks << Math.Min(consecutiveThrottles, MaximumDoublings)));
+
+    private Queue<DateTimeOffset> Recent(AccountId accountId, DateTimeOffset now)
+    {
+        if (!throttles.TryGetValue(accountId, out var recent))
+            throttles[accountId] = recent = new Queue<DateTimeOffset>();
+
+        while (recent.TryPeek(out var oldest) && now - oldest >= ThrottlePolicy.HintWindow)
+            _ = recent.Dequeue();
+
+        return recent;
+    }
 
     private TimeSpan Remaining(AccountId accountId)
     {

@@ -37,6 +37,7 @@
   "Failure.C.QuotaExceeded": "Free cloud space",
   "Failure.C.InsufficientDiskSpace": "Free disk space",
   "Failure.C.Unexpected": "Check the log",
+  "Throttle.Hint": "Your cloud provider keeps slowing this account down. Try fewer transfers at once in the account settings.",
   "Notification.Synced.One": "{0}: {1} file synced.",
   "Notification.Synced.Many": "{0}: {1} files synced.",
   "Notification.SyncedAccounts": "{0} accounts synced, {1} files.",
