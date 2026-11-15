@@ -1,3 +1,4 @@
+using AStarDev.CloudSync.Logging;
 using AStarDev.CloudSync.ViewModels.Tray;
 using AStarDev.CloudSync.Tray;
 using AStar.Dev.Velopack.Publishing;
@@ -62,6 +63,15 @@ public class GivenServiceCollectionExtensions
 
         provider.GetRequiredService<IUpdateScheduler>().ShouldBeOfType<UpdateScheduler>();
         provider.GetRequiredService<IUpdateDeferralStore>().ShouldBeOfType<JsonUpdateDeferralStore>();
+    }
+
+    [Fact]
+    public void when_application_services_are_added_then_the_log_reader_and_the_log_folder_locator_are_registered()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<ILogEntryReader>().ShouldBeOfType<LogEntryReader>();
+        provider.GetRequiredService<ILogFileLocator>().ShouldBeOfType<CloudSyncLogFileLocator>();
     }
 
     [Fact]

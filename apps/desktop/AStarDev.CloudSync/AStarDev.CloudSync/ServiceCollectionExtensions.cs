@@ -106,6 +106,8 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IAddAccountDialog>(provider => provider.GetRequiredService<AddAccountViewModel>())
             .AddSingleton<IFileSystem, RealFileSystem>()
             .AddSingleton<LogFileSweeper>()
+            .AddSingleton<ILogFileLocator, CloudSyncLogFileLocator>()
+            .AddSingleton<ILogEntryReader, LogEntryReader>()
             .AddSingleInstance()
             .AddSingleton(provider => SingleInstanceOptionsFactory.Create(provider.GetRequiredService<IFileSystem>().DirectoryInfo.New(ApplicationName.ApplicationDirectory()), SingleInstanceName, null))
             .AddCloudSyncPersistence(provider => provider.GetRequiredService<IFileSystem>().FileInfo.New(DatabaseFilePath))

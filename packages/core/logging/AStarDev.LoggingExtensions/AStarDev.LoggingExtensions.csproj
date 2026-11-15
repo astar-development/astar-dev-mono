@@ -9,6 +9,7 @@
         <PackageId>AStarDev.LoggingExtensions</PackageId>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReleaseNotes>
+        v4.2.0 feat(cloudsync): account hash in log lines and a reader for the local log files (slice 4 of #1411)
         v4.1.0 feat(cloudsync): per-account verbose log level and filter (slice 2 of #1411)
         v4.0.1 refactor(logging): drop InternalsVisibleTo from LoggingExtensions (#1417)
         v4.0.0 chore(logging)!: make LoggerMessage placeholder names PascalCase (#1375)
