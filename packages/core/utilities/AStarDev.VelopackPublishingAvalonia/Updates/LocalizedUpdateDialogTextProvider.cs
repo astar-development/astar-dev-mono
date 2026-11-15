@@ -38,6 +38,9 @@ public sealed class LocalizedUpdateDialogTextProvider : IUpdateDialogTextProvide
     public string GetMessage(string version) => localization.GetLocal("Update.Message", version);
 
     /// <inheritdoc />
+    public string GetForcedMessage(string version) => localization.GetLocal("Update.ForcedMessage", version);
+
+    /// <inheritdoc />
     public event EventHandler? TextChanged;
 
     private void OnCultureChanged(object? sender, CultureInfo culture) => TextChanged?.Invoke(this, EventArgs.Empty);

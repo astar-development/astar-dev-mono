@@ -2,6 +2,7 @@ using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Time.Testing;
+using System.Threading.Channels;
 using Velopack;
 
 namespace AStar.Dev.Velopack.Publishing.Avalonia.TestsUnit.Updates;
@@ -202,7 +203,7 @@ public sealed class GivenAnUpdateScheduler : IDisposable
 
     private sealed class DelayRecordingTimeProvider : FakeTimeProvider
     {
-        private readonly System.Threading.Channels.Channel<TimeSpan> delays = System.Threading.Channels.Channel.CreateUnbounded<TimeSpan>();
+        private readonly Channel<TimeSpan> delays = Channel.CreateUnbounded<TimeSpan>();
 
         public async Task<TimeSpan> NextDelayAsync(CancellationToken cancellationToken) => await delays.Reader.ReadAsync(cancellationToken);
 

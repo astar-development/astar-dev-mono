@@ -54,6 +54,15 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
+    public void when_application_services_are_added_then_the_update_scheduler_and_the_deferral_store_resolve()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<IUpdateScheduler>().ShouldBeOfType<UpdateScheduler>();
+        provider.GetRequiredService<IUpdateDeferralStore>().ShouldBeOfType<JsonUpdateDeferralStore>();
+    }
+
+    [Fact]
     public void when_application_services_are_added_then_the_localized_update_dialog_text_provider_is_registered()
     {
         var services = CreateServices();
@@ -75,6 +84,7 @@ public class GivenServiceCollectionExtensions
     [Theory]
     [InlineData("Update.Title")]
     [InlineData("Update.Message")]
+    [InlineData("Update.ForcedMessage")]
     [InlineData("Update.ReleaseNotesLabel")]
     [InlineData("Update.RestartNow")]
     [InlineData("Update.Later")]
