@@ -52,7 +52,8 @@ public class GivenALayoutCAccountCardViewModel
 
         await card.ActionCommand.ExecuteAsync(null);
 
-        (card.ActionText, syncActions.Calls).ShouldBe(("Sync now", [$"SyncNowAsync:{account.Id}"]));
+        card.ActionText.ShouldBe("Sync now");
+        syncActions.Calls.ShouldBe([$"SyncNowAsync:{account.Id}"]);
     }
 
     [Fact]
@@ -64,7 +65,8 @@ public class GivenALayoutCAccountCardViewModel
 
         await card.ActionCommand.ExecuteAsync(null);
 
-        (card.ActionText, syncActions.Calls).ShouldBe(("Cancel", [$"CancelSyncAsync:{account.Id}"]));
+        card.ActionText.ShouldBe("Cancel");
+        syncActions.Calls.ShouldBe([$"CancelSyncAsync:{account.Id}"]);
     }
 
     [Fact]

@@ -56,7 +56,7 @@ public class GivenALayoutCView
     {
         var window = await CreateShownWindowAsync();
 
-        var texts = window.GetVisualDescendants().OfType<Button>().Select(button => button.Content).OfType<string>().Where(text => text is "Sync now" or "Cancel").ToList();
+        var texts = window.GetVisualDescendants().OfType<Button>().Where(button => button.DataContext is LayoutCAccountCardViewModel).Select(button => button.Content).OfType<string>().Where(text => text is "Sync now" or "Cancel").ToList();
 
         texts.Count(text => text == "Sync now").ShouldBe(3);
         texts.Count(text => text == "Cancel").ShouldBe(1);
