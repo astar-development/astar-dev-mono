@@ -35,6 +35,46 @@ public class GivenAJsonDisplayPreferencesStore
     }
 
     [Fact]
+    public void when_preferences_are_saved_then_the_locale_is_written_to_the_file()
+    {
+        var fileSystem = new MockFileSystem();
+
+        CreateStore(fileSystem).Save(DisplayPreferencesFactory.CreateDefault());
+
+        fileSystem.File.ReadAllText(SettingsPath).ShouldContain("\"Locale\":\"en-GB\"");
+    }
+
+    [Fact]
+    public void when_a_file_without_a_locale_exists_then_the_default_locale_is_loaded()
+    {
+        var fileSystem = new MockFileSystem();
+        fileSystem.Directory.CreateDirectory("/home/user/.config/AStarDev.CloudSync");
+        fileSystem.File.WriteAllText(SettingsPath, "{\"Layout\":\"A\",\"Theme\":\"Dark\"}");
+
+        CreateStore(fileSystem).Load().Locale.ShouldBe("en-GB");
+    }
+
+    [Fact]
+    public void when_the_file_holds_a_locale_in_another_casing_then_it_is_loaded_in_standard_casing()
+    {
+        var fileSystem = new MockFileSystem();
+        fileSystem.Directory.CreateDirectory("/home/user/.config/AStarDev.CloudSync");
+        fileSystem.File.WriteAllText(SettingsPath, "{\"Layout\":\"A\",\"Theme\":\"Dark\",\"Locale\":\"EN-gb\"}");
+
+        CreateStore(fileSystem).Load().Locale.ShouldBe("en-GB");
+    }
+
+    [Fact]
+    public void when_the_file_holds_an_unsupported_locale_then_the_default_is_loaded()
+    {
+        var fileSystem = new MockFileSystem();
+        fileSystem.Directory.CreateDirectory("/home/user/.config/AStarDev.CloudSync");
+        fileSystem.File.WriteAllText(SettingsPath, "{\"Layout\":\"A\",\"Theme\":\"Dark\",\"Locale\":\"xx-YY\"}");
+
+        CreateStore(fileSystem).Load().Locale.ShouldBe("en-GB");
+    }
+
+    [Fact]
     public void when_preferences_are_saved_then_the_missing_settings_directory_is_created()
     {
         var fileSystem = new MockFileSystem();
