@@ -342,6 +342,50 @@ public sealed class GivenAResumableOneDriveUpload : IDisposable
     }
 
     [Fact]
+    public async Task when_a_large_upload_is_cancelled_then_the_saved_session_is_kept_and_not_deleted_at_the_provider()
+    {
+        _ = await fixture.BuildAsync(CancellationToken);
+        var source = LargeFile();
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(CancellationToken);
+        fixture.Graph.Respond = request =>
+        {
+            if (request.Method == HttpMethod.Put)
+                cancellation.Cancel();
+
+            return request.Method.Method switch
+            {
+                "POST" => RecordingGraphHandler.Json(HttpStatusCode.OK, SessionJson()),
+                _ => RecordingGraphHandler.Json(HttpStatusCode.Accepted, "{\"nextExpectedRanges\":[\"10485760-\"]}"),
+            };
+        };
+
+        var act = () => UploadAsync(source, cancellation.Token);
+
+        await Should.ThrowAsync<OperationCanceledException>(act);
+        fixture.UploadSessions.Sessions.Count.ShouldBe(1);
+        fixture.Graph.Requests.ShouldNotContain(request => request.Method == HttpMethod.Delete);
+    }
+
+    [Fact]
+    public async Task when_a_large_upload_runs_out_of_retries_then_the_saved_session_is_kept_and_not_deleted_at_the_provider()
+    {
+        _ = await fixture.BuildAsync(CancellationToken);
+        var source = LargeFile();
+        fixture.Graph.Respond = request => request.Method.Method switch
+        {
+            "POST" => RecordingGraphHandler.Json(HttpStatusCode.OK, SessionJson()),
+            "GET" => RecordingGraphHandler.Json(HttpStatusCode.OK, "{\"nextExpectedRanges\":[\"0-\"]}"),
+            _ => RecordingGraphHandler.Json(HttpStatusCode.InternalServerError, "{}"),
+        };
+
+        var result = await UploadAsync(source);
+
+        Describe(result).ShouldBe("Transient");
+        fixture.UploadSessions.Sessions.Count.ShouldBe(1);
+        fixture.Graph.Requests.ShouldNotContain(request => request.Method == HttpMethod.Delete);
+    }
+
+    [Fact]
     public async Task when_the_provider_cannot_be_reached_for_the_status_then_the_saved_session_is_kept_for_the_next_attempt()
     {
         _ = await fixture.BuildAsync(CancellationToken);
