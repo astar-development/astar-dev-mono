@@ -15,6 +15,7 @@ using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.Sync.OneDrive;
 using AStarDev.CloudSync.Sync.Sqlite;
 using AStarDev.CloudSync.Theming;
+using AStarDev.CloudSync.Updates;
 using AStarDev.CloudSync.Tray;
 using AStarDev.CloudSync.ViewModels;
 using AStarDev.CloudSync.ViewModels.Accounts;
@@ -60,6 +61,7 @@ public static class ServiceCollectionExtensions
             .AddLocalizationService(typeof(ServiceCollectionExtensions).Assembly, new CultureInfo("en-GB"))
             .AddVelopackUpdates(configuration)
             .AddVelopackUpdateNotifications()
+            .AddSingleton<IUpdateApplyGate, CloudSyncUpdateApplyGate>()
             .AddSingleton<IUpdateDialogTextProvider, LocalizedUpdateDialogTextProvider>()
             .AddSingleton(TimeProvider.System)
             .AddSyncOverview()

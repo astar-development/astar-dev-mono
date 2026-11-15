@@ -4,6 +4,20 @@
         <name>AStarDev.VelopackPublishing</name>
     </assembly>
     <members>
+        <member name="T:AStar.Dev.Velopack.Publishing.ImmediateUpdateApplyGate">
+            <summary>The gate for apps that can restart at any time: it never waits (#1412). It is the default, so apps that do not register their own gate behave as before.</summary>
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.ImmediateUpdateApplyGate.WaitUntilSafeAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="T:AStar.Dev.Velopack.Publishing.IUpdateApplyGate">
+            <summary>Lets an app hold an update back until it is safe to restart (#1412). A sync client, for example, must not restart in the middle of a sync.</summary>
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.IUpdateApplyGate.WaitUntilSafeAsync(System.Threading.CancellationToken)">
+            <summary>Waits until the app can restart, and keeps it safe until the permit is disposed. The update is applied while the permit is held; if applying fails the permit is disposed so the app carries on.</summary>
+            <param name="cancellationToken">Stops waiting.</param>
+            <returns>A permit that holds the app in its safe state.</returns>
+        </member>
         <member name="T:AStar.Dev.Velopack.Publishing.IUpdatePolicy">
             <summary>Decides what to do about an update check result and the user's earlier choices (#1412). It is pure: the same inputs always give the same action.</summary>
         </member>

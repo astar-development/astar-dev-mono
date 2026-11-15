@@ -105,10 +105,11 @@
             <inheritdoc/>
             <inheritdoc/>
         </member>
-        <member name="M:AStar.Dev.Velopack.Publishing.Avalonia.Updates.UpdateAvailableViewModel.#ctor(Velopack.UpdateInfo,AStar.Dev.Velopack.Publishing.IVelopackUpdateService,AStar.Dev.Velopack.Publishing.Avalonia.Updates.IUpdateDialogTextProvider,Microsoft.Extensions.Logging.ILogger{AStar.Dev.Velopack.Publishing.Avalonia.Updates.UpdateAvailableViewModel})">
+        <member name="M:AStar.Dev.Velopack.Publishing.Avalonia.Updates.UpdateAvailableViewModel.#ctor(Velopack.UpdateInfo,AStar.Dev.Velopack.Publishing.IVelopackUpdateService,AStar.Dev.Velopack.Publishing.IUpdateApplyGate,AStar.Dev.Velopack.Publishing.Avalonia.Updates.IUpdateDialogTextProvider,Microsoft.Extensions.Logging.ILogger{AStar.Dev.Velopack.Publishing.Avalonia.Updates.UpdateAvailableViewModel})">
             <summary>Creates the view model for the supplied discovered update.</summary>
             <param name="updateInfo">The discovered update, as returned by <see cref="M:AStar.Dev.Velopack.Publishing.IVelopackUpdateService.CheckForUpdatesAsync(System.Threading.CancellationToken)"/>.</param>
             <param name="updateCheckService">The service used to download and apply the update.</param>
+            <param name="applyGate">Holds the update back until the app can restart.</param>
             <param name="textProvider">Supplies the dialog's display text.</param>
             <param name="logger">The logger used to record download/apply failures.</param>
         </member>
@@ -169,7 +170,7 @@
         <member name="T:AStar.Dev.Velopack.Publishing.Avalonia.Updates.UpdateAvailableViewModelFactory">
             <inheritdoc cref="T:AStar.Dev.Velopack.Publishing.Avalonia.Updates.IUpdateAvailableViewModelFactory" />
         </member>
-        <member name="M:AStar.Dev.Velopack.Publishing.Avalonia.Updates.UpdateAvailableViewModelFactory.#ctor(AStar.Dev.Velopack.Publishing.IVelopackUpdateService,AStar.Dev.Velopack.Publishing.Avalonia.Updates.IUpdateDialogTextProvider,Microsoft.Extensions.Logging.ILogger{AStar.Dev.Velopack.Publishing.Avalonia.Updates.UpdateAvailableViewModel})">
+        <member name="M:AStar.Dev.Velopack.Publishing.Avalonia.Updates.UpdateAvailableViewModelFactory.#ctor(AStar.Dev.Velopack.Publishing.IVelopackUpdateService,AStar.Dev.Velopack.Publishing.IUpdateApplyGate,AStar.Dev.Velopack.Publishing.Avalonia.Updates.IUpdateDialogTextProvider,Microsoft.Extensions.Logging.ILogger{AStar.Dev.Velopack.Publishing.Avalonia.Updates.UpdateAvailableViewModel})">
             <inheritdoc cref="T:AStar.Dev.Velopack.Publishing.Avalonia.Updates.IUpdateAvailableViewModelFactory" />
         </member>
         <member name="M:AStar.Dev.Velopack.Publishing.Avalonia.Updates.UpdateAvailableViewModelFactory.Create(Velopack.UpdateInfo)">

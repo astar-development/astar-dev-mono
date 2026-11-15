@@ -14,6 +14,7 @@ public sealed partial class UpdateAvailableViewModel : ObservableObject, IDispos
 
     private readonly UpdateInfo updateInfo;
     private readonly IVelopackUpdateService updateCheckService;
+    private readonly IUpdateApplyGate applyGate;
     private readonly IUpdateDialogTextProvider textProvider;
     private readonly ILogger<UpdateAvailableViewModel> logger;
     private bool disposed;
@@ -21,17 +22,20 @@ public sealed partial class UpdateAvailableViewModel : ObservableObject, IDispos
     /// <summary>Creates the view model for the supplied discovered update.</summary>
     /// <param name="updateInfo">The discovered update, as returned by <see cref="IVelopackUpdateService.CheckForUpdatesAsync"/>.</param>
     /// <param name="updateCheckService">The service used to download and apply the update.</param>
+    /// <param name="applyGate">Holds the update back until the app can restart.</param>
     /// <param name="textProvider">Supplies the dialog's display text.</param>
     /// <param name="logger">The logger used to record download/apply failures.</param>
-    public UpdateAvailableViewModel(UpdateInfo updateInfo, IVelopackUpdateService updateCheckService, IUpdateDialogTextProvider textProvider, ILogger<UpdateAvailableViewModel> logger)
+    public UpdateAvailableViewModel(UpdateInfo updateInfo, IVelopackUpdateService updateCheckService, IUpdateApplyGate applyGate, IUpdateDialogTextProvider textProvider, ILogger<UpdateAvailableViewModel> logger)
     {
         ArgumentNullException.ThrowIfNull(updateInfo);
         ArgumentNullException.ThrowIfNull(updateCheckService);
+        ArgumentNullException.ThrowIfNull(applyGate);
         ArgumentNullException.ThrowIfNull(textProvider);
         ArgumentNullException.ThrowIfNull(logger);
 
         this.updateInfo = updateInfo;
         this.updateCheckService = updateCheckService;
+        this.applyGate = applyGate;
         this.textProvider = textProvider;
         this.logger = logger;
         this.textProvider.TextChanged += OnTextProviderChanged;
@@ -118,7 +122,7 @@ public sealed partial class UpdateAvailableViewModel : ObservableObject, IDispos
             DownloadProgressText = string.Empty;
             var uiContext = SynchronizationContext.Current;
             await updateCheckService.DownloadUpdatesAsync(updateInfo, percent => PostToUi(uiContext, () => ReportProgress(percent)));
-            updateCheckService.ApplyUpdatesAndRestart(updateInfo);
+            await ApplyWhenSafeAsync();
         }
         catch (Exception ex)
         {
@@ -128,6 +132,23 @@ public sealed partial class UpdateAvailableViewModel : ObservableObject, IDispos
         finally
         {
             IsBusy = false;
+        }
+    }
+
+    private async Task ApplyWhenSafeAsync()
+    {
+        var permit = await applyGate.WaitUntilSafeAsync(CancellationToken.None);
+        var applied = false;
+
+        try
+        {
+            updateCheckService.ApplyUpdatesAndRestart(updateInfo);
+            applied = true;
+        }
+        finally
+        {
+            if (!applied)
+                permit.Dispose();
         }
     }
 
