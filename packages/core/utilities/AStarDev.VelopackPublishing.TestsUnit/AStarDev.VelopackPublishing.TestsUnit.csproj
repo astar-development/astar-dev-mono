@@ -27,6 +27,7 @@
     <PackageReference Include="NSubstitute" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="Testably.Abstractions.Testing" />
   </ItemGroup>
 
   <ItemGroup>
