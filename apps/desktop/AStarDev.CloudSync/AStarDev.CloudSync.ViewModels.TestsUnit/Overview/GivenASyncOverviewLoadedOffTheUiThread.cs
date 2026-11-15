@@ -38,7 +38,8 @@ public sealed class GivenASyncOverviewLoadedOffTheUiThread
 
         await ui.RunAsync(() => viewModel.LoadAsync(CancellationToken)).WaitAsync(TimeSpan.FromSeconds(10), CancellationToken);
 
-        (threads.Distinct().ToList(), viewModel.LoadErrorText).ShouldBe(([ui.ThreadId], "Could not load your accounts and sync pairs. The details have been logged."));
+        threads.Distinct().ShouldBe([ui.ThreadId]);
+        viewModel.LoadErrorText.ShouldBe("Could not load your accounts and sync pairs. The details have been logged.");
     }
 
     private sealed class SlowSource(Result<SyncOverview, ErrorResponse> answer) : ISyncOverviewSource

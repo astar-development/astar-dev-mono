@@ -71,8 +71,7 @@ public sealed class SyncOverviewViewModel(ISyncOverviewSource source, IAccountCo
     public async Task LoadAsync(CancellationToken cancellationToken)
     {
         var load = Interlocked.Increment(ref loadsStarted);
-        _ = await Try.RunAsync(() => source.GetOverviewAsync(cancellationToken), cancellationToken)
-            .MatchAsync(result => IsLatest(load) ? result.Match(Show, NotRead) : Unit.Instance, exception => IsLatest(load) ? Threw(exception) : Unit.Instance);
+        _ = await UiResumingTry.RunAsync(() => source.GetOverviewAsync(cancellationToken), result => IsLatest(load) ? result.Match(Show, NotRead) : Unit.Instance, exception => IsLatest(load) ? Threw(exception) : Unit.Instance, cancellationToken);
     }
 
     private bool IsLatest(int load) => load == Volatile.Read(ref loadsStarted);
