@@ -1,3 +1,4 @@
+using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.FunctionalParadigm;
 using Microsoft.Data.Sqlite;
@@ -139,7 +140,7 @@ public sealed class GivenADatabaseHealthCheckOverSqlite : IAsyncLifetime
     [Fact]
     public async Task when_a_recovery_blocked_entry_is_stored_then_it_is_read_back_with_its_blocker()
     {
-        var blockers = new[] { RecoveryBlockerFactory.CreateSignInRequired(), RecoveryBlockerFactory.CreateSyncFolderMissing(), RecoveryBlockerFactory.CreateDatabaseUnreadable() };
+        var blockers = RecoveryBlockerCases.All();
         var occurredAt = new DateTimeOffset(2026, 11, 14, 9, 0, 0, TimeSpan.Zero);
         var entries = blockers.Select((blocker, minute) => ActivityEntryFactory.Create(Account, Option.None<SyncPairId>(), ActivityKindFactory.CreateRecoveryBlocked(blocker), occurredAt.AddMinutes(minute))).ToArray();
         _ = await Database.ActivityWriter.AppendAsync(entries, CancellationToken);
@@ -147,5 +148,22 @@ public sealed class GivenADatabaseHealthCheckOverSqlite : IAsyncLifetime
         var read = (await Database.ActivityReader.GetRecentAsync(Option.Some(Account), 10, CancellationToken)).Match(found => found, _ => []);
 
         read.OrderBy(entry => entry.OccurredAt).Select(entry => entry.Kind).ShouldBe(entries.Select(entry => entry.Kind));
+    }
+
+    [Fact]
+    public async Task when_a_stored_blocker_name_is_not_one_the_app_knows_then_the_entry_is_not_read_back_as_a_blocker()
+    {
+        _ = await Database.ActivityWriter.AppendAsync([ActivityEntryFactory.Create(Account, Option.None<SyncPairId>(), ActivityKindFactory.CreateAuthenticated(), new DateTimeOffset(2026, 11, 14, 9, 0, 0, TimeSpan.Zero))], CancellationToken);
+        await using (var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = Database.DatabasePath, Pooling = false }.ToString()))
+        {
+            await connection.OpenAsync(CancellationToken);
+            await using var command = connection.CreateCommand();
+            command.CommandText = "UPDATE ActivityLog SET Kind = 'RecoveryBlocked', FileName = 'ABlockerFromTheFuture'";
+            _ = await command.ExecuteNonQueryAsync(CancellationToken);
+        }
+
+        var read = (await Database.ActivityReader.GetRecentAsync(Option.Some(Account), 10, CancellationToken)).Match(found => found, _ => []);
+
+        read.ShouldHaveSingleItem().Kind.ShouldBeOfType<ActivityKind.DetectingChanges>();
     }
 }
