@@ -73,7 +73,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IUiDispatcher, AvaloniaUiDispatcher>()
             .AddSingleton<MainWindowVisibility>()
             .AddSingleton<IAutostartLauncher, VelopackAutostartLauncher>()
-            .AddSingleton<IAutostartRegistration>(provider => OperatingSystem.IsLinux() ? ActivatorUtilities.CreateInstance<LinuxAutostartRegistration>(provider) : new UnsupportedAutostartRegistration())
+            .AddSingleton<IAutostartRegistration>(provider => AutostartRegistrationFor(provider))
             .AddSingleton<AutostartSettingsViewModel>()
             .AddSingleton<IWindowPresence, WindowPresenceReader>()
             .AddSingleton<INotificationSender>(_ => OperatingSystem.IsLinux() ? new LinuxNotificationSender() : new UnsupportedNotificationSender())
@@ -123,4 +123,15 @@ public static class ServiceCollectionExtensions
             .AddSingleton<DatabaseHealthBannerViewModel>()
             .AddSingleton<MainWindowDialogs>()
             .AddSingleton<MainWindowViewModel>();
+
+    private static IAutostartRegistration AutostartRegistrationFor(IServiceProvider provider)
+    {
+        if (OperatingSystem.IsLinux())
+            return ActivatorUtilities.CreateInstance<LinuxAutostartRegistration>(provider);
+
+        if (OperatingSystem.IsWindows())
+            return ActivatorUtilities.CreateInstance<WindowsAutostartRegistration>(provider, new RegistryRunKeyStore());
+
+        return new UnsupportedAutostartRegistration();
+    }
 }
