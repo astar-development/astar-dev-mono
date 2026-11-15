@@ -1,0 +1,67 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:accounts="using:AStarDev.CloudSync.Accounts"
+             xmlns:vmAccounts="using:AStarDev.CloudSync.ViewModels.Accounts"
+             xmlns:vmSearch="using:AStarDev.CloudSync.ViewModels.Search"
+             xmlns:vmSyncPairs="using:AStarDev.CloudSync.ViewModels.SyncPairs"
+             x:Class="AStarDev.CloudSync.Search.SearchResultsContent"
+             x:DataType="vmSearch:SearchResultsViewModel"
+             VerticalContentAlignment="Stretch"
+             HorizontalContentAlignment="Stretch"
+             Foreground="{DynamicResource CloudSyncTextPrimaryBrush}">
+    <Grid RowDefinitions="Auto,*"
+          HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch">
+        <TextBox Grid.Row="0"
+                 Name="SearchPageBox"
+                 Height="36"
+                 Margin="0,0,0,12"
+                 Text="{Binding SearchText}"
+                 PlaceholderText="{Binding PlaceholderText}"
+                 AutomationProperties.Name="{Binding PlaceholderText}" />
+
+        <ScrollViewer Grid.Row="1"
+                      Name="SearchScroll"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      MinHeight="0">
+            <StackPanel Spacing="12">
+                <TextBlock Classes="muted" Text="{Binding NoResultsText}" IsVisible="{Binding IsEmpty}" />
+
+                <StackPanel Spacing="8" IsVisible="{Binding Accounts.Count}">
+                    <TextBlock Classes="muted" Text="{Binding AccountsHeadingText}" FontSize="11" FontWeight="SemiBold" />
+                    <ItemsControl ItemsSource="{Binding Accounts}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vmAccounts:AccountViewModel">
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10" Margin="0,0,0,8">
+                                    <accounts:ProviderBadge Grid.Column="0" DataContext="{Binding Provider}" VerticalAlignment="Center" />
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Name}" FontWeight="Medium" />
+                                        <TextBlock Classes="muted" Text="{Binding Email}" TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <StackPanel Spacing="8" IsVisible="{Binding Folders.Count}">
+                    <TextBlock Classes="muted" Text="{Binding FoldersHeadingText}" FontSize="11" FontWeight="SemiBold" />
+                    <ItemsControl ItemsSource="{Binding Folders}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vmSyncPairs:SyncPairViewModel">
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10" Margin="0,0,0,8">
+                                    <accounts:ProviderBadge Grid.Column="0" DataContext="{Binding Provider}" VerticalAlignment="Center" />
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Name}" FontWeight="Medium" />
+                                        <TextBlock Classes="muted" Text="{Binding RemotePath}" TextTrimming="CharacterEllipsis" />
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

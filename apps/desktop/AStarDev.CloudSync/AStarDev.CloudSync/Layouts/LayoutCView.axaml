@@ -168,6 +168,7 @@
                               Data="M11,4 A7,7 0 1 1 10.99,4 Z M16,16 L20,20" />
                         <TextBox Grid.Column="1"
                                  x:Name="CommandSearchBox"
+                                 Text="{Binding SearchText}"
                                  PlaceholderText="{Binding CommandSearchPlaceholder}"
                                  AutomationProperties.Name="{Binding CommandSearchPlaceholder}"
                                  Background="Transparent"

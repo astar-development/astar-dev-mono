@@ -100,7 +100,7 @@ public class GivenALayoutAView
     }
 
     [AvaloniaFact]
-    public async Task when_shown_then_every_rail_button_but_search_navigates_and_search_stays_disabled()
+    public async Task when_shown_then_every_rail_button_navigates_to_its_page()
     {
         var window = await CreateShownWindowAsync();
         var layout = window.Content.ShouldBeOfType<LayoutAView>().DataContext.ShouldBeOfType<LayoutAViewModel>();
@@ -108,8 +108,8 @@ public class GivenALayoutAView
         var railButtons = window.GetVisualDescendants().OfType<Button>().Where(button => button.Classes.Contains("rail")).ToList();
 
         railButtons.Count.ShouldBe(5);
-        railButtons.Select(button => button.Command).ShouldBe([layout.ShowAccountsCommand, layout.ShowFoldersCommand, layout.ShowActivityCommand, layout.ShowConflictsCommand, layout.NavigateCommand]);
-        railButtons.Select(button => button.IsEffectivelyEnabled).ShouldBe([true, true, true, true, false]);
+        railButtons.Select(button => button.Command).ShouldBe([layout.ShowAccountsCommand, layout.ShowFoldersCommand, layout.ShowActivityCommand, layout.ShowConflictsCommand, layout.ShowSearchCommand]);
+        railButtons.Select(button => button.IsEffectivelyEnabled).ShouldBe([true, true, true, true, true]);
     }
 
     [AvaloniaFact]
@@ -176,6 +176,25 @@ public class GivenALayoutAView
         window.GetVisualDescendants().OfType<ScrollViewer>().Single(scrollViewer => scrollViewer.Name == "AccountCards").IsEffectivelyVisible.ShouldBeFalse();
         window.GetVisualDescendants().OfType<AStarDev.CloudSync.Activity.ActivityListContent>().ShouldHaveSingleItem().IsEffectivelyVisible.ShouldBeTrue();
         activityButton.Classes.ShouldContain("active");
+    }
+
+    [AvaloniaFact]
+    public async Task when_the_search_rail_button_is_clicked_then_the_search_page_replaces_the_account_cards_and_typing_filters_it()
+    {
+        var window = await CreateShownWindowAsync();
+        var searchButton = window.GetVisualDescendants().OfType<Button>().Single(button => button.Classes.Contains("rail") && Avalonia.Automation.AutomationProperties.GetName(button) == "Search");
+
+        searchButton.Command!.Execute(null);
+        Dispatcher.UIThread.RunJobs();
+        var box = window.GetVisualDescendants().OfType<TextBox>().Single(textBox => textBox.Name == "SearchPageBox");
+        box.Text = "recipes";
+        Dispatcher.UIThread.RunJobs();
+
+        window.GetVisualDescendants().OfType<ScrollViewer>().Single(scrollViewer => scrollViewer.Name == "AccountCards").IsEffectivelyVisible.ShouldBeFalse();
+        window.GetVisualDescendants().OfType<AStarDev.CloudSync.Search.SearchResultsContent>().ShouldHaveSingleItem().IsEffectivelyVisible.ShouldBeTrue();
+        window.GetVisualDescendants().OfType<TextBlock>().Where(text => text.IsEffectivelyVisible && text.Text == "Recipes").ShouldHaveSingleItem();
+        window.GetVisualDescendants().OfType<AStarDev.CloudSync.Search.SearchResultsContent>().Single().GetVisualDescendants().OfType<TextBlock>().Where(text => text.IsEffectivelyVisible && text.Text == "Accounts").ShouldBeEmpty();
+        searchButton.Classes.ShouldContain("active");
     }
 
     [AvaloniaFact]

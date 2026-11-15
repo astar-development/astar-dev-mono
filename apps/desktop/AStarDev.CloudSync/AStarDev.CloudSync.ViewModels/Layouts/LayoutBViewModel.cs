@@ -7,6 +7,7 @@ using AStarDev.CloudSync.ViewModels.Common;
 using AStarDev.CloudSync.ViewModels.Conflicts;
 using AStarDev.CloudSync.ViewModels.FolderSelection;
 using AStarDev.CloudSync.ViewModels.Overview;
+using AStarDev.CloudSync.ViewModels.Search;
 using AStarDev.CloudSync.ViewModels.SyncPairs;
 using AStarDev.FunctionalParadigm;
 using AStarDev.Localization;
@@ -147,11 +148,9 @@ public sealed class LayoutBViewModel : LocalizedObservableObject
 
     private bool IsVisible(AccountViewModel account) => AccountMatches(account) || Overview.SyncPairs.Any(pair => pair.AccountId == account.Id && PairMatches(pair));
 
-    private bool AccountMatches(AccountViewModel account) => Matches(account.Name) || Matches(account.Email) || Matches(account.Provider.Name);
+    private bool AccountMatches(AccountViewModel account) => account.MatchesSearch(searchText);
 
-    private bool PairMatches(SyncPairViewModel pair) => Matches(pair.Name) || Matches(pair.LocalPath) || Matches(pair.RemotePath);
-
-    private bool Matches(string text) => text.Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase);
+    private bool PairMatches(SyncPairViewModel pair) => pair.MatchesSearch(searchText);
 
     private async Task AddAccountAndReloadAsync(CancellationToken cancellationToken)
     {

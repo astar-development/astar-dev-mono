@@ -6,6 +6,7 @@ using AStarDev.CloudSync.ViewModels.Activity;
 using AStarDev.CloudSync.ViewModels.Conflicts;
 using AStarDev.CloudSync.ViewModels.FolderSelection;
 using AStarDev.CloudSync.ViewModels.Overview;
+using AStarDev.CloudSync.ViewModels.Search;
 using AStarDev.FunctionalParadigm;
 using AStarDev.Localization;
 using CommunityToolkit.Mvvm.Input;
@@ -32,6 +33,7 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
         ConflictList = conflictLists.Create(Option.None<AccountId>());
         Folders = folderSelections.CreatePage();
         Activity = activityLists.Create(overview, Option.None<AccountId>());
+        Search = new SearchResultsViewModel(overview, localization);
         this.syncActions = syncActions;
         AddAccountCommand = new AsyncRelayCommand(AddAccountAndReloadAsync);
         overview.PropertyChanged += OnOverviewChanged;
@@ -49,6 +51,12 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
 
     /// <summary>The activity of every account, shown on the Activity page and read each time that page is chosen.</summary>
     public ActivityListViewModel Activity { get; }
+
+    /// <summary>The search page: what was typed and the accounts and folders it matches.</summary>
+    public SearchResultsViewModel Search { get; }
+
+    /// <summary>Whether the search page is shown.</summary>
+    public bool IsSearchPageShown => page is LayoutAPage.Search;
 
     /// <summary>Whether the activity page is shown.</summary>
     public bool IsActivityPageShown => page is LayoutAPage.Activity;
@@ -114,8 +122,8 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
     /// <summary>Shows the conflicts page and reads the conflicts again.</summary>
     public ICommand ShowConflictsCommand => field ??= new RelayCommand(ShowConflicts);
 
-    /// <summary>The navigation of the rail buttons whose pages do not exist yet (Search). Always disabled.</summary>
-    public ICommand NavigateCommand { get; } = new RelayCommand(() => { }, () => false);
+    /// <summary>Shows the search page.</summary>
+    public ICommand ShowSearchCommand => field ??= new RelayCommand(() => Show(LayoutAPageFactory.CreateSearch()));
 
     /// <summary>The dashboard rail button name.</summary>
     public string DashboardText => Localization.GetLocal("LayoutA.Nav.Dashboard");
@@ -161,6 +169,7 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
     private void Show(LayoutAPage shown)
     {
         page = shown;
+        OnPropertyChanged(nameof(IsSearchPageShown));
         OnPropertyChanged(nameof(IsActivityPageShown));
         OnPropertyChanged(nameof(IsFoldersPageShown));
         OnPropertyChanged(nameof(IsAccountsPageShown));

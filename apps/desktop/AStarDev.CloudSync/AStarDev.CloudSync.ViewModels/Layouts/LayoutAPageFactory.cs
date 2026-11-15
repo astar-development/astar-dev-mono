@@ -6,6 +6,9 @@ public static class LayoutAPageFactory
     /// <summary>Creates the accounts page.</summary>
     public static LayoutAPage CreateAccounts() => new LayoutAPage.Accounts();
 
+    /// <summary>Creates the search page.</summary>
+    public static LayoutAPage CreateSearch() => new LayoutAPage.Search();
+
     /// <summary>Creates the activity page.</summary>
     public static LayoutAPage CreateActivity() => new LayoutAPage.Activity();
 

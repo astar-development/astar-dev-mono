@@ -1,8 +1,10 @@
 using System.Windows.Input;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Sync;
+using AStarDev.CloudSync.ViewModels.Accounts;
 using AStarDev.CloudSync.ViewModels.Common;
 using AStarDev.CloudSync.ViewModels.Overview;
+using AStarDev.CloudSync.ViewModels.Search;
 using AStarDev.CloudSync.ViewModels.SyncPairs;
 using AStarDev.FunctionalParadigm;
 using AStarDev.Localization;
@@ -17,6 +19,8 @@ public sealed class LayoutCViewModel : LocalizedObservableObject
     private Func<SyncPairViewModel, bool> pairFilter = _ => true;
     private LayoutCSortOptionViewModel selectedSortOption;
     private Option<AccountId> selectedAccountId = Option.None<AccountId>();
+    private IReadOnlyList<LayoutCAccountCardViewModel> allAccountCards = [];
+    private string searchText = string.Empty;
 
     /// <summary>Creates the view model and follows the overview's changes.</summary>
     /// <param name="overview">The shared overview every layout binds to.</param>
@@ -40,9 +44,23 @@ public sealed class LayoutCViewModel : LocalizedObservableObject
     public SyncOverviewViewModel Overview { get; }
 
     /// <summary>The sync pairs passing the selected filter chip and the selected account, in the selected sort order.</summary>
-    public IReadOnlyList<SyncPairViewModel> SyncPairs => [.. Sort(Overview.SyncPairs.Where(pairFilter).Where(IsOfSelectedAccount))];
+    public IReadOnlyList<SyncPairViewModel> SyncPairs => [.. Sort(Overview.SyncPairs.Where(pairFilter).Where(IsOfSelectedAccount).Where(IsShownBySearch))];
 
-    /// <summary>One card per account in the accounts strip; selecting one shows only that account's sync pairs.</summary>
+    /// <summary>What the user typed in the command search box. Pairs whose name or path match, or whose account's name, email or provider match, are shown, with the cards of those accounts; blank shows everything.</summary>
+    public string SearchText
+    {
+        get => searchText;
+        set
+        {
+            if (!SetProperty(ref searchText, value ?? string.Empty))
+                return;
+
+            ShowSearchedAccountCards();
+            OnPropertyChanged(nameof(SyncPairs));
+        }
+    }
+
+    /// <summary>One card per account in the accounts strip that passes the search; selecting one shows only that account's sync pairs.</summary>
     public IReadOnlyList<LayoutCAccountCardViewModel> AccountCards { get; private set; } = [];
 
     /// <summary>One filter chip per provider in the data, with its pair count.</summary>
@@ -158,17 +176,27 @@ public sealed class LayoutCViewModel : LocalizedObservableObject
     private void RebuildAccountCards()
     {
         selectedAccountId = selectedAccountId.Match(id => Overview.Accounts.Any(account => account.Id == id) ? Option.Some(id) : Option.None<AccountId>(), () => Option.None<AccountId>());
-        AccountCards = [.. Overview.Accounts.Select(account => new LayoutCAccountCardViewModel(account, SelectAccount) { IsSelected = selectedAccountId.Match(id => id == account.Id, () => false) })];
-        OnPropertyChanged(nameof(AccountCards));
+        allAccountCards = [.. Overview.Accounts.Select(account => new LayoutCAccountCardViewModel(account, SelectAccount) { IsSelected = selectedAccountId.Match(id => id == account.Id, () => false) })];
+        ShowSearchedAccountCards();
         OnPropertyChanged(nameof(SyncPairs));
         OnPropertyChanged(nameof(IsAllPairsSelected));
     }
+
+    private void ShowSearchedAccountCards()
+    {
+        AccountCards = [.. allAccountCards.Where(card => IsAccountShownBySearch(card.Account))];
+        OnPropertyChanged(nameof(AccountCards));
+    }
+
+    private bool IsAccountShownBySearch(AccountViewModel account) => account.MatchesSearch(searchText) || Overview.SyncPairs.Any(pair => pair.AccountId == account.Id && pair.MatchesSearch(searchText));
+
+    private bool IsShownBySearch(SyncPairViewModel pair) => pair.MatchesSearch(searchText) || Overview.Accounts.Any(account => account.Id == pair.AccountId && account.MatchesSearch(searchText));
 
     private void SelectAccount(LayoutCAccountCardViewModel selected)
     {
         selectedAccountId = selected.IsSelected ? Option.None<AccountId>() : Option.Some(selected.Account.Id);
 
-        foreach (var card in AccountCards)
+        foreach (var card in allAccountCards)
             card.IsSelected = selectedAccountId.Match(id => id == card.Account.Id, () => false);
 
         OnPropertyChanged(nameof(SyncPairs));
@@ -181,7 +209,7 @@ public sealed class LayoutCViewModel : LocalizedObservableObject
     {
         selectedAccountId = Option.None<AccountId>();
 
-        foreach (var card in AccountCards)
+        foreach (var card in allAccountCards)
             card.IsSelected = false;
 
         ApplyFilter(_ => true, _ => false);

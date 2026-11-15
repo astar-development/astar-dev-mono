@@ -7,6 +7,7 @@
              xmlns:common="using:AStarDev.CloudSync.Common"
              xmlns:conflicts="using:AStarDev.CloudSync.Conflicts"
              xmlns:folderSelection="using:AStarDev.CloudSync.FolderSelection"
+             xmlns:search="using:AStarDev.CloudSync.Search"
              xmlns:vmActivity="using:AStarDev.CloudSync.ViewModels.Activity"
              xmlns:vmLayouts="using:AStarDev.CloudSync.ViewModels.Layouts"
              xmlns:vmOverview="using:AStarDev.CloudSync.ViewModels.Overview"
@@ -158,7 +159,7 @@
                     <Button Classes="rail" Classes.active="{Binding IsConflictsPageShown}" Command="{Binding ShowConflictsCommand}" ToolTip.Tip="{Binding ConflictsText}" AutomationProperties.Name="{Binding ConflictsText}">
                         <Path Data="M12,3 L2,20 H22 Z M12,10 V14 M12,17 V17.5" />
                     </Button>
-                    <Button Classes="rail" Command="{Binding NavigateCommand}" ToolTip.Tip="{Binding SearchText}" AutomationProperties.Name="{Binding SearchText}">
+                    <Button Classes="rail" Classes.active="{Binding IsSearchPageShown}" Command="{Binding ShowSearchCommand}" ToolTip.Tip="{Binding SearchText}" AutomationProperties.Name="{Binding SearchText}">
                         <Path Data="M18,11 A7,7 0 1 1 4,11 A7,7 0 1 1 18,11 Z M20,20 L16,16" />
                     </Button>
                 </StackPanel>
@@ -356,6 +357,17 @@
                 </ItemsControl>
             </ScrollViewer>
         </Grid>
+
+        <Border Grid.Row="0" Grid.Column="2"
+                Margin="20"
+                Padding="24"
+                CornerRadius="8"
+                BorderThickness="1"
+                Background="{DynamicResource CloudSyncSurfaceBrush}"
+                BorderBrush="{DynamicResource CloudSyncBorderBrush}"
+                IsVisible="{Binding IsSearchPageShown}">
+            <search:SearchResultsContent DataContext="{Binding Search}" />
+        </Border>
 
         <Border Grid.Row="0" Grid.Column="2"
                 Margin="20"
