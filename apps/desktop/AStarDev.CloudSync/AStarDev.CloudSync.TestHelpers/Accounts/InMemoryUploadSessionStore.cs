@@ -49,6 +49,18 @@ public sealed class InMemoryUploadSessionStore : IUploadSessionStore
             return Task.FromResult(Result.Success<Option<UploadSession>, ErrorResponse>(sessions.TryGetValue((accountId, Key(source)), out var found) ? Option.Some(found) : Option.None<UploadSession>()));
     }
 
+    public Task<Result<int, ErrorResponse>> RemoveExpiredAsync(DateTimeOffset now, CancellationToken cancellationToken)
+    {
+        lock (gate)
+        {
+            var expired = sessions.Where(pair => pair.Value.ExpiresAt <= now).Select(pair => pair.Key).ToList();
+            foreach (var key in expired)
+                _ = sessions.Remove(key);
+
+            return Task.FromResult(Result.Success<int, ErrorResponse>(expired.Count));
+        }
+    }
+
     public Task<Result<Unit, ErrorResponse>> RemoveAsync(AccountId accountId, IFileInfo source, CancellationToken cancellationToken)
     {
         if (Fails)

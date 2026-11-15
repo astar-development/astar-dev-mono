@@ -35,6 +35,11 @@ internal sealed class SqliteUploadSessionStore(IDbContextFactory<SyncDbContext> 
         Try.RunAsync(() => DeleteAccountAsync(accountId, cancellationToken), cancellationToken)
             .MatchAsync(Result.Success<Unit, ErrorResponse>, exception => Failed<Unit>(exception, "The account's upload sessions could not be removed."));
 
+    /// <inheritdoc />
+    public Task<Result<int, ErrorResponse>> RemoveExpiredAsync(DateTimeOffset now, CancellationToken cancellationToken) =>
+        Try.RunAsync(() => DeleteExpiredAsync(now, cancellationToken), cancellationToken)
+            .MatchAsync(Result.Success<int, ErrorResponse>, exception => Failed<int>(exception, "The expired upload sessions could not be removed."));
+
     private static string KeyOf(IFileInfo source) => source.FullName.ToUpperInvariant();
 
     private static UploadSession ToSession(UploadSessionEntity row) =>
@@ -77,6 +82,13 @@ internal sealed class SqliteUploadSessionStore(IDbContextFactory<SyncDbContext> 
         _ = await dbContext.UploadSessions.Where(row => row.AccountId == accountId.Value && row.PathKey == key).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
 
         return Unit.Instance;
+    }
+
+    private async Task<int> DeleteExpiredAsync(DateTimeOffset now, CancellationToken cancellationToken)
+    {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+
+        return await dbContext.UploadSessions.Where(row => row.ExpiresAtUtcTicks <= now.UtcTicks).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<Unit> DeleteAccountAsync(AccountId accountId, CancellationToken cancellationToken)

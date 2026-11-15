@@ -37,6 +37,42 @@ public sealed class GivenAnUploadSessionStore : IAsyncLifetime
         (await Database.UploadSessions.SaveAsync(accountId, File(path), session, CancellationToken)).Match(_ => true, _ => throw new InvalidOperationException("The save must work."));
 
     [Fact]
+    public async Task when_sessions_have_expired_then_only_the_expired_ones_are_removed_for_every_account()
+    {
+        var expired = UploadSessionFactory.Create(new Uri("https://upload.example.test/session/old"), ExpiresAt.AddDays(-10), 200_000_000, WrittenAt, 5, "new:folder-1/old.bin");
+        await SaveAsync(FirstAccount, "/sync/old.bin", expired);
+        await SaveAsync(SecondAccount, "/sync/older.bin", expired);
+        await SaveAsync(FirstAccount, "/sync/live.bin", Session(7));
+
+        var removed = await Database.UploadSessions.RemoveExpiredAsync(ExpiresAt.AddDays(-5), CancellationToken);
+
+        removed.Match(count => count, _ => -1).ShouldBe(2);
+        (await GetAsync(FirstAccount, "/sync/old.bin")).ShouldBeNull();
+        (await GetAsync(SecondAccount, "/sync/older.bin")).ShouldBeNull();
+        (await GetAsync(FirstAccount, "/sync/live.bin")).ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task when_a_session_expires_exactly_now_then_it_is_removed()
+    {
+        await SaveAsync(FirstAccount, "/sync/edge.bin", Session(1));
+
+        var removed = await Database.UploadSessions.RemoveExpiredAsync(ExpiresAt, CancellationToken);
+
+        removed.Match(count => count, _ => -1).ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_nothing_has_expired_then_nothing_is_removed()
+    {
+        await SaveAsync(FirstAccount, "/sync/live.bin", Session(1));
+
+        var removed = await Database.UploadSessions.RemoveExpiredAsync(ExpiresAt.AddDays(-1), CancellationToken);
+
+        removed.Match(count => count, _ => -1).ShouldBe(0);
+    }
+
+    [Fact]
     public async Task when_nothing_was_saved_then_no_session_is_found()
     {
         var found = await GetAsync(FirstAccount, "/sync/big.bin");
