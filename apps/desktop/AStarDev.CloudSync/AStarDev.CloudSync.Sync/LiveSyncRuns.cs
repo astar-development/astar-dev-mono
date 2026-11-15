@@ -24,12 +24,23 @@ internal sealed class LiveSyncRuns : IDisposable
         }
     }
 
-    /// <summary>Completes once no run is between writing its row and being registered. Recovery calls this after reading the journal and before it asks <see cref="Contains"/>.</summary>
-    /// <param name="cancellationToken">Cancels the wait.</param>
-    public async Task WhenStartsSettledAsync(CancellationToken cancellationToken)
+    /// <summary>Reads while no run can start, and returns what was read with the runs live at that moment. A run that finishes later is still in the returned set, so recovery can never mark a run this session finished as interrupted (#1660).</summary>
+    /// <typeparam name="T">What the read returns.</typeparam>
+    /// <param name="read">The read, for example the journal's unfinished rows.</param>
+    /// <param name="cancellationToken">Cancels the wait for starting runs.</param>
+    public async Task<(T Value, IReadOnlySet<SyncRunId> Live)> ReadingAsync<T>(Func<Task<T>> read, CancellationToken cancellationToken)
     {
         await starts.WaitAsync(cancellationToken).ConfigureAwait(false);
-        _ = starts.Release();
+        try
+        {
+            var snapshot = live.Keys.ToHashSet();
+
+            return (await read().ConfigureAwait(false), snapshot);
+        }
+        finally
+        {
+            _ = starts.Release();
+        }
     }
 
     /// <summary>Notes that a run's row is being worked on.</summary>
@@ -39,10 +50,6 @@ internal sealed class LiveSyncRuns : IDisposable
     /// <summary>Notes that a run's row is finished.</summary>
     /// <param name="runId">The run.</param>
     public void Remove(SyncRunId runId) => _ = live.TryRemove(runId, out _);
-
-    /// <summary>Whether this session is still working on the run.</summary>
-    /// <param name="runId">The run.</param>
-    public bool Contains(SyncRunId runId) => live.ContainsKey(runId);
 
     /// <inheritdoc/>
     public void Dispose() => starts.Dispose();

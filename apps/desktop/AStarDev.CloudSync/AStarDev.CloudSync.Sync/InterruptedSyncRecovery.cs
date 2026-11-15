@@ -24,9 +24,9 @@ internal sealed class InterruptedSyncRecovery(ISyncRunJournal journal, IActivity
         if (health is not DatabaseHealthStatus.Healthy)
             return DatabaseNotSound(health);
 
-        await checks.Live.WhenStartsSettledAsync(cancellationToken).ConfigureAwait(false);
+        var (read, liveRuns) = await checks.Live.ReadingAsync(() => journal.GetInterruptedAsync(cancellationToken), cancellationToken).ConfigureAwait(false);
 
-        return await journal.GetInterruptedAsync(cancellationToken).MatchAsync(runs => RecoverRunsAsync(runs, cancellationToken), _ => NothingRecovered()).ConfigureAwait(false);
+        return await read.Match(runs => RecoverRunsAsync(runs, liveRuns, cancellationToken), _ => NothingRecovered()).ConfigureAwait(false);
     }
 
     private static RecoveryOutcome Resumed(AccountId accountId, Result<SyncPassSummary, SyncPassFailure> result) =>
@@ -54,10 +54,9 @@ internal sealed class InterruptedSyncRecovery(ISyncRunJournal journal, IActivity
         return Task.FromResult<IReadOnlyList<RecoveryOutcome>>([]);
     }
 
-    private async Task<IReadOnlyList<RecoveryOutcome>> RecoverRunsAsync(IReadOnlyList<InterruptedSyncRun> unfinished, CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<RecoveryOutcome>> RecoverRunsAsync(IReadOnlyList<InterruptedSyncRun> unfinished, IReadOnlySet<SyncRunId> liveRuns, CancellationToken cancellationToken)
     {
-        await checks.Live.WhenStartsSettledAsync(cancellationToken).ConfigureAwait(false);
-        var runs = unfinished.Where(run => !checks.Live.Contains(run.Id)).ToList();
+        var runs = unfinished.Where(run => !liveRuns.Contains(run.Id)).ToList();
         if (runs.Count == 0)
             return [];
 
