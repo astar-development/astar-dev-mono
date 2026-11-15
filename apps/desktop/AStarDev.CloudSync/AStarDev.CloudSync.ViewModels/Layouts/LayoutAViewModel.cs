@@ -2,6 +2,8 @@ using System.ComponentModel;
 using System.Windows.Input;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Sync;
+using AStarDev.CloudSync.ViewModels.Accounts;
+using AStarDev.CloudSync.ViewModels.SyncPairs;
 using AStarDev.CloudSync.ViewModels.Activity;
 using AStarDev.CloudSync.ViewModels.Conflicts;
 using AStarDev.CloudSync.ViewModels.FolderSelection;
@@ -33,7 +35,7 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
         ConflictList = conflictLists.Create(Option.None<AccountId>());
         Folders = folderSelections.CreatePage();
         Activity = activityLists.Create(overview, Option.None<AccountId>());
-        Search = new SearchResultsViewModel(overview, localization);
+        Search = new SearchResultsViewModel(overview, OpenAccount, OpenFolder, localization);
         this.syncActions = syncActions;
         AddAccountCommand = new AsyncRelayCommand(AddAccountAndReloadAsync);
         overview.PropertyChanged += OnOverviewChanged;
@@ -139,6 +141,24 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
 
     /// <summary>The search rail button name.</summary>
     public string SearchText => Localization.GetLocal("LayoutA.Nav.Search");
+
+    private void OpenAccount(AccountViewModel account)
+    {
+        SelectOnly(account.Id);
+        Show(LayoutAPageFactory.CreateAccounts());
+    }
+
+    private void OpenFolder(SyncPairViewModel pair)
+    {
+        SelectOnly(pair.AccountId);
+        ShowFolders();
+    }
+
+    private void SelectOnly(AccountId accountId)
+    {
+        Select(ProviderChips[0]);
+        SelectAccount(allCards.FirstOrDefault(card => card.Account.Id == accountId));
+    }
 
     private void ShowActivity()
     {

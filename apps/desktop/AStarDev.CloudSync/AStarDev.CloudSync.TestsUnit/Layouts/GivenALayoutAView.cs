@@ -212,6 +212,40 @@ public class GivenALayoutAView
     }
 
     [AvaloniaFact]
+    public async Task when_a_folder_search_result_is_clicked_then_the_folders_page_replaces_the_search_page()
+    {
+        var window = await CreateShownWindowAsync();
+        window.GetVisualDescendants().OfType<Button>().Single(button => button.Classes.Contains("rail") && Avalonia.Automation.AutomationProperties.GetName(button) == "Search").Command!.Execute(null);
+        Dispatcher.UIThread.RunJobs();
+        window.GetVisualDescendants().OfType<TextBox>().Single(textBox => textBox.Name == "SearchPageBox").Text = "recipes";
+        Dispatcher.UIThread.RunJobs();
+
+        var result = window.GetVisualDescendants().OfType<Button>().Single(button => button.Classes.Contains("search-result") && button.DataContext is AStarDev.CloudSync.ViewModels.SyncPairs.SyncPairViewModel);
+        result.Command!.Execute(result.CommandParameter);
+        Dispatcher.UIThread.RunJobs();
+
+        window.GetVisualDescendants().OfType<AStarDev.CloudSync.Search.SearchResultsContent>().Single().IsEffectivelyVisible.ShouldBeFalse();
+        window.GetVisualDescendants().OfType<AStarDev.CloudSync.FolderSelection.FolderSelectionContent>().ShouldHaveSingleItem().IsEffectivelyVisible.ShouldBeTrue();
+    }
+
+    [AvaloniaFact]
+    public async Task when_an_account_search_result_is_clicked_then_the_account_cards_replace_the_search_page()
+    {
+        var window = await CreateShownWindowAsync();
+        window.GetVisualDescendants().OfType<Button>().Single(button => button.Classes.Contains("rail") && Avalonia.Automation.AutomationProperties.GetName(button) == "Search").Command!.Execute(null);
+        Dispatcher.UIThread.RunJobs();
+        window.GetVisualDescendants().OfType<TextBox>().Single(textBox => textBox.Name == "SearchPageBox").Text = "archive@";
+        Dispatcher.UIThread.RunJobs();
+
+        var result = window.GetVisualDescendants().OfType<Button>().Single(button => button.Classes.Contains("search-result") && button.DataContext is AStarDev.CloudSync.ViewModels.Accounts.AccountViewModel);
+        result.Command!.Execute(result.CommandParameter);
+        Dispatcher.UIThread.RunJobs();
+
+        window.GetVisualDescendants().OfType<ScrollViewer>().Single(scrollViewer => scrollViewer.Name == "AccountCards").IsEffectivelyVisible.ShouldBeTrue();
+        window.GetVisualDescendants().OfType<AStarDev.CloudSync.Search.SearchResultsContent>().Single().IsEffectivelyVisible.ShouldBeFalse();
+    }
+
+    [AvaloniaFact]
     public async Task when_the_conflict_list_is_a_page_then_it_has_no_close_button()
     {
         var window = await CreateShownWindowAsync();
