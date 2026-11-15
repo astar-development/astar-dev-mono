@@ -20,6 +20,7 @@ public sealed class SyncNotifier : IDisposable
     private readonly INotificationSender sender;
     private readonly ILocalizationService localization;
     private readonly ILogger<SyncNotifier> logger;
+    private readonly TimeProvider time;
     private int warned;
 
     /// <summary>Starts listening to finished passes.</summary>
@@ -30,7 +31,8 @@ public sealed class SyncNotifier : IDisposable
     /// <param name="sender">Shows the notification.</param>
     /// <param name="localization">Supplies the text.</param>
     /// <param name="logger">Reports a sender that failed, once, without details.</param>
-    public SyncNotifier(ISyncActivitySource activity, ISyncNotificationPolicy policy, IWindowPresence presence, IAccountStore accounts, INotificationSender sender, ILocalizationService localization, ILogger<SyncNotifier> logger)
+    /// <param name="time">Times the window in which finished passes are combined.</param>
+    public SyncNotifier(ISyncActivitySource activity, ISyncNotificationPolicy policy, IWindowPresence presence, IAccountStore accounts, INotificationSender sender, ILocalizationService localization, ILogger<SyncNotifier> logger, TimeProvider time)
     {
         this.activity = activity;
         this.policy = policy;
@@ -39,8 +41,15 @@ public sealed class SyncNotifier : IDisposable
         this.sender = sender;
         this.localization = localization;
         this.logger = logger;
+        this.time = time;
         activity.PassFinished += OnPassFinished;
     }
+
+    /// <summary>How long a finished pass waits for other accounts to finish, so that several are told about as one.</summary>
+    public static TimeSpan CombineWindow { get; } = TimeSpan.FromSeconds(5);
+
+    /// <summary>The clock that times the window.</summary>
+    public TimeProvider Time => time;
 
     /// <summary>Stops listening.</summary>
     public void Dispose() => activity.PassFinished -= OnPassFinished;

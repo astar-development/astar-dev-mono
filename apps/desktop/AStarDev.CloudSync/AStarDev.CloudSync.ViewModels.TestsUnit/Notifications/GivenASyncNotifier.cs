@@ -5,6 +5,7 @@ using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.CloudSync.TestHelpers.Ui;
 using AStarDev.CloudSync.ViewModels.Notifications;
 using AStarDev.FunctionalParadigm;
+using Microsoft.Extensions.Time.Testing;
 
 namespace AStarDev.CloudSync.ViewModels.TestsUnit.Notifications;
 
@@ -14,6 +15,7 @@ public sealed class GivenASyncNotifier : IDisposable
     private readonly FakeSyncActivitySource activity = new();
     private readonly ScriptedNotificationHost host = new();
     private readonly RecordingLogger<SyncNotifier> logger = new();
+    private readonly FakeTimeProvider time = new();
     private readonly List<SyncNotifier> created = [];
 
     private static CancellationToken CancellationToken => TestContext.Current.CancellationToken;
@@ -26,10 +28,29 @@ public sealed class GivenASyncNotifier : IDisposable
 
     private SyncNotifier Create()
     {
-        var notifier = new SyncNotifier(activity, host, host, accounts, host, TestData.CreateLocalization(), logger);
+        var notifier = new SyncNotifier(activity, host, host, accounts, host, TestData.CreateLocalization(), logger, time);
         created.Add(notifier);
 
         return notifier;
+    }
+
+    private async Task HandleAsync(SyncNotifier notifier, SyncPassFinishedEventArgs finished)
+    {
+        var handling = notifier.HandleAsync(finished, CancellationToken);
+        while (!handling.IsCompleted)
+        {
+            time.Advance(SyncNotifier.CombineWindow);
+            await Task.Delay(5, CancellationToken);
+        }
+
+        await handling;
+    }
+
+    private async Task AdvancePastTheWindowAsync()
+    {
+        await Task.Delay(100, CancellationToken);
+        time.Advance(SyncNotifier.CombineWindow);
+        await Task.Delay(100, CancellationToken);
     }
 
     private async Task<AccountId> AddAsync(string name)
@@ -47,7 +68,7 @@ public sealed class GivenASyncNotifier : IDisposable
         var account = await AddAsync("Photos");
         host.Decision = Option.Some(notification);
 
-        await Create().HandleAsync(Finished(account), CancellationToken);
+        await HandleAsync(Create(), Finished(account));
 
         return host.Sent.Single().Body;
     }
@@ -58,7 +79,7 @@ public sealed class GivenASyncNotifier : IDisposable
         var account = await AddAsync("Photos");
         host.Decision = Option.Some(SyncNotificationFactory.CreateSynced(3));
 
-        await Create().HandleAsync(Finished(account), CancellationToken);
+        await HandleAsync(Create(), Finished(account));
 
         (host.Sent.Single().Title, host.Sent.Single().Body).ShouldBe(("AStar Dev CloudSync", "Photos: 3 files synced."));
     }
@@ -69,7 +90,7 @@ public sealed class GivenASyncNotifier : IDisposable
         var account = await AddAsync("Photos");
         host.Current = WindowPresenceFactory.CreateInFront();
 
-        await Create().HandleAsync(Finished(account), CancellationToken);
+        await HandleAsync(Create(), Finished(account));
 
         host.PresenceAsked.ShouldBe(WindowPresenceFactory.CreateInFront());
     }
@@ -79,7 +100,7 @@ public sealed class GivenASyncNotifier : IDisposable
     {
         var account = await AddAsync("Photos");
 
-        await Create().HandleAsync(Finished(account), CancellationToken);
+        await HandleAsync(Create(), Finished(account));
 
         host.Sent.ShouldBeEmpty();
     }
@@ -89,7 +110,7 @@ public sealed class GivenASyncNotifier : IDisposable
     {
         host.Decision = Option.Some(SyncNotificationFactory.CreateSynced(3));
 
-        await Create().HandleAsync(Finished(AccountIdFactory.Create(Guid.NewGuid())), CancellationToken);
+        await HandleAsync(Create(), Finished(AccountIdFactory.Create(Guid.NewGuid())));
 
         host.Sent.ShouldBeEmpty();
     }
@@ -116,8 +137,8 @@ public sealed class GivenASyncNotifier : IDisposable
         host.Outcome = Result.Failure<Unit, NotificationFailure>(NotificationFailureFactory.CreateSenderFailed());
         var notifier = Create();
 
-        await notifier.HandleAsync(Finished(account), CancellationToken);
-        await notifier.HandleAsync(Finished(account), CancellationToken);
+        await HandleAsync(notifier, Finished(account));
+        await HandleAsync(notifier, Finished(account));
 
         (host.Sent.Count, logger.Messages.Count(message => message.Contains("notification", StringComparison.OrdinalIgnoreCase))).ShouldBe((2, 1));
     }
@@ -130,12 +151,154 @@ public sealed class GivenASyncNotifier : IDisposable
         var notifier = Create();
 
         activity.RaiseFinished(account);
-        await Task.Delay(100, CancellationToken);
+        await AdvancePastTheWindowAsync();
         var whileListening = host.Sent.Count;
         notifier.Dispose();
         activity.RaiseFinished(account);
-        await Task.Delay(100, CancellationToken);
+        await AdvancePastTheWindowAsync();
 
         (whileListening, host.Sent.Count).ShouldBe((1, 1));
+    }
+
+    [Fact]
+    public async Task when_two_accounts_finish_close_together_then_one_notification_counts_the_accounts_and_files()
+    {
+        var photos = await AddAsync("Photos");
+        var work = await AddAsync("Work");
+        host.Decision = Option.Some(SyncNotificationFactory.CreateSynced(3));
+        var notifier = Create();
+
+        var first = notifier.HandleAsync(Finished(photos), CancellationToken);
+        var second = notifier.HandleAsync(Finished(work), CancellationToken);
+        await AdvancePastTheWindowAsync();
+        await Task.WhenAll(first, second);
+
+        host.Sent.Select(message => message.Body).ShouldBe(["2 accounts synced, 6 files."]);
+    }
+
+    [Fact]
+    public async Task when_three_accounts_finish_close_together_then_the_count_is_three()
+    {
+        var notifier = Create();
+        host.Decision = Option.Some(SyncNotificationFactory.CreateSynced(2));
+        var passes = new List<Task>();
+        foreach (var name in new[] { "Photos", "Work", "Family" })
+            passes.Add(notifier.HandleAsync(Finished(await AddAsync(name)), CancellationToken));
+
+        await AdvancePastTheWindowAsync();
+        await Task.WhenAll(passes);
+
+        host.Sent.Select(message => message.Body).ShouldBe(["3 accounts synced, 6 files."]);
+    }
+
+    [Fact]
+    public async Task when_one_account_finishes_then_nothing_is_sent_before_the_window_and_the_single_account_text_after_it()
+    {
+        var photos = await AddAsync("Photos");
+        host.Decision = Option.Some(SyncNotificationFactory.CreateSynced(3));
+        var handling = Create().HandleAsync(Finished(photos), CancellationToken);
+        await Task.Delay(100, CancellationToken);
+        var before = host.Sent.Count;
+
+        await AdvancePastTheWindowAsync();
+        await handling;
+
+        (before, string.Join("|", host.Sent.Select(message => message.Body))).ShouldBe((0, "Photos: 3 files synced."));
+    }
+
+    [Fact]
+    public async Task when_the_same_account_finishes_twice_in_the_window_then_it_is_one_account_with_the_files_added_up()
+    {
+        var photos = await AddAsync("Photos");
+        host.Decision = Option.Some(SyncNotificationFactory.CreateSynced(3));
+        var notifier = Create();
+
+        var first = notifier.HandleAsync(Finished(photos), CancellationToken);
+        var second = notifier.HandleAsync(Finished(photos), CancellationToken);
+        await AdvancePastTheWindowAsync();
+        await Task.WhenAll(first, second);
+
+        host.Sent.Select(message => message.Body).ShouldBe(["Photos: 6 files synced."]);
+    }
+
+    [Fact]
+    public async Task when_a_conflict_is_found_while_a_sync_is_waiting_then_the_conflict_is_sent_at_once()
+    {
+        var photos = await AddAsync("Photos");
+        var work = await AddAsync("Work");
+        var notifier = Create();
+        host.Decision = Option.Some(SyncNotificationFactory.CreateSynced(3));
+        var waiting = notifier.HandleAsync(Finished(photos), CancellationToken);
+        host.Decision = Option.Some(SyncNotificationFactory.CreateConflictsFound(2));
+
+        await notifier.HandleAsync(Finished(work), CancellationToken);
+
+        host.Sent.Select(message => message.Body).ShouldBe(["Work: 2 conflicts need your attention."]);
+        await AdvancePastTheWindowAsync();
+        await waiting;
+    }
+
+    [Fact]
+    public async Task when_a_second_batch_finishes_after_the_window_then_it_is_a_separate_notification()
+    {
+        var photos = await AddAsync("Photos");
+        var work = await AddAsync("Work");
+        host.Decision = Option.Some(SyncNotificationFactory.CreateSynced(3));
+        var notifier = Create();
+
+        await HandleAsync(notifier, Finished(photos));
+        await HandleAsync(notifier, Finished(work));
+
+        host.Sent.Select(message => message.Body).ShouldBe(["Photos: 3 files synced.", "Work: 3 files synced."]);
+    }
+
+    [Fact]
+    public async Task when_a_combined_notification_cannot_be_sent_then_one_warning_is_logged_and_nothing_throws()
+    {
+        var photos = await AddAsync("Photos");
+        var work = await AddAsync("Work");
+        host.Decision = Option.Some(SyncNotificationFactory.CreateSynced(3));
+        host.Outcome = Result.Failure<Unit, NotificationFailure>(NotificationFailureFactory.CreateSenderFailed());
+        var notifier = Create();
+
+        var first = notifier.HandleAsync(Finished(photos), CancellationToken);
+        var second = notifier.HandleAsync(Finished(work), CancellationToken);
+        await AdvancePastTheWindowAsync();
+        await Task.WhenAll(first, second);
+
+        logger.Messages.Count(message => message.Contains("notification", StringComparison.OrdinalIgnoreCase)).ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_one_of_two_accounts_is_gone_then_only_the_known_account_is_told_about()
+    {
+        var photos = await AddAsync("Photos");
+        host.Decision = Option.Some(SyncNotificationFactory.CreateSynced(3));
+        var notifier = Create();
+
+        var known = notifier.HandleAsync(Finished(photos), CancellationToken);
+        var gone = notifier.HandleAsync(Finished(AccountIdFactory.Create(Guid.NewGuid())), CancellationToken);
+        await AdvancePastTheWindowAsync();
+        await Task.WhenAll(known, gone);
+
+        host.Sent.Select(message => message.Body).ShouldBe(["Photos: 3 files synced."]);
+    }
+
+    [Fact]
+    public async Task when_accounts_finish_at_once_from_many_threads_then_every_one_is_counted_in_one_notification()
+    {
+        var accountIds = new List<AccountId>();
+        foreach (var name in Enumerable.Range(0, 20).Select(index => $"Account{index}"))
+            accountIds.Add(await AddAsync(name));
+
+        host.Decision = Option.Some(SyncNotificationFactory.CreateSynced(1));
+        var notifier = Create();
+
+        var passes = accountIds.Select(id => Task.Run(() => notifier.HandleAsync(Finished(id), CancellationToken), CancellationToken)).ToList();
+        await Task.Delay(300, CancellationToken);
+        await AdvancePastTheWindowAsync();
+        await Task.WhenAll(passes);
+
+        host.Sent.Select(message => message.Body).ShouldBe(["20 accounts synced, 20 files."]);
     }
 }
