@@ -9,5 +9,6 @@ namespace AStarDev.CloudSync.Sync;
 public sealed class InstrumentedFolderTreeSource(IFolderTreeSource inner, IWorkflowTelemetry telemetry) : IFolderTreeSource
 {
     /// <inheritdoc />
-    public Task<Result<IReadOnlyList<FolderTreeNode>, FolderTreeFailure>> GetChildrenAsync(AccountId accountId, FolderTreePosition parent, CancellationToken cancellationToken) => throw new NotImplementedException($"{accountId}{parent}{inner}{telemetry}");
+    public Task<Result<IReadOnlyList<FolderTreeNode>, FolderTreeFailure>> GetChildrenAsync(AccountId accountId, FolderTreePosition parent, CancellationToken cancellationToken) =>
+        telemetry.TrackAsync(TelemetryWorkflowFactory.CreateFolderBrowse(), () => inner.GetChildrenAsync(accountId, parent, cancellationToken), result => result.Match(_ => TelemetryOutcomeFactory.CreateSucceeded(), _ => TelemetryOutcomeFactory.CreateFailed()));
 }

@@ -10,5 +10,10 @@ internal static class TelemetryTags
         _ => "overview_refresh",
     };
 
-    internal static string TagValue(this TelemetryOutcome outcome) => outcome is TelemetryOutcome.Succeeded ? "succeeded" : "failed";
+    internal static string TagValue(this TelemetryOutcome outcome) => outcome switch
+    {
+        TelemetryOutcome.Succeeded => "succeeded",
+        TelemetryOutcome.Cancelled => "cancelled",
+        _ => "failed",
+    };
 }

@@ -23,6 +23,7 @@ public static class OneDriveServiceCollectionExtensions
     public static IServiceCollection AddOneDriveAccounts(this IServiceCollection services, IConfiguration configuration, Func<IServiceProvider, IDirectoryInfo> tokenCacheFolder, Func<IServiceProvider, IFileInfo> consentFile)
     {
         services.TryAddSingleton(TimeProvider.System);
+        services.TryAddSingleton<IWorkflowTelemetry, WorkflowTelemetry>();
         _ = services.AddHttpClient(GraphDriveLookup.HttpClientName)
             .ConfigurePrimaryHttpMessageHandler(() => GraphClientFactory.CreatePipeline(GraphClientFactory.CreateDefaultHandlers()));
 
@@ -36,7 +37,8 @@ public static class OneDriveServiceCollectionExtensions
             .AddSingleton<TokenCacheInitialiser>()
             .AddSingleton<IPlaintextCacheConsentSettings>(provider => provider.GetRequiredService<TokenCacheInitialiser>())
             .AddSingleton<IDriveLookup, GraphDriveLookup>()
-            .AddKeyedSingleton<IAccountAdder, MicrosoftAccountAdder>(CloudProviderFactory.CreateOneDrive())
+            .AddSingleton<MicrosoftAccountAdder>()
+            .AddKeyedSingleton<IAccountAdder>(CloudProviderFactory.CreateOneDrive(), (provider, _) => new InstrumentedAccountAdder(provider.GetRequiredService<MicrosoftAccountAdder>(), provider.GetRequiredService<IWorkflowTelemetry>()))
             .AddSingleton<IAccessTokenSource, MsalAccessTokenSource>()
             .AddKeyedSingleton<IAccountReauthenticator, MicrosoftReauthenticator>(CloudProviderFactory.CreateOneDrive())
             .AddKeyedSingleton<IProviderSignOut, MicrosoftSignOut>(CloudProviderFactory.CreateOneDrive())

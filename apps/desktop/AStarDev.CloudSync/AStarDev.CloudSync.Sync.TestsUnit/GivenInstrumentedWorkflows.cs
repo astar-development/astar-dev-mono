@@ -51,7 +51,8 @@ public sealed class GivenInstrumentedWorkflows : IDisposable
 
         var result = await new InstrumentedFolderTreeSource(inner, telemetry).GetChildrenAsync(Personal, FolderTreePositionFactory.CreateRoot(), CancellationToken);
 
-        (result.Match(_ => (object)"listed", error => error), runs).ShouldBe((failure, ["outcome=failed,workflow=folder_browse"]));
+        result.Match(_ => (object)"listed", error => error).ShouldBe(failure);
+        runs.ShouldBe(["outcome=failed,workflow=folder_browse"]);
     }
 
     [Fact]
@@ -74,7 +75,8 @@ public sealed class GivenInstrumentedWorkflows : IDisposable
 
         var result = await new InstrumentedAccountActions(inner, telemetry).ReauthenticateAsync(Personal, CancellationToken);
 
-        (result.Match(_ => (object)"signed-in", error => error), runs).ShouldBe((failure, [expectedRun]));
+        result.Match(_ => (object)"signed-in", error => error).ShouldBe(failure);
+        runs.ShouldBe([expectedRun]);
     }
 
     [Fact]
@@ -105,6 +107,7 @@ public sealed class GivenInstrumentedWorkflows : IDisposable
 
         var returned = await new InstrumentedAccountAdder(inner, telemetry).AddAsync(CancellationToken);
 
-        (returned, runs).ShouldBe((outcome, [expectedRun]));
+        returned.ShouldBe(outcome);
+        runs.ShouldBe([expectedRun]);
     }
 }

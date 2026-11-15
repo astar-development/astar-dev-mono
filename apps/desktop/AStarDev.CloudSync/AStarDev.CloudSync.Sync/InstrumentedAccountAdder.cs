@@ -8,5 +8,13 @@ namespace AStarDev.CloudSync.Sync;
 public sealed class InstrumentedAccountAdder(IAccountAdder inner, IWorkflowTelemetry telemetry) : IAccountAdder
 {
     /// <inheritdoc />
-    public Task<AccountAddOutcome> AddAsync(CancellationToken cancellationToken) => throw new NotImplementedException($"{inner}{telemetry}");
+    public Task<AccountAddOutcome> AddAsync(CancellationToken cancellationToken) =>
+        telemetry.TrackAsync(TelemetryWorkflowFactory.CreateSignIn(), () => inner.AddAsync(cancellationToken), OutcomeOf);
+
+    private static TelemetryOutcome OutcomeOf(AccountAddOutcome outcome) => outcome switch
+    {
+        AccountAddOutcome.Cancelled => TelemetryOutcomeFactory.CreateCancelled(),
+        AccountAddOutcome.Failed => TelemetryOutcomeFactory.CreateFailed(),
+        _ => TelemetryOutcomeFactory.CreateSucceeded(),
+    };
 }

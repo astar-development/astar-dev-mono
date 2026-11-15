@@ -13,7 +13,10 @@ public sealed class InstrumentedAccountActions(IAccountActions inner, IWorkflowT
     public Task<Result<Unit, AccountRemovalFailure>> RemoveAsync(AccountId accountId, CancellationToken cancellationToken) => inner.RemoveAsync(accountId, cancellationToken);
 
     /// <inheritdoc />
-    public Task<Result<Unit, ReauthFailure>> ReauthenticateAsync(AccountId accountId, CancellationToken cancellationToken) => throw new NotImplementedException($"{accountId}{telemetry}");
+    public Task<Result<Unit, ReauthFailure>> ReauthenticateAsync(AccountId accountId, CancellationToken cancellationToken) =>
+        telemetry.TrackAsync(TelemetryWorkflowFactory.CreateSignIn(), () => inner.ReauthenticateAsync(accountId, cancellationToken), result => result.Match(_ => TelemetryOutcomeFactory.CreateSucceeded(), OutcomeOf));
+
+    private static TelemetryOutcome OutcomeOf(ReauthFailure failure) => failure is ReauthFailure.Cancelled ? TelemetryOutcomeFactory.CreateCancelled() : TelemetryOutcomeFactory.CreateFailed();
 
     /// <inheritdoc />
     public Task<Result<SyncRoot, SyncRootRejection>> ChangeSyncRootAsync(AccountId accountId, IDirectoryInfo candidate, CancellationToken cancellationToken) => inner.ChangeSyncRootAsync(accountId, candidate, cancellationToken);
