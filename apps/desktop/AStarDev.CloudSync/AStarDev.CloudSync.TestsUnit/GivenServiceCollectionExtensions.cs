@@ -1,3 +1,4 @@
+using AStarDev.CloudSync.ViewModels.Logging;
 using AStarDev.CloudSync.Logging;
 using AStarDev.CloudSync.ViewModels.Tray;
 using AStarDev.CloudSync.Tray;
@@ -72,6 +73,8 @@ public class GivenServiceCollectionExtensions
 
         provider.GetRequiredService<ILogEntryReader>().ShouldBeOfType<LogEntryReader>();
         provider.GetRequiredService<ILogFileLocator>().ShouldBeOfType<CloudSyncLogFileLocator>();
+        provider.GetRequiredService<LogViewerLauncher>().ShouldNotBeNull();
+        provider.GetRequiredService<ILogDiagnosticsClipboard>().ShouldBeOfType<AvaloniaLogDiagnosticsClipboard>();
     }
 
     [Fact]
