@@ -17,6 +17,20 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.12");
 
+            modelBuilder.Entity("AStarDev.CloudSync.Sync.Sqlite.AccountLogLevelEntity", b =>
+                {
+                    b.Property<Guid>("AccountId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("Verbose")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("AccountId");
+
+                    b.ToTable("AccountLogLevels", (string)null);
+                });
+
             modelBuilder.Entity("AStarDev.CloudSync.Sync.Sqlite.AccountPauseEntity", b =>
                 {
                     b.Property<Guid>("AccountId")

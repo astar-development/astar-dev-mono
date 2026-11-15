@@ -71,6 +71,19 @@ public sealed class GivenAFileLoggerProvider : IDisposable
         File.ReadAllText(Directory.GetFiles(directory).Single()).ShouldContain("through the builder");
     }
 
+    [Fact]
+    public void when_added_with_a_filter_then_only_the_entries_it_admits_are_written()
+    {
+        using var serviceProvider = new ServiceCollection().AddLogging(builder => builder.SetMinimumLevel(LogLevel.Trace).AddFileLogging(directory, "filtered", (level, _) => level >= LogLevel.Warning)).BuildServiceProvider();
+        var logger = serviceProvider.GetRequiredService<ILogger<GivenAFileLoggerProvider>>();
+
+        logger.LogDebug("quiet detail");
+        logger.LogError("loud failure");
+
+        var written = File.ReadAllText(Directory.GetFiles(directory, "filtered-*").Single());
+        (written.Contains("loud failure", StringComparison.Ordinal), written.Contains("quiet detail", StringComparison.Ordinal)).ShouldBe((true, false));
+    }
+
     public void Dispose()
     {
         provider.Dispose();

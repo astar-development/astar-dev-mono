@@ -149,6 +149,14 @@
             <param name="fileNamePrefix">The start of every log file name.</param>
             <returns>The original instance of <see cref="T:Microsoft.Extensions.Logging.ILoggingBuilder" /> for further method chaining.</returns>
         </member>
+        <member name="M:AStarDev.LoggingExtensions.FileLoggingBuilderExtensions.AddFileLogging(Microsoft.Extensions.Logging.ILoggingBuilder,System.String,System.String,System.Func{Microsoft.Extensions.Logging.LogLevel,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object},System.Boolean})">
+            <summary>Adds a provider that writes the entries <paramref name="admit"/> allows to a daily local file.</summary>
+            <param name="loggingBuilder">The logging builder to add the provider to.</param>
+            <param name="directory">The directory the log files are written to.</param>
+            <param name="fileNamePrefix">The start of every log file name.</param>
+            <param name="admit">Decides, from an entry's level and the values of its log scopes, whether it is written; <see langword="null"/> writes every entry.</param>
+            <returns>The original instance of <see cref="T:Microsoft.Extensions.Logging.ILoggingBuilder" /> for further method chaining.</returns>
+        </member>
         <member name="T:AStarDev.LoggingExtensions.ILoggerAstar`1">
             <summary>Defines an interface for a logging mechanism that extends the basic ILogger functionalities by adding support for logging specific page view events.</summary>
             <typeparam name="T">The type representing the category name for the logger.</typeparam>

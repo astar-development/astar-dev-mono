@@ -35,7 +35,28 @@ public sealed class FileLoggerProvider(string directory, string fileNamePrefix, 
         // Nothing to release: every entry is appended and closed straight away.
     }
 
-    private bool Admits(LogLevel logLevel) => admission is null && scopes is not null && logLevel != LogLevel.None;
+    private bool Admits(LogLevel logLevel)
+    {
+        if (logLevel == LogLevel.None)
+            return false;
+
+        if (admission is null)
+            return true;
+
+        var values = new Dictionary<string, object?>(StringComparer.Ordinal);
+        scopes.ForEachScope(CollectScope, values);
+
+        return admission(logLevel, values);
+    }
+
+    private static void CollectScope(object? scope, Dictionary<string, object?> values)
+    {
+        if (scope is not IEnumerable<KeyValuePair<string, object?>> pairs)
+            return;
+
+        foreach (var pair in pairs)
+            values[pair.Key] = pair.Value;
+    }
 
     private void Write(LogLevel logLevel, string categoryName, string message, Exception? exception)
     {

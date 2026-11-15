@@ -30,7 +30,7 @@ internal static partial class LocalisationSources
         KeyShapedLiteral().Matches(source).Select(match => match.Groups[1].Value).Where(key => keyPrefixes.Contains(key.Split('.')[0]));
 
     internal static IEnumerable<string> UserFacingLiteralsIn(string source) =>
-        source.Split('\n').Where(line => !line.TrimStart().StartsWith('[') && !line.Contains("CommandText", StringComparison.Ordinal) && !line.TrimStart().StartsWith("//", StringComparison.Ordinal)).SelectMany(line => UserFacingAssignment().Matches(line).Select(match => match.Groups[1].Value)).Where(text => text.Contains(' ') || char.IsUpper(text[0]) && !text.Contains('.'));
+        source.Split('\n').Where(line => !line.TrimStart().StartsWith('[') && !line.Contains("CommandText", StringComparison.Ordinal) && !line.Contains("Variable", StringComparison.Ordinal) && !line.TrimStart().StartsWith("//", StringComparison.Ordinal)).SelectMany(line => UserFacingAssignment().Matches(line).Select(match => match.Groups[1].Value)).Where(text => text.Contains(' ') || char.IsUpper(text[0]) && !text.Contains('.'));
 
     internal static IEnumerable<string> AxamlLiteralsIn(string axaml) => AxamlLiteral().Matches(axaml).Select(match => match.Groups[1].Value);
 }

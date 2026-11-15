@@ -9,5 +9,10 @@ public static class AccountLogLevelFilter
     /// <param name="levels">The accounts that log verbosely.</param>
     /// <param name="level">The entry's level.</param>
     /// <param name="scope">The values of the entry's log scopes.</param>
-    public static bool Admits(AccountLogLevels levels, LogLevel level, IReadOnlyDictionary<string, object?> scope) => throw new NotImplementedException($"{levels} {level} {scope}");
+    public static bool Admits(AccountLogLevels levels, LogLevel level, IReadOnlyDictionary<string, object?> scope) => level >= LogLevel.Warning || Admitted(levels, level, scope);
+
+    private static bool Admitted(AccountLogLevels levels, LogLevel level, IReadOnlyDictionary<string, object?> scope) =>
+        scope.TryGetValue(SyncLogScope.AccountIdHashKey, out var value) && value is string hash
+            ? levels.LevelOf(hash) is AccountLogLevel.Verbose
+            : level >= LogLevel.Information;
 }

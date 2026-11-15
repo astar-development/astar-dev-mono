@@ -23,6 +23,7 @@ public static class SyncPersistenceServiceCollectionExtensions
             services.Remove(accountsDatabase);
 
         services.TryAddSingleton(TimeProvider.System);
+        services.TryAddSingleton<AccountLogLevels>();
 
         return services
             .AddDbContextFactory<SyncDbContext>((provider, options) => options.UseSqlite(new SqliteConnectionStringBuilder { DataSource = databaseFile(provider).FullName }.ToString(), sqlite => sqlite.MigrationsHistoryTable(SyncDbContext.MigrationsHistoryTable)))
