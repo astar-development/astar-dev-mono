@@ -39,6 +39,7 @@
   "Failure.C.Unexpected": "Check the log",
   "Notification.Synced.One": "{0}: {1} file synced.",
   "Notification.Synced.Many": "{0}: {1} files synced.",
+  "Notification.SyncedAccounts": "{0} accounts synced, {1} files.",
   "Notification.Conflicts.One": "{0}: {1} conflict needs your attention.",
   "Notification.Conflicts.Many": "{0}: {1} conflicts need your attention.",
   "Notification.Held.One": "{0}: {1} deletion is held for you to confirm.",
