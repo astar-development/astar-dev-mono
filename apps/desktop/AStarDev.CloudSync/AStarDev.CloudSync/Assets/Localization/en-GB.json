@@ -279,6 +279,7 @@
   "Quit.Message": "A sync is running. If you quit now it is cancelled and carries on the next time CloudSync starts.",
   "Quit.QuitAnyway": "Cancel the sync and quit",
   "Quit.Stay": "Keep syncing",
+  "TrayNotice.Body": "CloudSync is still running in the tray.",
   "AddAccount.Title": "Add a OneDrive account",
   "AddAccount.SigningIn": "Sign in to your Microsoft account in the browser window that has opened. This dialog will update when you have finished.",
   "AddAccount.Cancel": "Cancel",
