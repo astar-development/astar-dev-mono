@@ -35,6 +35,10 @@ internal sealed class SqliteUploadSessionStore(IDbContextFactory<SyncDbContext> 
         Try.RunAsync(() => DeleteAccountAsync(accountId, cancellationToken), cancellationToken)
             .MatchAsync(Result.Success<Unit, ErrorResponse>, exception => Failed<Unit>(exception, "The account's upload sessions could not be removed."));
 
+    /// <inheritdoc />
+    public Task<Result<int, ErrorResponse>> RemoveExpiredAsync(DateTimeOffset now, CancellationToken cancellationToken) =>
+        throw new NotImplementedException($"{now}{cancellationToken}");
+
     private static string KeyOf(IFileInfo source) => source.FullName.ToUpperInvariant();
 
     private static UploadSession ToSession(UploadSessionEntity row) =>
