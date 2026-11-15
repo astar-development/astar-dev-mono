@@ -21,7 +21,7 @@ public class GivenALayoutAViewModel
     {
         var source = new CountingSyncOverviewSource(await TestData.CreateOverviewAsync());
         var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
-        var layout = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateLocalization());
+        var layout = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), TestData.CreateLocalization());
 
         await layout.AddAccountCommand.ExecuteAsync(null);
 
@@ -32,7 +32,7 @@ public class GivenALayoutAViewModel
     public async Task when_the_add_account_command_runs_then_an_account_is_added()
     {
         var syncActions = new RecordingSyncActions();
-        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), syncActions, TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateLocalization());
+        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), syncActions, TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), TestData.CreateLocalization());
 
         await layout.AddAccountCommand.ExecuteAsync(null);
 
@@ -42,7 +42,7 @@ public class GivenALayoutAViewModel
     [Fact]
     public async Task when_created_then_the_rail_navigation_command_is_disabled_until_its_pages_exist()
     {
-        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateLocalization());
+        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), TestData.CreateLocalization());
 
         layout.NavigateCommand.CanExecute(null).ShouldBeFalse();
     }
@@ -58,7 +58,7 @@ public class GivenALayoutAViewModel
     [Fact]
     public void when_the_overview_has_no_accounts_then_only_the_all_chip_is_shown()
     {
-        var layout = new LayoutAViewModel(new SyncOverviewViewModel(Substitute.For<ISyncOverviewSource>(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateLocalization());
+        var layout = new LayoutAViewModel(new SyncOverviewViewModel(Substitute.For<ISyncOverviewSource>(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), TestData.CreateLocalization());
 
         layout.ProviderChips.Select(chip => chip.Label).ShouldBe(["All"]);
     }
@@ -107,7 +107,7 @@ public class GivenALayoutAViewModel
         var source = Substitute.For<ISyncOverviewSource>();
         source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateSyncing(50), Option.None<DateTimeOffset>())], [], [], [], [], 0, Option.None<DateTimeOffset>()));
         var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
-        var layout = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateLocalization());
+        var layout = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), TestData.CreateLocalization());
 
         await overview.LoadAsync(TestContext.Current.CancellationToken);
 
@@ -120,7 +120,7 @@ public class GivenALayoutAViewModel
         var source = Substitute.For<ISyncOverviewSource>();
         source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>())], [], [], [], [], 0, Option.None<DateTimeOffset>()));
         var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
-        var layout = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateLocalization());
+        var layout = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), TestData.CreateLocalization());
 
         await overview.LoadAsync(TestContext.Current.CancellationToken);
 
@@ -141,7 +141,7 @@ public class GivenALayoutAViewModel
         var source = Substitute.For<ISyncOverviewSource>();
         source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>())], [], [], [], [], 0, Option.Some(TestData.Now.AddMinutes(-10))));
         var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
-        var layout = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateLocalization());
+        var layout = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), TestData.CreateLocalization());
 
         await overview.LoadAsync(TestContext.Current.CancellationToken);
 
@@ -162,7 +162,7 @@ public class GivenALayoutAViewModel
         var source = Substitute.For<ISyncOverviewSource>();
         source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>())], [], [], [], [], 0, Option.None<DateTimeOffset>()));
         var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
-        var layout = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateLocalization());
+        var layout = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), TestData.CreateLocalization());
 
         await overview.LoadAsync(TestContext.Current.CancellationToken);
 
@@ -172,7 +172,7 @@ public class GivenALayoutAViewModel
     [Fact]
     public void when_created_then_the_pane_and_rail_text_is_localised()
     {
-        var layout = new LayoutAViewModel(new SyncOverviewViewModel(Substitute.For<ISyncOverviewSource>(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateLocalization());
+        var layout = new LayoutAViewModel(new SyncOverviewViewModel(Substitute.For<ISyncOverviewSource>(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), TestData.CreateLocalization());
 
         layout.AccountsTitle.ShouldBe("Accounts");
         layout.AddAccountText.ShouldBe("+ Add account");
@@ -218,13 +218,13 @@ public class GivenALayoutAViewModel
     {
         var overview = await TestData.CreateLoadedOverviewViewModelAsync();
 
-        return new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateLocalization());
+        return new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), TestData.CreateLocalization());
     }
 
     [Fact]
     public async Task when_created_then_the_accounts_page_is_shown()
     {
-        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateLocalization());
+        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), TestData.CreateLocalization());
 
         (layout.IsAccountsPageShown, layout.IsConflictsPageShown).ShouldBe((true, false));
     }
@@ -237,7 +237,7 @@ public class GivenALayoutAViewModel
         var work = AttentionItems.Account("Work");
         reader.Add(photos.Id, AttentionItems.CreateConflict(photos.Id, "Camera/1.jpg"));
         reader.Add(work.Id, AttentionItems.CreateConflict(work.Id, "Docs/a.docx"));
-        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateConflictListFactory(new FixedAccountsSource(photos, work), reader), TestData.CreateFolderSelectionFactory(), TestData.CreateLocalization());
+        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateConflictListFactory(new FixedAccountsSource(photos, work), reader), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), TestData.CreateLocalization());
 
         layout.ShowConflictsCommand.Execute(null);
         await layout.ConflictList.RefreshCommand.ExecutionTask!;
@@ -249,7 +249,7 @@ public class GivenALayoutAViewModel
     [Fact]
     public async Task when_the_accounts_rail_button_is_chosen_after_the_conflicts_then_the_accounts_page_is_shown_again()
     {
-        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateLocalization());
+        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), TestData.CreateLocalization());
         layout.ShowConflictsCommand.Execute(null);
 
         layout.ShowAccountsCommand.Execute(null);
@@ -261,7 +261,7 @@ public class GivenALayoutAViewModel
     public async Task when_the_conflicts_page_is_chosen_again_then_the_conflicts_are_read_again()
     {
         var reader = new FakeAttentionReader();
-        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateConflictListFactory(new FixedAccountsSource(AttentionItems.Account("Photos")), reader), TestData.CreateFolderSelectionFactory(), TestData.CreateLocalization());
+        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateConflictListFactory(new FixedAccountsSource(AttentionItems.Account("Photos")), reader), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), TestData.CreateLocalization());
         layout.ShowConflictsCommand.Execute(null);
         await layout.ConflictList.RefreshCommand.ExecutionTask!;
 
@@ -275,7 +275,7 @@ public class GivenALayoutAViewModel
     [Fact]
     public async Task when_a_rail_page_does_not_exist_yet_then_its_navigation_stays_disabled()
     {
-        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateLocalization());
+        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), TestData.CreateLocalization());
 
         layout.NavigateCommand.CanExecute(null).ShouldBeFalse();
     }
@@ -284,7 +284,7 @@ public class GivenALayoutAViewModel
     public async Task when_the_folders_rail_button_is_chosen_then_the_folders_page_is_shown_and_the_selected_accounts_folders_are_read()
     {
         var tree = new FakeFolderTreeSource();
-        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(tree), TestData.CreateLocalization());
+        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(tree), TestData.CreateActivityListFactory(), TestData.CreateLocalization());
 
         layout.ShowFoldersCommand.Execute(null);
         await layout.Folders.ShowAccountCommand.ExecutionTask!;
@@ -297,7 +297,7 @@ public class GivenALayoutAViewModel
     public async Task when_another_account_is_selected_on_the_folders_page_then_its_folders_are_read()
     {
         var tree = new FakeFolderTreeSource();
-        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(tree), TestData.CreateLocalization());
+        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(tree), TestData.CreateActivityListFactory(), TestData.CreateLocalization());
         layout.ShowFoldersCommand.Execute(null);
         await layout.Folders.ShowAccountCommand.ExecutionTask!;
         var second = layout.VisibleAccounts[1];
@@ -312,10 +312,38 @@ public class GivenALayoutAViewModel
     public async Task when_another_account_is_selected_on_the_accounts_page_then_no_folders_are_read()
     {
         var tree = new FakeFolderTreeSource();
-        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(tree), TestData.CreateLocalization());
+        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(tree), TestData.CreateActivityListFactory(), TestData.CreateLocalization());
 
         layout.VisibleAccounts[1].SelectCommand.Execute(null);
 
         tree.RequestedAccounts.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_the_activity_rail_button_is_chosen_then_the_activity_page_is_shown_and_every_accounts_activity_is_read()
+    {
+        var reader = new FakeActivityLogReader();
+        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(reader), TestData.CreateLocalization());
+
+        layout.ShowActivityCommand.Execute(null);
+        await layout.Activity.RefreshCommand.ExecutionTask!;
+
+        (layout.IsActivityPageShown, layout.IsAccountsPageShown, layout.IsFoldersPageShown, layout.IsConflictsPageShown).ShouldBe((true, false, false, false));
+        reader.Requests.ShouldBe([(Option.None<AccountId>(), ActivityLogLimits.EntriesPerAccount)]);
+    }
+
+    [Fact]
+    public async Task when_the_activity_page_is_chosen_again_then_the_activity_is_read_again()
+    {
+        var reader = new FakeActivityLogReader();
+        var layout = new LayoutAViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(reader), TestData.CreateLocalization());
+        layout.ShowActivityCommand.Execute(null);
+        await layout.Activity.RefreshCommand.ExecutionTask!;
+
+        layout.ShowAccountsCommand.Execute(null);
+        layout.ShowActivityCommand.Execute(null);
+        await layout.Activity.RefreshCommand.ExecutionTask!;
+
+        reader.Requests.Count.ShouldBe(2);
     }
 }

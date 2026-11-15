@@ -1,0 +1,45 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:activity="using:AStarDev.CloudSync.Activity"
+             xmlns:vmActivity="using:AStarDev.CloudSync.ViewModels.Activity"
+             x:Class="AStarDev.CloudSync.Activity.ActivityListContent"
+             x:DataType="vmActivity:ActivityListViewModel"
+             VerticalContentAlignment="Stretch"
+             HorizontalContentAlignment="Stretch"
+             Foreground="{DynamicResource CloudSyncTextPrimaryBrush}">
+    <Grid RowDefinitions="Auto,*"
+          HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch">
+        <TextBlock Grid.Row="0"
+                   Text="{Binding TitleText}"
+                   FontSize="18"
+                   FontWeight="SemiBold"
+                   Margin="0,0,0,12" />
+
+        <ScrollViewer Grid.Row="1"
+                      Name="ActivityScroll"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      MinHeight="0">
+            <StackPanel Spacing="12">
+                <TextBlock Classes="muted" Text="{Binding EmptyText}" IsVisible="{Binding IsEmpty}" />
+                <TextBlock Text="{Binding ErrorText}"
+                           IsVisible="{Binding HasError}"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource CloudSyncWarnBrush}" />
+                <ItemsControl ItemsSource="{Binding Items}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Spacing="12" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vmActivity:ActivityItemViewModel">
+                            <activity:ActivityRow />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

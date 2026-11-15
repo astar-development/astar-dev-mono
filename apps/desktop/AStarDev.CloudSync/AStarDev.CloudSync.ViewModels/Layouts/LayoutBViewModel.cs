@@ -2,6 +2,7 @@ using System.ComponentModel;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.ViewModels.Accounts;
+using AStarDev.CloudSync.ViewModels.Activity;
 using AStarDev.CloudSync.ViewModels.Common;
 using AStarDev.CloudSync.ViewModels.Conflicts;
 using AStarDev.CloudSync.ViewModels.FolderSelection;
@@ -20,6 +21,7 @@ public sealed class LayoutBViewModel : LocalizedObservableObject
     private readonly ISyncActions syncActions;
     private readonly IConflictListFactory conflictLists;
     private readonly IFolderSelectionFactory folderSelections;
+    private readonly IActivityListFactory activityLists;
     private LayoutBDetailViewModel detail;
     private string searchText = string.Empty;
     private AccountId shownAccountId;
@@ -30,14 +32,16 @@ public sealed class LayoutBViewModel : LocalizedObservableObject
     /// <param name="syncActions">Carries out the account actions the user picks.</param>
     /// <param name="conflictLists">Creates the conflict list of each account's Conflicts tab.</param>
     /// <param name="folderSelections">Creates the folder selection of each account's Folders tab.</param>
+    /// <param name="activityLists">Creates the activity list of each account's Activity tab.</param>
     /// <param name="localization">Supplies the text and culture.</param>
-    public LayoutBViewModel(SyncOverviewViewModel overview, LocalPathFormatter localPathFormatter, ISyncActions syncActions, IConflictListFactory conflictLists, IFolderSelectionFactory folderSelections, ILocalizationService localization) : base(localization)
+    public LayoutBViewModel(SyncOverviewViewModel overview, LocalPathFormatter localPathFormatter, ISyncActions syncActions, IConflictListFactory conflictLists, IFolderSelectionFactory folderSelections, IActivityListFactory activityLists, ILocalizationService localization) : base(localization)
     {
         Overview = overview;
         this.localPathFormatter = localPathFormatter;
         this.syncActions = syncActions;
         this.conflictLists = conflictLists;
         this.folderSelections = folderSelections;
+        this.activityLists = activityLists;
         ConnectProviderCommand = new AsyncRelayCommand(AddAccountAndReloadAsync);
         detail = new NoAccountDetailViewModel(localization);
         overview.PropertyChanged += OnOverviewChanged;
@@ -138,7 +142,7 @@ public sealed class LayoutBViewModel : LocalizedObservableObject
     private void Select(AccountViewModel account)
     {
         shownAccountId = account.Id;
-        Detail = new AccountDetailViewModel(account, [.. Overview.SyncPairs.Where(pair => pair.AccountId == account.Id && (AccountMatches(account) || PairMatches(pair)))], Overview.Activity, localPathFormatter, syncActions, AccountDetailTabsFactory.Create(conflictLists.Create(Option.Some(account.Id)), folderSelections.CreatePage()), Localization);
+        Detail = new AccountDetailViewModel(account, [.. Overview.SyncPairs.Where(pair => pair.AccountId == account.Id && (AccountMatches(account) || PairMatches(pair)))], Overview.Activity, localPathFormatter, syncActions, AccountDetailTabsFactory.Create(conflictLists.Create(Option.Some(account.Id)), folderSelections.CreatePage(), activityLists.Create(Overview, Option.Some(account.Id))), Localization);
     }
 
     private bool IsVisible(AccountViewModel account) => AccountMatches(account) || Overview.SyncPairs.Any(pair => pair.AccountId == account.Id && PairMatches(pair));

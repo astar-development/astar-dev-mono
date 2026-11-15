@@ -36,6 +36,7 @@ public sealed class AccountDetailViewModel : LayoutBDetailViewModel
         Account = account;
         Conflicts = tabs.Conflicts;
         Folders = tabs.Folders;
+        Activity = tabs.Activity;
         PauseCommand = new AsyncRelayCommand(cancellationToken => syncActions.PauseAsync(account.Id, cancellationToken));
         SyncNowCommand = new AsyncRelayCommand(cancellationToken => syncActions.SyncNowAsync(account.Id, cancellationToken));
         AddFolderCommand = new AsyncRelayCommand(cancellationToken => syncActions.AddSyncPairAsync(Option.Some(account.Id), cancellationToken));
@@ -54,6 +55,9 @@ public sealed class AccountDetailViewModel : LayoutBDetailViewModel
     /// <summary>The position of the Folders tab.</summary>
     public const int FoldersTabIndex = 1;
 
+    /// <summary>The position of the Activity tab.</summary>
+    public const int ActivityTabIndex = 2;
+
     /// <summary>The position of the Conflicts tab.</summary>
     public const int ConflictsTabIndex = 3;
 
@@ -68,7 +72,10 @@ public sealed class AccountDetailViewModel : LayoutBDetailViewModel
     /// <summary>The account's folder selection, read each time the Folders tab is selected.</summary>
     public FolderSelectionViewModel Folders { get; }
 
-    /// <summary>The selected tab: Overview, Folders, Activity or Conflicts. Selecting Folders or Conflicts reads the account's folders or conflicts.</summary>
+    /// <summary>The account's activity, read each time the Activity tab is selected.</summary>
+    public ActivityListViewModel Activity { get; }
+
+    /// <summary>The selected tab: Overview, Folders, Activity or Conflicts. Selecting one of the last three reads the account's folders, activity or conflicts.</summary>
     public int SelectedTabIndex
     {
         get => selectedTabIndex;
@@ -79,6 +86,8 @@ public sealed class AccountDetailViewModel : LayoutBDetailViewModel
 
             if (value == FoldersTabIndex)
                 _ = Folders.ShowAccountCommand.ExecuteAsync(Account.Id);
+            else if (value == ActivityTabIndex)
+                _ = Activity.RefreshCommand.ExecuteAsync(null);
             else if (value == ConflictsTabIndex)
                 _ = Conflicts.RefreshCommand.ExecuteAsync(null);
         }

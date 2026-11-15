@@ -38,8 +38,8 @@ public class GivenTheFailedSyncSnapshots
         var localization = TestData.CreateLocalization();
         Control view = layout switch
         {
-            "a" => new LayoutAView { DataContext = new LayoutAViewModel(overview, actions, TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), localization) },
-            "b" => new LayoutBView { DataContext = new LayoutBViewModel(overview, TestData.CreateLocalPathFormatter(), actions, TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), localization) },
+            "a" => new LayoutAView { DataContext = new LayoutAViewModel(overview, actions, TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), localization) },
+            "b" => new LayoutBView { DataContext = new LayoutBViewModel(overview, TestData.CreateLocalPathFormatter(), actions, TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), localization) },
             _ => new LayoutCView { DataContext = new LayoutCViewModel(overview, actions, localization) }
         };
 

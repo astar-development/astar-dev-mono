@@ -8,9 +8,11 @@ using AStarDev.CloudSync.TestHelpers.Ui;
 using AStarDev.CloudSync.ViewModels.Accounts;
 using AStarDev.CloudSync.ViewModels.Activity;
 using AStarDev.CloudSync.ViewModels.Layouts;
+using AStarDev.CloudSync.ViewModels.Overview;
 using AStarDev.CloudSync.ViewModels.SyncPairs;
 using AStarDev.FunctionalParadigm;
 using AStarDev.Localization;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AStarDev.CloudSync.ViewModels.TestsUnit.Layouts;
 
@@ -104,16 +106,41 @@ public class GivenAnAccountDetailViewModel
         tree.RequestedAccounts.ShouldBeEmpty();
     }
 
+    [Fact]
+    public async Task when_the_activity_tab_is_selected_then_the_accounts_activity_is_read()
+    {
+        var activityReader = new FakeActivityLogReader();
+        var detail = CreateDetail(new FakeAttentionReader(), new FakeFolderTreeSource(), activityReader);
+
+        detail.SelectedTabIndex = AccountDetailViewModel.ActivityTabIndex;
+        await detail.Activity.RefreshCommand.ExecutionTask!;
+
+        activityReader.Requests.ShouldBe([(Option.Some(detail.Account.Id), ActivityLogLimits.EntriesPerAccount)]);
+    }
+
+    [Fact]
+    public void when_the_overview_tab_is_selected_then_the_activity_is_not_read()
+    {
+        var activityReader = new FakeActivityLogReader();
+        var detail = CreateDetail(new FakeAttentionReader(), new FakeFolderTreeSource(), activityReader);
+
+        detail.SelectedTabIndex = AccountDetailViewModel.FoldersTabIndex;
+
+        activityReader.Requests.ShouldBeEmpty();
+    }
+
     private static AccountDetailViewModel CreateDetailWithConflicts(FakeAttentionReader reader) => CreateDetail(reader, new FakeFolderTreeSource());
 
-    private static AccountDetailViewModel CreateDetail(FakeAttentionReader reader, FakeFolderTreeSource tree)
+    private static AccountDetailViewModel CreateDetail(FakeAttentionReader reader, FakeFolderTreeSource tree) => CreateDetail(reader, tree, new FakeActivityLogReader());
+
+    private static AccountDetailViewModel CreateDetail(FakeAttentionReader reader, FakeFolderTreeSource tree, FakeActivityLogReader activityReader)
     {
         var localization = TestData.CreateLocalization();
         var cloudAccount = TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>());
         var account = new AccountViewModel(cloudAccount, [], localization, TestData.CreateTime());
         var conflicts = TestData.CreateConflictList(new FixedAccountsSource(cloudAccount), reader, new FakeConflictResolver());
 
-        return new AccountDetailViewModel(account, [], [], TestData.CreateLocalPathFormatter(), new RecordingSyncActions(), AccountDetailTabsFactory.Create(conflicts, TestData.CreateFolderSelectionFactory(tree).CreatePage()), localization);
+        return new AccountDetailViewModel(account, [], [], TestData.CreateLocalPathFormatter(), new RecordingSyncActions(), AccountDetailTabsFactory.Create(conflicts, TestData.CreateFolderSelectionFactory(tree).CreatePage(), TestData.CreateActivityListFactory(activityReader).Create(new SyncOverviewViewModel(new FixedAccountsSource(cloudAccount), localization, TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance), Option.Some(account.Id))), localization);
     }
 
     private static (AccountDetailViewModel Detail, RecordingSyncActions SyncActions) CreateDetailWithRecordedActions()

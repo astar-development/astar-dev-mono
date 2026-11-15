@@ -45,6 +45,18 @@ public class GivenALayoutBView
     }
 
     [AvaloniaFact]
+    public async Task when_the_activity_tab_is_selected_then_the_activity_list_is_shown()
+    {
+        var window = await CreateShownWindowAsync();
+        var tabs = window.GetVisualDescendants().OfType<TabControl>().Single();
+
+        tabs.SelectedIndex = 2;
+        Dispatcher.UIThread.RunJobs();
+
+        window.GetVisualDescendants().OfType<AStarDev.CloudSync.Activity.ActivityListContent>().ShouldHaveSingleItem().IsEffectivelyVisible.ShouldBeTrue();
+    }
+
+    [AvaloniaFact]
     public async Task when_the_folders_tab_is_selected_then_the_folder_selection_is_shown()
     {
         var window = await CreateShownWindowAsync();
@@ -114,7 +126,7 @@ public class GivenALayoutBView
     private static async Task<Window> CreateShownWindowAsync()
     {
         var overview = await TestData.CreateLoadedOverviewViewModelAsync();
-        var window = new Window { Width = 1280, Height = 800, Content = new LayoutBView { DataContext = new LayoutBViewModel(overview, TestData.CreateLocalPathFormatter(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateLocalization()) } };
+        var window = new Window { Width = 1280, Height = 800, Content = new LayoutBView { DataContext = new LayoutBViewModel(overview, TestData.CreateLocalPathFormatter(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), TestData.CreateLocalization()) } };
         window.Show();
         Dispatcher.UIThread.RunJobs();
 
