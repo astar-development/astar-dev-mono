@@ -104,6 +104,19 @@ public sealed class GivenAConflictResolverForMoveTargetTaken : IDisposable
     }
 
     [Fact]
+    public async Task when_local_wins_then_the_moved_items_baseline_row_is_found_by_its_id_without_paging_the_baseline()
+    {
+        var (run, id) = await StartAsync();
+        for (var index = 0; index < 1200; index++)
+            _ = run.Synced($"Docs/filler-{index:D4}.txt", "x", $"filler-{index}");
+        var pagesBefore = run.Baseline.Pages;
+
+        _ = await Summary(run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateLocalWins(), CancellationToken));
+
+        (run.Baseline.Pages - pagesBefore, run.Baseline.ItemLookups, run.Baseline.Has("Docs/" + CopyName)).ShouldBe((0, 1, true));
+    }
+
+    [Fact]
     public async Task when_local_wins_and_the_index_cannot_be_renamed_then_the_conflict_is_still_resolved_and_the_next_pass_follows_the_move()
     {
         var (run, id) = await StartAsync();

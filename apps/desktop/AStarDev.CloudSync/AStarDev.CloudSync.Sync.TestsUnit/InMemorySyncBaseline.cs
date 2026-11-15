@@ -14,6 +14,8 @@ public sealed class InMemorySyncBaseline : ISyncBaselineReader, ISyncBaselineWri
 
     public int Upserts { get; private set; }
 
+    public int ItemLookups { get; private set; }
+
     public bool UpsertFails { get; set; }
 
     public bool RemoveFails { get; set; }
@@ -59,6 +61,16 @@ public sealed class InMemorySyncBaseline : ISyncBaselineReader, ISyncBaselineWri
         LargestPageReturned = Math.Max(LargestPageReturned, page.Count);
 
         return Task.FromResult(Result.Success<IReadOnlyList<SyncBaselineEntry>, ErrorResponse>(page));
+    }
+
+    public Task<Result<IReadOnlyList<SyncBaselineEntry>, ErrorResponse>> GetByItemAsync(AccountId accountId, RemoteItemId itemId, CancellationToken cancellationToken)
+    {
+        ItemLookups++;
+        IReadOnlyList<SyncBaselineEntry> rows;
+        lock (gate)
+            rows = [.. stored.Values.Where(entry => entry.ItemId == itemId)];
+
+        return Task.FromResult(Result.Success<IReadOnlyList<SyncBaselineEntry>, ErrorResponse>(rows));
     }
 
     public Task<Result<Unit, ErrorResponse>> UpsertAsync(AccountId accountId, IReadOnlyList<SyncBaselineEntry> entries, CancellationToken cancellationToken)

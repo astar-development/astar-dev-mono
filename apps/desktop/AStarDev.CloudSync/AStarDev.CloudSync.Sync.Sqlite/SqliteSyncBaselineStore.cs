@@ -28,6 +28,9 @@ internal sealed class SqliteSyncBaselineStore(IDbContextFactory<SyncDbContext> d
             .MatchAsync(page => Result.Success<IReadOnlyList<SyncBaselineEntry>, ErrorResponse>(page), exception => Failed<IReadOnlyList<SyncBaselineEntry>>(exception, "The baseline could not be read."));
 
     /// <inheritdoc />
+    public Task<Result<IReadOnlyList<SyncBaselineEntry>, ErrorResponse>> GetByItemAsync(AccountId accountId, RemoteItemId itemId, CancellationToken cancellationToken) => throw new NotImplementedException($"{accountId}{itemId}{cancellationToken}");
+
+    /// <inheritdoc />
     public Task<Result<BaselineCounts, ErrorResponse>> CountAsync(AccountId accountId, CancellationToken cancellationToken) =>
         Try.RunAsync(() => CountRowsAsync(accountId, cancellationToken), cancellationToken)
             .MatchAsync(Result.Success<BaselineCounts, ErrorResponse>, exception => Failed<BaselineCounts>(exception, "The baseline could not be counted."));
