@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace AStar.Dev.Velopack.Publishing;
 
@@ -20,6 +21,7 @@ public static class VelopackUpdateServiceCollectionExtensions
             .ValidateOnStart();
 
         _ = services.AddSingleton<IVelopackUpdateService, VelopackUpdateService>();
+        services.TryAddSingleton<IUpdatePolicy, UpdatePolicy>();
 
         return services;
     }

@@ -4,6 +4,15 @@
         <name>AStarDev.VelopackPublishing</name>
     </assembly>
     <members>
+        <member name="T:AStar.Dev.Velopack.Publishing.IUpdatePolicy">
+            <summary>Decides what to do about an update check result and the user's earlier choices (#1412). It is pure: the same inputs always give the same action.</summary>
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.IUpdatePolicy.Decide(AStar.Dev.Velopack.Publishing.UpdateCheckResult,AStar.Dev.Velopack.Publishing.UpdateDeferral,System.DateTimeOffset)">
+            <summary>Decides. A found update with no deferral prompts. A deferred update prompts again after one hour and is forced after seven days. A newer version than the deferred one starts again. Nothing is done when there is no update.</summary>
+            <param name="result">What the update check found.</param>
+            <param name="deferral">What the user did about the update that was found before.</param>
+            <param name="now">The current time.</param>
+        </member>
         <member name="T:AStar.Dev.Velopack.Publishing.IVelopackUpdateService">
             <summary>Abstracts Velopack update checking/downloading/applying so consumers stay testable.</summary>
         </member>
@@ -31,6 +40,40 @@
         </member>
         <member name="M:AStar.Dev.Velopack.Publishing.IVelopackUpdateService.ApplyUpdatesAndRestart(Velopack.UpdateInfo)">
             <summary>Exits the app, applies the downloaded update, and restarts it.</summary>
+        </member>
+        <member name="T:AStar.Dev.Velopack.Publishing.UpdateAction">
+            <summary>What to do about an update check result (#1412).</summary>
+        </member>
+        <member name="T:AStar.Dev.Velopack.Publishing.NoAction">
+            <summary>Nothing: there is no update, or the build cannot update.</summary>
+        </member>
+        <member name="T:AStar.Dev.Velopack.Publishing.PromptUser">
+            <summary>Ask the user now: install or defer.</summary>
+        </member>
+        <member name="T:AStar.Dev.Velopack.Publishing.RemindLater">
+            <summary>The user deferred recently: ask again at <see cref="P:AStar.Dev.Velopack.Publishing.RemindLater.At"/>.</summary>
+        </member>
+        <member name="P:AStar.Dev.Velopack.Publishing.RemindLater.At">
+            <summary>When to ask again.</summary>
+        </member>
+        <member name="T:AStar.Dev.Velopack.Publishing.ForceAfterWarning">
+            <summary>The user deferred for too long: warn, then install.</summary>
+        </member>
+        <member name="T:AStar.Dev.Velopack.Publishing.UpdateActionFactory">
+            <summary>Creates <see cref="T:AStar.Dev.Velopack.Publishing.UpdateAction"/> cases.</summary>
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.UpdateActionFactory.CreateNone">
+            <summary>Creates the <see cref="T:AStar.Dev.Velopack.Publishing.NoAction"/> case.</summary>
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.UpdateActionFactory.CreatePrompt">
+            <summary>Creates the <see cref="T:AStar.Dev.Velopack.Publishing.PromptUser"/> case.</summary>
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.UpdateActionFactory.CreateRemindLater(System.DateTimeOffset)">
+            <summary>Creates the <see cref="T:AStar.Dev.Velopack.Publishing.RemindLater"/> case.</summary>
+            <param name="at">When to ask again.</param>
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.UpdateActionFactory.CreateForceAfterWarning">
+            <summary>Creates the <see cref="T:AStar.Dev.Velopack.Publishing.ForceAfterWarning"/> case.</summary>
         </member>
         <member name="T:AStar.Dev.Velopack.Publishing.UpdateCheckResult">
             <summary>The outcome of an update check.</summary>
@@ -79,6 +122,42 @@
         <member name="M:AStar.Dev.Velopack.Publishing.UpdateCheckResultFactory.CreateFailed(System.String)">
             <summary>Creates a failed result. A blank <paramref name="reason"/> is replaced with a default.</summary>
             <param name="reason">Why the check failed.</param>
+        </member>
+        <member name="T:AStar.Dev.Velopack.Publishing.UpdateDeferral">
+            <summary>Whether the user deferred the update that is waiting (#1412). It is what the update policy needs to know about the user's earlier choices.</summary>
+        </member>
+        <member name="T:AStar.Dev.Velopack.Publishing.NotDeferred">
+            <summary>The user has not deferred this update.</summary>
+        </member>
+        <member name="T:AStar.Dev.Velopack.Publishing.DeferredSince">
+            <summary>The user chose to install later.</summary>
+        </member>
+        <member name="P:AStar.Dev.Velopack.Publishing.DeferredSince.Version">
+            <summary>The version that was deferred. A newer version starts again.</summary>
+        </member>
+        <member name="P:AStar.Dev.Velopack.Publishing.DeferredSince.FirstDeferredAt">
+            <summary>When the user first deferred this version.</summary>
+        </member>
+        <member name="P:AStar.Dev.Velopack.Publishing.DeferredSince.LastPromptedAt">
+            <summary>When the user was last asked.</summary>
+        </member>
+        <member name="T:AStar.Dev.Velopack.Publishing.UpdateDeferralFactory">
+            <summary>Creates <see cref="T:AStar.Dev.Velopack.Publishing.UpdateDeferral"/> cases.</summary>
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.UpdateDeferralFactory.CreateNotDeferred">
+            <summary>Creates the <see cref="T:AStar.Dev.Velopack.Publishing.NotDeferred"/> case.</summary>
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.UpdateDeferralFactory.CreateDeferredSince(System.String,System.DateTimeOffset,System.DateTimeOffset)">
+            <summary>Creates the <see cref="T:AStar.Dev.Velopack.Publishing.DeferredSince"/> case. A blank version becomes empty text, so it never matches a real version.</summary>
+            <param name="version">The version that was deferred.</param>
+            <param name="firstDeferredAt">When the user first deferred it.</param>
+            <param name="lastPromptedAt">When the user was last asked. It cannot be before the first deferral.</param>
+        </member>
+        <member name="T:AStar.Dev.Velopack.Publishing.UpdatePolicy">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.UpdatePolicy.Decide(AStar.Dev.Velopack.Publishing.UpdateCheckResult,AStar.Dev.Velopack.Publishing.UpdateDeferral,System.DateTimeOffset)">
+            <inheritdoc />
         </member>
         <member name="T:AStar.Dev.Velopack.Publishing.VelopackUpdateService">
             <inheritdoc />
