@@ -125,5 +125,6 @@
     <Folder Name="/tests/" />
     <Folder Name="/z_scratch/">
         <Project Path="z_scratch/AStarDev.Scratch.TestsUnit/AStarDev.Scratch.TestsUnit.csproj" />
+        <Project Path="z_scratch/AStarDev.Scratch/AStarDev.Scratch.csproj" />
     </Folder>
   </Solution>

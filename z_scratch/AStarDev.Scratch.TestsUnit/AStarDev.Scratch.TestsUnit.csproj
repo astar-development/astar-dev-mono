@@ -22,4 +22,8 @@
     <PackageReference Include="xunit.v3.mtp-v2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\AStarDev.Scratch\AStarDev.Scratch.csproj" />
+  </ItemGroup>
+
 </Project>
