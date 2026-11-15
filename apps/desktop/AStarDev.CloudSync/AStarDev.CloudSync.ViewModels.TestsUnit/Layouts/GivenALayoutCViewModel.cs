@@ -284,7 +284,8 @@ public class GivenALayoutCViewModel
     [Fact]
     public async Task when_the_overview_loads_again_then_the_selected_account_stays_selected()
     {
-        var overview = await TestData.CreateLoadedOverviewViewModelAsync();
+        var overview = new SyncOverviewViewModel(new CountingSyncOverviewSource(await TestData.CreateOverviewAsync()), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        await overview.LoadAsync(TestContext.Current.CancellationToken);
         var viewModel = new LayoutCViewModel(overview, new RecordingSyncActions(), TestData.CreateLocalization());
         var selectedId = viewModel.AccountCards[1].Account.Id;
         viewModel.AccountCards[1].SelectCommand.Execute(null);
