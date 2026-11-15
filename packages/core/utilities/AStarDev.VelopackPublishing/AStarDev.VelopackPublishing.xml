@@ -18,6 +18,16 @@
             <param name="cancellationToken">Stops waiting.</param>
             <returns>A permit that holds the app in its safe state.</returns>
         </member>
+        <member name="T:AStar.Dev.Velopack.Publishing.IUpdateDeferralStore">
+            <summary>Remembers that the user deferred an update, so the choice survives a restart (#1412).</summary>
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.IUpdateDeferralStore.Load">
+            <summary>Loads what the user deferred. Nothing saved, or a file that cannot be read, means nothing is deferred.</summary>
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.IUpdateDeferralStore.Save(AStar.Dev.Velopack.Publishing.UpdateDeferral)">
+            <summary>Saves the deferral. <see cref="T:AStar.Dev.Velopack.Publishing.NotDeferred"/> removes it. A failure to save is logged, never thrown: the worst outcome is being asked again.</summary>
+            <param name="deferral">What to remember.</param>
+        </member>
         <member name="T:AStar.Dev.Velopack.Publishing.IUpdatePolicy">
             <summary>Decides what to do about an update check result and the user's earlier choices (#1412). It is pure: the same inputs always give the same action.</summary>
         </member>
@@ -54,6 +64,22 @@
         </member>
         <member name="M:AStar.Dev.Velopack.Publishing.IVelopackUpdateService.ApplyUpdatesAndRestart(Velopack.UpdateInfo)">
             <summary>Exits the app, applies the downloaded update, and restarts it.</summary>
+        </member>
+        <member name="T:AStar.Dev.Velopack.Publishing.JsonUpdateDeferralStore">
+            <summary>Keeps the update deferral in a small JSON file.</summary>
+            <param name="deferralFile">The JSON file holding the deferral.</param>
+            <param name="logger">Reports a deferral that cannot be read or saved.</param>
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.JsonUpdateDeferralStore.#ctor(System.IO.Abstractions.IFileInfo,Microsoft.Extensions.Logging.ILogger{AStar.Dev.Velopack.Publishing.JsonUpdateDeferralStore})">
+            <summary>Keeps the update deferral in a small JSON file.</summary>
+            <param name="deferralFile">The JSON file holding the deferral.</param>
+            <param name="logger">Reports a deferral that cannot be read or saved.</param>
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.JsonUpdateDeferralStore.Load">
+            <inheritdoc />
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.JsonUpdateDeferralStore.Save(AStar.Dev.Velopack.Publishing.UpdateDeferral)">
+            <inheritdoc />
         </member>
         <member name="T:AStar.Dev.Velopack.Publishing.UpdateAction">
             <summary>What to do about an update check result (#1412).</summary>
@@ -166,6 +192,55 @@
             <param name="version">The version that was deferred.</param>
             <param name="firstDeferredAt">When the user first deferred it.</param>
             <param name="lastPromptedAt">When the user was last asked. It cannot be before the first deferral.</param>
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.UpdateDeferralFactory.CreateAfterDeferring(AStar.Dev.Velopack.Publishing.UpdateDeferral,System.String,System.DateTimeOffset)">
+            <summary>Creates the deferral to keep after the user deferred <paramref name="version"/> at <paramref name="now"/>. Deferring the same version again keeps the first time, so the seven days run from the first deferral; a different version starts again.</summary>
+            <param name="previous">What was deferred before.</param>
+            <param name="version">The version the user has just deferred.</param>
+            <param name="now">When the user deferred it.</param>
+        </member>
+        <member name="P:AStar.Dev.Velopack.Publishing.UpdateDeferralJsonContext.StoredUpdateDeferral">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Velopack.Publishing.UpdateDeferralJsonContext.DateTimeOffset">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Velopack.Publishing.UpdateDeferralJsonContext.String">
+            <summary>
+            Defines the source generated JSON serialization contract metadata for a given type.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Velopack.Publishing.UpdateDeferralJsonContext.Default">
+            <summary>
+            The default <see cref="T:System.Text.Json.Serialization.JsonSerializerContext"/> associated with a default <see cref="T:System.Text.Json.JsonSerializerOptions"/> instance.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Velopack.Publishing.UpdateDeferralJsonContext.GeneratedSerializerOptions">
+            <summary>
+            The source-generated options associated with this context.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.UpdateDeferralJsonContext.#ctor">
+            <inheritdoc/>
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.UpdateDeferralJsonContext.#ctor(System.Text.Json.JsonSerializerOptions)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.UpdateDeferralJsonContext.GetTypeInfo(System.Type)">
+            <inheritdoc/>
+        </member>
+        <member name="T:AStar.Dev.Velopack.Publishing.UpdateDeferralServiceCollectionExtensions">
+            <summary>Registers the update deferral store.</summary>
+        </member>
+        <member name="M:AStar.Dev.Velopack.Publishing.UpdateDeferralServiceCollectionExtensions.AddVelopackUpdateDeferral(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{System.IServiceProvider,System.IO.Abstractions.IFileInfo})">
+            <summary>Registers the <see cref="T:AStar.Dev.Velopack.Publishing.IUpdateDeferralStore"/> that keeps the deferral in a JSON file.</summary>
+            <param name="services">The service collection to register the store with.</param>
+            <param name="deferralFile">Returns the JSON file the deferral is kept in.</param>
+            <returns>The <paramref name="services"/> collection to allow further chaining.</returns>
         </member>
         <member name="T:AStar.Dev.Velopack.Publishing.UpdatePolicy">
             <inheritdoc />
