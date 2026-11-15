@@ -45,7 +45,7 @@ public class GivenALayoutAView
         source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([.. Enumerable.Range(0, 30).Select(_ => TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>()))], [], [], [], [], 0, Option.None<DateTimeOffset>()));
         var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         await overview.LoadAsync(TestContext.Current.CancellationToken);
-        var window = new Window { Width = 1280, Height = 800, Content = new LayoutAView { DataContext = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateLocalization()) } };
+        var window = new Window { Width = 1280, Height = 800, Content = new LayoutAView { DataContext = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateLocalization()) } };
 
         window.Show();
         Dispatcher.UIThread.RunJobs();
@@ -100,7 +100,7 @@ public class GivenALayoutAView
     }
 
     [AvaloniaFact]
-    public async Task when_shown_then_the_accounts_and_conflicts_rail_buttons_navigate_and_the_other_pages_stay_disabled()
+    public async Task when_shown_then_the_accounts_folders_and_conflicts_rail_buttons_navigate_and_the_other_pages_stay_disabled()
     {
         var window = await CreateShownWindowAsync();
         var layout = window.Content.ShouldBeOfType<LayoutAView>().DataContext.ShouldBeOfType<LayoutAViewModel>();
@@ -108,8 +108,8 @@ public class GivenALayoutAView
         var railButtons = window.GetVisualDescendants().OfType<Button>().Where(button => button.Classes.Contains("rail")).ToList();
 
         railButtons.Count.ShouldBe(5);
-        railButtons.Select(button => button.Command).ShouldBe([layout.ShowAccountsCommand, layout.NavigateCommand, layout.NavigateCommand, layout.ShowConflictsCommand, layout.NavigateCommand]);
-        railButtons.Select(button => button.IsEffectivelyEnabled).ShouldBe([true, false, false, true, false]);
+        railButtons.Select(button => button.Command).ShouldBe([layout.ShowAccountsCommand, layout.ShowFoldersCommand, layout.NavigateCommand, layout.ShowConflictsCommand, layout.NavigateCommand]);
+        railButtons.Select(button => button.IsEffectivelyEnabled).ShouldBe([true, true, false, true, false]);
     }
 
     [AvaloniaFact]
@@ -151,6 +151,20 @@ public class GivenALayoutAView
     }
 
     [AvaloniaFact]
+    public async Task when_the_folders_rail_button_is_clicked_then_the_folder_selection_replaces_the_account_cards()
+    {
+        var window = await CreateShownWindowAsync();
+        var foldersButton = window.GetVisualDescendants().OfType<Button>().Single(button => button.Classes.Contains("rail") && Avalonia.Automation.AutomationProperties.GetName(button) == "Folders");
+
+        foldersButton.Command!.Execute(null);
+        Dispatcher.UIThread.RunJobs();
+
+        window.GetVisualDescendants().OfType<ScrollViewer>().Single(scrollViewer => scrollViewer.Name == "AccountCards").IsEffectivelyVisible.ShouldBeFalse();
+        window.GetVisualDescendants().OfType<AStarDev.CloudSync.FolderSelection.FolderSelectionContent>().ShouldHaveSingleItem().IsEffectivelyVisible.ShouldBeTrue();
+        foldersButton.Classes.ShouldContain("active");
+    }
+
+    [AvaloniaFact]
     public async Task when_the_conflict_list_is_a_page_then_it_has_no_close_button()
     {
         var window = await CreateShownWindowAsync();
@@ -165,7 +179,7 @@ public class GivenALayoutAView
     private static async Task<Window> CreateShownWindowAsync()
     {
         var overview = await TestData.CreateLoadedOverviewViewModelAsync();
-        var window = new Window { Width = 1280, Height = 800, Content = new LayoutAView { DataContext = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateLocalization()) } };
+        var window = new Window { Width = 1280, Height = 800, Content = new LayoutAView { DataContext = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateLocalization()) } };
         window.Show();
         Dispatcher.UIThread.RunJobs();
 

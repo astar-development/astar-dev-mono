@@ -355,6 +355,73 @@ public class GivenAFolderSelectionViewModel
         pairReader = new FakeSyncPairReader { Pairs = _ => Result.Success<IReadOnlyList<SyncPair>, ErrorResponse>([pair]) };
     }
 
+    [Fact]
+    public async Task when_shown_as_a_page_then_the_accounts_folders_open_without_waiting_for_a_close()
+    {
+        tree.Levels = _ => Level(Node("Docs"), Node("Photos"));
+        var page = CreatePage();
+
+        await page.ShowAccountCommand.ExecuteAsync(Account);
+
+        (page.IsShowingTree, page.AccountNameText).ShouldBe((true, "Personal"));
+        page.Roots.Select(node => node.Name).ToList().ShouldBe(["Docs", "Photos"]);
+    }
+
+    [Fact]
+    public async Task when_apply_is_pressed_on_a_page_then_the_changes_are_saved_and_the_folders_stay_shown_with_nothing_staged()
+    {
+        tree.Levels = _ => Level(Node("Docs"));
+        var page = CreatePage();
+        await page.ShowAccountCommand.ExecuteAsync(Account);
+        page.Roots.Single().ToggleCommand.Execute(null);
+
+        await page.ApplyCommand.ExecuteAsync(null);
+
+        writer.Applied.Count.ShouldBe(1);
+        (page.IsShowingTree, page.HasChanges).ShouldBe((true, false));
+    }
+
+    [Fact]
+    public async Task when_cancel_is_pressed_on_a_page_then_the_changes_are_thrown_away_and_the_folders_stay_shown()
+    {
+        tree.Levels = _ => Level(Node("Docs"));
+        var page = CreatePage();
+        await page.ShowAccountCommand.ExecuteAsync(Account);
+        page.Roots.Single().ToggleCommand.Execute(null);
+
+        page.CancelCommand.Execute(null);
+
+        writer.Applied.Count.ShouldBe(0);
+        (page.IsShowingTree, page.HasChanges).ShouldBe((true, false));
+    }
+
+    [Fact]
+    public async Task when_a_page_shows_an_account_again_then_the_changes_staged_before_are_dropped_and_the_folders_are_read_again()
+    {
+        tree.Levels = _ => Level(Node("Docs"));
+        var page = CreatePage();
+        await page.ShowAccountCommand.ExecuteAsync(Account);
+        page.Roots.Single().ToggleCommand.Execute(null);
+
+        await page.ShowAccountCommand.ExecuteAsync(Account);
+
+        (page.HasChanges, page.Roots.Count, tree.RequestedAccounts.Count).ShouldBe((false, 1, 2));
+    }
+
+    [Fact]
+    public void when_the_factory_creates_two_pages_then_they_are_independent_and_not_open()
+    {
+        var factory = new FolderSelectionFactory(tree, rules, writer, new SyncSelectionEvaluator(), pairReader, accounts, TestData.CreateLocalization());
+
+        var first = factory.CreatePage();
+        var second = factory.CreatePage();
+
+        second.ShouldNotBeSameAs(first);
+        (first.IsOpen, second.IsOpen).ShouldBe((false, false));
+    }
+
+    private FolderSelectionViewModel CreatePage() => new FolderSelectionFactory(tree, rules, writer, new SyncSelectionEvaluator(), pairReader, accounts, TestData.CreateLocalization()).CreatePage();
+
     private FolderSelectionViewModel Create() => new(tree, rules, writer, new SyncSelectionEvaluator(), pairReader, accounts, TestData.CreateLocalization());
 
     private static StoredAccount StoredPersonal() =>
