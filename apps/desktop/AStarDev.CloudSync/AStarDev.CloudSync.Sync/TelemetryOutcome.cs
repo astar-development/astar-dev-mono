@@ -22,4 +22,12 @@ public abstract record TelemetryOutcome
         {
         }
     }
+
+    /// <summary>The user cancelled the workflow; it is not an error.</summary>
+    public sealed record Cancelled : TelemetryOutcome
+    {
+        internal Cancelled()
+        {
+        }
+    }
 }

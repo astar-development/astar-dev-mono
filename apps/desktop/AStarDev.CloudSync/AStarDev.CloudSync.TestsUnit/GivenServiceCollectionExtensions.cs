@@ -212,7 +212,7 @@ public class GivenServiceCollectionExtensions
 
         var adder = provider.GetRequiredService<IProviderCapability<IAccountAdder>>().ForProvider(CloudProviderFactory.CreateOneDrive());
 
-        adder.Match(found => found.GetType().Assembly, _ => typeof(object).Assembly).ShouldBe(typeof(OneDriveServiceCollectionExtensions).Assembly);
+        adder.Match(found => found, _ => throw new InvalidOperationException()).ShouldBeOfType<InstrumentedAccountAdder>();
     }
 
     [Fact]
@@ -465,7 +465,7 @@ public class GivenServiceCollectionExtensions
     {
         var services = CreateServices();
 
-        services.ShouldContain(descriptor => descriptor.ServiceType == typeof(IAccountAdder) && descriptor.IsKeyedService && Equals(descriptor.ServiceKey, CloudProviderFactory.CreateOneDrive()) && descriptor.KeyedImplementationType!.Assembly == typeof(OneDriveServiceCollectionExtensions).Assembly && descriptor.Lifetime == ServiceLifetime.Singleton);
+        services.ShouldContain(descriptor => descriptor.ServiceType == typeof(IAccountAdder) && descriptor.IsKeyedService && Equals(descriptor.ServiceKey, CloudProviderFactory.CreateOneDrive()) && descriptor.KeyedImplementationFactory != null && descriptor.Lifetime == ServiceLifetime.Singleton);
     }
 
     [Fact]

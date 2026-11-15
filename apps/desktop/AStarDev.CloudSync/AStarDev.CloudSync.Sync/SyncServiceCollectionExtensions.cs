@@ -18,7 +18,8 @@ public static class SyncServiceCollectionExtensions
 
         return services
             .AddSingleton<ISyncSelectionEvaluator, SyncSelectionEvaluator>()
-            .AddSingleton<IFolderTreeSource, FolderTreeSource>()
+            .AddSingleton<FolderTreeSource>()
+            .AddSingleton<IFolderTreeSource>(provider => new InstrumentedFolderTreeSource(provider.GetRequiredService<FolderTreeSource>(), provider.GetRequiredService<IWorkflowTelemetry>()))
             .AddSingleton<ISyncPairReader, SyncPairReader>()
             .AddSingleton<RemoteChangeRelevance>()
             .AddSingleton<ISelectionRuleRelocator, SelectionRuleRelocator>()
@@ -74,7 +75,8 @@ public static class SyncServiceCollectionExtensions
             .AddSingleton<IAccountSignInStates, InMemoryAccountSignInStates>()
             .AddSingleton<AccountLeaseWaiter>()
             .AddSingleton<IAccountRemover, AccountRemover>()
-            .AddSingleton<IAccountActions, AccountActions>()
+            .AddSingleton<AccountActions>()
+            .AddSingleton<IAccountActions>(provider => new InstrumentedAccountActions(provider.GetRequiredService<AccountActions>(), provider.GetRequiredService<IWorkflowTelemetry>()))
             .AddSingleton<ISignInStateRefresher, SignInStateRefresher>()
             .AddSingleton<SyncProgressFeed>()
             .AddSingleton<ISyncProgressFeed>(provider => provider.GetRequiredService<SyncProgressFeed>())

@@ -33,7 +33,7 @@ public sealed class WorkflowTelemetry : IWorkflowTelemetry, IDisposable
         var result = await operation().ConfigureAwait(false);
         var outcome = outcomeOf(result);
         _ = activity?.SetTag("outcome", outcome.TagValue());
-        _ = outcome is TelemetryOutcome.Failed ? activity?.SetStatus(ActivityStatusCode.Error) : activity?.SetStatus(ActivityStatusCode.Ok);
+        _ = activity?.SetStatus(outcome is TelemetryOutcome.Failed ? ActivityStatusCode.Error : ActivityStatusCode.Ok);
         Count(workflow, outcome, timeProvider.GetElapsedTime(started));
 
         return result;
