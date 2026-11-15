@@ -26,30 +26,40 @@ public sealed class AppShutdown(IAccountStore accounts, ISyncActivitySource acti
     /// <inheritdoc />
     public async Task RequestQuitAsync(CancellationToken cancellationToken)
     {
-        if (Interlocked.Exchange(ref quitting, 1) == 1)
+        if (Volatile.Read(ref quitting) == 1)
             return;
 
-        _ = $"{window}{confirm}";
-
-        _ = await Try.RunAsync(() => CancelRunningAsync(cancellationToken), cancellationToken).MatchAsync(done => done, _ => Warn("A running sync could not be cancelled before quitting.")).ConfigureAwait(false);
-        exit.Shutdown();
+        var choice = await Try.RunAsync(() => ConfirmAndCancelAsync(cancellationToken), cancellationToken).MatchAsync(chosen => chosen, _ => QuitDespite("A running sync could not be cancelled before quitting.")).ConfigureAwait(false);
+        if (choice is QuitChoice.QuitAnyway)
+            exit.Shutdown();
     }
 
-    private Task<Unit> CancelRunningAsync(CancellationToken cancellationToken) =>
-        accounts.GetAllAsync(cancellationToken).MatchAsync(all => CancelAsync(all, cancellationToken), _ => Task.FromResult(Warn("The accounts could not be read, so no running sync was cancelled before quitting.")));
+    private Task<QuitChoice> ConfirmAndCancelAsync(CancellationToken cancellationToken) =>
+        accounts.GetAllAsync(cancellationToken).MatchAsync(all => ConfirmAsync(all.Where(account => activity.ActivityOf(account.Id) is AccountSyncActivity.Running).ToList(), cancellationToken), _ => Task.FromResult(QuitDespite("The accounts could not be read, so no running sync was cancelled before quitting.")));
 
-    private async Task<Unit> CancelAsync(IReadOnlyList<StoredAccount> all, CancellationToken cancellationToken)
+    private async Task<QuitChoice> ConfirmAsync(List<StoredAccount> running, CancellationToken cancellationToken)
     {
-        foreach (var account in all.Where(account => activity.ActivityOf(account.Id) is AccountSyncActivity.Running))
+        if (running.Count > 0)
+        {
+            window.Show();
+            if (await confirm.AskAsync(cancellationToken).ConfigureAwait(false) is QuitChoice.StayOpen)
+                return QuitChoiceFactory.CreateStayOpen();
+        }
+
+        if (Interlocked.Exchange(ref quitting, 1) == 1)
+            return QuitChoiceFactory.CreateStayOpen();
+
+        foreach (var account in running)
             await actions.CancelSyncAsync(account.Id, cancellationToken).ConfigureAwait(false);
 
-        return Unit.Instance;
+        return QuitChoiceFactory.CreateQuitAnyway();
     }
 
-    private Unit Warn(string message)
+    private QuitChoice QuitDespite(string message)
     {
         LogMessage.Warning(logger, Location, message);
+        _ = Interlocked.Exchange(ref quitting, 1);
 
-        return Unit.Instance;
+        return QuitChoiceFactory.CreateQuitAnyway();
     }
 }

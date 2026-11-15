@@ -70,7 +70,8 @@ public class GivenAnAppShutdown
 
         await Create().RequestQuitAsync(CancellationToken);
 
-        (confirm.Asked, exit.Shown, actions.Calls, exit.Exits).ShouldBe((1, 1, [$"CancelSyncAsync:{running}"], 1));
+        (confirm.Asked, exit.Shown, exit.Exits).ShouldBe((1, 1, 1));
+        actions.Calls.ShouldBe([$"CancelSyncAsync:{running}"]);
     }
 
     [Fact]
