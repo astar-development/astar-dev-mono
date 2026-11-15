@@ -95,6 +95,19 @@
             <Setter Property="Background" Value="{DynamicResource CloudSyncSurfaceBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource CloudSyncBorderBrush}" />
         </Style>
+        <Style Selector="Border.account-card.selected">
+            <Setter Property="Background" Value="{DynamicResource CloudSyncAccentSoftBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CloudSyncAccentBrush}" />
+        </Style>
+        <Style Selector="Button.account-select">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
         <Style Selector="Border.account-card ProgressBar.storage-bar">
             <Setter Property="Width" Value="90" />
             <Setter Property="MinWidth" Value="0" />
@@ -370,27 +383,31 @@
                 BorderThickness="0,1,0,0">
             <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
                 <TextBlock Classes="caps" Text="{Binding AccountsText}" VerticalAlignment="Center" />
-                <ItemsControl ItemsSource="{Binding Overview.Accounts}">
+                <ItemsControl ItemsSource="{Binding AccountCards}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel Orientation="Horizontal" Spacing="12" />
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="vmAccounts:AccountViewModel">
-                            <Border Classes="account-card" ToolTip.Tip="{Binding Storage.Text}">
+                        <DataTemplate x:DataType="vmLayouts:LayoutCAccountCardViewModel">
+                            <Border Classes="account-card" Classes.selected="{Binding IsSelected}" ToolTip.Tip="{Binding Account.Storage.Text}">
                                 <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                                    <accounts:ProviderBadge DataContext="{Binding Provider}" VerticalAlignment="Center" />
-                                    <StackPanel Spacing="4" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="Medium" />
-                                        <ProgressBar Classes="storage-bar" Value="{Binding Storage.Fraction}" AutomationProperties.Name="{Binding Storage.Text}" />
-                                        <TextBlock Text="{Binding Status.Text}" FontSize="11" Foreground="{DynamicResource CloudSyncWarnBrush}" IsVisible="{Binding NeedsSignIn}" />
-                                        <TextBlock Text="{Binding LayoutCFailureText}" TextWrapping="Wrap" MaxWidth="160" FontSize="11" Foreground="{DynamicResource CloudSyncWarnBrush}" IsVisible="{Binding HasFailure}" />
-                                        <TextBlock Text="{Binding ThrottleHintText}" TextWrapping="Wrap" MaxWidth="160" FontSize="11" Foreground="{DynamicResource CloudSyncWarnBrush}" IsVisible="{Binding HasThrottleHint}" />
-                                    </StackPanel>
-                                    <Button Classes="primary" Content="{Binding SignInText}" Command="{Binding SignInCommand}" IsVisible="{Binding NeedsSignIn}" VerticalAlignment="Center" />
-                                    <Button Classes="secondary" Content="{Binding ChangeSyncFolderText}" Command="{Binding ChangeSyncFolderCommand}" VerticalAlignment="Center" />
-                                    <Button Classes="secondary" Content="{Binding RemoveText}" Command="{Binding RemoveCommand}" VerticalAlignment="Center" />
+                                    <Button Classes="account-select" Command="{Binding SelectCommand}" AutomationProperties.Name="{Binding Account.Name}">
+                                        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                            <accounts:ProviderBadge DataContext="{Binding Account.Provider}" VerticalAlignment="Center" />
+                                            <StackPanel Spacing="4" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Account.Name}" FontSize="12" FontWeight="Medium" />
+                                                <ProgressBar Classes="storage-bar" Value="{Binding Account.Storage.Fraction}" AutomationProperties.Name="{Binding Account.Storage.Text}" />
+                                                <TextBlock Text="{Binding Account.Status.Text}" FontSize="11" Foreground="{DynamicResource CloudSyncWarnBrush}" IsVisible="{Binding Account.NeedsSignIn}" />
+                                                <TextBlock Text="{Binding Account.LayoutCFailureText}" TextWrapping="Wrap" MaxWidth="160" FontSize="11" Foreground="{DynamicResource CloudSyncWarnBrush}" IsVisible="{Binding Account.HasFailure}" />
+                                                <TextBlock Text="{Binding Account.ThrottleHintText}" TextWrapping="Wrap" MaxWidth="160" FontSize="11" Foreground="{DynamicResource CloudSyncWarnBrush}" IsVisible="{Binding Account.HasThrottleHint}" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Classes="primary" Content="{Binding Account.SignInText}" Command="{Binding Account.SignInCommand}" IsVisible="{Binding Account.NeedsSignIn}" VerticalAlignment="Center" />
+                                    <Button Classes="secondary" Content="{Binding Account.ChangeSyncFolderText}" Command="{Binding Account.ChangeSyncFolderCommand}" VerticalAlignment="Center" />
+                                    <Button Classes="secondary" Content="{Binding Account.RemoveText}" Command="{Binding Account.RemoveCommand}" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Border>
                         </DataTemplate>

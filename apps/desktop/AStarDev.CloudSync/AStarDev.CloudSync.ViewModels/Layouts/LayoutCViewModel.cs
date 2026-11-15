@@ -16,6 +16,7 @@ public sealed class LayoutCViewModel : LocalizedObservableObject
     private readonly ISyncActions syncActions;
     private Func<SyncPairViewModel, bool> pairFilter = _ => true;
     private LayoutCSortOptionViewModel selectedSortOption;
+    private Option<AccountId> selectedAccountId = Option.None<AccountId>();
 
     /// <summary>Creates the view model and follows the overview's changes.</summary>
     /// <param name="overview">The shared overview every layout binds to.</param>
@@ -32,21 +33,25 @@ public sealed class LayoutCViewModel : LocalizedObservableObject
         AddAccountCommand = new AsyncRelayCommand(AddAccountAndReloadAsync);
         overview.PropertyChanged += OnOverviewChanged;
         RebuildProviderFilters();
+        RebuildAccountCards();
     }
 
     /// <summary>The shared overview: accounts, activity, conflicts and throughput.</summary>
     public SyncOverviewViewModel Overview { get; }
 
-    /// <summary>The sync pairs passing the selected filter chip, in the selected sort order.</summary>
-    public IReadOnlyList<SyncPairViewModel> SyncPairs => [.. Sort(Overview.SyncPairs.Where(pairFilter))];
+    /// <summary>The sync pairs passing the selected filter chip and the selected account, in the selected sort order.</summary>
+    public IReadOnlyList<SyncPairViewModel> SyncPairs => [.. Sort(Overview.SyncPairs.Where(pairFilter).Where(IsOfSelectedAccount))];
+
+    /// <summary>One card per account in the accounts strip; selecting one shows only that account's sync pairs.</summary>
+    public IReadOnlyList<LayoutCAccountCardViewModel> AccountCards { get; private set; } = [];
 
     /// <summary>One filter chip per provider in the data, with its pair count.</summary>
     public IReadOnlyList<ProviderFilterViewModel> ProviderFilters { get; private set; } = [];
 
     /// <summary>Whether the all-pairs chip is the active filter.</summary>
-    public bool IsAllPairsSelected => ProviderFilters.All(filter => !filter.IsSelected);
+    public bool IsAllPairsSelected => ProviderFilters.All(filter => !filter.IsSelected) && selectedAccountId.Match(_ => false, () => true);
 
-    /// <summary>Makes the all-pairs chip the active filter.</summary>
+    /// <summary>Makes the all-pairs chip the active filter, clearing the provider chip and the selected account.</summary>
     public ICommand SelectAllPairsCommand { get; }
 
     /// <summary>Starts adding a sync pair, letting the user choose the account.</summary>
@@ -134,6 +139,9 @@ public sealed class LayoutCViewModel : LocalizedObservableObject
         if (args.PropertyName == nameof(SyncOverviewViewModel.SyncPairs))
             RebuildProviderFilters();
 
+        if (args.PropertyName == nameof(SyncOverviewViewModel.Accounts))
+            RebuildAccountCards();
+
         OnPropertyChanged(nameof(SyncPairs));
         OnPropertyChanged(nameof(ProviderFilters));
         OnPropertyChanged(nameof(AllPairsFilterText));
@@ -144,10 +152,40 @@ public sealed class LayoutCViewModel : LocalizedObservableObject
     private void RebuildProviderFilters()
     {
         ProviderFilters = [.. Overview.SyncPairs.GroupBy(pair => pair.Provider.Name, StringComparer.Ordinal).Select(group => new ProviderFilterViewModel(group.First().Provider, group.Count(), SelectProvider, Localization))];
-        SelectAllPairs();
+        ApplyFilter(_ => true, _ => false);
     }
 
-    private void SelectAllPairs() => ApplyFilter(_ => true, _ => false);
+    private void RebuildAccountCards()
+    {
+        selectedAccountId = selectedAccountId.Match(id => Overview.Accounts.Any(account => account.Id == id) ? Option.Some(id) : Option.None<AccountId>(), () => Option.None<AccountId>());
+        AccountCards = [.. Overview.Accounts.Select(account => new LayoutCAccountCardViewModel(account, SelectAccount) { IsSelected = selectedAccountId.Match(id => id == account.Id, () => false) })];
+        OnPropertyChanged(nameof(AccountCards));
+        OnPropertyChanged(nameof(SyncPairs));
+        OnPropertyChanged(nameof(IsAllPairsSelected));
+    }
+
+    private void SelectAccount(LayoutCAccountCardViewModel selected)
+    {
+        selectedAccountId = selected.IsSelected ? Option.None<AccountId>() : Option.Some(selected.Account.Id);
+
+        foreach (var card in AccountCards)
+            card.IsSelected = selectedAccountId.Match(id => id == card.Account.Id, () => false);
+
+        OnPropertyChanged(nameof(SyncPairs));
+        OnPropertyChanged(nameof(IsAllPairsSelected));
+    }
+
+    private bool IsOfSelectedAccount(SyncPairViewModel pair) => selectedAccountId.Match(id => pair.AccountId == id, () => true);
+
+    private void SelectAllPairs()
+    {
+        selectedAccountId = Option.None<AccountId>();
+
+        foreach (var card in AccountCards)
+            card.IsSelected = false;
+
+        ApplyFilter(_ => true, _ => false);
+    }
 
     private void SelectProvider(ProviderFilterViewModel selected) => ApplyFilter(selected.Matches, filter => ReferenceEquals(filter, selected));
 
