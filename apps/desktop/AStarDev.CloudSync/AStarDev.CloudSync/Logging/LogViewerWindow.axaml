@@ -1,0 +1,63 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vmLogging="using:AStarDev.CloudSync.ViewModels.Logging"
+        x:Class="AStarDev.CloudSync.Logging.LogViewerWindow"
+        x:DataType="vmLogging:LogViewerViewModel"
+        Icon="avares://AStarDev.CloudSync/Assets/astar.ico"
+        Width="1100" Height="700"
+        MinWidth="700" MinHeight="400"
+        Title="{Binding TitleText}">
+    <Grid RowDefinitions="Auto,*"
+          HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch">
+        <StackPanel Grid.Row="0" Margin="16,12,16,8" Spacing="8">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <StackPanel Spacing="2">
+                    <TextBlock Classes="muted" Text="{Binding AccountText}" />
+                    <ComboBox MinWidth="200"
+                              ItemsSource="{Binding AccountOptions}"
+                              SelectedItem="{Binding SelectedAccount, Mode=TwoWay}"
+                              DisplayMemberBinding="{ReflectionBinding Label}"
+                              AutomationProperties.Name="{Binding AccountText}" />
+                </StackPanel>
+                <StackPanel Spacing="2">
+                    <TextBlock Classes="muted" Text="{Binding LevelText}" />
+                    <ComboBox MinWidth="200"
+                              ItemsSource="{Binding LevelOptions}"
+                              SelectedItem="{Binding SelectedLevel, Mode=TwoWay}"
+                              DisplayMemberBinding="{ReflectionBinding Label}"
+                              AutomationProperties.Name="{Binding LevelText}" />
+                </StackPanel>
+                <StackPanel Spacing="2">
+                    <TextBlock Classes="muted" Text="{Binding SearchLabelText}" />
+                    <TextBox MinWidth="260"
+                             Text="{Binding SearchText, Mode=TwoWay}"
+                             AutomationProperties.Name="{Binding SearchLabelText}" />
+                </StackPanel>
+                <Button VerticalAlignment="Bottom"
+                        Content="{Binding RefreshText}"
+                        Command="{Binding RefreshCommand}"
+                        AutomationProperties.Name="{Binding RefreshText}" />
+                <Button VerticalAlignment="Bottom"
+                        Content="{Binding CopyText}"
+                        Command="{Binding CopyDiagnosticsCommand}"
+                        AutomationProperties.Name="{Binding CopyText}" />
+            </StackPanel>
+            <TextBlock Classes="muted" Text="{Binding StatusText}" />
+        </StackPanel>
+        <ListBox Grid.Row="1"
+                 Margin="16,0,16,16"
+                 MinHeight="0"
+                 ItemsSource="{Binding Lines}"
+                 FontFamily="Cascadia Mono, Consolas, Menlo, DejaVu Sans Mono, monospace"
+                 FontSize="12"
+                 ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                 AutomationProperties.Name="{Binding TitleText}">
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="x:String">
+                    <TextBlock Text="{Binding}" TextWrapping="NoWrap" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</Window>

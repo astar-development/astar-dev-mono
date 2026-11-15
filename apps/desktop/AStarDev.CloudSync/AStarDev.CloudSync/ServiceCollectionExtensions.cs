@@ -1,3 +1,4 @@
+using AStarDev.CloudSync.ViewModels.Logging;
 using System.Runtime.InteropServices;
 using System.Globalization;
 using System.IO.Abstractions;
@@ -108,6 +109,9 @@ public static class ServiceCollectionExtensions
             .AddSingleton<LogFileSweeper>()
             .AddSingleton<ILogFileLocator, CloudSyncLogFileLocator>()
             .AddSingleton<ILogEntryReader, LogEntryReader>()
+            .AddSingleton<ILogDiagnosticsClipboard, AvaloniaLogDiagnosticsClipboard>()
+            .AddSingleton<LogViewerViewModel>()
+            .AddSingleton<LogViewerLauncher>()
             .AddSingleInstance()
             .AddSingleton(provider => SingleInstanceOptionsFactory.Create(provider.GetRequiredService<IFileSystem>().DirectoryInfo.New(ApplicationName.ApplicationDirectory()), SingleInstanceName, null))
             .AddCloudSyncPersistence(provider => provider.GetRequiredService<IFileSystem>().FileInfo.New(DatabaseFilePath))
