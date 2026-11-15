@@ -4,6 +4,7 @@ using AStarDev.CloudSync.ViewModels.Accounts;
 using AStarDev.CloudSync.ViewModels.Activity;
 using AStarDev.CloudSync.ViewModels.Common;
 using AStarDev.CloudSync.ViewModels.Conflicts;
+using AStarDev.CloudSync.ViewModels.FolderSelection;
 using AStarDev.CloudSync.ViewModels.Overview;
 using AStarDev.CloudSync.ViewModels.SyncPairs;
 using AStarDev.FunctionalParadigm;
@@ -28,12 +29,13 @@ public sealed class AccountDetailViewModel : LayoutBDetailViewModel
     /// <param name="activity">Activity across every account, newest first; only this account's entries are kept.</param>
     /// <param name="localPathFormatter">Shortens the synced folders' local paths.</param>
     /// <param name="syncActions">Carries out the account actions the user picks.</param>
-    /// <param name="conflicts">The account's conflicts, shown on the Conflicts tab and read when the tab is selected.</param>
+    /// <param name="tabs">The view models of the Folders and Conflicts tabs, read when their tab is selected.</param>
     /// <param name="localization">Supplies the text and culture.</param>
-    public AccountDetailViewModel(AccountViewModel account, IReadOnlyList<SyncPairViewModel> syncPairs, IEnumerable<ActivityItemViewModel> activity, LocalPathFormatter localPathFormatter, ISyncActions syncActions, ConflictListViewModel conflicts, ILocalizationService localization) : base(localization)
+    public AccountDetailViewModel(AccountViewModel account, IReadOnlyList<SyncPairViewModel> syncPairs, IEnumerable<ActivityItemViewModel> activity, LocalPathFormatter localPathFormatter, ISyncActions syncActions, AccountDetailTabs tabs, ILocalizationService localization) : base(localization)
     {
         Account = account;
-        Conflicts = conflicts;
+        Conflicts = tabs.Conflicts;
+        Folders = tabs.Folders;
         PauseCommand = new AsyncRelayCommand(cancellationToken => syncActions.PauseAsync(account.Id, cancellationToken));
         SyncNowCommand = new AsyncRelayCommand(cancellationToken => syncActions.SyncNowAsync(account.Id, cancellationToken));
         AddFolderCommand = new AsyncRelayCommand(cancellationToken => syncActions.AddSyncPairAsync(Option.Some(account.Id), cancellationToken));
@@ -49,6 +51,9 @@ public sealed class AccountDetailViewModel : LayoutBDetailViewModel
         ];
     }
 
+    /// <summary>The position of the Folders tab.</summary>
+    public const int FoldersTabIndex = 1;
+
     /// <summary>The position of the Conflicts tab.</summary>
     public const int ConflictsTabIndex = 3;
 
@@ -60,16 +65,22 @@ public sealed class AccountDetailViewModel : LayoutBDetailViewModel
     /// <summary>The account's conflicts, read each time the Conflicts tab is selected.</summary>
     public ConflictListViewModel Conflicts { get; }
 
-    /// <summary>The selected tab: Overview, Folders, Activity or Conflicts. Selecting Conflicts reads the account's conflicts.</summary>
+    /// <summary>The account's folder selection, read each time the Folders tab is selected.</summary>
+    public FolderSelectionViewModel Folders { get; }
+
+    /// <summary>The selected tab: Overview, Folders, Activity or Conflicts. Selecting Folders or Conflicts reads the account's folders or conflicts.</summary>
     public int SelectedTabIndex
     {
         get => selectedTabIndex;
         set
         {
-            if (!SetProperty(ref selectedTabIndex, value) || value != ConflictsTabIndex)
+            if (!SetProperty(ref selectedTabIndex, value))
                 return;
 
-            _ = Conflicts.RefreshCommand.ExecuteAsync(null);
+            if (value == FoldersTabIndex)
+                _ = Folders.ShowAccountCommand.ExecuteAsync(Account.Id);
+            else if (value == ConflictsTabIndex)
+                _ = Conflicts.RefreshCommand.ExecuteAsync(null);
         }
     }
 

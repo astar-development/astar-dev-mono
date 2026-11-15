@@ -6,6 +6,7 @@
              xmlns:overview="using:AStarDev.CloudSync.Overview"
              xmlns:common="using:AStarDev.CloudSync.Common"
              xmlns:conflicts="using:AStarDev.CloudSync.Conflicts"
+             xmlns:folderSelection="using:AStarDev.CloudSync.FolderSelection"
              xmlns:vmAccounts="using:AStarDev.CloudSync.ViewModels.Accounts"
              xmlns:vmActivity="using:AStarDev.CloudSync.ViewModels.Activity"
              xmlns:vmLayouts="using:AStarDev.CloudSync.ViewModels.Layouts"
@@ -289,7 +290,9 @@
                                     </Grid>
                                 </Grid>
                             </TabItem>
-                            <TabItem Header="{Binding FoldersTabText}" />
+                            <TabItem Header="{Binding FoldersTabText}">
+                                <folderSelection:FolderSelectionContent DataContext="{Binding Folders}" Margin="0,12,0,0" />
+                            </TabItem>
                             <TabItem Header="{Binding ActivityTabText}" />
                             <TabItem Header="{Binding ConflictsTabText}">
                                 <conflicts:ConflictListContent DataContext="{Binding Conflicts}" IsEmbedded="True" Margin="0,12,0,0" />

@@ -15,6 +15,14 @@ public abstract record LayoutAPage
         }
     }
 
+    /// <summary>The folder selection of the selected account.</summary>
+    public sealed record Folders : LayoutAPage
+    {
+        internal Folders()
+        {
+        }
+    }
+
     /// <summary>The conflicts of every account.</summary>
     public sealed record Conflicts : LayoutAPage
     {

@@ -46,9 +46,15 @@ public sealed class FolderSelectionViewModel : LocalizedObservableObject, IFolde
         ApplyCommand = new AsyncRelayCommand(ApplyAsync, () => Step is FolderSelectionStep.Tree && HasChanges);
         ConfirmCommand = new AsyncRelayCommand(ConfirmAsync);
         BackCommand = new RelayCommand(Back);
-        CancelCommand = new RelayCommand(Close);
+        CancelCommand = new RelayCommand(Cancel);
         RetryCommand = new AsyncRelayCommand(RetryAsync);
     }
+
+    /// <summary>Where the folder selection is shown. A page stays shown after Apply or Cancel; the dialog closes.</summary>
+    internal FolderSelectionHosting Hosting { get; init; } = FolderSelectionHostingFactory.CreateDialog();
+
+    /// <summary>Shows an account's folders in place, dropping anything staged before. For a page; the dialog is opened with <see cref="ShowAsync"/>.</summary>
+    public IAsyncRelayCommand<AccountId> ShowAccountCommand => field ??= new AsyncRelayCommand<AccountId>(ShowAccountAsync);
 
     /// <summary>Where the dialog is.</summary>
     public FolderSelectionStep Step { get; private set; } = FolderSelectionStepFactory.CreateClosed();
@@ -280,6 +286,43 @@ public sealed class FolderSelectionViewModel : LocalizedObservableObject, IFolde
         _ = closed.TrySetResult();
     }
 
+    private Task ShowAccountAsync(AccountId accountId, CancellationToken cancellationToken)
+    {
+        callerToken = cancellationToken;
+        Reset();
+
+        return OpenTreeAsync(accountId, cancellationToken);
+    }
+
+    private void Cancel()
+    {
+        if (Hosting is FolderSelectionHosting.Page)
+        {
+            staged.Clear();
+            StagedChanged();
+            SetMessage(string.Empty);
+
+            return;
+        }
+
+        Close();
+    }
+
+    private Task FinishAsync(CancellationToken cancellationToken)
+    {
+        if (Hosting is not FolderSelectionHosting.Page)
+        {
+            Close();
+
+            return Task.CompletedTask;
+        }
+
+        staged.Clear();
+        SetStep(FolderSelectionStepFactory.CreateTree());
+
+        return LoadRootAsync(cancellationToken);
+    }
+
     private void Back()
     {
         if (Step is FolderSelectionStep.ConfirmingUntick)
@@ -393,20 +436,15 @@ public sealed class FolderSelectionViewModel : LocalizedObservableObject, IFolde
         SetMessage(string.Empty);
         SetStep(FolderSelectionStepFactory.CreateSaving());
         var saved = await writer.ApplyAsync(account, [.. staged], cancellationToken);
-        _ = saved.Match(
-            _ =>
-            {
-                Close();
+        await saved.Match(_ => FinishAsync(cancellationToken), _ => SaveFailedAsync());
+    }
 
-                return Unit.Instance;
-            },
-            _ =>
-            {
-                SetMessage(Localization.GetLocal("FolderSelection.Failure.Save"));
-                SetStep(FolderSelectionStepFactory.CreateTree());
+    private Task SaveFailedAsync()
+    {
+        SetMessage(Localization.GetLocal("FolderSelection.Failure.Save"));
+        SetStep(FolderSelectionStepFactory.CreateTree());
 
-                return Unit.Instance;
-            });
+        return Task.CompletedTask;
     }
 
     private static string ConfirmPromptKey(int count) => count == 1 ? "FolderSelection.Confirm.Prompt.One" : "FolderSelection.Confirm.Prompt.Many";

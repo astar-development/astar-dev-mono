@@ -22,7 +22,7 @@ public class GivenTheSignInRequiredCardSnapshot
         Assert.SkipUnless(OperatingSystem.IsLinux(), Snapshot.LinuxOnlyReason);
         var overview = new SyncOverviewViewModel(new FixedOverviewSource(SyncOverviewFactory.Create([TestData.CreateAccountNeedingSignIn()], [], [], [], [], 0, Option.None<DateTimeOffset>())), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         await overview.LoadAsync(TestContext.Current.CancellationToken);
-        var window = new Window { Content = new LayoutAView { DataContext = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateLocalization()) } };
+        var window = new Window { Content = new LayoutAView { DataContext = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateLocalization()) } };
 
         Snapshot.ShouldMatchBaseline(window, theme == "dark" ? ThemeVariant.Dark : ThemeVariant.Light, $"layout-a-sign-in-required-{theme}");
     }
