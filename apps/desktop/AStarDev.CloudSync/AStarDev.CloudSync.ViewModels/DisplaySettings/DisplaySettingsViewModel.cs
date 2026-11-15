@@ -18,11 +18,12 @@ public sealed class DisplaySettingsViewModel : LocalizedObservableObject
     /// <param name="schedule">The automatic sync interval setting.</param>
     /// <param name="trashRetention">The sync trash retention setting.</param>
     /// <param name="localization">Supplies the text.</param>
-    public DisplaySettingsViewModel(IDisplayPreferencesStore store, IThemeApplier themeApplier, PlaintextCacheConsentSettingsViewModel plaintextCacheConsent, SyncScheduleSettingsViewModel schedule, TrashRetentionSettingsViewModel trashRetention, ILocalizationService localization) : base(localization)
+    public DisplaySettingsViewModel(IDisplayPreferencesStore store, IThemeApplier themeApplier, PlaintextCacheConsentSettingsViewModel plaintextCacheConsent, SyncScheduleSettingsViewModel schedule, TrashRetentionSettingsViewModel trashRetention, AutostartSettingsViewModel autostart, ILocalizationService localization) : base(localization)
     {
         PlaintextCacheConsent = plaintextCacheConsent;
         Schedule = schedule;
         TrashRetention = trashRetention;
+        Autostart = autostart;
         this.store = store;
         this.themeApplier = themeApplier;
         preferences = store.Load();
@@ -61,6 +62,9 @@ public sealed class DisplaySettingsViewModel : LocalizedObservableObject
 
     /// <summary>The sync trash retention setting.</summary>
     public TrashRetentionSettingsViewModel TrashRetention { get; }
+
+    /// <summary>The start at login setting.</summary>
+    public AutostartSettingsViewModel Autostart { get; }
 
     /// <summary>The settings panel title and settings button name.</summary>
     public string Title => Localization.GetLocal("Settings.Title");

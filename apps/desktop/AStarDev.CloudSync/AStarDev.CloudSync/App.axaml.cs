@@ -46,11 +46,13 @@ public partial class App : Application, IDisposable
             var window = new MainWindow { DataContext = services.GetRequiredService<MainWindowViewModel>() };
             desktop.MainWindow = window;
             KeepRunningInTray(window);
+            StartHiddenWhenAutostarted(window, desktop.Args);
             _ = services.GetRequiredService<SyncNotifier>();
             KeepAsRunningInstance(claim, window, desktop);
             _ = services.GetRequiredService<SyncOverviewViewModel>().LoadAsync(CancellationToken.None);
             _ = services.GetRequiredService<SignInStateOverviewReloader>();
             _ = services.GetRequiredService<SyncScheduleSettingsViewModel>().LoadAsync(CancellationToken.None);
+            _ = services.GetRequiredService<AutostartSettingsViewModel>().LoadAsync(CancellationToken.None);
             _ = services.GetRequiredService<TrashRetentionSettingsViewModel>().LoadAsync(CancellationToken.None);
             recovery = Task.Run(() => services.GetRequiredService<IInterruptedSyncRecovery>().RecoverAsync(shutdown.Token), shutdown.Token);
             _ = services.GetRequiredService<ISyncScheduler>().StartAsync(CancellationToken.None);
@@ -62,6 +64,12 @@ public partial class App : Application, IDisposable
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private static void StartHiddenWhenAutostarted(Window window, string[]? arguments)
+    {
+        if (arguments?.Contains("--minimized", StringComparer.Ordinal) == true)
+            window.Opened += (_, _) => window.Hide();
     }
 
     private void SweepLogFiles()
