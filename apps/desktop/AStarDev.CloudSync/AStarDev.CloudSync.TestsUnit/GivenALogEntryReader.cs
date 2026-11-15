@@ -44,6 +44,20 @@ public sealed class GivenALogEntryReader
     }
 
     [Fact]
+    public async Task when_a_day_was_split_by_size_then_the_numbered_files_follow_the_first_in_order()
+    {
+        File("cloudsync-20261115-10.log", "2026-11-15 09:00:03.000 +00:00 [Information] Cat: fourth");
+        File("cloudsync-20261115-2.log", "2026-11-15 09:00:01.000 +00:00 [Information] Cat: second");
+        File("cloudsync-20261115.log", "2026-11-15 09:00:00.000 +00:00 [Information] Cat: first");
+        File("cloudsync-20261115-3.log", "2026-11-15 09:00:02.000 +00:00 [Information] Cat: third");
+        File("cloudsync-20261116.log", "2026-11-16 09:00:00.000 +00:00 [Information] Cat: next day");
+
+        var lines = await ReadAsync(LogQueryFactory.CreateEverything());
+
+        lines.Select(line => line.Message).ShouldBe(["first", "second", "third", "fourth", "next day"]);
+    }
+
+    [Fact]
     public async Task when_the_folder_does_not_exist_then_nothing_is_returned()
     {
         var lines = await ReadAsync(LogQueryFactory.CreateEverything());

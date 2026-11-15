@@ -79,7 +79,10 @@ public partial class App : Application, IDisposable
         var sweeper = services?.GetRequiredService<LogFileSweeper>();
         var folder = services?.GetRequiredService<System.IO.Abstractions.IFileSystem>().DirectoryInfo.New(CloudSyncLogging.FolderPath());
         if (sweeper is not null && folder is not null)
+        {
             _ = sweeper.DeleteOlderThan(folder, CloudSyncLogging.FileNamePrefix, CloudSyncLogging.Retention);
+            _ = LogFileSweeper.DeleteBeyondTotalSize(folder, CloudSyncLogging.FileNamePrefix, CloudSyncLogging.MaxTotalBytes);
+        }
     }
 
     private void KeepRunningInTray(Window window)

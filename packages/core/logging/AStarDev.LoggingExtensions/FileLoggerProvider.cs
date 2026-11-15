@@ -10,9 +10,13 @@ namespace AStarDev.LoggingExtensions;
 /// <param name="directory">The directory the log files are written to.</param>
 /// <param name="fileNamePrefix">The start of every log file name.</param>
 /// <param name="timeProvider">The clock used for the entry timestamps and to choose the day's file.</param>
+/// <param name="maxFileBytes">The size a day's file may reach before entries go to a new file, <c>{prefix}-{yyyyMMdd}-{n}.log</c>. Zero or less means no limit.</param>
 /// <param name="admit">Decides, from an entry's level and the values of its log scopes, whether it is written. When it is <see langword="null"/> every entry is written.</param>
-public sealed class FileLoggerProvider(string directory, string fileNamePrefix, TimeProvider timeProvider, Func<LogLevel, IReadOnlyDictionary<string, object?>, bool>? admit = null) : ILoggerProvider, ISupportExternalScope
+public sealed class FileLoggerProvider(string directory, string fileNamePrefix, TimeProvider timeProvider, Func<LogLevel, IReadOnlyDictionary<string, object?>, bool>? admit = null, long maxFileBytes = 0) : ILoggerProvider, ISupportExternalScope
 {
+    private readonly long fileLimit = maxFileBytes;
+    private DateTime currentDay = DateTime.MinValue;
+    private int currentIndex = 1;
     private readonly Func<LogLevel, IReadOnlyDictionary<string, object?>, bool>? admission = admit;
     private IExternalScopeProvider scopes = new LoggerExternalScopeProvider();
 
@@ -72,7 +76,7 @@ public sealed class FileLoggerProvider(string directory, string fileNamePrefix, 
             lock (gate)
             {
                 _ = Directory.CreateDirectory(directory);
-                File.AppendAllText(FilePathFor(now), entry.ToString());
+                File.AppendAllText(PathToWrite(now), entry.ToString());
             }
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -80,6 +84,26 @@ public sealed class FileLoggerProvider(string directory, string fileNamePrefix, 
             // Deliberately ignored - see the type summary.
         }
     }
+
+    private string PathToWrite(DateTimeOffset moment)
+    {
+        if (fileLimit <= 0)
+            return FilePathFor(moment);
+
+        if (moment.Date != currentDay)
+        {
+            currentDay = moment.Date;
+            currentIndex = 1;
+        }
+
+        var path = NumberedPath(moment, currentIndex);
+        while (File.Exists(path) && new FileInfo(path).Length >= fileLimit)
+            path = NumberedPath(moment, ++currentIndex);
+
+        return path;
+    }
+
+    private string NumberedPath(DateTimeOffset moment, int index) => index == 1 ? FilePathFor(moment) : Path.Combine(directory, $"{fileNamePrefix}-{moment:yyyyMMdd}-{index}.log");
 
     private static string CultureInvariant(FormattableString value) => FormattableString.Invariant(value);
 

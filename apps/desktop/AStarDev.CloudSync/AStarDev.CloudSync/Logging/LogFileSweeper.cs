@@ -23,6 +23,33 @@ public sealed class LogFileSweeper(TimeProvider timeProvider)
         return folder.EnumerateFiles($"{fileNamePrefix}-*.log").Where(file => file.LastWriteTimeUtc < cutoff).Count(DeleteQuietly);
     }
 
+    /// <summary>Deletes the oldest <c>{prefix}-*.log</c> files until the ones left take up no more than <paramref name="maxTotalBytes"/>. Other files are neither counted nor deleted.</summary>
+    /// <param name="folder">The log folder. A folder that does not exist has nothing to delete.</param>
+    /// <param name="fileNamePrefix">The prefix of the app's log file names.</param>
+    /// <param name="maxTotalBytes">The most the log files may take up together.</param>
+    /// <returns>How many files were deleted.</returns>
+    public static int DeleteBeyondTotalSize(IDirectoryInfo folder, string fileNamePrefix, long maxTotalBytes) 
+    {
+        folder.Refresh();
+        if (!folder.Exists)
+            return 0;
+
+        var files = folder.EnumerateFiles($"{fileNamePrefix}-*.log").OrderBy(file => file.LastWriteTimeUtc).ThenBy(file => file.Name, StringComparer.Ordinal).ToList();
+        var total = files.Sum(file => file.Length);
+        var deleted = 0;
+        foreach (var file in files.TakeWhile(_ => total > maxTotalBytes))
+        {
+            var size = file.Length;
+            if (!DeleteQuietly(file))
+                continue;
+
+            total -= size;
+            deleted++;
+        }
+
+        return deleted;
+    }
+
     private static bool DeleteQuietly(IFileInfo file) => Try.Run(() =>
     {
         file.Delete();

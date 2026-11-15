@@ -46,9 +46,9 @@ public sealed class GivenCloudSyncLogging : IDisposable
     }
 
     [Fact]
-    public void when_the_retention_is_asked_then_log_files_are_kept_for_two_weeks()
+    public void when_the_limits_are_asked_then_files_are_kept_seven_days_ten_megabytes_each_and_a_hundred_in_total()
     {
-        CloudSyncLogging.Retention.ShouldBe(TimeSpan.FromDays(14));
+        (CloudSyncLogging.Retention, CloudSyncLogging.MaxFileBytes, CloudSyncLogging.MaxTotalBytes).ShouldBe((TimeSpan.FromDays(7), 10_485_760L, 104_857_600L));
     }
 
     [Fact]
