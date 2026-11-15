@@ -22,7 +22,7 @@
         <PackageProjectUrl>https://github.com/astar-development/astar-dev-mono/tree/main/packages/core</PackageProjectUrl>
         <DocumentationFile>$(AssemblyName).xml</DocumentationFile>
         <PackageReleaseNotes>
-        v2.1.0 feat(logging): export metrics and traces for a named meter and activity source (#1518)
+        v2.1.0 feat(cloudsync): OpenTelemetry metrics and traces for startup and overview refresh
         v2.0.1 refactor(logging): drop InternalsVisibleTo from LoggingOTel (#1417)
         v2.0.0 chore(logging)!: remove the always-null LogEntry.AccountId (#1388)
         v1.1.0 feat(logging): export error.type on failed operations (#1374)
