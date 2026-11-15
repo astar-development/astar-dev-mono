@@ -4,6 +4,7 @@ using AStarDev.CloudSync.Overview;
 using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.TestHelpers.Accounts;
 using AStarDev.CloudSync.TestHelpers.Common;
+using AStarDev.CloudSync.TestHelpers.Conflicts;
 using AStarDev.FunctionalParadigm;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -334,6 +335,76 @@ public class GivenAnAccountStoreSyncOverviewSource
         error.ShouldBe("The paused accounts could not be read.");
     }
 
+    [Fact]
+    public async Task when_an_account_has_open_conflicts_then_the_overview_carries_them_and_leaves_out_held_deletions()
+    {
+        var attention = new FakeAttentionReader();
+        attention.Add(FlintId, AttentionItems.CreateConflict(FlintId, "Docs/a.docx"), AttentionItems.CreateConflict(FlintId, "Docs/b.docx"), SyncAttentionItemFactory.CreateHeldDeletions(new HeldDeletionId(Guid.NewGuid()), FlintId, new SyncPairId(Guid.NewGuid()), DeletionDirectionFactory.CreateDeleteLocal(), [AttentionItems.Path("c.txt")], DateTimeOffset.UnixEpoch));
+
+        var overview = await LoadWithAttentionAsync(attention);
+
+        overview.Conflicts.Count.ShouldBe(2);
+        overview.Conflicts.ShouldAllBe(item => item is SyncAttentionItem.Conflict);
+    }
+
+    [Fact]
+    public async Task when_an_up_to_date_account_has_open_conflicts_then_its_status_is_has_conflicts_with_their_count()
+    {
+        var attention = new FakeAttentionReader();
+        attention.Add(FlintId, AttentionItems.CreateConflict(FlintId, "Docs/a.docx"), AttentionItems.CreateConflict(FlintId, "Docs/b.docx"));
+
+        var overview = await LoadWithAttentionAsync(attention);
+
+        overview.Accounts.ShouldHaveSingleItem().Status.ShouldBe(SyncStatusFactory.CreateHasConflicts(2));
+    }
+
+    [Fact]
+    public async Task when_a_syncing_account_has_open_conflicts_then_it_keeps_showing_as_syncing()
+    {
+        var attention = new FakeAttentionReader();
+        attention.Add(FlintId, AttentionItems.CreateConflict(FlintId, "Docs/a.docx"));
+        var runs = new FakeSyncRunStatusSource();
+        runs.Set(FlintId, SyncStatusFactory.CreateSyncing(25));
+
+        var overview = await LoadWithAttentionAsync(attention, runs);
+
+        overview.Accounts.ShouldHaveSingleItem().Status.ShouldBe(SyncStatusFactory.CreateSyncing(25));
+        overview.Conflicts.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_a_paused_account_has_open_conflicts_then_it_keeps_showing_as_paused()
+    {
+        var attention = new FakeAttentionReader();
+        attention.Add(FlintId, AttentionItems.CreateConflict(FlintId, "Docs/a.docx"));
+        var pauses = new FakeAccountPauseReader { Paused = Result.Success<IReadOnlyList<AccountId>, ErrorResponse>([FlintId]) };
+
+        var overview = await LoadWithAttentionAsync(attention, pauses: pauses);
+
+        overview.Accounts.ShouldHaveSingleItem().Status.ShouldBe(SyncStatusFactory.CreatePaused());
+    }
+
+    [Fact]
+    public async Task when_the_open_items_cannot_be_read_then_the_overview_still_loads_without_conflicts_and_warns_without_details()
+    {
+        var attention = new FakeAttentionReader { Fails = _ => new ErrorResponse("secret-detail") };
+        using var logs = new RecordingLoggerProvider();
+
+        var overview = await LoadWithAttentionAsync(attention, logs: logs);
+
+        overview.Conflicts.ShouldBeEmpty();
+        overview.Accounts.ShouldHaveSingleItem().Status.ShouldBe(SyncStatusFactory.CreateUpToDate());
+        string.Join("\n", logs.Logger.Messages).ShouldContain("conflicts");
+        string.Join("\n", logs.Logger.Messages).ShouldNotContain("secret-detail");
+    }
+
+    private static Task<SyncOverview> LoadWithAttentionAsync(FakeAttentionReader attention, ISyncRunStatusSource? runs = null, IAccountPauseReader? pauses = null, RecordingLoggerProvider? logs = null)
+    {
+        var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]) };
+
+        return CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), new FakeSyncPairReader(), runs ?? new FakeSyncRunStatusSource(), pauses ?? new FakeAccountPauseReader(), new FakeSyncBaselineCounter(), new FakeActivityLogReader(), logs, null, attention).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(overview => overview, failure => throw new InvalidOperationException(failure.Message));
+    }
+
     private static Task<SyncOverview> LoadAsync(FakeAccountStore store, ISyncRunStatusSource runs, IAccountPauseReader pauses) => CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), new FakeSyncPairReader(), runs, pauses).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(overview => overview, failure => throw new InvalidOperationException(failure.Message));
 
     private static Task<SyncOverview> LoadAsync(FakeAccountStore store) => LoadAsync(store, new FakeAccountSignInStates());
@@ -355,12 +426,13 @@ public class GivenAnAccountStoreSyncOverviewSource
     private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store, IAccountSignInStates states, ISyncPairReader pairReader, ISyncRunStatusSource runStatuses, IAccountPauseReader pauseReader, IActivityLogReader activityReader) =>
         CreateSource(database, store, states, pairReader, runStatuses, pauseReader, new FakeSyncBaselineCounter(), activityReader);
 
-    private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store, IAccountSignInStates states, ISyncPairReader pairReader, ISyncRunStatusSource runStatuses, IAccountPauseReader pauseReader, ISyncBaselineCounter counter, IActivityLogReader activityReader, RecordingLoggerProvider? logs = null, ISyncRunJournal? journal = null) =>
+    private static ISyncOverviewSource CreateSource(ICloudSyncDatabase database, IAccountStore store, IAccountSignInStates states, ISyncPairReader pairReader, ISyncRunStatusSource runStatuses, IAccountPauseReader pauseReader, ISyncBaselineCounter counter, IActivityLogReader activityReader, RecordingLoggerProvider? logs = null, ISyncRunJournal? journal = null, ISyncAttentionReader? attention = null) =>
         new ServiceCollection()
             .AddLogging(logging => _ = logs is null ? logging.ClearProviders() : logging.ClearProviders().AddProvider(logs))
             .AddSingleton(counter)
             .AddSingleton(activityReader)
             .AddSingleton(journal ?? new InMemorySyncRunJournal())
+            .AddSingleton(attention ?? new FakeAttentionReader())
             .AddSingleton(database)
             .AddSingleton(store)
             .AddSingleton(states)
