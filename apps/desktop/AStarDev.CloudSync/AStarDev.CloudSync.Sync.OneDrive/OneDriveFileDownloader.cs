@@ -35,8 +35,13 @@ internal sealed class OneDriveFileDownloader(OneDriveGraphAccess graphAccess, IH
 
     private static Result<(DriveItem Item, string Url), ProviderError> UrlOf(DriveItem? item) =>
         item?.AdditionalData is { } data && data.TryGetValue(DownloadUrlKey, out var url) && url is string text && text.Length > 0
-            ? Result.Success<(DriveItem, string), ProviderError>((item, text))
+            ? SecureUrl(item, text)
             : Result.Failure<(DriveItem, string), ProviderError>(ProviderErrorFactory.CreateNotFound());
+
+    private static Result<(DriveItem Item, string Url), ProviderError> SecureUrl(DriveItem item, string url) =>
+        Uri.TryCreate(url, UriKind.Absolute, out var address) && address.Scheme == Uri.UriSchemeHttps
+            ? Result.Success<(DriveItem, string), ProviderError>((item, url))
+            : Result.Failure<(DriveItem, string), ProviderError>(ProviderErrorFactory.CreateUnexpected());
 
     private static Result<DownloadedFile, ProviderError> Described(RemoteItemId fileId, DriveItem item, long size) =>
         ContentTagFactory.Create(item.CTag).Match(

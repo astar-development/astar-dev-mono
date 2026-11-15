@@ -206,6 +206,22 @@ public sealed class GivenAnOneDriveFileDownloader : IDisposable
         downloads.Count.ShouldBe(1);
     }
 
+    [Theory]
+    [InlineData("http://download.example/content?sig=SECRET-SIGNATURE")]
+    [InlineData("ftp://download.example/content")]
+    [InlineData("//download.example/content")]
+    [InlineData("download.example/content")]
+    public async Task when_the_download_url_is_not_https_then_the_error_is_unexpected_and_nothing_is_requested_from_it(string url)
+    {
+        Serve(_ => Bytes(HttpStatusCode.OK, Content), ItemJson(url));
+        var (downloader, account) = await StartAsync();
+
+        var result = await downloader.DownloadAsync(account, FileId(), NewTarget(), new Progress<TransferProgress>(), CancellationToken);
+
+        result.Match(_ => "ok", error => error.GetType().Name).ShouldBe("Unexpected");
+        downloads.ShouldBeEmpty();
+    }
+
     [Fact]
     public async Task when_the_item_has_no_download_url_then_the_error_is_not_found()
     {
