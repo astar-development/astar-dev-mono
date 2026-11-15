@@ -17,7 +17,7 @@ internal sealed class SyncPassJournal(ISyncRunJournal journal, LiveSyncRuns live
     /// <param name="accountId">The account.</param>
     /// <param name="trigger">What started the run.</param>
     public Task<Option<SyncRunId>> StartAsync(AccountId accountId, SyncTrigger trigger) =>
-        journal.StartAsync(accountId, trigger, CancellationToken.None).MatchAsync(Began, _ => NoRow());
+        live.StartingAsync(() => journal.StartAsync(accountId, trigger, CancellationToken.None).MatchAsync(Began, _ => NoRow()));
 
     /// <summary>Records how the run ended. Nothing is written for a run that has no row.</summary>
     /// <param name="runId">The run's row, if it was written.</param>

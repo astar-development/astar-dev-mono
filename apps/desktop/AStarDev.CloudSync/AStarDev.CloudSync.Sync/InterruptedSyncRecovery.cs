@@ -54,6 +54,7 @@ internal sealed class InterruptedSyncRecovery(ISyncRunJournal journal, IActivity
 
     private async Task<IReadOnlyList<RecoveryOutcome>> RecoverRunsAsync(IReadOnlyList<InterruptedSyncRun> unfinished, CancellationToken cancellationToken)
     {
+        await checks.Live.WhenStartsSettledAsync(cancellationToken).ConfigureAwait(false);
         var runs = unfinished.Where(run => !checks.Live.Contains(run.Id)).ToList();
         if (runs.Count == 0)
             return [];
