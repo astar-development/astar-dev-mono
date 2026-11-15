@@ -16,6 +16,9 @@ public sealed class FileLoggerProvider(string directory, string fileNamePrefix, 
     private readonly Func<LogLevel, IReadOnlyDictionary<string, object?>, bool>? admission = admit;
     private IExternalScopeProvider scopes = new LoggerExternalScopeProvider();
 
+    /// <summary>The log scope key whose string value, the hashed account id, is written into the line so the log viewer can filter by account (#1411). No other scope value is ever written.</summary>
+    public const string AccountIdHashKey = "AccountIdHash";
+
     private readonly Lock gate = new();
 
     /// <summary>Gets the path of the log file that entries written at <paramref name="moment"/> go to.</summary>
@@ -35,19 +38,17 @@ public sealed class FileLoggerProvider(string directory, string fileNamePrefix, 
         // Nothing to release: every entry is appended and closed straight away.
     }
 
-    private bool Admits(LogLevel logLevel)
+    private Dictionary<string, object?> ScopeValues()
     {
-        if (logLevel == LogLevel.None)
-            return false;
-
-        if (admission is null)
-            return true;
-
         var values = new Dictionary<string, object?>(StringComparer.Ordinal);
         scopes.ForEachScope(CollectScope, values);
 
-        return admission(logLevel, values);
+        return values;
     }
+
+    private bool Admits(LogLevel logLevel, IReadOnlyDictionary<string, object?> values) => logLevel != LogLevel.None && (admission is null || admission(logLevel, values));
+
+    private static string AccountTag(IReadOnlyDictionary<string, object?> values) => values.TryGetValue(AccountIdHashKey, out var hash) && hash is string text && text.Length > 0 ? $" [{AccountIdHashKey}={text}]" : string.Empty;
 
     private static void CollectScope(object? scope, Dictionary<string, object?> values)
     {
@@ -58,11 +59,11 @@ public sealed class FileLoggerProvider(string directory, string fileNamePrefix, 
             values[pair.Key] = pair.Value;
     }
 
-    private void Write(LogLevel logLevel, string categoryName, string message, Exception? exception)
+    private void Write(LogLevel logLevel, string categoryName, string message, Exception? exception, IReadOnlyDictionary<string, object?> values)
     {
         var now = timeProvider.GetLocalNow();
         var entry = new StringBuilder()
-            .Append(CultureInvariant($"{now:yyyy-MM-dd HH:mm:ss.fff zzz} [{logLevel}] {categoryName}: {message}"))
+            .Append(CultureInvariant($"{now:yyyy-MM-dd HH:mm:ss.fff zzz} [{logLevel}]{AccountTag(values)} {categoryName}: {message}"))
             .AppendLine();
         if (exception is not null) _ = entry.AppendLine(exception.ToString());
 
@@ -91,9 +92,12 @@ public sealed class FileLoggerProvider(string directory, string fileNamePrefix, 
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
-            if (!IsEnabled(logLevel) || !provider.Admits(logLevel)) return;
+            if (!IsEnabled(logLevel)) return;
 
-            provider.Write(logLevel, categoryName, formatter(state, exception), exception);
+            var values = provider.ScopeValues();
+            if (!provider.Admits(logLevel, values)) return;
+
+            provider.Write(logLevel, categoryName, formatter(state, exception), exception, values);
         }
     }
 }

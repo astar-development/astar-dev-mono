@@ -12,5 +12,5 @@ public static class LogLineFactory
     /// <param name="accountHash">The hashed account id, or none.</param>
     /// <param name="category">The category.</param>
     /// <param name="message">The message.</param>
-    public static LogLine Create(DateTimeOffset time, LogLevel level, Option<string> accountHash, string category, string message) => throw new NotImplementedException($"{time}{level}{accountHash}{category}{message}");
+    public static LogLine Create(DateTimeOffset time, LogLevel level, Option<string> accountHash, string category, string message) => new(time, level, accountHash, category, message);
 }
