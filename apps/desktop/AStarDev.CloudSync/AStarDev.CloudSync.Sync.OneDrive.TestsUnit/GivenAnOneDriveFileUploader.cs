@@ -45,6 +45,22 @@ public sealed class GivenAnOneDriveFileUploader : IDisposable
         };
     }
 
+    [Theory]
+    [InlineData("http://upload.example.test/session/secret-session-id")]
+    [InlineData("ftp://upload.example.test/session")]
+    [InlineData("upload.example.test/session")]
+    public async Task when_the_upload_session_url_is_not_https_then_the_error_is_unexpected_and_nothing_is_sent_to_it(string url)
+    {
+        _ = await BuiltAsync();
+        fixture.Graph.Respond = _ => RecordingGraphHandler.Json(HttpStatusCode.OK, "{\"uploadUrl\":\"" + url + "\",\"expirationDateTime\":\"2026-11-11T09:00:00Z\"}");
+        var source = fixture.File("a.txt", Bytes(5));
+
+        var result = await UploadAsync(Into("folder-1"), source, MustNotExist);
+
+        Describe(result).ShouldBe("Unexpected");
+        fixture.Graph.Requests.Count.ShouldBe(1);
+    }
+
     [Fact]
     public async Task when_a_small_new_file_is_uploaded_then_a_session_is_created_with_conflict_behavior_fail_and_the_local_write_time()
     {
