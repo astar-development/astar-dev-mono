@@ -1,0 +1,71 @@
+using System.Runtime.CompilerServices;
+using AStarDev.CloudSync.Accounts;
+using AStarDev.CloudSync.Logging;
+using AStarDev.CloudSync.Overview;
+using AStarDev.CloudSync.Sync;
+using AStarDev.CloudSync.TestHelpers.Common;
+using AStarDev.CloudSync.TestHelpers.Ui;
+using AStarDev.CloudSync.ViewModels.Logging;
+using AStarDev.CloudSync.ViewModels.Overview;
+using AStarDev.FunctionalParadigm;
+using Avalonia.Automation;
+using Avalonia.Controls;
+using Avalonia.Headless.XUnit;
+using Avalonia.VisualTree;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+
+namespace AStarDev.CloudSync.TestsUnit;
+
+public sealed class GivenTheLogViewerWindow
+{
+    private static async Task<LogViewerViewModel> LoadedViewModelAsync()
+    {
+        var overview = new SyncOverviewViewModel(new EmptySource(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
+        await overview.LoadAsync(CancellationToken.None);
+        var viewModel = new LogViewerViewModel(new OneLineReader(), overview, new NoClipboard(), TestData.CreateLocalization());
+        await viewModel.RefreshAsync(CancellationToken.None);
+
+        return viewModel;
+    }
+
+    [AvaloniaFact]
+    public async Task when_shown_then_the_title_and_the_lines_are_bound_from_the_view_model()
+    {
+        var window = new LogViewerWindow { DataContext = await LoadedViewModelAsync() };
+
+        window.Show();
+
+        (window.Title, window.GetVisualDescendants().OfType<ListBox>().Single().ItemCount).ShouldBe(("Log viewer", 1));
+    }
+
+    [AvaloniaFact]
+    public async Task when_shown_then_every_interactive_control_has_a_screen_reader_name()
+    {
+        var window = new LogViewerWindow { DataContext = await LoadedViewModelAsync() };
+
+        window.Show();
+
+        var unnamed = window.GetVisualDescendants().OfType<Control>().Where(control => control is ComboBox or TextBox or Button or ListBox).Where(control => control.FindAncestorOfType<ComboBox>() is null && string.IsNullOrWhiteSpace(AutomationProperties.GetName(control))).ToList();
+        unnamed.ShouldBeEmpty();
+    }
+
+    private sealed class EmptySource : ISyncOverviewSource
+    {
+        public Task<Result<SyncOverview, ErrorResponse>> GetOverviewAsync(CancellationToken cancellationToken) => Task.FromResult(Result.Success<SyncOverview, ErrorResponse>(SyncOverviewFactory.Create([], [], [], [], [], 0, Option.None<DateTimeOffset>())));
+    }
+
+    private sealed class OneLineReader : ILogEntryReader
+    {
+        public async IAsyncEnumerable<LogLine> ReadAsync(LogQuery query, [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+            yield return LogLineFactory.Create(DateTimeOffset.UnixEpoch, LogLevel.Information, Option.None<string>(), "Cat", "hello");
+        }
+    }
+
+    private sealed class NoClipboard : ILogDiagnosticsClipboard
+    {
+        public Task SetTextAsync(string text, CancellationToken cancellationToken) => Task.CompletedTask;
+    }
+}

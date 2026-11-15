@@ -382,5 +382,17 @@
   "FolderSelection.Glyph.Collapsed": "▸",
   "FolderSelection.Glyph.Ticked": "☑",
   "FolderSelection.Glyph.Unticked": "☐",
-  "FolderSelection.Glyph.Partial": "◪"
+  "FolderSelection.Glyph.Partial": "◪",
+  "LogViewer.Title": "Log viewer",
+  "LogViewer.Account": "Account",
+  "LogViewer.AllAccounts": "All accounts",
+  "LogViewer.Level": "Level",
+  "LogViewer.Level.All": "Everything",
+  "LogViewer.Level.Information": "Information and above",
+  "LogViewer.Level.Warning": "Warnings and errors",
+  "LogViewer.Level.Error": "Errors only",
+  "LogViewer.Search": "Find in the log",
+  "LogViewer.Refresh": "Reload",
+  "LogViewer.Copy": "Copy diagnostics",
+  "LogViewer.Count": "{0} lines"
 }

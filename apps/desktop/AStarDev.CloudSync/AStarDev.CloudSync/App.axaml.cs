@@ -14,6 +14,8 @@ using AStarDev.SingleInstance;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using Microsoft.Extensions.Configuration;
@@ -45,6 +47,7 @@ public partial class App : Application, IDisposable
 
             var window = new MainWindow { DataContext = services.GetRequiredService<MainWindowViewModel>() };
             desktop.MainWindow = window;
+            window.AddHandler(InputElement.KeyDownEvent, OpenLogViewerOnHotkey, RoutingStrategies.Tunnel);
             KeepRunningInTray(window);
             StartHiddenWhenAutostarted(window, desktop.Args);
             _ = services.GetRequiredService<SyncNotifier>();
@@ -72,6 +75,15 @@ public partial class App : Application, IDisposable
     {
         if (arguments?.Contains("--minimized", StringComparer.Ordinal) == true)
             window.Opened += (_, _) => window.Hide();
+    }
+
+    private void OpenLogViewerOnHotkey(object? sender, KeyEventArgs keyEvent)
+    {
+        if (!LogViewerHotkey.Matches(keyEvent) || services is null)
+            return;
+
+        services.GetRequiredService<LogViewerLauncher>().Open();
+        keyEvent.Handled = true;
     }
 
     private void SweepLogFiles()
