@@ -20,6 +20,70 @@ public sealed class GivenAnAccountThrottleGate : IDisposable
     private IAccountThrottleGate Gate => provider.GetRequiredService<IAccountThrottleGate>();
 
     [Fact]
+    public void when_the_account_was_throttled_nine_times_within_ten_minutes_then_nothing_is_suggested()
+    {
+        ThrottleSeparately(Personal, 9);
+
+        Hints.HintFor(Personal).ShouldBeOfType<ThrottleHint.Quiet>();
+    }
+
+    [Fact]
+    public void when_the_account_was_throttled_ten_times_within_ten_minutes_then_a_lower_concurrency_is_suggested()
+    {
+        ThrottleSeparately(Personal, 10);
+
+        Hints.HintFor(Personal).ShouldBeOfType<ThrottleHint.SuggestLowerConcurrency>();
+    }
+
+    [Fact]
+    public void when_parallel_requests_report_the_same_pause_then_it_counts_as_one_throttle()
+    {
+        for (var report = 0; report < 12; report++)
+            Gate.ReportThrottled(Personal, Option.Some(TimeSpan.FromMinutes(1)));
+
+        Hints.HintFor(Personal).ShouldBeOfType<ThrottleHint.Quiet>();
+    }
+
+    [Fact]
+    public void when_the_tenth_throttle_comes_after_the_first_left_the_window_then_nothing_is_suggested()
+    {
+        ThrottleSeparately(Personal, 9);
+        time.Advance(ThrottlePolicy.HintWindow - TimeSpan.FromSeconds(17));
+        Gate.ReportThrottled(Personal, Option.Some(TimeSpan.FromSeconds(1)));
+
+        Hints.HintFor(Personal).ShouldBeOfType<ThrottleHint.Quiet>();
+    }
+
+    [Fact]
+    public void when_enough_throttles_age_out_then_the_suggestion_goes_away()
+    {
+        ThrottleSeparately(Personal, 10);
+        var suggestedAtFirst = Hints.HintFor(Personal) is ThrottleHint.SuggestLowerConcurrency;
+        time.Advance(ThrottlePolicy.HintWindow);
+
+        (suggestedAtFirst, Hints.HintFor(Personal)).ShouldBe((true, ThrottleHintFactory.CreateQuiet()));
+    }
+
+    [Fact]
+    public void when_one_account_is_throttled_often_then_another_account_gets_no_suggestion()
+    {
+        ThrottleSeparately(Personal, 10);
+
+        Hints.HintFor(Work).ShouldBeOfType<ThrottleHint.Quiet>();
+    }
+
+    private IAccountThrottleHints Hints => provider.GetRequiredService<IAccountThrottleHints>();
+
+    private void ThrottleSeparately(AccountId accountId, int times)
+    {
+        for (var throttle = 0; throttle < times; throttle++)
+        {
+            Gate.ReportThrottled(accountId, Option.Some(TimeSpan.FromSeconds(1)));
+            time.Advance(TimeSpan.FromSeconds(2));
+        }
+    }
+
+    [Fact]
     public async Task when_the_account_was_never_throttled_then_waiting_returns_at_once()
     {
         var waiting = Gate.WaitAsync(Personal, CancellationToken);

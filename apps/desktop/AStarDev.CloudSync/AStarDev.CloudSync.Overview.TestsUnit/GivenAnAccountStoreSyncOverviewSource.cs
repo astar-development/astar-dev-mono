@@ -343,6 +343,7 @@ public class GivenAnAccountStoreSyncOverviewSource
             .AddSingleton(pairReader)
             .AddSingleton(runStatuses)
             .AddSingleton(pauseReader)
+            .AddSingleton<IAccountThrottleHints>(new FakeAccountThrottleHints())
             .AddSyncOverview()
             .BuildServiceProvider()
             .GetRequiredService<ISyncOverviewSource>();
