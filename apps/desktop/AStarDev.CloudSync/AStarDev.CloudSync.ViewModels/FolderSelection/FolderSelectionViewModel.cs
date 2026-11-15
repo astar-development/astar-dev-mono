@@ -120,7 +120,7 @@ public sealed class FolderSelectionViewModel : LocalizedObservableObject, IFolde
     public string ConfirmTitleText => Localization.GetLocal("FolderSelection.Confirm.Title");
 
     /// <summary>The confirmation question: the folders stop syncing and the local copies are kept.</summary>
-    public string ConfirmText => Step is FolderSelectionStep.ConfirmingUntick confirming ? Localization.GetLocal(confirming.Count == 1 ? "FolderSelection.Confirm.Prompt.One" : "FolderSelection.Confirm.Prompt.Many", confirming.Count.ToString("N0", Localization.CurrentCulture)) : string.Empty;
+    public string ConfirmText => Step is FolderSelectionStep.ConfirmingUntick confirming ? Localization.GetLocal(ConfirmPromptKey(confirming.Count), confirming.Count.ToString("N0", Localization.CurrentCulture)) : string.Empty;
 
     /// <summary>The confirm button's text.</summary>
     public string ConfirmYesText => Localization.GetLocal("FolderSelection.Confirm.Yes");
@@ -408,4 +408,6 @@ public sealed class FolderSelectionViewModel : LocalizedObservableObject, IFolde
                 return Unit.Instance;
             });
     }
+
+    private static string ConfirmPromptKey(int count) => count == 1 ? "FolderSelection.Confirm.Prompt.One" : "FolderSelection.Confirm.Prompt.Many";
 }
