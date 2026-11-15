@@ -18,7 +18,7 @@ public sealed class GivenWorkflowTelemetry : IDisposable
         telemetry = new WorkflowTelemetry(time);
         listener.InstrumentPublished = (instrument, meterListener) =>
         {
-            if (instrument.Meter.Name == WorkflowTelemetry.SourceName)
+            if (ReferenceEquals(instrument.Meter.Scope, telemetry))
                 meterListener.EnableMeasurementEvents(instrument);
         };
         listener.SetMeasurementEventCallback<long>((instrument, value, tags, _) => measurements.Add((instrument.Name, value, Describe(tags))));

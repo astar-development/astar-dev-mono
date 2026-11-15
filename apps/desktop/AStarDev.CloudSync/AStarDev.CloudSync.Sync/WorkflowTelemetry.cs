@@ -10,7 +10,7 @@ public sealed class WorkflowTelemetry : IWorkflowTelemetry, IDisposable
     public const string SourceName = "AStarDev.CloudSync";
 
     private readonly TimeProvider timeProvider;
-    private readonly Meter meter = new(SourceName);
+    private readonly Meter meter;
     private readonly ActivitySource source = new(SourceName);
     private readonly Counter<long> runs;
     private readonly Histogram<double> duration;
@@ -20,6 +20,7 @@ public sealed class WorkflowTelemetry : IWorkflowTelemetry, IDisposable
     public WorkflowTelemetry(TimeProvider timeProvider)
     {
         this.timeProvider = timeProvider;
+        meter = new Meter(SourceName, null, null, this);
         runs = meter.CreateCounter<long>("cloudsync.workflow.runs", description: "Workflow runs by workflow and outcome.");
         duration = meter.CreateHistogram<double>("cloudsync.workflow.duration", unit: "ms", description: "Workflow duration by workflow and outcome.");
     }

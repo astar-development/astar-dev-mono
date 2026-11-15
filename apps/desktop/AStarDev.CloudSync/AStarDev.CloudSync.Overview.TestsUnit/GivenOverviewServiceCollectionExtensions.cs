@@ -19,16 +19,17 @@ public class GivenOverviewServiceCollectionExtensions
     [Fact]
     public async Task when_the_overview_is_read_then_one_overview_refresh_run_is_counted_for_its_outcome()
     {
+        using var provider = CreateProvider();
+        var telemetry = provider.GetRequiredService<IWorkflowTelemetry>();
         var recorded = new List<string>();
         using var listener = new System.Diagnostics.Metrics.MeterListener();
         listener.InstrumentPublished = (instrument, meterListener) =>
         {
-            if (instrument.Meter.Name == WorkflowTelemetry.SourceName && instrument.Name == "cloudsync.workflow.runs")
+            if (ReferenceEquals(instrument.Meter.Scope, telemetry) && instrument.Name == "cloudsync.workflow.runs")
                 meterListener.EnableMeasurementEvents(instrument);
         };
         listener.SetMeasurementEventCallback<long>((_, _, tags, _) => recorded.Add(string.Join(',', tags.ToArray().Select(tag => $"{tag.Key}={tag.Value}").Order(StringComparer.Ordinal))));
         listener.Start();
-        using var provider = CreateProvider();
 
         _ = await provider.GetRequiredService<ISyncOverviewSource>().GetOverviewAsync(TestContext.Current.CancellationToken);
 

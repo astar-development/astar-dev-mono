@@ -52,6 +52,12 @@ paths:
 - No comments anywhere in test files — no XML docs, no inline comments, no block comments. Name the test and the variables clearly enough that no comment is needed.
 - Never use `InternalsVisibleTo`. Test through the public API; internal types are covered by those tests. A case the public API cannot reach is deleted, not exposed — never make a type or member `public` for a test.
 
+## Process-wide state in tests
+
+- xunit runs test classes in parallel in one process. A `MeterListener`, `ActivityListener`, static event, environment variable or other process-wide hook hears every test, so a filter by name alone passes locally and fails in CI.
+- Filter to the object under test: create the `Meter` with `scope: this` and match `instrument.Meter.Scope` to that instance. Never assert an exact list of measurements gathered by name only.
+- Before a PR that adds such a test, run its project 5 times: `for i in 1 2 3 4 5; do dotnet test --no-build --project <dir>; done`.
+
 ## Error Handling
 
 - **Public APIs and factories**: Never throw exceptions for invalid input. Use `Result<T>` from `AStar.Dev.Functional.Extensions` to represent success/failure.
