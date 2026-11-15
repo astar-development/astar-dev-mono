@@ -3,6 +3,7 @@ using AStarDev.CloudSync.ViewModels.Accounts;
 using AStarDev.CloudSync.ViewModels.Overview;
 using AStarDev.CloudSync.ViewModels.SyncPairs;
 using AStarDev.Localization;
+using CommunityToolkit.Mvvm.Input;
 
 namespace AStarDev.CloudSync.ViewModels.Search;
 
@@ -14,10 +15,14 @@ public sealed class SearchResultsViewModel : LocalizedObservableObject
 
     /// <summary>Creates the page and follows the overview's accounts and sync pairs.</summary>
     /// <param name="overview">The shared overview whose accounts and sync pairs are searched.</param>
+    /// <param name="openAccount">Called with the account the user picks from the results.</param>
+    /// <param name="openFolder">Called with the folder the user picks from the results.</param>
     /// <param name="localization">Supplies the text and culture.</param>
-    public SearchResultsViewModel(SyncOverviewViewModel overview, ILocalizationService localization) : base(localization)
+    public SearchResultsViewModel(SyncOverviewViewModel overview, Action<AccountViewModel> openAccount, Action<SyncPairViewModel> openFolder, ILocalizationService localization) : base(localization)
     {
         this.overview = overview;
+        OpenAccountCommand = new RelayCommand<AccountViewModel>(account => openAccount(account!));
+        OpenFolderCommand = new RelayCommand<SyncPairViewModel>(pair => openFolder(pair!));
         overview.PropertyChanged += OnOverviewChanged;
         Refresh();
     }
@@ -38,6 +43,12 @@ public sealed class SearchResultsViewModel : LocalizedObservableObject
 
     /// <summary>The folders (sync pairs) matching the search.</summary>
     public IReadOnlyList<SyncPairViewModel> Folders { get; private set; } = [];
+
+    /// <summary>Opens the account picked from the results.</summary>
+    public IRelayCommand<AccountViewModel> OpenAccountCommand { get; }
+
+    /// <summary>Opens the folder picked from the results.</summary>
+    public IRelayCommand<SyncPairViewModel> OpenFolderCommand { get; }
 
     /// <summary>Whether nothing matches.</summary>
     public bool IsEmpty => Accounts.Count == 0 && Folders.Count == 0;
