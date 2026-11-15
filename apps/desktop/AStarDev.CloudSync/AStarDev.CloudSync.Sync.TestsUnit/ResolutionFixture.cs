@@ -43,6 +43,7 @@ public sealed class ResolutionFixture : IDisposable
             .AddSingleton<ISyncAttentionReader>(Attention)
             .AddSingleton<ISyncAttentionCloser>(Attention)
             .AddSingleton<IRemoteIndexReader>(Remote)
+            .AddSingleton<IRemoteIndexWriter>(IndexWriter)
             .AddSingleton<IUploadRecorder>(Recorder)
             .AddSingleton<IDiskSpaceProbe>(Disk)
             .AddSingleton<ITrashRetentionSettings>(TrashRetention)
@@ -72,6 +73,8 @@ public sealed class ResolutionFixture : IDisposable
     public RecordingAttentionWriter Attention { get; } = new();
 
     public ScriptedRemoteIndex Remote { get; } = new();
+
+    public RecordingRemoteIndexWriter IndexWriter { get; } = new();
 
     public ScriptedDownloader Downloader { get; } = new();
 

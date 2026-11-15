@@ -83,13 +83,57 @@ public sealed class GivenAConflictResolverForMoveTargetTaken : IDisposable
     }
 
     [Fact]
-    public async Task when_local_wins_then_the_baseline_row_of_the_moved_item_is_kept_so_the_next_pass_follows_the_rename()
+    public async Task when_local_wins_then_the_moved_item_is_settled_at_its_keep_both_name_and_its_baseline_row_follows()
     {
         var (run, id) = await StartAsync();
 
         _ = await Summary(run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateLocalWins(), CancellationToken));
 
-        run.Baseline.Has("Docs/old.txt").ShouldBeTrue();
+        (run.FileSystem.File.ReadAllText(ResolutionFixture.FullPath("Docs/" + CopyName)), run.FileSystem.File.Exists(ResolutionFixture.FullPath("Docs/old.txt")), run.Baseline.Has("Docs/" + CopyName), run.Baseline.Has("Docs/old.txt"))
+            .ShouldBe(("moved", false, true, false));
+    }
+
+    [Fact]
+    public async Task when_local_wins_then_the_index_row_is_renamed_to_the_keep_both_name()
+    {
+        var (run, id) = await StartAsync();
+
+        _ = await Summary(run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateLocalWins(), CancellationToken));
+
+        run.IndexWriter.Renames.ShouldBe([(RemoteIds.Of("id-m"), CopyName)]);
+    }
+
+    [Fact]
+    public async Task when_local_wins_and_the_index_cannot_be_renamed_then_the_conflict_is_still_resolved_and_the_next_pass_follows_the_move()
+    {
+        var (run, id) = await StartAsync();
+        run.IndexWriter.RenameFails = true;
+
+        var summary = await Summary(run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateLocalWins(), CancellationToken));
+
+        (summary.Resolved, run.FileSystem.File.Exists(ResolutionFixture.FullPath("Docs/old.txt")), run.Baseline.Has("Docs/old.txt"), run.Attention.ClosedConflicts.Count).ShouldBe((1, true, true, 1));
+    }
+
+    [Fact]
+    public async Task when_local_wins_and_the_old_local_file_is_gone_then_the_conflict_is_resolved_and_nothing_moves()
+    {
+        var (run, id) = await StartAsync();
+        run.FileSystem.File.Delete(ResolutionFixture.FullPath("Docs/old.txt"));
+
+        var summary = await Summary(run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateLocalWins(), CancellationToken));
+
+        (summary.Resolved, run.FileSystem.File.Exists(ResolutionFixture.FullPath("Docs/" + CopyName)), run.Baseline.Has("Docs/" + CopyName)).ShouldBe((1, false, false));
+    }
+
+    [Fact]
+    public async Task when_local_wins_and_the_baseline_cannot_be_recorded_then_the_conflict_is_resolved_and_the_old_file_stays_where_it_was()
+    {
+        var (run, id) = await StartAsync();
+        run.Baseline.UpsertFails = true;
+
+        var summary = await Summary(run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateLocalWins(), CancellationToken));
+
+        (summary.Resolved, run.FileSystem.File.Exists(ResolutionFixture.FullPath("Docs/old.txt")), run.FileSystem.File.Exists(ResolutionFixture.FullPath("Docs/" + CopyName))).ShouldBe((1, true, false));
     }
 
     [Fact]
