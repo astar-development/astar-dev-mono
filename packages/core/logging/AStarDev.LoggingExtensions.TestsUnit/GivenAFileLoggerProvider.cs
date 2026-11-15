@@ -123,6 +123,18 @@ public sealed class GivenAFileLoggerProvider : IDisposable
     }
 
     [Fact]
+    public void when_an_entry_is_logged_inside_an_account_scope_then_the_hash_is_written_in_the_line_and_nothing_else_from_the_scope()
+    {
+        using var factory = LoggerFactory.Create(builder => builder.AddProvider(provider).SetMinimumLevel(LogLevel.Trace));
+        var logger = factory.CreateLogger("Some.Category");
+
+        using (logger.BeginScope(new Dictionary<string, object?> { ["AccountIdHash"] = "abc123", ["Other"] = "secret" }))
+            logger.LogDebug("inside");
+
+        File.ReadAllText(provider.FilePathFor(clock.GetLocalNow())).ShouldBe($"2026-09-30 10:15:30.000 +00:00 [Debug] [AccountIdHash=abc123] Some.Category: inside{Environment.NewLine}");
+    }
+
+    [Fact]
     public void when_a_filter_admits_by_level_then_only_those_entries_are_written()
     {
         using var warningsOnly = new FileLoggerProvider(directory, "levels", clock, (level, _) => level >= LogLevel.Warning);
