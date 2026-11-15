@@ -19,11 +19,11 @@ namespace AStarDev.CloudSync.TestsUnit;
 
 public sealed class GivenTheLogViewerWindow
 {
-    private static async Task<LogViewerViewModel> LoadedViewModelAsync()
+    private static async Task<LogViewerViewModel> LoadedViewModelAsync(ILogEntryReader? reader = null)
     {
         var overview = new SyncOverviewViewModel(new EmptySource(), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         await overview.LoadAsync(CancellationToken.None);
-        var viewModel = new LogViewerViewModel(new OneLineReader(), overview, new NoClipboard(), TestData.CreateLocalization());
+        var viewModel = new LogViewerViewModel(reader ?? new OneLineReader(), overview, new NoClipboard(), TestData.CreateLocalization());
         await viewModel.RefreshAsync(CancellationToken.None);
 
         return viewModel;
@@ -37,6 +37,18 @@ public sealed class GivenTheLogViewerWindow
         window.Show();
 
         (window.Title, window.GetVisualDescendants().OfType<ListBox>().Single().ItemCount).ShouldBe(("Log viewer", 1));
+    }
+
+    [AvaloniaFact]
+    public async Task when_a_hundred_thousand_lines_are_loaded_then_only_the_visible_rows_are_built()
+    {
+        var window = new LogViewerWindow { DataContext = await LoadedViewModelAsync(new ManyLinesReader(100_000)) };
+
+        window.Show();
+        window.UpdateLayout();
+
+        var list = window.GetVisualDescendants().OfType<ListBox>().Single();
+        (list.ItemCount, list.GetVisualDescendants().OfType<ListBoxItem>().Count() < 500).ShouldBe((100_000, true));
     }
 
     [AvaloniaFact]
@@ -61,6 +73,16 @@ public sealed class GivenTheLogViewerWindow
         {
             await Task.Yield();
             yield return LogLineFactory.Create(DateTimeOffset.UnixEpoch, LogLevel.Information, Option.None<string>(), "Cat", "hello");
+        }
+    }
+
+    private sealed class ManyLinesReader(int count) : ILogEntryReader
+    {
+        public async IAsyncEnumerable<LogLine> ReadAsync(LogQuery query, [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+            for (var index = 0; index < count; index++)
+                yield return LogLineFactory.Create(DateTimeOffset.UnixEpoch.AddSeconds(index), LogLevel.Information, Option.None<string>(), "Cat", $"line {index}");
         }
     }
 
