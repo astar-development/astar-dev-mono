@@ -72,14 +72,14 @@ public sealed class GivenAnInterruptedSyncRecovery : IDisposable
     }
 
     [Fact]
-    public async Task when_a_run_is_interrupted_then_the_user_is_told_in_the_activity_feed()
+    public async Task when_a_run_is_interrupted_then_the_user_is_told_in_the_activity_feed_and_the_resumed_run_that_changes_nothing_is_logged()
     {
         await LeaveUnfinishedAsync(Personal);
         var next = Restart();
 
         _ = await next.Recovery.RecoverAsync(CancellationToken);
 
-        next.ActivityLog.Appended.Select(entry => (entry.AccountId, entry.Kind)).ShouldBe([(Personal, ActivityKindFactory.CreateSyncInterrupted())]);
+        next.ActivityLog.Appended.Select(entry => (entry.AccountId, entry.Kind)).ShouldBe([(Personal, ActivityKindFactory.CreateSyncInterrupted()), (Personal, ActivityKindFactory.CreateNothingChanged())]);
     }
 
     [Fact]

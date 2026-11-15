@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync.Sync;
 
-/// <summary>Writes what a finished sync run did to the activity log (#1564): files downloaded, files uploaded and files deleted on either side. A run that stops early (cancelled or failed) still logs the steps that finished before it stopped (#1578). A run that changed nothing writes nothing. A log that cannot be written is warned about and never fails the run.</summary>
+/// <summary>Writes what a finished sync run did to the activity log (#1564): files downloaded, files uploaded and files deleted on either side. A run that stops early (cancelled or failed) still logs the steps that finished before it stopped (#1578). A run that finishes and changed nothing writes a nothing-changed entry, and a run that stops early with no finished steps writes nothing. A log that cannot be written is warned about and never fails the run.</summary>
 /// <param name="writer">Stores the entries.</param>
 /// <param name="timeProvider">Stamps the entries.</param>
 /// <param name="logger">Reports a write that failed.</param>
@@ -19,13 +19,20 @@ internal sealed class SyncPassActivity(IActivityLogWriter writer, TimeProvider t
     /// <param name="finishedDownload">The download step's summary if it finished, used when the run did not complete.</param>
     public async Task RecordAsync(AccountId accountId, Result<SyncPassSummary, SyncPassFailure> outcome, Option<DownloadPassSummary> finishedDownload)
     {
-        var entries = outcome.Match(summary => EntriesOf(accountId, KindsOf(summary)), _ => EntriesOf(accountId, finishedDownload.Match(DownloadKindsOf, () => [])));
+        var entries = outcome.Match(summary => EntriesOf(accountId, KindsOrNothingChanged(summary)), _ => EntriesOf(accountId, finishedDownload.Match(DownloadKindsOf, () => [])));
         if (entries.Count == 0)
             return;
 
         await writer.AppendAsync(entries, CancellationToken.None)
             .MatchAsync(_ => Unit.Instance, _ => Warn())
             .ConfigureAwait(false);
+    }
+
+    private static List<ActivityKind> KindsOrNothingChanged(SyncPassSummary summary)
+    {
+        var kinds = KindsOf(summary);
+
+        return kinds.Count == 0 ? [ActivityKindFactory.CreateNothingChanged()] : kinds;
     }
 
     private static List<ActivityKind> DownloadKindsOf(DownloadPassSummary download) => KindsOf(download, UploadPassSummaryFactory.Create([]));
