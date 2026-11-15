@@ -18,7 +18,7 @@ public class GivenALayoutBViewModel
     {
         var source = new CountingSyncOverviewSource(await TestData.CreateOverviewAsync());
         var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
-        var layout = new LayoutBViewModel(overview, TestData.CreateLocalPathFormatter(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateLocalization());
+        var layout = new LayoutBViewModel(overview, TestData.CreateLocalPathFormatter(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), TestData.CreateLocalization());
 
         await layout.ConnectProviderCommand.ExecuteAsync(null);
 
@@ -29,7 +29,7 @@ public class GivenALayoutBViewModel
     public async Task when_the_connect_provider_command_runs_then_an_account_is_added()
     {
         var syncActions = new RecordingSyncActions();
-        var layout = new LayoutBViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), TestData.CreateLocalPathFormatter(), syncActions, TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateLocalization());
+        var layout = new LayoutBViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), TestData.CreateLocalPathFormatter(), syncActions, TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), TestData.CreateLocalization());
 
         await layout.ConnectProviderCommand.ExecuteAsync(null);
 
@@ -119,7 +119,7 @@ public class GivenALayoutBViewModel
         var source = Substitute.For<ISyncOverviewSource>();
         source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([], [], [], [], [], 0, Option.None<DateTimeOffset>()));
         var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
-        var layout = new LayoutBViewModel(overview, TestData.CreateLocalPathFormatter(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateLocalization());
+        var layout = new LayoutBViewModel(overview, TestData.CreateLocalPathFormatter(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), TestData.CreateLocalization());
 
         await overview.LoadAsync(TestContext.Current.CancellationToken);
 
@@ -303,7 +303,7 @@ public class GivenALayoutBViewModel
     private static async Task<LayoutBViewModel> CreateLoadedLayoutAsync()
     {
         var overview = new SyncOverviewViewModel(new PlaceholderSyncOverviewSource(TestData.CreateTime()), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
-        var layout = new LayoutBViewModel(overview, TestData.CreateLocalPathFormatter(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateLocalization());
+        var layout = new LayoutBViewModel(overview, TestData.CreateLocalPathFormatter(), new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), TestData.CreateLocalization());
         await overview.LoadAsync(TestContext.Current.CancellationToken);
 
         return layout;
@@ -318,7 +318,7 @@ public class GivenALayoutBViewModel
         var reader = new FakeAttentionReader();
         reader.Add(data.Accounts[0].Id, AttentionItems.CreateConflict(data.Accounts[0].Id, "Docs/a.docx"));
         reader.Add(data.Accounts[1].Id, AttentionItems.CreateConflict(data.Accounts[1].Id, "Docs/b.docx"));
-        var layout = new LayoutBViewModel(overview, TestData.CreateLocalPathFormatter(), new RecordingSyncActions(), TestData.CreateConflictListFactory(new FixedAccountsSource([.. data.Accounts]), reader), TestData.CreateFolderSelectionFactory(), TestData.CreateLocalization());
+        var layout = new LayoutBViewModel(overview, TestData.CreateLocalPathFormatter(), new RecordingSyncActions(), TestData.CreateConflictListFactory(new FixedAccountsSource([.. data.Accounts]), reader), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), TestData.CreateLocalization());
         var detail = layout.Detail.ShouldBeOfType<AccountDetailViewModel>();
 
         detail.SelectedTabIndex = AccountDetailViewModel.ConflictsTabIndex;
