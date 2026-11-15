@@ -13,6 +13,7 @@ public static class SyncServiceCollectionExtensions
     {
         services.TryAddSingleton(TimeProvider.System);
         services.TryAddSingleton<ITransferConcurrencyReader, DefaultTransferConcurrencyReader>();
+        services.TryAddSingleton<AccountLogLevels>();
         services.TryAddSingleton(typeof(IProviderCapability<>), typeof(KeyedProviderCapability<>));
 
         return services

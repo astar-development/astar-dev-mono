@@ -61,4 +61,10 @@ public sealed class GivenTheLocalisationScanners
     {
         LocalisationSources.AxamlLiteralsIn("""<TextBlock Text="{Binding Name}" /><TextBlock Text="" /><TextBlock Text="12" /><Border Content="↔" />""").ShouldBeEmpty();
     }
+
+    [Fact]
+    public void when_an_environment_variable_name_is_assigned_then_the_scan_ignores_it()
+    {
+        LocalisationSources.UserFacingLiteralsIn("""public const string TitleVariable = "CLOUDSYNC_NOTIFY_TITLE";""").ShouldBeEmpty();
+    }
 }

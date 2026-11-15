@@ -10,8 +10,12 @@ namespace AStarDev.LoggingExtensions;
 /// <param name="directory">The directory the log files are written to.</param>
 /// <param name="fileNamePrefix">The start of every log file name.</param>
 /// <param name="timeProvider">The clock used for the entry timestamps and to choose the day's file.</param>
-public sealed class FileLoggerProvider(string directory, string fileNamePrefix, TimeProvider timeProvider) : ILoggerProvider
+/// <param name="admit">Decides, from an entry's level and the values of its log scopes, whether it is written. When it is <see langword="null"/> every entry is written.</param>
+public sealed class FileLoggerProvider(string directory, string fileNamePrefix, TimeProvider timeProvider, Func<LogLevel, IReadOnlyDictionary<string, object?>, bool>? admit = null) : ILoggerProvider, ISupportExternalScope
 {
+    private readonly Func<LogLevel, IReadOnlyDictionary<string, object?>, bool>? admission = admit;
+    private IExternalScopeProvider scopes = new LoggerExternalScopeProvider();
+
     private readonly Lock gate = new();
 
     /// <summary>Gets the path of the log file that entries written at <paramref name="moment"/> go to.</summary>
@@ -20,12 +24,38 @@ public sealed class FileLoggerProvider(string directory, string fileNamePrefix, 
     public string FilePathFor(DateTimeOffset moment) => Path.Combine(directory, $"{fileNamePrefix}-{moment:yyyyMMdd}.log");
 
     /// <inheritdoc/>
+    public void SetScopeProvider(IExternalScopeProvider scopeProvider) => scopes = scopeProvider;
+
+    /// <inheritdoc/>
     public ILogger CreateLogger(string categoryName) => new FileLogger(this, categoryName);
 
     /// <inheritdoc/>
     public void Dispose()
     {
         // Nothing to release: every entry is appended and closed straight away.
+    }
+
+    private bool Admits(LogLevel logLevel)
+    {
+        if (logLevel == LogLevel.None)
+            return false;
+
+        if (admission is null)
+            return true;
+
+        var values = new Dictionary<string, object?>(StringComparer.Ordinal);
+        scopes.ForEachScope(CollectScope, values);
+
+        return admission(logLevel, values);
+    }
+
+    private static void CollectScope(object? scope, Dictionary<string, object?> values)
+    {
+        if (scope is not IEnumerable<KeyValuePair<string, object?>> pairs)
+            return;
+
+        foreach (var pair in pairs)
+            values[pair.Key] = pair.Value;
     }
 
     private void Write(LogLevel logLevel, string categoryName, string message, Exception? exception)
@@ -61,7 +91,7 @@ public sealed class FileLoggerProvider(string directory, string fileNamePrefix, 
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
-            if (!IsEnabled(logLevel)) return;
+            if (!IsEnabled(logLevel) || !provider.Admits(logLevel)) return;
 
             provider.Write(logLevel, categoryName, formatter(state, exception), exception);
         }

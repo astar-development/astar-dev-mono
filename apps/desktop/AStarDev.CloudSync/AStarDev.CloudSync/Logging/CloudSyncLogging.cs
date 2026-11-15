@@ -1,4 +1,8 @@
+using AStarDev.CloudSync.Sync;
+using AStarDev.LoggingExtensions;
 using AStarDev.Utilities;
+using Microsoft.Extensions.Logging;
+using OpenTelemetry.Logs;
 
 namespace AStarDev.CloudSync.Logging;
 
@@ -13,4 +17,13 @@ public static class CloudSyncLogging
 
     /// <summary>The folder for the log files: <c>logs</c> inside the application's data folder.</summary>
     public static string FolderPath() => "AStarDev.CloudSync".ApplicationDirectory().CombinePath("logs");
+
+    /// <summary>Sets up what goes where. Every entry is offered to the local file, which writes an account's entries below warning level only when that account is verbose (<see cref="AccountLogLevelFilter"/>). Application Insights gets warnings and above only, so verbose output stays on the machine.</summary>
+    /// <param name="logging">The logging builder. It already has the OpenTelemetry provider.</param>
+    /// <param name="levels">The accounts that log verbosely.</param>
+    /// <param name="folder">The folder for the log files.</param>
+    public static ILoggingBuilder Configure(ILoggingBuilder logging, AccountLogLevels levels, string folder) =>
+        logging.SetMinimumLevel(LogLevel.Trace)
+            .AddFilter<OpenTelemetryLoggerProvider>(level => level >= LogLevel.Warning)
+            .AddFileLogging(folder, FileNamePrefix, (level, scope) => AccountLogLevelFilter.Admits(levels, level, scope));
 }
