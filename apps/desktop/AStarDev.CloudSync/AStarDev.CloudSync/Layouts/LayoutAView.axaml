@@ -5,6 +5,7 @@
              xmlns:displaySettings="using:AStarDev.CloudSync.DisplaySettings"
              xmlns:overview="using:AStarDev.CloudSync.Overview"
              xmlns:common="using:AStarDev.CloudSync.Common"
+             xmlns:conflicts="using:AStarDev.CloudSync.Conflicts"
              xmlns:vmActivity="using:AStarDev.CloudSync.ViewModels.Activity"
              xmlns:vmLayouts="using:AStarDev.CloudSync.ViewModels.Layouts"
              xmlns:vmOverview="using:AStarDev.CloudSync.ViewModels.Overview"
@@ -144,7 +145,7 @@
                 BorderThickness="0,0,1,0">
             <Grid RowDefinitions="Auto,*,Auto">
                 <StackPanel Grid.Row="0" Margin="0,12" Spacing="6">
-                    <Button Classes="rail active" Command="{Binding NavigateCommand}" ToolTip.Tip="{Binding DashboardText}" AutomationProperties.Name="{Binding DashboardText}">
+                    <Button Classes="rail" Classes.active="{Binding IsAccountsPageShown}" Command="{Binding ShowAccountsCommand}" ToolTip.Tip="{Binding DashboardText}" AutomationProperties.Name="{Binding DashboardText}">
                         <Path Data="M3,3 h7 v7 h-7 Z M14,3 h7 v7 h-7 Z M3,14 h7 v7 h-7 Z M14,14 h7 v7 h-7 Z" />
                     </Button>
                     <Button Classes="rail" Command="{Binding NavigateCommand}" ToolTip.Tip="{Binding FoldersText}" AutomationProperties.Name="{Binding FoldersText}">
@@ -153,7 +154,7 @@
                     <Button Classes="rail" Command="{Binding NavigateCommand}" ToolTip.Tip="{Binding ActivityText}" AutomationProperties.Name="{Binding ActivityText}">
                         <Path Data="M3,12 H7 L10,4 L14,20 L17,12 H21" />
                     </Button>
-                    <Button Classes="rail" Command="{Binding NavigateCommand}" ToolTip.Tip="{Binding ConflictsText}" AutomationProperties.Name="{Binding ConflictsText}">
+                    <Button Classes="rail" Classes.active="{Binding IsConflictsPageShown}" Command="{Binding ShowConflictsCommand}" ToolTip.Tip="{Binding ConflictsText}" AutomationProperties.Name="{Binding ConflictsText}">
                         <Path Data="M12,3 L2,20 H22 Z M12,10 V14 M12,17 V17.5" />
                     </Button>
                     <Button Classes="rail" Command="{Binding NavigateCommand}" ToolTip.Tip="{Binding SearchText}" AutomationProperties.Name="{Binding SearchText}">
@@ -242,7 +243,8 @@
         <Grid Grid.Row="0" Grid.Column="2"
               RowDefinitions="Auto,*"
               HorizontalAlignment="Stretch"
-              VerticalAlignment="Stretch">
+              VerticalAlignment="Stretch"
+              IsVisible="{Binding IsAccountsPageShown}">
 
             <Border Grid.Row="0"
                     Background="{DynamicResource CloudSyncPanelBrush}"
@@ -353,6 +355,12 @@
                 </ItemsControl>
             </ScrollViewer>
         </Grid>
+
+        <conflicts:ConflictListContent Grid.Row="0" Grid.Column="2"
+                                       DataContext="{Binding ConflictList}"
+                                       IsEmbedded="True"
+                                       IsVisible="{Binding $parent[UserControl].((vmLayouts:LayoutAViewModel)DataContext).IsConflictsPageShown}"
+                                       Margin="20" />
 
         <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
                 Height="26"

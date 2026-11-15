@@ -134,6 +134,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<SyncOverviewViewModel>()
             .AddSingleton<ConflictListSources>()
             .AddSingleton<ConflictListViewModel>()
+            .AddSingleton<IConflictListFactory, ConflictListFactory>()
             .AddSingleton<LayoutBViewModel>()
             .AddSingleton<LayoutAViewModel>()
             .AddSingleton<LayoutCViewModel>()

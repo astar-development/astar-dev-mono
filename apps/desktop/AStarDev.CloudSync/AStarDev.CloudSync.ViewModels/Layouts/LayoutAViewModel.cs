@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Windows.Input;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Sync;
+using AStarDev.CloudSync.ViewModels.Conflicts;
 using AStarDev.CloudSync.ViewModels.Overview;
 using AStarDev.FunctionalParadigm;
 using AStarDev.Localization;
@@ -14,14 +15,17 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
 {
     private readonly ISyncActions syncActions;
     private IReadOnlyList<LayoutAAccountCardViewModel> allCards = [];
+    private LayoutAPage page = LayoutAPageFactory.CreateAccounts();
 
     /// <summary>Creates the view model and rebuilds it whenever the overview's accounts change.</summary>
     /// <param name="overview">The shared overview.</param>
     /// <param name="syncActions">Carries out the account actions the user picks.</param>
+    /// <param name="conflictLists">Creates the conflict list of the Conflicts page.</param>
     /// <param name="localization">Supplies the text and culture.</param>
-    public LayoutAViewModel(SyncOverviewViewModel overview, ISyncActions syncActions, ILocalizationService localization) : base(localization)
+    public LayoutAViewModel(SyncOverviewViewModel overview, ISyncActions syncActions, IConflictListFactory conflictLists, ILocalizationService localization) : base(localization)
     {
         Overview = overview;
+        ConflictList = conflictLists.Create(Option.None<AccountId>());
         this.syncActions = syncActions;
         AddAccountCommand = new AsyncRelayCommand(AddAccountAndReloadAsync);
         overview.PropertyChanged += OnOverviewChanged;
@@ -30,6 +34,15 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
 
     /// <summary>The shared overview: stats, throughput and accounts.</summary>
     public SyncOverviewViewModel Overview { get; }
+
+    /// <summary>The conflicts of every account, shown on the Conflicts page and read each time that page is chosen.</summary>
+    public ConflictListViewModel ConflictList { get; }
+
+    /// <summary>Whether the account cards and stats are shown.</summary>
+    public bool IsAccountsPageShown => page is LayoutAPage.Accounts;
+
+    /// <summary>Whether the conflicts page is shown.</summary>
+    public bool IsConflictsPageShown => page is LayoutAPage.Conflicts;
 
     /// <summary>"All" followed by one chip per provider present in the accounts.</summary>
     public IReadOnlyList<LayoutAProviderChipViewModel> ProviderChips { get; private set; } = [];
@@ -71,7 +84,13 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
     /// <summary>Starts connecting a new account.</summary>
     public IAsyncRelayCommand AddAccountCommand { get; }
 
-    /// <summary>The rail navigation. Always disabled: the rail's destination pages do not exist yet.</summary>
+    /// <summary>Shows the accounts page.</summary>
+    public ICommand ShowAccountsCommand => field ??= new RelayCommand(() => Show(LayoutAPageFactory.CreateAccounts()));
+
+    /// <summary>Shows the conflicts page and reads the conflicts again.</summary>
+    public ICommand ShowConflictsCommand => field ??= new RelayCommand(ShowConflicts);
+
+    /// <summary>The navigation of the rail buttons whose pages do not exist yet (Folders, Activity and Search). Always disabled.</summary>
     public ICommand NavigateCommand { get; } = new RelayCommand(() => { }, () => false);
 
     /// <summary>The dashboard rail button name.</summary>
@@ -88,6 +107,19 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
 
     /// <summary>The search rail button name.</summary>
     public string SearchText => Localization.GetLocal("LayoutA.Nav.Search");
+
+    private void ShowConflicts()
+    {
+        Show(LayoutAPageFactory.CreateConflicts());
+        _ = ConflictList.RefreshCommand.ExecuteAsync(null);
+    }
+
+    private void Show(LayoutAPage shown)
+    {
+        page = shown;
+        OnPropertyChanged(nameof(IsAccountsPageShown));
+        OnPropertyChanged(nameof(IsConflictsPageShown));
+    }
 
     private void OnOverviewChanged(object? sender, PropertyChangedEventArgs e)
     {

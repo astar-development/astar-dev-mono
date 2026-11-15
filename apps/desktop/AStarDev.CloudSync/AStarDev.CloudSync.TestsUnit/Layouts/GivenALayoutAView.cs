@@ -100,7 +100,7 @@ public class GivenALayoutAView
     }
 
     [AvaloniaFact]
-    public async Task when_shown_then_every_rail_button_is_bound_to_the_disabled_navigation_command()
+    public async Task when_shown_then_the_accounts_and_conflicts_rail_buttons_navigate_and_the_other_pages_stay_disabled()
     {
         var window = await CreateShownWindowAsync();
         var layout = window.Content.ShouldBeOfType<LayoutAView>().DataContext.ShouldBeOfType<LayoutAViewModel>();
@@ -108,7 +108,8 @@ public class GivenALayoutAView
         var railButtons = window.GetVisualDescendants().OfType<Button>().Where(button => button.Classes.Contains("rail")).ToList();
 
         railButtons.Count.ShouldBe(5);
-        railButtons.ShouldAllBe(button => button.Command == layout.NavigateCommand && !button.IsEffectivelyEnabled);
+        railButtons.Select(button => button.Command).ShouldBe([layout.ShowAccountsCommand, layout.NavigateCommand, layout.NavigateCommand, layout.ShowConflictsCommand, layout.NavigateCommand]);
+        railButtons.Select(button => button.IsEffectivelyEnabled).ShouldBe([true, false, false, true, false]);
     }
 
     [AvaloniaFact]
@@ -145,7 +146,7 @@ public class GivenALayoutAView
         Dispatcher.UIThread.RunJobs();
 
         window.GetVisualDescendants().OfType<ScrollViewer>().Single(scrollViewer => scrollViewer.Name == "AccountCards").IsEffectivelyVisible.ShouldBeFalse();
-        window.GetVisualDescendants().OfType<Conflicts.ConflictListContent>().ShouldHaveSingleItem().IsEffectivelyVisible.ShouldBeTrue();
+        window.GetVisualDescendants().OfType<AStarDev.CloudSync.Conflicts.ConflictListContent>().ShouldHaveSingleItem().IsEffectivelyVisible.ShouldBeTrue();
         conflictsButton.Classes.ShouldContain("active");
     }
 
@@ -156,7 +157,7 @@ public class GivenALayoutAView
         window.GetVisualDescendants().OfType<Button>().Single(button => button.Classes.Contains("rail") && Avalonia.Automation.AutomationProperties.GetName(button) == "Conflicts").Command!.Execute(null);
         Dispatcher.UIThread.RunJobs();
 
-        var content = window.GetVisualDescendants().OfType<Conflicts.ConflictListContent>().Single();
+        var content = window.GetVisualDescendants().OfType<AStarDev.CloudSync.Conflicts.ConflictListContent>().Single();
 
         content.GetVisualDescendants().OfType<Button>().Where(button => Equals(button.Content, "Close")).ShouldAllBe(button => !button.IsEffectivelyVisible);
     }

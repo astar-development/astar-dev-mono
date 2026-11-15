@@ -53,7 +53,7 @@ public class GivenALayoutBView
         tabs.SelectedIndex = 3;
         Dispatcher.UIThread.RunJobs();
 
-        var content = window.GetVisualDescendants().OfType<Conflicts.ConflictListContent>().ShouldHaveSingleItem();
+        var content = window.GetVisualDescendants().OfType<AStarDev.CloudSync.Conflicts.ConflictListContent>().ShouldHaveSingleItem();
         content.IsEffectivelyVisible.ShouldBeTrue();
         content.GetVisualDescendants().OfType<Button>().Where(button => Equals(button.Content, "Close")).ShouldAllBe(button => !button.IsEffectivelyVisible);
     }
