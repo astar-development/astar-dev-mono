@@ -6,13 +6,13 @@ using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync.Overview;
 
-/// <summary>Builds the overview from the saved accounts and their sync pairs, after making sure the database is migrated. Activity is the newest entries of the activity log (#1564); conflicts stay empty until the overview work (#1408). The throughput graph and the bytes moved today come from the transfer samples (#1767). An account's folder and file counts come from its sync baseline (#1565) and are unknown when that count cannot be read (#1592), its status comes from its sync runs and its last sync from the run journal, a paused account that is not syncing and did not just fail shows as paused, and pairs show no files, up to date and never synced. Its last sync is read from the run journal (#1610), so it survives a restart, and shows as never when the journal cannot be read.</summary>
+/// <summary>Builds the overview from the saved accounts and their sync pairs, after making sure the database is migrated. Activity is the newest entries of the activity log (#1564); conflicts are every account's open conflicts (#1773). The throughput graph and the bytes moved today come from the transfer samples (#1767). An account's folder and file counts come from its sync baseline (#1565) and are unknown when that count cannot be read (#1592), its status comes from its sync runs and its last sync from the run journal, a paused account that is not syncing and did not just fail shows as paused, and pairs show no files, up to date and never synced. Its last sync is read from the run journal (#1610), so it survives a restart, and shows as never when the journal cannot be read.</summary>
 /// <param name="database">Is migrated before the accounts are read, so a failed migration shows as a failed overview.</param>
 /// <param name="accountStore">Reads the saved accounts.</param>
 /// <param name="readers">The readers for sign-in states, pairs, runs, pauses, baseline counts and activity.</param>
 /// <param name="throughput">Reads the throughput graph and the bytes moved today.</param>
 /// <param name="logger">Reports an activity feed that could not be read, without details.</param>
-internal sealed class AccountStoreSyncOverviewSource(ICloudSyncDatabase database, IAccountStore accountStore, SyncOverviewReaders readers, OverviewThroughput throughput, ILogger<AccountStoreSyncOverviewSource> logger) : ISyncOverviewSource
+internal sealed class AccountStoreSyncOverviewSource(ICloudSyncDatabase database, IAccountStore accountStore, SyncOverviewReaders readers, OverviewThroughput throughput, OverviewConflicts openConflicts, ILogger<AccountStoreSyncOverviewSource> logger) : ISyncOverviewSource
 {
     /// <inheritdoc />
     public Task<Result<SyncOverview, ErrorResponse>> GetOverviewAsync(CancellationToken cancellationToken) =>
@@ -45,13 +45,15 @@ internal sealed class AccountStoreSyncOverviewSource(ICloudSyncDatabase database
         }
 
         var (samples, bytesToday) = await throughput.ReadAsync(cancellationToken).ConfigureAwait(false);
+        var conflicts = await openConflicts.ReadAsync([.. accounts.Select(account => account.Id)], cancellationToken).ConfigureAwait(false);
+        var conflictCounts = conflicts.OfType<SyncAttentionItem.Conflict>().GroupBy(conflict => conflict.AccountId).ToDictionary(group => group.Key, group => group.Count());
         var lastSyncs = new Dictionary<AccountId, Option<DateTimeOffset>>();
         foreach (var accountId in accounts.Select(account => account.Id))
             lastSyncs[accountId] = await LastSyncAsync(accountId, cancellationToken).ConfigureAwait(false);
 
         return failure.Match(
             error => Result.Failure<SyncOverview, ErrorResponse>(error),
-            () => Result.Success<SyncOverview, ErrorResponse>(SyncOverviewFactory.Create([.. accounts.Select(account => ToCloudAccount(account, countsByAccount[account.Id], paused.Contains(account.Id), lastSyncs[account.Id]))], [.. accounts.SelectMany(account => pairsByAccount[account.Id])], activity, [], samples, bytesToday, LatestOf(lastSyncs.Values))));
+            () => Result.Success<SyncOverview, ErrorResponse>(SyncOverviewFactory.Create([.. accounts.Select(account => ToCloudAccount(account, countsByAccount[account.Id], paused.Contains(account.Id), lastSyncs[account.Id], conflictCounts.GetValueOrDefault(account.Id)))], [.. accounts.SelectMany(account => pairsByAccount[account.Id])], activity, conflicts, samples, bytesToday, LatestOf(lastSyncs.Values))));
     }
 
     private static Option<DateTimeOffset> LatestOf(IEnumerable<Option<DateTimeOffset>> lastSyncs) =>
@@ -97,13 +99,19 @@ internal sealed class AccountStoreSyncOverviewSource(ICloudSyncDatabase database
         return Option.None<DateTimeOffset>();
     }
 
-    private CloudAccount ToCloudAccount(StoredAccount account, Option<BaselineCounts> counts, bool isPaused, Option<DateTimeOffset> lastSync) =>
-        CloudAccountFactory.Create(CloudAccountIdentityFactory.Create(account.Id, account.Registration.DisplayName, account.Registration.Email, account.Registration.Provider), account.Registration.Storage, counts.Map(read => read.Folders), counts.Map(read => read.Files), StatusOf(account.Id, isPaused), lastSync, readers.SignIn.StateOf(account.Id));
+    private CloudAccount ToCloudAccount(StoredAccount account, Option<BaselineCounts> counts, bool isPaused, Option<DateTimeOffset> lastSync, int conflictCount) =>
+        CloudAccountFactory.Create(CloudAccountIdentityFactory.Create(account.Id, account.Registration.DisplayName, account.Registration.Email, account.Registration.Provider), account.Registration.Storage, counts.Map(read => read.Folders), counts.Map(read => read.Files), StatusOf(account.Id, isPaused, conflictCount), lastSync, readers.SignIn.StateOf(account.Id));
 
-    private SyncStatus StatusOf(AccountId accountId, bool isPaused)
+    private SyncStatus StatusOf(AccountId accountId, bool isPaused, int conflictCount)
     {
         var status = readers.Runs.StatusOf(accountId);
 
-        return isPaused && status is SyncStatus.UpToDate ? SyncStatusFactory.CreatePaused() : status;
+        if (status is not SyncStatus.UpToDate)
+            return status;
+
+        if (isPaused)
+            return SyncStatusFactory.CreatePaused();
+
+        return conflictCount > 0 ? SyncStatusFactory.CreateHasConflicts(conflictCount) : status;
     }
 }
