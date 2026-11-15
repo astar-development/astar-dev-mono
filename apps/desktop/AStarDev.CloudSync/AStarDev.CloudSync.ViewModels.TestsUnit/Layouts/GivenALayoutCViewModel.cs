@@ -367,6 +367,14 @@ public class GivenALayoutCViewModel
     }
 
     [Fact]
+    public async Task when_created_then_the_command_search_placeholder_names_what_is_searched()
+    {
+        var viewModel = new LayoutCViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateLocalization());
+
+        viewModel.CommandSearchPlaceholder.ShouldBe("Search accounts and folders");
+    }
+
+    [Fact]
     public void when_created_then_the_sort_options_are_needs_attention_first_and_name()
     {
         var viewModel = new LayoutCViewModel(CreateUnloadedOverview(), new RecordingSyncActions(), TestData.CreateLocalization());
