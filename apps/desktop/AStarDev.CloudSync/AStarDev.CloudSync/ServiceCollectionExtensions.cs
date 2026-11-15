@@ -78,7 +78,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IAutostartRegistration>(provider => AutostartRegistrationFor(provider))
             .AddSingleton<AutostartSettingsViewModel>()
             .AddSingleton<IWindowPresence, WindowPresenceReader>()
-            .AddSingleton<INotificationSender>(_ => OperatingSystem.IsLinux() ? new LinuxNotificationSender() : new UnsupportedNotificationSender())
+            .AddSingleton<INotificationSender>(_ => NotificationSenderFor())
             .AddSingleton<SyncNotifier>()
             .AddSingleton<IMainWindowVisibility>(provider => provider.GetRequiredService<MainWindowVisibility>())
             .AddSingleton<IApplicationExit, DesktopApplicationExit>()
@@ -129,6 +129,17 @@ public static class ServiceCollectionExtensions
             .AddSingleton<DatabaseHealthBannerViewModel>()
             .AddSingleton<MainWindowDialogs>()
             .AddSingleton<MainWindowViewModel>();
+
+    private static INotificationSender NotificationSenderFor()
+    {
+        if (OperatingSystem.IsLinux())
+            return new LinuxNotificationSender();
+
+        if (OperatingSystem.IsWindows())
+            return new WindowsNotificationSender();
+
+        return OperatingSystem.IsMacOS() ? new MacNotificationSender() : new UnsupportedNotificationSender();
+    }
 
     private static IAutostartRegistration AutostartRegistrationFor(IServiceProvider provider)
     {
