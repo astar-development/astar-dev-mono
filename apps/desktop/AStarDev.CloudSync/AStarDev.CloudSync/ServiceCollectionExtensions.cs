@@ -80,6 +80,8 @@ public static class ServiceCollectionExtensions
             .AddSingleton<SyncNotifier>()
             .AddSingleton<IMainWindowVisibility>(provider => provider.GetRequiredService<MainWindowVisibility>())
             .AddSingleton<IApplicationExit, DesktopApplicationExit>()
+            .AddSingleton<ConfirmQuitViewModel>()
+            .AddSingleton<IConfirmQuitDialog>(provider => provider.GetRequiredService<ConfirmQuitViewModel>())
             .AddSingleton<IAppShutdown, AppShutdown>()
             .AddSingleton<TrayMenuModel>()
             .AddSingleton<TrayIconService>()

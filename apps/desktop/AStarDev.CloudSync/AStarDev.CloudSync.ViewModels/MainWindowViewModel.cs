@@ -7,6 +7,7 @@ using AStarDev.CloudSync.ViewModels.FolderSelection;
 using AStarDev.CloudSync.ViewModels.Layouts;
 using AStarDev.CloudSync.ViewModels.Overview;
 using AStarDev.CloudSync.ViewModels.SyncRestart;
+using AStarDev.CloudSync.ViewModels.Tray;
 using AStarDev.Localization;
 
 namespace AStarDev.CloudSync.ViewModels;
@@ -31,6 +32,8 @@ public sealed class MainWindowViewModel : LocalizedObservableObject
         SyncRestart = dialogs.SyncRestart;
         ConflictList = dialogs.ConflictList;
         DatabaseHealth = dialogs.DatabaseHealth;
+        ConfirmQuit = dialogs.ConfirmQuit;
+        ConfirmQuit.PropertyChanged += OnConfirmQuitChanged;
         SyncRestart.PropertyChanged += OnSyncRestartChanged;
         ConflictList.PropertyChanged += OnConflictListChanged;
         AccountDialog.PropertyChanged += OnDialogChanged;
@@ -69,11 +72,14 @@ public sealed class MainWindowViewModel : LocalizedObservableObject
     /// <summary>The question shown when Sync Now is pressed while the account is syncing.</summary>
     public ConfirmSyncRestartViewModel SyncRestart { get; }
 
+    /// <summary>The question shown when Quit is chosen while a sync is running.</summary>
+    public ConfirmQuitViewModel ConfirmQuit { get; }
+
     /// <summary>The conflict list screen.</summary>
     public ConflictListViewModel ConflictList { get; }
 
     /// <summary>Whether a modal dialog is open, so the layout behind it is disabled.</summary>
-    public bool IsDialogOpen => AddAccount.IsOpen || AccountDialog.IsOpen || FolderSelection.IsOpen || SyncRestart.IsOpen || ConflictList.IsOpen;
+    public bool IsDialogOpen => AddAccount.IsOpen || AccountDialog.IsOpen || FolderSelection.IsOpen || SyncRestart.IsOpen || ConfirmQuit.IsOpen || ConflictList.IsOpen;
 
     /// <summary>The view model of the layout to show. Each layout keeps its own state, so switching back restores it.</summary>
     public object CurrentLayout => DisplaySettings.CurrentLayout switch
@@ -104,6 +110,12 @@ public sealed class MainWindowViewModel : LocalizedObservableObject
     private void OnSyncRestartChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(ConfirmSyncRestartViewModel.IsOpen))
+            OnPropertyChanged(nameof(IsDialogOpen));
+    }
+
+    private void OnConfirmQuitChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ConfirmQuitViewModel.IsOpen))
             OnPropertyChanged(nameof(IsDialogOpen));
     }
 
