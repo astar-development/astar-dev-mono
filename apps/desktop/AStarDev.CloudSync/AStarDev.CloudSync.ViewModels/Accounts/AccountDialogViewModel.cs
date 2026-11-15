@@ -140,8 +140,7 @@ public sealed class AccountDialogViewModel(IAccountActions actions, ISyncRootRea
             return;
 
         SetStep(AccountDialogStepFactory.CreateWorking(Localization.GetLocal("AccountDialog.SigningIn", account.Name)));
-        _ = await Try.RunAsync(() => actions.ReauthenticateAsync(account.Id, cancellationToken), cancellationToken)
-            .MatchAsync(signedIn => signedIn.Match(_ => Close(), failure => ShowSignInFailure(failure, account)), _ => ShowSignInFailure(ReauthFailureFactory.CreateProvider(ProviderErrorFactory.CreateUnexpected()), account));
+        _ = await UiResumingTry.RunAsync(() => actions.ReauthenticateAsync(account.Id, cancellationToken), signedIn => signedIn.Match(_ => Close(), failure => ShowSignInFailure(failure, account)), _ => ShowSignInFailure(ReauthFailureFactory.CreateProvider(ProviderErrorFactory.CreateUnexpected()), account), cancellationToken);
     }
 
     /// <inheritdoc />
@@ -251,11 +250,11 @@ public sealed class AccountDialogViewModel(IAccountActions actions, ISyncRootRea
     {
         SetStep(AccountDialogStepFactory.CreateWorking(Localization.GetLocal("AccountDialog.SyncFolder.Working", account.Name)));
 
-        return await Try.RunAsync(() => actions.ChangeSyncRootAsync(account.Id, directory, cancellationToken), cancellationToken)
-            .MatchAsync(
-                changed => changed.Match(root => Task.FromResult(ShowSyncFolder(account, root.Directory.FullName, string.Empty)), rejection => ShowRejectionAsync(account, currentText, rejection, cancellationToken)),
-                _ => Task.FromResult(ShowSyncFolder(account, currentText, Localization.GetLocal("AccountDialog.SyncFolder.Failure.Store"))))
-            .Unwrap();
+        return await UiResumingTry.RunAsync(
+            () => actions.ChangeSyncRootAsync(account.Id, directory, cancellationToken),
+            changed => changed.Match(root => Task.FromResult(ShowSyncFolder(account, root.Directory.FullName, string.Empty)), rejection => ShowRejectionAsync(account, currentText, rejection, cancellationToken)),
+            _ => Task.FromResult(ShowSyncFolder(account, currentText, Localization.GetLocal("AccountDialog.SyncFolder.Failure.Store"))),
+            cancellationToken).Unwrap();
     }
 
     private async Task<Unit> ShowRejectionAsync(AccountViewModel account, string currentText, SyncRootRejection rejection, CancellationToken cancellationToken) =>
@@ -286,8 +285,7 @@ public sealed class AccountDialogViewModel(IAccountActions actions, ISyncRootRea
             return;
 
         SetStep(AccountDialogStepFactory.CreateWorking(Localization.GetLocal("AccountDialog.Removing", confirming.Account.Name)));
-        _ = await Try.RunAsync(() => actions.RemoveAsync(confirming.Account.Id, cancellationToken), cancellationToken)
-            .MatchAsync(removed => removed.Match(_ => Close(), ShowRemovalFailure), _ => ShowRemovalFailure(AccountRemovalFailureFactory.CreateProvider(ProviderErrorFactory.CreateUnexpected())));
+        _ = await UiResumingTry.RunAsync(() => actions.RemoveAsync(confirming.Account.Id, cancellationToken), removed => removed.Match(_ => Close(), ShowRemovalFailure), _ => ShowRemovalFailure(AccountRemovalFailureFactory.CreateProvider(ProviderErrorFactory.CreateUnexpected())), cancellationToken);
     }
 
     private Unit ShowRemovalFailure(AccountRemovalFailure failure)
