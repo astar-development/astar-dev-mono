@@ -18,25 +18,7 @@ public sealed class GivenAVerboseSyncPass : IDisposable
         upload.Dispose();
     }
 
-    private IEnumerable<string> EverythingLogged()
-    {
-        foreach (var logs in new[] { scan.Logs.Logger, upload.Logs.Logger })
-        {
-            foreach (var message in logs.Messages)
-                yield return message;
-
-            foreach (var exception in logs.Entries.Select(entry => entry.Exception).OfType<Exception>())
-                yield return exception.ToString();
-
-            foreach (var scope in logs.Scopes)
-                foreach (var pair in scope)
-                    yield return $"{pair.Key}={pair.Value}";
-
-            foreach (var logged in logs.Events)
-                foreach (var pair in logged.Values)
-                    yield return $"{pair.Key}={pair.Value}";
-        }
-    }
+    private IEnumerable<string> EverythingLogged() => LoggedText.From(scan.Logs, upload.Logs);
 
     [Fact]
     public async Task when_a_scan_and_an_upload_pass_run_over_personal_names_then_nothing_personal_is_in_any_log_entry()
@@ -60,7 +42,7 @@ public sealed class GivenAVerboseSyncPass : IDisposable
 
         var logged = EverythingLogged().ToList();
         logged.ShouldNotBeEmpty();
-        logged.Where(text => PersonalValues.Any(value => text.Contains(value, StringComparison.OrdinalIgnoreCase))).ShouldBeEmpty();
+        LoggedText.Personal(logged, PersonalValues).ShouldBeEmpty();
     }
 
     [Fact]
@@ -68,6 +50,6 @@ public sealed class GivenAVerboseSyncPass : IDisposable
     {
         scan.Logs.Logger.Log(LogLevel.Information, new EventId(1), "Uploading passport-scan.txt", null, (state, _) => state);
 
-        EverythingLogged().Where(text => PersonalValues.Any(value => text.Contains(value, StringComparison.OrdinalIgnoreCase))).ShouldNotBeEmpty();
+        LoggedText.Personal(EverythingLogged(), PersonalValues).ShouldNotBeEmpty();
     }
 }
