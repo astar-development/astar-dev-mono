@@ -9,6 +9,7 @@
         <PackageId>AStarDev.LoggingExtensions</PackageId>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReleaseNotes>
+        v4.1.0 feat(cloudsync): per-account verbose log level and filter (slice 2 of #1411)
         v4.0.1 refactor(logging): drop InternalsVisibleTo from LoggingExtensions (#1417)
         v4.0.0 chore(logging)!: make LoggerMessage placeholder names PascalCase (#1375)
         v3.1.0 feat(logging): export error.type on failed operations (#1374)
