@@ -46,6 +46,28 @@
                                        FontWeight="SemiBold"
                                        Foreground="{DynamicResource CloudSyncTextPrimaryBrush}" />
                         </StackPanel>
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="{Binding TransferConcurrencyText}"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource CloudSyncTextPrimaryBrush}" />
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button Classes="secondary"
+                                        Content="{Binding FewerTransfersText}"
+                                        Command="{Binding DecreaseTransferConcurrencyCommand}"
+                                        AutomationProperties.Name="{Binding FewerTransfersText}" />
+                                <Button Classes="secondary"
+                                        Content="{Binding MoreTransfersText}"
+                                        Command="{Binding IncreaseTransferConcurrencyCommand}"
+                                        AutomationProperties.Name="{Binding MoreTransfersText}" />
+                            </StackPanel>
+                            <TextBlock Text="{Binding TransferConcurrencyHelpText}"
+                                       TextWrapping="Wrap"
+                                       Foreground="{DynamicResource CloudSyncTextMutedBrush}" />
+                            <TextBlock Text="{Binding TransferConcurrencyMessageText}"
+                                       IsVisible="{Binding HasTransferConcurrencyMessage}"
+                                       TextWrapping="Wrap"
+                                       Foreground="{DynamicResource CloudSyncWarnBrush}" />
+                        </StackPanel>
                         <TextBlock Text="{Binding SyncFolderSyncingText}"
                                    IsVisible="{Binding SyncFolderSyncingText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                                    TextWrapping="Wrap"

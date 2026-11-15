@@ -74,7 +74,11 @@ public static class TestData
 
     public static AccountDialogViewModel CreateAccountDialog(FakeAccountActions actions) => CreateAccountDialog(actions, new FakeSyncRootReader(), new InMemoryAccountStore(), new FakeFolderPicker());
 
-    public static AccountDialogViewModel CreateAccountDialog(FakeAccountActions actions, FakeSyncRootReader syncRoots, IAccountStore accounts, FakeFolderPicker folderPicker) => new(actions, syncRoots, accounts, folderPicker, CreateLocalization());
+    public static AccountDialogViewModel CreateAccountDialog(FakeAccountActions actions, FakeSyncRootReader syncRoots, IAccountStore accounts, FakeFolderPicker folderPicker) => CreateAccountDialog(actions, syncRoots, accounts, folderPicker, new FakeTransferConcurrency());
+
+    public static AccountDialogViewModel CreateAccountDialog(FakeAccountActions actions, FakeSyncRootReader syncRoots, IAccountStore accounts, FakeFolderPicker folderPicker, FakeTransferConcurrency concurrency) => CreateAccountDialog(actions, syncRoots, accounts, folderPicker, concurrency, concurrency);
+
+    public static AccountDialogViewModel CreateAccountDialog(FakeAccountActions actions, FakeSyncRootReader syncRoots, IAccountStore accounts, FakeFolderPicker folderPicker, ITransferConcurrencyReader concurrencyReader, ITransferConcurrencyWriter concurrencyWriter) => new(actions, syncRoots, accounts, folderPicker, concurrencyReader, concurrencyWriter, CreateLocalization());
 
     public static CloudAccount CreateAccountWithUnknownCounts() => CloudAccountFactory.Create(CloudAccountIdentityFactory.Create(AccountIdFactory.Create(Guid.NewGuid()), "Work", "work@example.com", CloudProviderFactory.CreateOneDrive()), StorageUsageFactory.Create(782_643_000_000, 1_099_511_627_776), Option.None<int>(), Option.None<int>(), SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>(), AccountSignInStateFactory.CreateSignedIn());
 
