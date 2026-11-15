@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using Avalonia.Input;
 
 namespace AStarDev.CloudSync.Logging;
@@ -10,4 +11,9 @@ public static class LogViewerHotkey
     /// <summary>Whether the key press is the viewer's hotkey.</summary>
     /// <param name="keyEvent">The key press.</param>
     public static bool Matches(KeyEventArgs keyEvent) => Gesture.Matches(keyEvent);
+
+    /// <summary>Opens the viewer when the hotkey is pressed anywhere in the window.</summary>
+    /// <param name="window">The window to listen on.</param>
+    /// <param name="open">Opens the viewer.</param>
+    public static void Attach(TopLevel window, Action open) => throw new NotImplementedException($"{window}{open}");
 }
