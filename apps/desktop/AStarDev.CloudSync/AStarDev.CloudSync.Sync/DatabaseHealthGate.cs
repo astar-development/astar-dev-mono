@@ -4,8 +4,11 @@ namespace AStarDev.CloudSync.Sync;
 
 /// <inheritdoc />
 /// <param name="check">The integrity check.</param>
-internal sealed class DatabaseHealthGate(IDatabaseHealthCheck check) : IDatabaseHealthGate, IDisposable
+/// <param name="timeProvider">Times the pause before the retry.</param>
+internal sealed class DatabaseHealthGate(IDatabaseHealthCheck check, TimeProvider timeProvider) : IDatabaseHealthGate, IDisposable
 {
+    private static readonly TimeSpan RetryPause = TimeSpan.FromMilliseconds(250);
+
     private readonly SemaphoreSlim turn = new(1, 1);
     private DatabaseHealthStatus status = DatabaseHealthStatusFactory.CreateNotChecked();
 
@@ -27,7 +30,7 @@ internal sealed class DatabaseHealthGate(IDatabaseHealthCheck check) : IDatabase
             return Status;
 
         var ran = Status is DatabaseHealthStatus.NotChecked && await RunCheckAsync(cancellationToken).ConfigureAwait(false);
-        _ = turn.Release();
+        _ = Try.Run(() => turn.Release());
         if (ran)
             Changed?.Invoke(this, EventArgs.Empty);
 
@@ -55,7 +58,14 @@ internal sealed class DatabaseHealthGate(IDatabaseHealthCheck check) : IDatabase
     {
         var checking = await AttemptAsync(cancellationToken).ConfigureAwait(false);
         if (!checking.IsCanceled && IsTransient(checking))
+        {
+            var pausing = Task.Delay(RetryPause, timeProvider, cancellationToken);
+            await pausing.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+            if (pausing.IsCanceled)
+                return false;
+
             checking = await AttemptAsync(cancellationToken).ConfigureAwait(false);
+        }
 
         if (checking.IsCanceled)
             return false;
