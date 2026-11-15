@@ -113,8 +113,9 @@
             <param name="directory">The directory the log files are written to.</param>
             <param name="fileNamePrefix">The start of every log file name.</param>
             <param name="timeProvider">The clock used for the entry timestamps and to choose the day's file.</param>
+            <param name="admit">Decides, from an entry's level and the values of its log scopes, whether it is written. When it is <see langword="null"/> every entry is written.</param>
         </member>
-        <member name="M:AStarDev.LoggingExtensions.FileLoggerProvider.#ctor(System.String,System.String,System.TimeProvider)">
+        <member name="M:AStarDev.LoggingExtensions.FileLoggerProvider.#ctor(System.String,System.String,System.TimeProvider,System.Func{Microsoft.Extensions.Logging.LogLevel,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object},System.Boolean})">
             <summary>
             Writes log entries to a local text file, one file per day named <c>{prefix}-{yyyyMMdd}.log</c> in the supplied directory, which is created on first write.
             A failure to write is swallowed: losing a log line must never take the application down.
@@ -122,11 +123,15 @@
             <param name="directory">The directory the log files are written to.</param>
             <param name="fileNamePrefix">The start of every log file name.</param>
             <param name="timeProvider">The clock used for the entry timestamps and to choose the day's file.</param>
+            <param name="admit">Decides, from an entry's level and the values of its log scopes, whether it is written. When it is <see langword="null"/> every entry is written.</param>
         </member>
         <member name="M:AStarDev.LoggingExtensions.FileLoggerProvider.FilePathFor(System.DateTimeOffset)">
             <summary>Gets the path of the log file that entries written at <paramref name="moment"/> go to.</summary>
             <param name="moment">The time of the entry.</param>
             <returns>The full path of that day's log file.</returns>
+        </member>
+        <member name="M:AStarDev.LoggingExtensions.FileLoggerProvider.SetScopeProvider(Microsoft.Extensions.Logging.IExternalScopeProvider)">
+            <inheritdoc/>
         </member>
         <member name="M:AStarDev.LoggingExtensions.FileLoggerProvider.CreateLogger(System.String)">
             <inheritdoc/>

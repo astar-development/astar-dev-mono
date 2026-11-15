@@ -33,6 +33,8 @@ internal sealed class SyncDbContext(DbContextOptions<SyncDbContext> options) : D
 
     public DbSet<TransferConcurrencyEntity> TransferConcurrencies => Set<TransferConcurrencyEntity>();
 
+    public DbSet<AccountLogLevelEntity> AccountLogLevels => Set<AccountLogLevelEntity>();
+
     /// <summary>The app-wide automatic sync schedule: at most one row.</summary>
     public DbSet<SyncScheduleEntity> SyncSchedule => Set<SyncScheduleEntity>();
 
@@ -60,6 +62,7 @@ internal sealed class SyncDbContext(DbContextOptions<SyncDbContext> options) : D
         modelBuilder.ApplyConfiguration(new SyncAttentionPathEntityConfiguration());
         modelBuilder.ApplyConfiguration(new AccountPauseEntityConfiguration());
         modelBuilder.ApplyConfiguration(new TransferConcurrencyEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new AccountLogLevelEntityConfiguration());
         modelBuilder.ApplyConfiguration(new SyncScheduleEntityConfiguration());
         modelBuilder.ApplyConfiguration(new TrashRetentionEntityConfiguration());
         modelBuilder.ApplyConfiguration(new ActivityLogEntityConfiguration());
