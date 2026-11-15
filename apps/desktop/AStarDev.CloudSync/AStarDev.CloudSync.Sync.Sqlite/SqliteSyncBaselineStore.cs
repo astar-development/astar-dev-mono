@@ -37,6 +37,25 @@ internal sealed class SqliteSyncBaselineStore(IDbContextFactory<SyncDbContext> d
         Try.RunAsync(() => CountRowsAsync(accountId, cancellationToken), cancellationToken)
             .MatchAsync(Result.Success<BaselineCounts, ErrorResponse>, exception => Failed<BaselineCounts>(exception, "The baseline could not be counted."));
 
+    /// <inheritdoc />
+    public Task<Result<int, ErrorResponse>> CountFilesUnderAsync(AccountId accountId, LocalRelativePath under, CancellationToken cancellationToken) =>
+        Try.RunAsync(() => CountFilesAsync(accountId, under.Value ?? string.Empty, cancellationToken), cancellationToken)
+            .MatchAsync(Result.Success<int, ErrorResponse>, exception => Failed<int>(exception, "The baseline could not be counted."));
+
+    private async Task<int> CountFilesAsync(AccountId accountId, string under, CancellationToken cancellationToken)
+    {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        var query = dbContext.SyncBaseline.AsNoTracking().Where(item => item.AccountId == accountId.Value && !item.IsFolder);
+        if (under.Length > 0)
+        {
+            var underKey = Key(under);
+            var prefix = underKey + Separator;
+            query = query.Where(item => item.PathKey == underKey || item.PathKey.StartsWith(prefix));
+        }
+
+        return await query.CountAsync(cancellationToken).ConfigureAwait(false);
+    }
+
     private async Task<BaselineCounts> CountRowsAsync(AccountId accountId, CancellationToken cancellationToken)
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
