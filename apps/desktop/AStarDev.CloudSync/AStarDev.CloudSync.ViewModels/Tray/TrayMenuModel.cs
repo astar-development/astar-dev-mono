@@ -34,10 +34,24 @@ public sealed class TrayMenuModel : LocalizedObservableObject
     /// <summary>Open, one Sync now entry per account, then Quit.</summary>
     public IReadOnlyList<TrayMenuItemViewModel> Items { get; private set; }
 
-    /// <summary>The app name and the overall status, for example "AStar Dev CloudSync: Up to date".</summary>
-    public string TooltipText => Localization.GetLocal("Tray.Tooltip", Title, overview.OverallStatusText());
+    /// <summary>The app name and the overall status with counts, for example "AStar Dev CloudSync: Syncing 2 accounts" or "AStar Dev CloudSync: 3 items need attention".</summary>
+    public string TooltipText => Localization.GetLocal("Tray.Tooltip", Title, StatusText());
 
     private string Title => Localization.GetLocal("App.Title");
+
+    private string StatusText()
+    {
+        if (overview.Accounts.Any(account => account.NeedsSignIn))
+            return overview.OverallStatusText();
+
+        var syncing = overview.Accounts.Count(account => account.Status.IsSyncing);
+        if (syncing > 0)
+            return Localization.GetLocal(CountKey.For("Tray.Status.Syncing", syncing), syncing.ToString("N0", Localization.CurrentCulture));
+
+        return overview.ConflictCount > 0
+            ? Localization.GetLocal(CountKey.For("Tray.Status.Attention", overview.ConflictCount), overview.ConflictCount.ToString("N0", Localization.CurrentCulture))
+            : overview.OverallStatusText();
+    }
 
     private void OnOverviewChanged(object? sender, PropertyChangedEventArgs e)
     {
