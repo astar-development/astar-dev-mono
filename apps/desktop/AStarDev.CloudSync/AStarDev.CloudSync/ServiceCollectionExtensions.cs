@@ -21,6 +21,7 @@ using AStarDev.CloudSync.Updates;
 using AStarDev.CloudSync.Tray;
 using AStarDev.CloudSync.ViewModels;
 using AStarDev.CloudSync.ViewModels.Accounts;
+using AStarDev.CloudSync.ViewModels.Activity;
 using AStarDev.CloudSync.ViewModels.Common;
 using AStarDev.CloudSync.ViewModels.Conflicts;
 using AStarDev.CloudSync.ViewModels.DisplaySettings;
@@ -103,6 +104,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<FolderSelectionViewModel>()
             .AddSingleton<IFolderSelectionDialog>(provider => provider.GetRequiredService<FolderSelectionViewModel>())
             .AddSingleton<IFolderSelectionFactory, FolderSelectionFactory>()
+            .AddSingleton<IActivityListFactory, ActivityListFactory>()
             .AddSingleton<IAccountCommands>(provider => provider.GetRequiredService<AccountDialogViewModel>())
             .AddSingleton<SignInStateOverviewReloader>()
             .AddSingleton<SyncRunOverviewReloader>()

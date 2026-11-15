@@ -152,7 +152,7 @@
                     <Button Classes="rail" Classes.active="{Binding IsFoldersPageShown}" Command="{Binding ShowFoldersCommand}" ToolTip.Tip="{Binding FoldersText}" AutomationProperties.Name="{Binding FoldersText}">
                         <Path Data="M3,7 A2,2 0 0 1 5,5 H9 L11,7 H19 A2,2 0 0 1 21,9 V17 A2,2 0 0 1 19,19 H5 A2,2 0 0 1 3,17 Z" />
                     </Button>
-                    <Button Classes="rail" Command="{Binding NavigateCommand}" ToolTip.Tip="{Binding ActivityText}" AutomationProperties.Name="{Binding ActivityText}">
+                    <Button Classes="rail" Classes.active="{Binding IsActivityPageShown}" Command="{Binding ShowActivityCommand}" ToolTip.Tip="{Binding ActivityText}" AutomationProperties.Name="{Binding ActivityText}">
                         <Path Data="M3,12 H7 L10,4 L14,20 L17,12 H21" />
                     </Button>
                     <Button Classes="rail" Classes.active="{Binding IsConflictsPageShown}" Command="{Binding ShowConflictsCommand}" ToolTip.Tip="{Binding ConflictsText}" AutomationProperties.Name="{Binding ConflictsText}">
@@ -356,6 +356,17 @@
                 </ItemsControl>
             </ScrollViewer>
         </Grid>
+
+        <Border Grid.Row="0" Grid.Column="2"
+                Margin="20"
+                Padding="24"
+                CornerRadius="8"
+                BorderThickness="1"
+                Background="{DynamicResource CloudSyncSurfaceBrush}"
+                BorderBrush="{DynamicResource CloudSyncBorderBrush}"
+                IsVisible="{Binding IsActivityPageShown}">
+            <activity:ActivityListContent DataContext="{Binding Activity}" />
+        </Border>
 
         <Border Grid.Row="0" Grid.Column="2"
                 Margin="20"

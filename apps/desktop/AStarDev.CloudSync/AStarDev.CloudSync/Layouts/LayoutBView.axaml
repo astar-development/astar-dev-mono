@@ -293,7 +293,9 @@
                             <TabItem Header="{Binding FoldersTabText}">
                                 <folderSelection:FolderSelectionContent DataContext="{Binding Folders}" Margin="0,12,0,0" />
                             </TabItem>
-                            <TabItem Header="{Binding ActivityTabText}" />
+                            <TabItem Header="{Binding ActivityTabText}">
+                                <activity:ActivityListContent DataContext="{Binding Activity}" Margin="0,12,0,0" />
+                            </TabItem>
                             <TabItem Header="{Binding ConflictsTabText}">
                                 <conflicts:ConflictListContent DataContext="{Binding Conflicts}" IsEmbedded="True" Margin="0,12,0,0" />
                             </TabItem>

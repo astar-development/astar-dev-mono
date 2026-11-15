@@ -15,6 +15,14 @@ public abstract record LayoutAPage
         }
     }
 
+    /// <summary>The activity of every account.</summary>
+    public sealed record Activity : LayoutAPage
+    {
+        internal Activity()
+        {
+        }
+    }
+
     /// <summary>The folder selection of the selected account.</summary>
     public sealed record Folders : LayoutAPage
     {

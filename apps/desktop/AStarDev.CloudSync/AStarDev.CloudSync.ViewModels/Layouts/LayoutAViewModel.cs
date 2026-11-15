@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Windows.Input;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Sync;
+using AStarDev.CloudSync.ViewModels.Activity;
 using AStarDev.CloudSync.ViewModels.Conflicts;
 using AStarDev.CloudSync.ViewModels.FolderSelection;
 using AStarDev.CloudSync.ViewModels.Overview;
@@ -23,12 +24,14 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
     /// <param name="syncActions">Carries out the account actions the user picks.</param>
     /// <param name="conflictLists">Creates the conflict list of the Conflicts page.</param>
     /// <param name="folderSelections">Creates the folder selection of the Folders page.</param>
+    /// <param name="activityLists">Creates the activity list of the Activity page.</param>
     /// <param name="localization">Supplies the text and culture.</param>
-    public LayoutAViewModel(SyncOverviewViewModel overview, ISyncActions syncActions, IConflictListFactory conflictLists, IFolderSelectionFactory folderSelections, ILocalizationService localization) : base(localization)
+    public LayoutAViewModel(SyncOverviewViewModel overview, ISyncActions syncActions, IConflictListFactory conflictLists, IFolderSelectionFactory folderSelections, IActivityListFactory activityLists, ILocalizationService localization) : base(localization)
     {
         Overview = overview;
         ConflictList = conflictLists.Create(Option.None<AccountId>());
         Folders = folderSelections.CreatePage();
+        Activity = activityLists.Create(overview, Option.None<AccountId>());
         this.syncActions = syncActions;
         AddAccountCommand = new AsyncRelayCommand(AddAccountAndReloadAsync);
         overview.PropertyChanged += OnOverviewChanged;
@@ -43,6 +46,12 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
 
     /// <summary>The folder selection of the selected account, shown on the Folders page and pointed at the selected account while that page is shown.</summary>
     public FolderSelectionViewModel Folders { get; }
+
+    /// <summary>The activity of every account, shown on the Activity page and read each time that page is chosen.</summary>
+    public ActivityListViewModel Activity { get; }
+
+    /// <summary>Whether the activity page is shown.</summary>
+    public bool IsActivityPageShown => page is LayoutAPage.Activity;
 
     /// <summary>Whether the folders page is shown.</summary>
     public bool IsFoldersPageShown => page is LayoutAPage.Folders;
@@ -96,13 +105,16 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
     /// <summary>Shows the accounts page.</summary>
     public ICommand ShowAccountsCommand => field ??= new RelayCommand(() => Show(LayoutAPageFactory.CreateAccounts()));
 
+    /// <summary>Shows the activity page and reads the activity again.</summary>
+    public ICommand ShowActivityCommand => field ??= new RelayCommand(ShowActivity);
+
     /// <summary>Shows the folders page for the selected account.</summary>
     public ICommand ShowFoldersCommand => field ??= new RelayCommand(ShowFolders);
 
     /// <summary>Shows the conflicts page and reads the conflicts again.</summary>
     public ICommand ShowConflictsCommand => field ??= new RelayCommand(ShowConflicts);
 
-    /// <summary>The navigation of the rail buttons whose pages do not exist yet (Folders, Activity and Search). Always disabled.</summary>
+    /// <summary>The navigation of the rail buttons whose pages do not exist yet (Search). Always disabled.</summary>
     public ICommand NavigateCommand { get; } = new RelayCommand(() => { }, () => false);
 
     /// <summary>The dashboard rail button name.</summary>
@@ -119,6 +131,12 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
 
     /// <summary>The search rail button name.</summary>
     public string SearchText => Localization.GetLocal("LayoutA.Nav.Search");
+
+    private void ShowActivity()
+    {
+        Show(LayoutAPageFactory.CreateActivity());
+        _ = Activity.RefreshCommand.ExecuteAsync(null);
+    }
 
     private void ShowFolders()
     {
@@ -143,6 +161,7 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
     private void Show(LayoutAPage shown)
     {
         page = shown;
+        OnPropertyChanged(nameof(IsActivityPageShown));
         OnPropertyChanged(nameof(IsFoldersPageShown));
         OnPropertyChanged(nameof(IsAccountsPageShown));
         OnPropertyChanged(nameof(IsConflictsPageShown));
