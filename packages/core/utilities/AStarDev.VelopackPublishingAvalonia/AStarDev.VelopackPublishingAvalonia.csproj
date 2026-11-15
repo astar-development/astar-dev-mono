@@ -18,6 +18,7 @@
 
   <PropertyGroup>
         <PackageReleaseNotes>
+        v1.1.0 feat(velopack,cloudsync): update apply gate, so an update waits for running syncs (#1679, #1680)
         v1.0.0 fix(logging)!: log exception type names only, remove exception-taking templates (#1371)
         v0.3.1 fix(logging): log exception type names only, never messages or instances (#1371)
         v0.3.0 feat(localization): extract localisation service into AStarDev.Localization package
