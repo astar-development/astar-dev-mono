@@ -6,6 +6,7 @@
              xmlns:overview="using:AStarDev.CloudSync.Overview"
              xmlns:common="using:AStarDev.CloudSync.Common"
              xmlns:conflicts="using:AStarDev.CloudSync.Conflicts"
+             xmlns:folderSelection="using:AStarDev.CloudSync.FolderSelection"
              xmlns:vmActivity="using:AStarDev.CloudSync.ViewModels.Activity"
              xmlns:vmLayouts="using:AStarDev.CloudSync.ViewModels.Layouts"
              xmlns:vmOverview="using:AStarDev.CloudSync.ViewModels.Overview"
@@ -148,7 +149,7 @@
                     <Button Classes="rail" Classes.active="{Binding IsAccountsPageShown}" Command="{Binding ShowAccountsCommand}" ToolTip.Tip="{Binding DashboardText}" AutomationProperties.Name="{Binding DashboardText}">
                         <Path Data="M3,3 h7 v7 h-7 Z M14,3 h7 v7 h-7 Z M3,14 h7 v7 h-7 Z M14,14 h7 v7 h-7 Z" />
                     </Button>
-                    <Button Classes="rail" Command="{Binding NavigateCommand}" ToolTip.Tip="{Binding FoldersText}" AutomationProperties.Name="{Binding FoldersText}">
+                    <Button Classes="rail" Classes.active="{Binding IsFoldersPageShown}" Command="{Binding ShowFoldersCommand}" ToolTip.Tip="{Binding FoldersText}" AutomationProperties.Name="{Binding FoldersText}">
                         <Path Data="M3,7 A2,2 0 0 1 5,5 H9 L11,7 H19 A2,2 0 0 1 21,9 V17 A2,2 0 0 1 19,19 H5 A2,2 0 0 1 3,17 Z" />
                     </Button>
                     <Button Classes="rail" Command="{Binding NavigateCommand}" ToolTip.Tip="{Binding ActivityText}" AutomationProperties.Name="{Binding ActivityText}">
@@ -355,6 +356,17 @@
                 </ItemsControl>
             </ScrollViewer>
         </Grid>
+
+        <Border Grid.Row="0" Grid.Column="2"
+                Margin="20"
+                Padding="24"
+                CornerRadius="8"
+                BorderThickness="1"
+                Background="{DynamicResource CloudSyncSurfaceBrush}"
+                BorderBrush="{DynamicResource CloudSyncBorderBrush}"
+                IsVisible="{Binding IsFoldersPageShown}">
+            <folderSelection:FolderSelectionContent DataContext="{Binding Folders}" />
+        </Border>
 
         <conflicts:ConflictListContent Grid.Row="0" Grid.Column="2"
                                        DataContext="{Binding ConflictList}"

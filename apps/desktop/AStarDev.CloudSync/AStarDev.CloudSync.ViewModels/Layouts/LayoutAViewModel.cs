@@ -3,6 +3,7 @@ using System.Windows.Input;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.ViewModels.Conflicts;
+using AStarDev.CloudSync.ViewModels.FolderSelection;
 using AStarDev.CloudSync.ViewModels.Overview;
 using AStarDev.FunctionalParadigm;
 using AStarDev.Localization;
@@ -21,11 +22,13 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
     /// <param name="overview">The shared overview.</param>
     /// <param name="syncActions">Carries out the account actions the user picks.</param>
     /// <param name="conflictLists">Creates the conflict list of the Conflicts page.</param>
+    /// <param name="folderSelections">Creates the folder selection of the Folders page.</param>
     /// <param name="localization">Supplies the text and culture.</param>
-    public LayoutAViewModel(SyncOverviewViewModel overview, ISyncActions syncActions, IConflictListFactory conflictLists, ILocalizationService localization) : base(localization)
+    public LayoutAViewModel(SyncOverviewViewModel overview, ISyncActions syncActions, IConflictListFactory conflictLists, IFolderSelectionFactory folderSelections, ILocalizationService localization) : base(localization)
     {
         Overview = overview;
         ConflictList = conflictLists.Create(Option.None<AccountId>());
+        Folders = folderSelections.CreatePage();
         this.syncActions = syncActions;
         AddAccountCommand = new AsyncRelayCommand(AddAccountAndReloadAsync);
         overview.PropertyChanged += OnOverviewChanged;
@@ -37,6 +40,12 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
 
     /// <summary>The conflicts of every account, shown on the Conflicts page and read each time that page is chosen.</summary>
     public ConflictListViewModel ConflictList { get; }
+
+    /// <summary>The folder selection of the selected account, shown on the Folders page and pointed at the selected account while that page is shown.</summary>
+    public FolderSelectionViewModel Folders { get; }
+
+    /// <summary>Whether the folders page is shown.</summary>
+    public bool IsFoldersPageShown => page is LayoutAPage.Folders;
 
     /// <summary>Whether the account cards and stats are shown.</summary>
     public bool IsAccountsPageShown => page is LayoutAPage.Accounts;
@@ -87,6 +96,9 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
     /// <summary>Shows the accounts page.</summary>
     public ICommand ShowAccountsCommand => field ??= new RelayCommand(() => Show(LayoutAPageFactory.CreateAccounts()));
 
+    /// <summary>Shows the folders page for the selected account.</summary>
+    public ICommand ShowFoldersCommand => field ??= new RelayCommand(ShowFolders);
+
     /// <summary>Shows the conflicts page and reads the conflicts again.</summary>
     public ICommand ShowConflictsCommand => field ??= new RelayCommand(ShowConflicts);
 
@@ -108,6 +120,20 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
     /// <summary>The search rail button name.</summary>
     public string SearchText => Localization.GetLocal("LayoutA.Nav.Search");
 
+    private void ShowFolders()
+    {
+        Show(LayoutAPageFactory.CreateFolders());
+        ShowSelectedAccountFolders();
+    }
+
+    private void ShowSelectedAccountFolders()
+    {
+        var selected = allCards.FirstOrDefault(card => card.IsSelected);
+
+        if (selected is not null)
+            _ = Folders.ShowAccountCommand.ExecuteAsync(selected.Account.Id);
+    }
+
     private void ShowConflicts()
     {
         Show(LayoutAPageFactory.CreateConflicts());
@@ -117,6 +143,7 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
     private void Show(LayoutAPage shown)
     {
         page = shown;
+        OnPropertyChanged(nameof(IsFoldersPageShown));
         OnPropertyChanged(nameof(IsAccountsPageShown));
         OnPropertyChanged(nameof(IsConflictsPageShown));
     }
@@ -156,6 +183,9 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
     {
         foreach (var card in allCards)
             card.IsSelected = ReferenceEquals(card, selected);
+
+        if (page is LayoutAPage.Folders)
+            ShowSelectedAccountFolders();
     }
 
     private async Task AddAccountAndReloadAsync(CancellationToken cancellationToken)

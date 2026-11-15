@@ -305,7 +305,7 @@ public class GivenALayoutAViewModel
         second.SelectCommand.Execute(null);
         await layout.Folders.ShowAccountCommand.ExecutionTask!;
 
-        tree.RequestedAccounts.Last().ShouldBe(second.Account.Id);
+        tree.RequestedAccounts[^1].ShouldBe(second.Account.Id);
     }
 
     [Fact]
