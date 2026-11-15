@@ -116,7 +116,7 @@ public sealed class GivenAnInterruptedSyncRecovery : IDisposable
         var recovering = Task.Run(() => next.Recovery.RecoverAsync(CancellationToken), CancellationToken);
         await UntilRecoveryRunsAsync(1).WaitAsync(Limit, CancellationToken);
         var startedBeforeTheWindowPassed = RecoveryRuns();
-        next.Time.Advance(RecoveryStagger.Window);
+        await AdvanceUntilDoneAsync(next.Time, recovering).WaitAsync(Limit, CancellationToken);
         var outcomes = await recovering.WaitAsync(Limit, CancellationToken);
 
         (startedBeforeTheWindowPassed, RecoveryRuns(), outcomes.Count).ShouldBe((1, 2, 2));
@@ -207,10 +207,19 @@ public sealed class GivenAnInterruptedSyncRecovery : IDisposable
         var recovering = Task.Run(() => next.Recovery.RecoverAsync(CancellationToken), CancellationToken);
         await UntilRecoveryRunsAsync(1).WaitAsync(Limit, CancellationToken);
         next.Paused.Paused = Result.Success<IReadOnlyList<AccountId>, ErrorResponse>([Personal, Work]);
-        next.Time.Advance(RecoveryStagger.Window);
+        await AdvanceUntilDoneAsync(next.Time, recovering).WaitAsync(Limit, CancellationToken);
         var outcomes = await recovering.WaitAsync(Limit, CancellationToken);
 
         (RecoveryRuns(), outcomes.Count(outcome => outcome is RecoveryOutcome.Held), outcomes.Count(outcome => outcome is RecoveryOutcome.Resumed)).ShouldBe((1, 1, 1));
+    }
+
+    private static async Task AdvanceUntilDoneAsync(Microsoft.Extensions.Time.Testing.FakeTimeProvider time, Task recovering)
+    {
+        while (!recovering.IsCompleted)
+        {
+            time.Advance(RecoveryStagger.Window);
+            await Task.Delay(5, CancellationToken);
+        }
     }
 
     private int RecoveryRuns() => journal.Runs.Count(run => run.Trigger is SyncTrigger.Recovery);
