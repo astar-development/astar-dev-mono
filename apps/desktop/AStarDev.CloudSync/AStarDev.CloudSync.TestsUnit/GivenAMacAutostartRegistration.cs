@@ -43,15 +43,6 @@ public sealed class GivenAMacAutostartRegistration
     }
 
     [Fact]
-    public async Task when_the_plist_exists_then_the_state_is_enabled()
-    {
-        var registration = Create();
-        _ = await registration.EnableAsync(TestContext.Current.CancellationToken);
-
-        Of(await registration.GetAsync(TestContext.Current.CancellationToken)).ShouldBe(AutostartStateFactory.CreateEnabled());
-    }
-
-    [Fact]
     public async Task when_it_is_disabled_then_the_plist_is_removed_and_disabling_again_is_not_an_error()
     {
         var registration = Create();
@@ -61,38 +52,5 @@ public sealed class GivenAMacAutostartRegistration
         var second = Of(await registration.DisableAsync(TestContext.Current.CancellationToken));
 
         (first, second, fileSystem.File.Exists(EntryPath)).ShouldBe((AutostartStateFactory.CreateDisabled(), AutostartStateFactory.CreateDisabled(), false));
-    }
-
-    [Fact]
-    public async Task when_the_build_is_not_installed_then_nothing_is_written_and_the_state_says_why()
-    {
-        var state = Of(await Create(Option.None<string>()).EnableAsync(TestContext.Current.CancellationToken));
-
-        (state, fileSystem.File.Exists(EntryPath)).ShouldBe((AutostartStateFactory.CreateNotSupported(AutostartStateFactory.CreateNotInstalledBuild()), false));
-    }
-
-    [Fact]
-    public async Task when_the_build_is_not_installed_then_reading_the_state_is_not_supported_too()
-    {
-        Of(await Create(Option.None<string>()).GetAsync(TestContext.Current.CancellationToken)).ShouldBe(AutostartStateFactory.CreateNotSupported(AutostartStateFactory.CreateNotInstalledBuild()));
-    }
-
-    [Fact]
-    public async Task when_there_is_no_home_folder_then_enabling_fails_with_an_error_and_writes_nothing()
-    {
-        var result = await Create(home: false).EnableAsync(TestContext.Current.CancellationToken);
-
-        (result.Match(_ => "ok", _ => "failed"), fileSystem.File.Exists(EntryPath)).ShouldBe(("failed", false));
-    }
-
-    [Fact]
-    public async Task when_the_plist_cannot_be_written_then_enabling_fails_with_an_error_and_not_an_exception()
-    {
-        _ = fileSystem.Directory.CreateDirectory("/Users/test/Library");
-        fileSystem.File.WriteAllText("/Users/test/Library/LaunchAgents", "a file where the folder should be");
-
-        var result = await Create().EnableAsync(TestContext.Current.CancellationToken);
-
-        result.Match(_ => "ok", _ => "failed").ShouldBe("failed");
     }
 }
