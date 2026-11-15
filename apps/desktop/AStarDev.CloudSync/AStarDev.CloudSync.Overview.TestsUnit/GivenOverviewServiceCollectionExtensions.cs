@@ -46,6 +46,7 @@ public class GivenOverviewServiceCollectionExtensions
             .AddSingleton<ISyncBaselineCounter>(new FakeSyncBaselineCounter())
             .AddSingleton<IActivityLogReader>(new FakeActivityLogReader())
             .AddSingleton<ISyncRunJournal>(new InMemorySyncRunJournal())
+            .AddSingleton<IAccountThrottleHints>(new FakeAccountThrottleHints())
             .AddLogging()
             .AddSyncOverview()
             .BuildServiceProvider();

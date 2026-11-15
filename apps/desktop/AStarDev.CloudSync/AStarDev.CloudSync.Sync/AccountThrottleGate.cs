@@ -5,7 +5,7 @@ namespace AStarDev.CloudSync.Sync;
 
 /// <summary>An in-process <see cref="IAccountThrottleGate"/> timed by <see cref="TimeProvider"/>.</summary>
 /// <param name="timeProvider">The clock and timer source.</param>
-internal sealed class AccountThrottleGate(TimeProvider timeProvider) : IAccountThrottleGate
+internal sealed class AccountThrottleGate(TimeProvider timeProvider) : IAccountThrottleGate, IAccountThrottleHints
 {
     private const int MaximumDoublings = 16;
 
@@ -51,6 +51,9 @@ internal sealed class AccountThrottleGate(TimeProvider timeProvider) : IAccountT
                 accounts[accountId] = (state.PausedUntil, 0);
         }
     }
+
+    /// <inheritdoc />
+    public ThrottleHint HintFor(AccountId accountId) => throw new NotImplementedException($"{accountId}{timeProvider}");
 
     private static DateTimeOffset Later(DateTimeOffset first, DateTimeOffset second) => first > second ? first : second;
 

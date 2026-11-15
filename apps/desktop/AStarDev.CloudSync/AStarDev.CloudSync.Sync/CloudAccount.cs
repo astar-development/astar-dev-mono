@@ -18,7 +18,8 @@ public sealed record CloudAccount
         Option<int> fileCount,
         SyncStatus status,
         Option<DateTimeOffset> lastSync,
-        AccountSignInState signIn)
+        AccountSignInState signIn,
+        ThrottleHint throttleHint)
     {
         Id = id;
         DisplayName = displayName;
@@ -30,10 +31,14 @@ public sealed record CloudAccount
         Status = status;
         LastSync = lastSync;
         SignIn = signIn;
+        ThrottleHint = throttleHint;
     }
 
     /// <summary>Whether the account can get tokens without the user (#1393); composed in by the overview.</summary>
     public AccountSignInState SignIn { get; }
+
+    /// <summary>Whether to suggest a lower concurrency because the provider keeps throttling the account (#1463); composed in by the overview.</summary>
+    public ThrottleHint ThrottleHint { get; }
 
     /// <summary>The account id.</summary>
     public AccountId Id { get; }

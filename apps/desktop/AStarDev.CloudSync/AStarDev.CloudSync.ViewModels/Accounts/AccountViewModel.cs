@@ -101,6 +101,12 @@ public sealed class AccountViewModel : LocalizedObservableObject
     /// <summary>The failure message for layout C's account strip; empty when there is no failure.</summary>
     public string LayoutCFailureText => Status.FailureMessage("C");
 
+    /// <summary>Whether to suggest fewer transfers at once because the provider keeps throttling the account (#1463).</summary>
+    public bool HasThrottleHint => throw new NotImplementedException($"{account}");
+
+    /// <summary>The suggestion to lower the transfers at once; empty when there is none.</summary>
+    public string ThrottleHintText => throw new NotImplementedException($"{account}");
+
     /// <summary>The Sign in action's text.</summary>
     public string SignInText => Localization.GetLocal("Account.SignIn");
 
