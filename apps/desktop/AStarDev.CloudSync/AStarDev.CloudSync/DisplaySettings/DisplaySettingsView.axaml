@@ -91,6 +91,37 @@
                            IsVisible="{Binding ErrorText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
             </StackPanel>
         </Border>
+        <Border DataContext="{Binding LogLevels}">
+            <StackPanel x:DataType="vmDisplaySettings:AccountLogLevelsViewModel" Spacing="4">
+                <TextBlock Classes="muted" Text="{Binding HeadingText}" />
+                <TextBlock Text="{Binding HelpText}"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource CloudSyncTextMutedBrush}" />
+                <TextBlock Text="{Binding NoAccountsText}"
+                           TextWrapping="Wrap"
+                           IsVisible="{Binding !HasAccounts}" />
+                <ItemsControl ItemsSource="{Binding Rows}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vmDisplaySettings:AccountLogLevelRowViewModel">
+                            <StackPanel Spacing="2">
+                                <CheckBox Content="{Binding LabelText}"
+                                          IsChecked="{Binding IsVerbose, Mode=OneWay}"
+                                          Command="{Binding ToggleCommand}"
+                                          AutomationProperties.Name="{Binding LabelText}" />
+                                <TextBlock Text="{Binding ErrorText}"
+                                           TextWrapping="Wrap"
+                                           Foreground="{DynamicResource CloudSyncWarnBrush}"
+                                           IsVisible="{Binding ErrorText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock Text="{Binding ErrorText}"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource CloudSyncWarnBrush}"
+                           IsVisible="{Binding ErrorText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            </StackPanel>
+        </Border>
         <Border DataContext="{Binding PlaintextCacheConsent}">
             <StackPanel x:DataType="vmAccounts:PlaintextCacheConsentSettingsViewModel"
                         Spacing="6"

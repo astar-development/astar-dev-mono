@@ -121,6 +121,8 @@ public static class ServiceCollectionExtensions
             .AddSingleton<PlaintextCacheConsentSettingsViewModel>()
             .AddSingleton<SyncScheduleSettingsViewModel>()
             .AddSingleton<TrashRetentionSettingsViewModel>()
+            .AddSingleton<AccountLogLevelsViewModel>()
+            .AddSingleton(provider => DisplaySettingsSectionsFactory.Create(provider.GetRequiredService<SyncScheduleSettingsViewModel>(), provider.GetRequiredService<TrashRetentionSettingsViewModel>(), provider.GetRequiredService<AutostartSettingsViewModel>(), provider.GetRequiredService<AccountLogLevelsViewModel>()))
             .AddSingleton<DisplaySettingsViewModel>()
             .AddSingleton<SyncOverviewViewModel>()
             .AddSingleton<ConflictListSources>()
