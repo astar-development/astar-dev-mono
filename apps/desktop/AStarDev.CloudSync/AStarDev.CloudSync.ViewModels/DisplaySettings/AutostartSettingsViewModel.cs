@@ -32,7 +32,7 @@ public sealed class AutostartSettingsViewModel : LocalizedObservableObject
 
     /// <summary>Why the box cannot be changed, or empty.</summary>
     public string ReasonText => state is AutostartState.NotSupported { Blocker: var blocker }
-        ? Localization.GetLocal(blocker is AutostartBlocker.NotInstalledBuild ? "Settings.Autostart.NotInstalled" : "Settings.Autostart.PlatformNotSupported")
+        ? Localization.GetLocal(BlockerKey(blocker))
         : string.Empty;
 
     /// <summary>The message shown when the state could not be read or changed, or empty.</summary>
@@ -65,4 +65,6 @@ public sealed class AutostartSettingsViewModel : LocalizedObservableObject
 
         return Unit.Instance;
     }
+
+    private static string BlockerKey(AutostartBlocker blocker) => blocker is AutostartBlocker.NotInstalledBuild ? "Settings.Autostart.NotInstalled" : "Settings.Autostart.PlatformNotSupported";
 }

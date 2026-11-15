@@ -79,10 +79,13 @@ public class GivenAStatusViewModel
     }
 
     [Theory]
-    [MemberData(nameof(FailureTexts))]
-    public void when_the_last_run_failed_then_the_text_names_the_reason_and_only_the_failed_flag_is_set(SyncFailureReason reason, string text)
+    [InlineData("RootUnavailable", "Sync folder unavailable")]
+    [InlineData("QuotaExceeded", "Cloud storage full")]
+    [InlineData("InsufficientDiskSpace", "Not enough disk space")]
+    [InlineData("Unexpected", "Sync failed")]
+    public void when_the_last_run_failed_then_the_text_names_the_reason_and_only_the_failed_flag_is_set(string reasonName, string text)
     {
-        var status = new StatusViewModel(SyncStatusFactory.CreateFailed(reason), TestData.CreateLocalization());
+        var status = new StatusViewModel(SyncStatusFactory.CreateFailed(FailureReason(reasonName)), TestData.CreateLocalization());
 
         status.Text.ShouldBe(text);
         status.IsFailed.ShouldBeTrue();
@@ -90,12 +93,12 @@ public class GivenAStatusViewModel
         status.IsCancelled.ShouldBeFalse();
     }
 
-    public static TheoryData<SyncFailureReason, string> FailureTexts => new()
+    private static SyncFailureReason FailureReason(string name) => name switch
     {
-        { SyncFailureReasonFactory.CreateRootUnavailable(), "Sync folder unavailable" },
-        { SyncFailureReasonFactory.CreateQuotaExceeded(), "Cloud storage full" },
-        { SyncFailureReasonFactory.CreateInsufficientDiskSpace(), "Not enough disk space" },
-        { SyncFailureReasonFactory.CreateUnexpected(), "Sync failed" },
+        "RootUnavailable" => SyncFailureReasonFactory.CreateRootUnavailable(),
+        "QuotaExceeded" => SyncFailureReasonFactory.CreateQuotaExceeded(),
+        "InsufficientDiskSpace" => SyncFailureReasonFactory.CreateInsufficientDiskSpace(),
+        _ => SyncFailureReasonFactory.CreateUnexpected(),
     };
 
     [Fact]

@@ -1,3 +1,4 @@
+using System.Globalization;
 using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.ViewModels.Overview;
 using AStarDev.FunctionalParadigm;
@@ -150,5 +151,5 @@ public sealed class LogViewerViewModel : LocalizedObservableObject
 
     private List<LogFilterOption<LogLevel>> BuildLevelOptions() => [.. Levels.Select((value, index) => LogFilterOptionFactory.Create(value, Localization.GetLocal(LevelKeys[index])))];
 
-    private static string Format(LogLine line) => FormattableString.Invariant($"{line.Time:yyyy-MM-dd HH:mm:ss.fff} {line.Level,-11} {line.Category}: {line.Message}");
+    private static string Format(LogLine line) => string.Create(CultureInfo.InvariantCulture, $"{line.Time:yyyy-MM-dd HH:mm:ss.fff} {line.Level,-11} {line.Category}: {line.Message}");
 }

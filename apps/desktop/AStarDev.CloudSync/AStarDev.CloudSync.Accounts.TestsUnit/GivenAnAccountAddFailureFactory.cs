@@ -4,21 +4,28 @@ namespace AStarDev.CloudSync.Accounts.TestsUnit;
 
 public class GivenAnAccountAddFailureFactory
 {
-    public static TheoryData<Func<AccountAddFailure>, Type> FailureFactoriesAndCases() => new()
+    private static readonly Dictionary<string, (Func<AccountAddFailure> Create, Type ExpectedCase)> Cases = new()
     {
-        { AccountAddFailureFactory.CreateBrowserUnavailable, typeof(AccountAddFailure.BrowserUnavailable) },
-        { AccountAddFailureFactory.CreateAuthRejected, typeof(AccountAddFailure.AuthRejected) },
-        { AccountAddFailureFactory.CreateNetwork, typeof(AccountAddFailure.Network) },
-        { AccountAddFailureFactory.CreateTokenCacheUnavailable, typeof(AccountAddFailure.TokenCacheUnavailable) },
-        { AccountAddFailureFactory.CreateDriveUnavailable, typeof(AccountAddFailure.DriveUnavailable) },
-        { AccountAddFailureFactory.CreatePersistFailed, typeof(AccountAddFailure.PersistFailed) },
+        ["BrowserUnavailable"] = (AccountAddFailureFactory.CreateBrowserUnavailable, typeof(AccountAddFailure.BrowserUnavailable)),
+        ["AuthRejected"] = (AccountAddFailureFactory.CreateAuthRejected, typeof(AccountAddFailure.AuthRejected)),
+        ["Network"] = (AccountAddFailureFactory.CreateNetwork, typeof(AccountAddFailure.Network)),
+        ["TokenCacheUnavailable"] = (AccountAddFailureFactory.CreateTokenCacheUnavailable, typeof(AccountAddFailure.TokenCacheUnavailable)),
+        ["DriveUnavailable"] = (AccountAddFailureFactory.CreateDriveUnavailable, typeof(AccountAddFailure.DriveUnavailable)),
+        ["PersistFailed"] = (AccountAddFailureFactory.CreatePersistFailed, typeof(AccountAddFailure.PersistFailed)),
     };
 
     [Theory]
-    [MemberData(nameof(FailureFactoriesAndCases))]
-    public void when_a_failure_is_created_then_it_is_the_matching_case(Func<AccountAddFailure> createFailure, Type expectedCase)
+    [InlineData("BrowserUnavailable")]
+    [InlineData("AuthRejected")]
+    [InlineData("Network")]
+    [InlineData("TokenCacheUnavailable")]
+    [InlineData("DriveUnavailable")]
+    [InlineData("PersistFailed")]
+    public void when_a_failure_is_created_then_it_is_the_matching_case(string caseName)
     {
-        var failure = createFailure();
+        var (create, expectedCase) = Cases[caseName];
+
+        var failure = create();
 
         failure.ShouldBeOfType(expectedCase);
     }
