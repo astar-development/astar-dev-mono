@@ -7,10 +7,10 @@ namespace AStarDev.CloudSync.Overview;
 /// <summary>Registers the overview module.</summary>
 public static class OverviewServiceCollectionExtensions
 {
-    /// <summary>Registers the <see cref="ISyncOverviewSource" /> that builds the overview from the saved accounts. Needs an <c>IAccountStore</c>, an <c>ICloudSyncDatabase</c>, an <c>IActivityLogReader</c> and an <c>IAccountThrottleHints</c>, and uses the registered <c>IThroughputReader</c> or one that finds no samples.</summary>
+    /// <summary>Registers the <see cref="ISyncOverviewSource" /> that builds the overview from the saved accounts. Needs an <c>IAccountStore</c>, an <c>ICloudSyncDatabase</c>, an <c>IActivityLogReader</c>, an <c>ISyncAttentionReader</c> and an <c>IAccountThrottleHints</c>, and uses the registered <c>IThroughputReader</c> or one that finds no samples.</summary>
     /// <param name="services">The service collection to register the overview source with.</param>
     /// <returns>The <paramref name="services" /> collection to allow further chaining.</returns>
-    public static IServiceCollection AddSyncOverview(this IServiceCollection services) => AddTelemetry(services).AddSingleton<SyncOverviewReaders>().AddSingleton<OverviewThroughput>().AddSingleton<AccountStoreSyncOverviewSource>().AddSingleton<ThrottleHintingSyncOverviewSource>().AddSingleton<ISyncOverviewSource, InstrumentedSyncOverviewSource>();
+    public static IServiceCollection AddSyncOverview(this IServiceCollection services) => AddTelemetry(services).AddSingleton<SyncOverviewReaders>().AddSingleton<OverviewThroughput>().AddSingleton<OverviewConflicts>().AddSingleton<AccountStoreSyncOverviewSource>().AddSingleton<ThrottleHintingSyncOverviewSource>().AddSingleton<ISyncOverviewSource, InstrumentedSyncOverviewSource>();
 
     private static IServiceCollection AddTelemetry(IServiceCollection services)
     {

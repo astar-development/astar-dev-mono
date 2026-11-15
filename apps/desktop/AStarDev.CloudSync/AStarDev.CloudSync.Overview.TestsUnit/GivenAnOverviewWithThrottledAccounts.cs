@@ -1,5 +1,6 @@
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Sync;
+using AStarDev.CloudSync.TestHelpers.Conflicts;
 using AStarDev.CloudSync.TestHelpers.Accounts;
 using AStarDev.FunctionalParadigm;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,6 +36,7 @@ public class GivenAnOverviewWithThrottledAccounts
             .AddSingleton<ISyncRunJournal>(new InMemorySyncRunJournal())
             .AddSingleton<IAccountThrottleHints>(hints)
             .AddLogging()
+            .AddSingleton<ISyncAttentionReader>(new FakeAttentionReader())
             .AddSyncOverview()
             .BuildServiceProvider();
 
