@@ -328,6 +328,21 @@ public sealed class GivenALocalChangeDetector : IDisposable
     }
 
     [Fact]
+    public async Task when_a_file_vanishes_while_it_is_being_hashed_then_it_is_unreadable_not_deleted_and_the_scan_goes_on()
+    {
+        fixture.Include("Docs");
+        _ = fixture.Synced("Docs/vanishing.txt", "before", "item-vanishing", TimeSpan.FromMinutes(30));
+        _ = fixture.Synced("Docs/fine.txt", "before", "item-fine", TimeSpan.FromMinutes(30));
+        _ = fixture.Write("Docs/vanishing.txt", "after1", TimeSpan.FromMinutes(5));
+        _ = fixture.Write("Docs/fine.txt", "after2", TimeSpan.FromMinutes(5));
+        _ = fixture.Hasher.VanishingNames.Add("vanishing.txt");
+
+        var set = await fixture.ScanAsync(CancellationToken);
+
+        LocalScanFixture.Describe(set).ShouldBe("Modified:Docs/fine.txt;Unreadable:Docs/vanishing.txt");
+    }
+
+    [Fact]
     public async Task when_two_siblings_differ_only_in_case_then_the_ambiguous_path_is_unreadable()
     {
         fixture.Include("Docs");
