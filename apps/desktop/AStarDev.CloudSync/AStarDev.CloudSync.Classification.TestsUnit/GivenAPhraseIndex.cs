@@ -36,10 +36,12 @@ public sealed class GivenAPhraseIndex
         var index = PhraseIndexFactory.Create([Term("red car", Place), Term("blue", Colour)]);
 
         var first = PhraseMatcher.Match(["red", "car"], index);
-        var second = PhraseMatcher.Match(["blue"], index);
+        var second = PhraseMatcher.Match(ClassificationTokeniser.Tokenise("blue"), index);
         var third = PhraseMatcher.Match(["green"], index);
 
-        (first.Select(match => match.Text), second.Select(match => match.Text), third).ShouldBe((["red car"], ["blue"], []));
+        first.Select(match => match.Text).ShouldBe(["red car"]);
+        second.Select(match => match.Text).ShouldBe(["blue"]);
+        third.ShouldBeEmpty();
     }
 
     [Fact]

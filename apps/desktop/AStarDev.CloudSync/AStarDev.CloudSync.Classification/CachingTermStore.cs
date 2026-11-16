@@ -10,14 +10,14 @@ namespace AStarDev.CloudSync.Classification;
 public sealed class CachingTermStore(ITermStore inner, IClassificationVocabularyProvider provider) : ITermStore
 {
     /// <inheritdoc />
-    public Task<Result<IReadOnlyList<ClassificationTerm>, ClassificationFailure>> GetAllAsync(CancellationToken cancellationToken) => throw new NotImplementedException($"{inner}{provider}{cancellationToken}");
+    public Task<Result<IReadOnlyList<ClassificationTerm>, ClassificationFailure>> GetAllAsync(CancellationToken cancellationToken) => inner.GetAllAsync(cancellationToken);
 
     /// <inheritdoc />
-    public Task<Result<ClassificationTerm, ClassificationFailure>> UpsertAsync(ClassificationTerm term, CancellationToken cancellationToken) => throw new NotImplementedException($"{inner}{provider}{term}{cancellationToken}");
+    public Task<Result<ClassificationTerm, ClassificationFailure>> UpsertAsync(ClassificationTerm term, CancellationToken cancellationToken) => inner.UpsertAsync(term, cancellationToken).TapAsync(_ => provider.Invalidate());
 
     /// <inheritdoc />
-    public Task<Result<Option<ClassificationTerm>, ClassificationFailure>> GetByIdAsync(TermId termId, CancellationToken cancellationToken) => throw new NotImplementedException($"{inner}{provider}{termId}{cancellationToken}");
+    public Task<Result<Option<ClassificationTerm>, ClassificationFailure>> GetByIdAsync(TermId termId, CancellationToken cancellationToken) => inner.GetByIdAsync(termId, cancellationToken);
 
     /// <inheritdoc />
-    public Task<Result<ClassificationTerm, ClassificationFailure>> SetStatusAsync(TermId termId, TermStatus status, CancellationToken cancellationToken) => throw new NotImplementedException($"{inner}{provider}{termId}{status}{cancellationToken}");
+    public Task<Result<ClassificationTerm, ClassificationFailure>> SetStatusAsync(TermId termId, TermStatus status, CancellationToken cancellationToken) => inner.SetStatusAsync(termId, status, cancellationToken).TapAsync(_ => provider.Invalidate());
 }

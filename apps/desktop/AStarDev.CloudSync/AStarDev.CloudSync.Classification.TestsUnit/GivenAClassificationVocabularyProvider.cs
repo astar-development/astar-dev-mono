@@ -28,7 +28,8 @@ public sealed class GivenAClassificationVocabularyProvider
         var result = await provider.GetAsync(TestContext.Current.CancellationToken);
 
         var vocabulary = await result.MatchAsync(found => found, _ => throw new InvalidOperationException());
-        (vocabulary.Terms.Select(term => term.Text), vocabulary.Categories.Select(category => category.Name)).ShouldBe((["red"], ["Colour"]));
+        vocabulary.Terms.Select(term => term.Text).ShouldBe(["red"]);
+        vocabulary.Categories.Select(category => category.Name).ShouldBe(["Colour"]);
     }
 
     [Fact]
@@ -43,7 +44,8 @@ public sealed class GivenAClassificationVocabularyProvider
         var result = await provider.GetAsync(TestContext.Current.CancellationToken);
 
         var vocabulary = await result.MatchAsync(found => found, _ => throw new InvalidOperationException());
-        (terms.GetAllCalls, vocabulary.Terms.Select(term => term.Text)).ShouldBe((2, ["blue"]));
+        terms.GetAllCalls.ShouldBe(2);
+        vocabulary.Terms.Select(term => term.Text).ShouldBe(["blue"]);
     }
 
     [Fact]
@@ -62,7 +64,8 @@ public sealed class GivenAClassificationVocabularyProvider
         var result = await provider.GetAsync(TestContext.Current.CancellationToken);
 
         var vocabulary = await result.MatchAsync(found => found, _ => throw new InvalidOperationException());
-        (terms.GetAllCalls, vocabulary.Terms.Select(term => term.Text)).ShouldBe((2, ["blue"]));
+        terms.GetAllCalls.ShouldBe(2);
+        vocabulary.Terms.Select(term => term.Text).ShouldBe(["blue"]);
     }
 
     [Fact]

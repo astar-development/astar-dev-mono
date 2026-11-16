@@ -7,5 +7,5 @@ public sealed class DictionaryTermSignal : IClassificationSignal
 {
     /// <inheritdoc />
     public IReadOnlyList<ClassificationCandidate> Evaluate(RelativeSyncPath path, ClassificationVocabulary vocabulary) =>
-        SignalCandidates.Create(PhraseMatcher.Match(ClassificationTokeniser.Tokenise(Path.GetFileNameWithoutExtension(path.Value ?? string.Empty)), vocabulary.Terms), vocabulary, SignalKindFactory.CreateVocabulary());
+        SignalCandidates.Create(PhraseMatcher.Match(ClassificationTokeniser.Tokenise(Path.GetFileNameWithoutExtension(path.Value ?? string.Empty)), vocabulary.PhraseIndex), vocabulary, SignalKindFactory.CreateVocabulary());
 }

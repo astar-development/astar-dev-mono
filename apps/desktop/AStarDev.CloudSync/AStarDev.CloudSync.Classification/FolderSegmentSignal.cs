@@ -7,5 +7,5 @@ public sealed class FolderSegmentSignal : IClassificationSignal
 {
     /// <inheritdoc />
     public IReadOnlyList<ClassificationCandidate> Evaluate(RelativeSyncPath path, ClassificationVocabulary vocabulary) =>
-        SignalCandidates.Create((path.Value ?? string.Empty).Split('/').SkipLast(1).SelectMany(folder => PhraseMatcher.Match(ClassificationTokeniser.Tokenise(folder), vocabulary.Terms)), vocabulary, SignalKindFactory.CreateFolderName());
+        SignalCandidates.Create((path.Value ?? string.Empty).Split('/').SkipLast(1).SelectMany(folder => PhraseMatcher.Match(ClassificationTokeniser.Tokenise(folder), vocabulary.PhraseIndex)), vocabulary, SignalKindFactory.CreateFolderName());
 }

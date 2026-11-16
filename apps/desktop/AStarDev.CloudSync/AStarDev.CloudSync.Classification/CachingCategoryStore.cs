@@ -6,8 +6,8 @@ namespace AStarDev.CloudSync.Classification;
 public sealed class CachingCategoryStore(ICategoryStore inner, IClassificationVocabularyProvider provider) : ICategoryStore
 {
     /// <inheritdoc />
-    public Task<Result<IReadOnlyList<ClassificationCategory>, ClassificationFailure>> GetAllAsync(CancellationToken cancellationToken) => throw new NotImplementedException($"{inner}{provider}{cancellationToken}");
+    public Task<Result<IReadOnlyList<ClassificationCategory>, ClassificationFailure>> GetAllAsync(CancellationToken cancellationToken) => inner.GetAllAsync(cancellationToken);
 
     /// <inheritdoc />
-    public Task<Result<ClassificationCategory, ClassificationFailure>> UpsertAsync(ClassificationCategory category, CancellationToken cancellationToken) => throw new NotImplementedException($"{inner}{provider}{category}{cancellationToken}");
+    public Task<Result<ClassificationCategory, ClassificationFailure>> UpsertAsync(ClassificationCategory category, CancellationToken cancellationToken) => inner.UpsertAsync(category, cancellationToken).TapAsync(_ => provider.Invalidate());
 }
