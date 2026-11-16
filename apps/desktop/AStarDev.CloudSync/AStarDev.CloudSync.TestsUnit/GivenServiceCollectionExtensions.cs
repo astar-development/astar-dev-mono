@@ -103,6 +103,19 @@ public class GivenServiceCollectionExtensions
         var localization = provider.GetRequiredService<ILocalizationService>();
 
         localization.GetLocal("App.Title").ShouldBe("AStar Dev CloudSync");
+        localization.GetLocal("App.WindowTitle", "1.71.1").ShouldBe("AStar Dev Cloud Sync V1.71.1");
+    }
+
+    [Fact]
+    public void when_application_services_are_added_then_the_running_version_is_registered_without_a_v_prefix_or_build_metadata()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        var version = provider.GetRequiredService<AppVersion>();
+
+        version.Text.ShouldNotBeNullOrWhiteSpace();
+        version.Text.ShouldNotStartWith("v", Case.Insensitive);
+        version.Text.ShouldNotContain("+");
     }
 
     [Theory]

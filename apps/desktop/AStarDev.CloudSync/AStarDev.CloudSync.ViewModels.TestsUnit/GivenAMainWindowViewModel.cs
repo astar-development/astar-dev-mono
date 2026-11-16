@@ -9,11 +9,11 @@ namespace AStarDev.CloudSync.ViewModels.TestsUnit;
 public class GivenAMainWindowViewModel
 {
     [Fact]
-    public async Task when_created_then_the_title_comes_from_the_app_title_localisation_key()
+    public async Task when_created_then_the_title_is_the_product_name_with_the_running_version()
     {
         var viewModel = TestData.CreateMainWindowViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), TestData.CreateDisplaySettings());
 
-        viewModel.Title.ShouldBe("AStar Dev CloudSync");
+        viewModel.Title.ShouldBe("AStar Dev Cloud Sync V0.1.0");
     }
 
     [Fact]

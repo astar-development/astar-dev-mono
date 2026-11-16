@@ -1,6 +1,7 @@
 {
   "locale": "en-GB",
   "App.Title": "AStar Dev CloudSync",
+  "App.WindowTitle": "AStar Dev Cloud Sync V{0}",
   "Update.Title": "Update available",
   "Update.Message": "Version {0} is ready to install.",
   "Update.ForcedMessage": "Version {0} has been waiting for a week, so it will be installed now. The app restarts once any running sync has finished.",

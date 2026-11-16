@@ -38,7 +38,7 @@ public class GivenAMainWindow
 
         window.Show();
 
-        window.Title.ShouldBe("AStar Dev CloudSync");
+        window.Title.ShouldBe("AStar Dev Cloud Sync V0.1.0");
     }
 
     [AvaloniaFact]
