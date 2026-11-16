@@ -293,8 +293,8 @@
                                         <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="12">
                                             <accounts:ProviderBadge Grid.Column="0" VerticalAlignment="Center" DataContext="{Binding Account.Provider}" />
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Account.Name}" FontSize="14" FontWeight="SemiBold" />
-                                                <TextBlock Classes="muted" Text="{Binding EmailAndProviderText}" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Text="{Binding Account.Name}" FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Account.Name}" />
+                                                <TextBlock Classes="muted" Text="{Binding EmailAndProviderText}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding EmailAndProviderText}" />
                                                 <TextBlock Text="{Binding Account.LayoutAFailureText}" FontSize="11" Foreground="{DynamicResource CloudSyncWarnBrush}" TextWrapping="Wrap" IsVisible="{Binding Account.HasFailure}" />
                                                 <TextBlock Text="{Binding Account.ThrottleHintText}" FontSize="11" Foreground="{DynamicResource CloudSyncWarnBrush}" TextWrapping="Wrap" IsVisible="{Binding Account.HasThrottleHint}" />
                                             </StackPanel>
