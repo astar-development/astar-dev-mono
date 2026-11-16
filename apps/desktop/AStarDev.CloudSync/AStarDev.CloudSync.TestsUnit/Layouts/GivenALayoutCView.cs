@@ -140,6 +140,42 @@ public class GivenALayoutCView
 
     private static List<Button> FindChips(Window window) => [.. window.GetVisualDescendants().OfType<Button>().Where(button => button.Classes.Contains("chip"))];
 
+    [AvaloniaFact]
+    public async Task when_no_account_is_selected_then_no_account_card_shows_action_buttons_and_selecting_one_shows_only_its_buttons()
+    {
+        var window = await CreateShownWindowAsync();
+        var first = window.GetVisualDescendants().OfType<Button>().First(button => button.Classes.Contains("account-select"));
+        var before = VisibleCardActions(window).Count;
+
+        first.Command!.Execute(null);
+        Dispatcher.UIThread.RunJobs();
+
+        var visibleActions = VisibleCardActions(window);
+        before.ShouldBe(0);
+        visibleActions.Count.ShouldBe(4);
+        visibleActions.ShouldAllBe(button => ReferenceEquals(button.DataContext, first.DataContext));
+    }
+
+    [AvaloniaFact]
+    public async Task when_another_account_card_is_selected_then_the_action_buttons_move_to_it()
+    {
+        var window = await CreateShownWindowAsync();
+        var buttons = window.GetVisualDescendants().OfType<Button>().Where(button => button.Classes.Contains("account-select")).ToList();
+        buttons[0].Command!.Execute(null);
+        Dispatcher.UIThread.RunJobs();
+        var other = buttons[1];
+
+        other.Command!.Execute(null);
+        Dispatcher.UIThread.RunJobs();
+
+        var visibleActions = VisibleCardActions(window);
+        visibleActions.Count.ShouldBe(4);
+        visibleActions.ShouldAllBe(button => ReferenceEquals(button.DataContext, other.DataContext));
+    }
+
+    private static List<Button> VisibleCardActions(Window window) =>
+        [.. window.GetVisualDescendants().OfType<Button>().Where(button => button.Classes.Contains("secondary") && button.DataContext is LayoutCAccountCardViewModel && button.IsEffectivelyVisible)];
+
     private static async Task<Window> CreateShownWindowAsync()
     {
         var overview = await TestData.CreateLoadedOverviewViewModelAsync();
