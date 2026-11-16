@@ -17,4 +17,7 @@ public static class LayoutAPageFactory
 
     /// <summary>Creates the conflicts page.</summary>
     public static LayoutAPage CreateConflicts() => new LayoutAPage.Conflicts();
+
+    /// <summary>Creates the classification page.</summary>
+    public static LayoutAPage CreateClassification() => new LayoutAPage.Classification();
 }

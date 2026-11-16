@@ -8,6 +8,8 @@ using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Accounts.OneDrive;
 using AStarDev.CloudSync.Accounts.Sqlite;
 using AStarDev.CloudSync.Sync.Sqlite;
+using AStarDev.CloudSync.Classification;
+using AStarDev.CloudSync.Classification.Sqlite;
 using AStarDev.CloudSync.Common;
 using AStarDev.CloudSync.DisplaySettings;
 using AStarDev.CloudSync.Overview;
@@ -17,6 +19,7 @@ using AStarDev.CloudSync.TestHelpers.Overview;
 using AStarDev.CloudSync.Theming;
 using AStarDev.CloudSync.ViewModels;
 using AStarDev.CloudSync.ViewModels.Accounts;
+using AStarDev.CloudSync.ViewModels.Classification;
 using AStarDev.CloudSync.ViewModels.Common;
 using AStarDev.CloudSync.ViewModels.DisplaySettings;
 using AStarDev.CloudSync.ViewModels.Layouts;
@@ -474,14 +477,14 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
-    public void when_application_services_are_added_then_the_account_store_comes_from_the_accounts_sqlite_module_and_the_combined_database_from_the_sync_sqlite_module()
+    public void when_application_services_are_added_then_the_account_store_comes_from_the_accounts_sqlite_module_and_the_combined_database_from_the_classification_sqlite_module()
     {
         using var provider = CreateServices().BuildServiceProvider();
         var sqliteModule = typeof(PersistenceServiceCollectionExtensions).Assembly;
 
         (provider.GetRequiredService<IAccountStore>(), provider.GetRequiredService<ICloudSyncDatabase>()).ShouldSatisfyAllConditions(
             services => services.Item1.GetType().Assembly.ShouldBe(sqliteModule),
-            services => services.Item2.GetType().Assembly.ShouldBe(typeof(SyncPersistenceServiceCollectionExtensions).Assembly));
+            services => services.Item2.GetType().Assembly.ShouldBe(typeof(ClassificationPersistenceServiceCollectionExtensions).Assembly));
     }
 
     [Fact]
@@ -577,6 +580,63 @@ public class GivenServiceCollectionExtensions
         using var provider = CreateServices().BuildServiceProvider();
 
         provider.GetRequiredService<TimeProvider>().ShouldBeSameAs(TimeProvider.System);
+    }
+
+    [Fact]
+    public void when_application_services_are_added_then_the_baseline_writer_is_the_classifying_decorator_over_the_sqlite_store()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<ISyncBaselineWriter>().ShouldBeOfType<ClassifyingSyncBaselineWriter>();
+        provider.GetRequiredService<ISyncBaselineReader>().ShouldNotBeOfType<ClassifyingSyncBaselineWriter>();
+    }
+
+    [Fact]
+    public void when_application_services_are_added_then_the_stores_are_the_caching_decorators_and_the_provider_resolves_without_a_cycle()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<ITermStore>().ShouldBeOfType<CachingTermStore>();
+        provider.GetRequiredService<ICategoryStore>().ShouldBeOfType<CachingCategoryStore>();
+        provider.GetRequiredService<IClassificationVocabularyProvider>().ShouldBeOfType<ClassificationVocabularyProvider>();
+    }
+
+    [Fact]
+    public void when_application_services_are_added_then_the_engine_signals_and_seeding_services_resolve()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<IFileClassifier>().ShouldBeOfType<FileClassifier>();
+        provider.GetServices<IClassificationSignal>().Select(signal => signal.GetType()).ShouldBe([typeof(ExtensionSignal), typeof(FolderSegmentSignal), typeof(DictionaryTermSignal)], ignoreOrder: true);
+        provider.GetRequiredService<IClassificationSeedSource>().ShouldBeOfType<EmbeddedClassificationSeedSource>();
+        provider.GetRequiredService<IClassificationSeeder>().ShouldBeOfType<ClassificationSeeder>();
+        provider.GetRequiredService<IClassificationStartup>().ShouldBeOfType<ClassificationStartup>();
+        provider.GetRequiredService<IFileClassificationStore>().ShouldNotBeNull();
+        provider.GetRequiredService<ISeedStateStore>().ShouldNotBeNull();
+        provider.GetRequiredService<IClassifiableFileSource>().ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void when_application_services_are_added_then_the_word_lists_are_one_instance_and_the_suggestions_and_reclassifier_are_singletons()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<IKnownWordList>().ShouldBeSameAs(provider.GetRequiredService<IFirstNameList>());
+        provider.GetRequiredService<IClassificationSuggestions>().ShouldBeSameAs(provider.GetRequiredService<IClassificationSuggestions>());
+        provider.GetRequiredService<IClassificationReclassifier>().ShouldBeSameAs(provider.GetRequiredService<IClassificationReclassifier>());
+        provider.GetRequiredService<IClassificationReclassifier>().ShouldBeOfType<ClassificationReclassifier>();
+    }
+
+    [Fact]
+    public void when_application_services_are_added_then_the_classification_page_and_the_layout_share_one_view_model()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        var page = provider.GetRequiredService<ClassificationPageViewModel>();
+
+        provider.GetRequiredService<LayoutAViewModel>().Classification.ShouldBeSameAs(page);
+        page.Tabs.ShouldBeSameAs(provider.GetRequiredService<ClassificationTabsViewModel>());
+        page.Reclassify.ShouldBeSameAs(provider.GetRequiredService<ReclassifyViewModel>());
     }
 
     private static IServiceCollection CreateServices()

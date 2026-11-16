@@ -5,6 +5,7 @@
              xmlns:displaySettings="using:AStarDev.CloudSync.DisplaySettings"
              xmlns:overview="using:AStarDev.CloudSync.Overview"
              xmlns:common="using:AStarDev.CloudSync.Common"
+             xmlns:classification="using:AStarDev.CloudSync.Classification"
              xmlns:conflicts="using:AStarDev.CloudSync.Conflicts"
              xmlns:folderSelection="using:AStarDev.CloudSync.FolderSelection"
              xmlns:search="using:AStarDev.CloudSync.Search"
@@ -158,6 +159,9 @@
                     </Button>
                     <Button Classes="rail" Classes.active="{Binding IsConflictsPageShown}" Command="{Binding ShowConflictsCommand}" ToolTip.Tip="{Binding ConflictsText}" AutomationProperties.Name="{Binding ConflictsText}">
                         <Path Data="M12,3 L2,20 H22 Z M12,10 V14 M12,17 V17.5" />
+                    </Button>
+                    <Button Classes="rail" Classes.active="{Binding IsClassificationPageShown}" Command="{Binding ShowClassificationCommand}" ToolTip.Tip="{Binding ClassificationText}" AutomationProperties.Name="{Binding ClassificationText}">
+                        <Path Data="M3,5 H10 V12 H3 Z M14,5 H21 V12 H14 Z M3,16 H21 M3,20 H15" />
                     </Button>
                     <Button Classes="rail" Classes.active="{Binding IsSearchPageShown}" Command="{Binding ShowSearchCommand}" ToolTip.Tip="{Binding SearchText}" AutomationProperties.Name="{Binding SearchText}">
                         <Path Data="M18,11 A7,7 0 1 1 4,11 A7,7 0 1 1 18,11 Z M20,20 L16,16" />
@@ -390,6 +394,17 @@
                 BorderBrush="{DynamicResource CloudSyncBorderBrush}"
                 IsVisible="{Binding IsFoldersPageShown}">
             <folderSelection:FolderSelectionContent DataContext="{Binding Folders}" />
+        </Border>
+
+        <Border Grid.Row="0" Grid.Column="2"
+                Margin="20"
+                Padding="24"
+                CornerRadius="8"
+                BorderThickness="1"
+                Background="{DynamicResource CloudSyncSurfaceBrush}"
+                BorderBrush="{DynamicResource CloudSyncBorderBrush}"
+                IsVisible="{Binding IsClassificationPageShown}">
+            <classification:ClassificationPageContent DataContext="{Binding Classification}" />
         </Border>
 
         <conflicts:ConflictListContent Grid.Row="0" Grid.Column="2"

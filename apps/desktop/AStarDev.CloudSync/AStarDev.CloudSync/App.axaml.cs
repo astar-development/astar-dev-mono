@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using AStarDev.CloudSync.Accounts;
+using AStarDev.CloudSync.Classification;
 using AStarDev.CloudSync.Logging;
 using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.ViewModels.Notifications;
@@ -65,7 +66,7 @@ public partial class App : Application, IDisposable
             _ = Task.Run(() => services.GetRequiredService<AccountLogLevels>().LoadAsync(services.GetRequiredService<IAccountLogLevelSettings>(), CancellationToken.None), CancellationToken.None);
             _ = services.GetRequiredService<AccountLogLevelsViewModel>().LoadAsync(CancellationToken.None);
             recovery = Task.Run(() => services.GetRequiredService<IInterruptedSyncRecovery>().RecoverAsync(shutdown.Token), shutdown.Token);
-            _ = services.GetRequiredService<ISyncScheduler>().StartAsync(CancellationToken.None);
+            _ = Task.Run(StartSyncAfterClassificationAsync, CancellationToken.None);
             _ = services.GetRequiredService<SyncRunOverviewReloader>();
             _ = Task.Run(() => services.GetRequiredService<ISignInStateRefresher>().RefreshAllAsync(CancellationToken.None), CancellationToken.None);
 
@@ -76,6 +77,16 @@ public partial class App : Application, IDisposable
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private async Task StartSyncAfterClassificationAsync()
+    {
+        if (services is null)
+            return;
+
+        await services.GetRequiredService<IClassificationStartup>().RunAsync(shutdown.Token).ConfigureAwait(false);
+        if (!shutdown.IsCancellationRequested)
+            await services.GetRequiredService<ISyncScheduler>().StartAsync(CancellationToken.None).ConfigureAwait(false);
     }
 
     private void LogUnhandledExceptions(UnhandledExceptionLogger unhandled)

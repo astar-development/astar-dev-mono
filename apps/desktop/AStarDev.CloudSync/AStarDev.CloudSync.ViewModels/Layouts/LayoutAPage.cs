@@ -46,4 +46,12 @@ public abstract record LayoutAPage
         {
         }
     }
+
+    /// <summary>The term list, suggestions and reclassify button.</summary>
+    public sealed record Classification : LayoutAPage
+    {
+        internal Classification()
+        {
+        }
+    }
 }

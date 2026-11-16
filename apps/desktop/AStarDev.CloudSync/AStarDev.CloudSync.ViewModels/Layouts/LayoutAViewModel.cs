@@ -5,6 +5,7 @@ using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.ViewModels.Accounts;
 using AStarDev.CloudSync.ViewModels.SyncPairs;
 using AStarDev.CloudSync.ViewModels.Activity;
+using AStarDev.CloudSync.ViewModels.Classification;
 using AStarDev.CloudSync.ViewModels.Conflicts;
 using AStarDev.CloudSync.ViewModels.FolderSelection;
 using AStarDev.CloudSync.ViewModels.Overview;
@@ -28,13 +29,15 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
     /// <param name="conflictLists">Creates the conflict list of the Conflicts page.</param>
     /// <param name="folderSelections">Creates the folder selection of the Folders page.</param>
     /// <param name="activityLists">Creates the activity list of the Activity page.</param>
+    /// <param name="classification">The Classification page.</param>
     /// <param name="localization">Supplies the text and culture.</param>
-    public LayoutAViewModel(SyncOverviewViewModel overview, ISyncActions syncActions, IConflictListFactory conflictLists, IFolderSelectionFactory folderSelections, IActivityListFactory activityLists, ILocalizationService localization) : base(localization)
+    public LayoutAViewModel(SyncOverviewViewModel overview, ISyncActions syncActions, IConflictListFactory conflictLists, IFolderSelectionFactory folderSelections, IActivityListFactory activityLists, ClassificationPageViewModel classification, ILocalizationService localization) : base(localization)
     {
         Overview = overview;
         ConflictList = conflictLists.Create(Option.None<AccountId>());
         Folders = folderSelections.CreatePage();
         Activity = activityLists.Create(overview, Option.None<AccountId>());
+        Classification = classification;
         Search = new SearchResultsViewModel(overview, OpenAccount, OpenFolder, localization);
         this.syncActions = syncActions;
         AddAccountCommand = new AsyncRelayCommand(AddAccountAndReloadAsync);
@@ -54,6 +57,9 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
     /// <summary>The activity of every account, shown on the Activity page and read each time that page is chosen.</summary>
     public ActivityListViewModel Activity { get; }
 
+    /// <summary>The classification page, shown on the Classification page and read each time that page is chosen.</summary>
+    public ClassificationPageViewModel Classification { get; }
+
     /// <summary>The search page: what was typed and the accounts and folders it matches.</summary>
     public SearchResultsViewModel Search { get; }
 
@@ -71,6 +77,9 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
 
     /// <summary>Whether the conflicts page is shown.</summary>
     public bool IsConflictsPageShown => page is LayoutAPage.Conflicts;
+
+    /// <summary>Whether the classification page is shown.</summary>
+    public bool IsClassificationPageShown => page is LayoutAPage.Classification;
 
     /// <summary>"All" followed by one chip per provider present in the accounts.</summary>
     public IReadOnlyList<LayoutAProviderChipViewModel> ProviderChips { get; private set; } = [];
@@ -124,6 +133,9 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
     /// <summary>Shows the conflicts page and reads the conflicts again.</summary>
     public ICommand ShowConflictsCommand => field ??= new RelayCommand(ShowConflicts);
 
+    /// <summary>Shows the classification page and reads the term list again.</summary>
+    public ICommand ShowClassificationCommand => field ??= new RelayCommand(ShowClassification);
+
     /// <summary>Shows the search page.</summary>
     public ICommand ShowSearchCommand => field ??= new RelayCommand(() => Show(LayoutAPageFactory.CreateSearch()));
 
@@ -138,6 +150,9 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
 
     /// <summary>The conflicts rail button name.</summary>
     public string ConflictsText => Localization.GetLocal("LayoutA.Nav.Conflicts");
+
+    /// <summary>The classification rail button name.</summary>
+    public string ClassificationText => Localization.GetLocal("LayoutA.Nav.Classification");
 
     /// <summary>The search rail button name.</summary>
     public string SearchText => Localization.GetLocal("LayoutA.Nav.Search");
@@ -186,6 +201,12 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
         _ = ConflictList.RefreshCommand.ExecuteAsync(null);
     }
 
+    private void ShowClassification()
+    {
+        Show(LayoutAPageFactory.CreateClassification());
+        _ = Classification.LoadCommand.ExecuteAsync(null);
+    }
+
     private void Show(LayoutAPage shown)
     {
         page = shown;
@@ -194,6 +215,7 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
         OnPropertyChanged(nameof(IsFoldersPageShown));
         OnPropertyChanged(nameof(IsAccountsPageShown));
         OnPropertyChanged(nameof(IsConflictsPageShown));
+        OnPropertyChanged(nameof(IsClassificationPageShown));
     }
 
     private void OnOverviewChanged(object? sender, PropertyChangedEventArgs e)

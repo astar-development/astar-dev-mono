@@ -22,7 +22,7 @@ public class GivenTheUnknownCountSnapshots
         Assert.SkipUnless(OperatingSystem.IsLinux(), Snapshot.LinuxOnlyReason);
         var overview = await CreateOverviewAsync();
 
-        Snapshot.ShouldMatchBaseline(new Window { Content = new LayoutAView { DataContext = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), TestData.CreateLocalization()) } }, ThemeOf(theme), $"layout-a-unknown-counts-{theme}");
+        Snapshot.ShouldMatchBaseline(new Window { Content = new LayoutAView { DataContext = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), TestData.CreateClassificationPage(), TestData.CreateLocalization()) } }, ThemeOf(theme), $"layout-a-unknown-counts-{theme}");
     }
 
     [AvaloniaTheory]
