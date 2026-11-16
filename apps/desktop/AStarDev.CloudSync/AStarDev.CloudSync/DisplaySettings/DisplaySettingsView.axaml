@@ -157,7 +157,13 @@
                 </StackPanel>
                 <StackPanel Spacing="6" IsVisible="{Binding IsRunning}">
                     <TextBlock Text="{Binding RunningText}" TextWrapping="Wrap" />
-                    <ProgressBar IsIndeterminate="True" />
+                    <ItemsControl ItemsSource="{Binding RunIndicators}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="x:Object">
+                                <ProgressBar IsIndeterminate="True" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                     <Button Classes="secondary"
                             HorizontalAlignment="Left"
                             Content="{Binding CancelText}"
