@@ -10,7 +10,9 @@ using AStarDev.CloudSync.TestHelpers.Ui;
 using AStarDev.CloudSync.ViewModels;
 using AStarDev.CloudSync.ViewModels.Accounts;
 using AStarDev.CloudSync.ViewModels.Overview;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
@@ -132,6 +134,25 @@ public class GivenAMainWindow
         FindSingle<DisplaySettingsButton>(window).DataContext.ShouldBeSameAs(viewModel.DisplaySettings);
     }
 
+    [AvaloniaTheory]
+    [InlineData("A")]
+    [InlineData("B")]
+    [InlineData("C")]
+    public async Task when_any_layout_is_shown_then_the_settings_button_is_in_the_bottom_left_corner_of_the_window(string key)
+    {
+        var viewModel = await CreateViewModelAsync();
+        var window = new MainWindow { Width = 1280, Height = 800, DataContext = viewModel };
+        window.Show();
+
+        viewModel.DisplaySettings.SelectLayout(MainLayoutFactory.FromKey(key));
+        window.UpdateLayout();
+        var button = FindSingle<DisplaySettingsButton>(window).GetVisualDescendants().OfType<Button>().Single();
+        var corner = button.TranslatePoint(new Point(button.Bounds.Width / 2, button.Bounds.Height / 2), window).ShouldNotBeNull();
+
+        corner.X.ShouldBeLessThan(80);
+        corner.Y.ShouldBeGreaterThan(window.Bounds.Height * 0.85);
+    }
+
     [AvaloniaFact]
     public async Task when_the_settings_flyout_opens_then_it_shows_the_display_settings()
     {
@@ -143,6 +164,7 @@ public class GivenAMainWindow
 
         flyout.ShowAt(button);
 
+        flyout.Placement.ShouldBe(PlacementMode.RightEdgeAlignedBottom);
         flyout.Content.ShouldBeOfType<DisplaySettingsView>().DataContext.ShouldBeSameAs(viewModel.DisplaySettings);
         flyout.Hide();
     }
