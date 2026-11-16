@@ -13,6 +13,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="TestLists/**/*.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="../AStarDev.CloudSync.Classification/AStarDev.CloudSync.Classification.csproj" />
     <ProjectReference Include="../AStarDev.CloudSync.TestHelpers/AStarDev.CloudSync.TestHelpers.csproj" />
   </ItemGroup>
