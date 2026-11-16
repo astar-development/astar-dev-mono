@@ -54,11 +54,11 @@ public sealed class ClassificationSeeder(IClassificationSeedSource seedSource, I
     private async Task<Result<IReadOnlyDictionary<string, CategoryId>, ClassificationFailure>> UpsertCategoriesAsync(ClassificationSeed seed, CancellationToken cancellationToken)
     {
         var ids = new Dictionary<string, CategoryId>(StringComparer.OrdinalIgnoreCase);
-        foreach (var seedCategory in seed.Categories)
+        foreach (var categoryName in seed.Categories.Select(category => category.Name))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var category = ClassificationCategoryFactory.Create(CategoryIdFactory.Create(Guid.NewGuid()), seedCategory.Name);
-            var failure = await categories.UpsertAsync(category, cancellationToken).MatchAsync(stored => Store(ids, seedCategory.Name, stored), Option.Some).ConfigureAwait(false);
+            var category = ClassificationCategoryFactory.Create(CategoryIdFactory.Create(Guid.NewGuid()), categoryName);
+            var failure = await categories.UpsertAsync(category, cancellationToken).MatchAsync(stored => Store(ids, categoryName, stored), Option.Some).ConfigureAwait(false);
             if (failure.TryGetValue(out var failed))
                 return Result.Failure<IReadOnlyDictionary<string, CategoryId>, ClassificationFailure>(failed);
         }
