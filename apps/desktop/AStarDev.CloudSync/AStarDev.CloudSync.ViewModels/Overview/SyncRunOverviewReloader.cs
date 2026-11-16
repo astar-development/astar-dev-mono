@@ -8,20 +8,25 @@ public sealed class SyncRunOverviewReloader
 {
     private readonly SyncOverviewViewModel overview;
     private readonly IUiDispatcher dispatcher;
+    private readonly TimeProvider timeProvider;
 
     /// <summary>Starts following the sync runs.</summary>
     /// <param name="activity">Raises the run started and ended events.</param>
     /// <param name="progress">Raises an event as a run's progress is published.</param>
     /// <param name="overview">The overview to reload.</param>
     /// <param name="dispatcher">Runs the reload on the UI thread.</param>
-    public SyncRunOverviewReloader(ISyncActivitySource activity, ISyncProgressFeed progress, SyncOverviewViewModel overview, IUiDispatcher dispatcher)
+    /// <param name="timeProvider">Times the pause that joins a burst of progress events into one reload.</param>
+    public SyncRunOverviewReloader(ISyncActivitySource activity, ISyncProgressFeed progress, SyncOverviewViewModel overview, IUiDispatcher dispatcher, TimeProvider timeProvider)
     {
+        this.timeProvider = timeProvider;
         this.overview = overview;
         this.dispatcher = dispatcher;
-        progress.ProgressChanged += (_, _) => Reload();
+        progress.ProgressChanged += (_, _) => ReloadSoon();
         activity.PassStarted += (_, _) => Reload();
         activity.PassFinished += (_, _) => Reload();
     }
+
+    private void ReloadSoon() => throw new NotImplementedException($"{timeProvider}");
 
     private void Reload() => _ = dispatcher.InvokeAsync(() => _ = overview.LoadAsync(CancellationToken.None));
 }
