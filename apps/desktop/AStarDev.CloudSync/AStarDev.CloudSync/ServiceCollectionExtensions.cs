@@ -117,6 +117,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<ILogDiagnosticsClipboard, AvaloniaLogDiagnosticsClipboard>()
             .AddSingleton<LogViewerViewModel>()
             .AddSingleton<LogViewerLauncher>()
+            .AddSingleton<UnhandledExceptionLogger>()
             .AddSingleInstance()
             .AddSingleton(provider => SingleInstanceOptionsFactory.Create(provider.GetRequiredService<IFileSystem>().DirectoryInfo.New(ApplicationName.ApplicationDirectory()), SingleInstanceName, null))
             .AddCloudSyncPersistence(provider => provider.GetRequiredService<IFileSystem>().FileInfo.New(DatabaseFilePath))

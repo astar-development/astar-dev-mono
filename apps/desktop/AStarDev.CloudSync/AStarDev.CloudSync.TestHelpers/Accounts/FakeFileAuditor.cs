@@ -14,6 +14,8 @@ public sealed class FakeFileAuditor : IFileAuditor
 
     public Exception? Throws { get; set; }
 
+    public Func<Task>? Delay { get; set; }
+
     public IReadOnlyList<AccountId> Audited => audited;
 
     public async Task<Result<FileAuditCounts, FileAuditFailure>> AuditAsync(AccountId accountId, CancellationToken cancellationToken)
@@ -21,6 +23,9 @@ public sealed class FakeFileAuditor : IFileAuditor
         audited.Add(accountId);
         if (Gate is not null)
             await Gate.Task.WaitAsync(cancellationToken);
+
+        if (Delay is not null)
+            await Delay().ConfigureAwait(false);
 
         return Throws is null ? Outcome : throw Throws;
     }

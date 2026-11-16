@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Sync;
+using AStarDev.CloudSync.ViewModels.Common;
 using AStarDev.CloudSync.ViewModels.Overview;
 using AStarDev.FunctionalParadigm;
 using AStarDev.Localization;
@@ -159,9 +160,12 @@ public sealed class FileAuditViewModel : LocalizedObservableObject
         using var source = new CancellationTokenSource();
         running = source;
         MoveTo(FileAuditStepFactory.CreateRunning());
-        var audit = Try.RunAsync(() => auditor.AuditAsync(accountId, source.Token), source.Token)
-            .MatchAsync(result => result.Match(FileAuditStepFactory.CreateCompleted, FileAuditStepFactory.CreateFailed), _ => FileAuditStepFactory.CreateFailed(FileAuditFailureFactory.CreateCloudUnavailable(ProviderErrorFactory.CreateUnexpected())));
-        await ((Task)audit).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+        var audit = UiResumingTry.RunAsync(
+            () => auditor.AuditAsync(accountId, source.Token),
+            result => result.Match(FileAuditStepFactory.CreateCompleted, FileAuditStepFactory.CreateFailed),
+            _ => FileAuditStepFactory.CreateFailed(FileAuditFailureFactory.CreateCloudUnavailable(ProviderErrorFactory.CreateUnexpected())),
+            source.Token);
+        await ((Task)audit).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing | ConfigureAwaitOptions.ContinueOnCapturedContext);
         running = null;
         MoveTo(audit.IsCompletedSuccessfully ? audit.Result : FileAuditStepFactory.CreateIdle());
     }
