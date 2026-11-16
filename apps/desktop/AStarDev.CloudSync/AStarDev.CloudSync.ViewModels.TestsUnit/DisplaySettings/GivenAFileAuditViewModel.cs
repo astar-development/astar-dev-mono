@@ -208,6 +208,17 @@ public sealed class GivenAFileAuditViewModel
     }
 
     [Fact]
+    public async Task when_confirm_is_run_without_the_warning_then_nothing_is_audited()
+    {
+        var viewModel = await CreatedAsync(Photos);
+        viewModel.Accounts[0].SelectCommand.Execute(null);
+
+        await viewModel.ConfirmCommand.ExecuteAsync(null);
+
+        (auditor.Audited.Count, viewModel.Step).ShouldBe((0, FileAuditStepFactory.CreateIdle()));
+    }
+
+    [Fact]
     public async Task when_the_accounts_change_then_the_rows_follow_and_the_choice_is_kept()
     {
         var (overview, source) = await OverviewOfAsync(Photos);
