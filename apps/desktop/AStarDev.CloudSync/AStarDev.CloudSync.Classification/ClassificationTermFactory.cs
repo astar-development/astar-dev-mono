@@ -11,5 +11,5 @@ public static class ClassificationTermFactory
     /// <param name="categoryId">The category.</param>
     /// <param name="source">Where the term came from.</param>
     /// <param name="status">Active or ignored.</param>
-    public static Option<ClassificationTerm> Create(TermId id, string text, CategoryId categoryId, TermSource source, TermStatus status) => throw new NotImplementedException($"{id}{text}{categoryId}{source}{status}");
+    public static Option<ClassificationTerm> Create(TermId id, string text, CategoryId categoryId, TermSource source, TermStatus status) => ClassificationText.Collapse(text) is { Length: > 0 } collapsed ? Option.Some(new ClassificationTerm(id, collapsed.ToLowerInvariant(), categoryId, source, status)) : Option.None<ClassificationTerm>();
 }

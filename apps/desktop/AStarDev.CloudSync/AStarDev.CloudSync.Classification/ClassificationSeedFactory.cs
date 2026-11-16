@@ -7,5 +7,14 @@ public static class ClassificationSeedFactory
     /// <param name="version">The version.</param>
     /// <param name="categories">The categories.</param>
     /// <param name="terms">The terms.</param>
-    public static ClassificationSeed Create(string version, IReadOnlyList<SeedCategory> categories, IReadOnlyList<SeedTerm> terms) => throw new NotImplementedException($"{version}{categories}{terms}");
+    public static ClassificationSeed Create(string version, IReadOnlyList<SeedCategory> categories, IReadOnlyList<SeedTerm> terms) => Build(version, categories, terms);
+    private static ClassificationSeed Build(string version, IReadOnlyList<SeedCategory> categories, IReadOnlyList<SeedTerm> terms)
+    {
+        var known = categories.Select(category => category.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var kept = terms
+            .Where(term => known.Contains(term.CategoryName))
+            .DistinctBy(term => (term.Text, term.CategoryName.ToUpperInvariant()));
+
+        return new(string.IsNullOrWhiteSpace(version) ? "0" : version.Trim(), [.. categories], [.. kept]);
+    }
 }

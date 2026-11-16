@@ -9,5 +9,5 @@ public static class ClassificationCategoryFactory
     /// <summary>Creates a category. The name is trimmed and single spaced; a blank name becomes Unclassified.</summary>
     /// <param name="id">The id.</param>
     /// <param name="name">The name.</param>
-    public static ClassificationCategory Create(CategoryId id, string name) => throw new NotImplementedException($"{id}{name}");
+    public static ClassificationCategory Create(CategoryId id, string name) => new(id, ClassificationText.Collapse(name) is { Length: > 0 } collapsed ? collapsed : UnclassifiedName);
 }
