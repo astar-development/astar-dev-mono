@@ -592,6 +592,27 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
+    public void when_application_services_are_added_then_the_upload_recorder_is_the_classifying_decorator()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<IUploadRecorder>().ShouldBeOfType<ClassifyingUploadRecorder>();
+    }
+
+    [Fact]
+    public void when_application_services_are_added_then_the_upload_executor_receives_the_classifying_recorder()
+    {
+        var services = CreateServices();
+        using var provider = services.BuildServiceProvider();
+        var executorType = services.Single(descriptor => descriptor.ServiceType.Name == "UploadItemExecutor").ServiceType;
+
+        var executor = provider.GetRequiredService(executorType);
+
+        var recorders = executorType.GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).Where(field => field.FieldType == typeof(IUploadRecorder)).Select(field => field.GetValue(executor)).ToList();
+        recorders.ShouldHaveSingleItem().ShouldBeOfType<ClassifyingUploadRecorder>();
+    }
+
+    [Fact]
     public void when_application_services_are_added_then_the_stores_are_the_caching_decorators_and_the_provider_resolves_without_a_cycle()
     {
         using var provider = CreateServices().BuildServiceProvider();
