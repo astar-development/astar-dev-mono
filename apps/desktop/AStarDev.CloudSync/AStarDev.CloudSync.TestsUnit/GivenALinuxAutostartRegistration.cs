@@ -101,4 +101,27 @@ public sealed class GivenALinuxAutostartRegistration
 
         result.Match(_ => "ok", _ => "failed").ShouldBe("failed");
     }
+
+    [Fact]
+    public async Task when_an_enabled_entry_holds_an_old_path_then_reading_the_state_rewrites_it_with_the_current_path()
+    {
+        _ = await Create(Option.Some("/tmp/.mount_CloudXYZ/usr/bin/CloudSync")).EnableAsync(TestContext.Current.CancellationToken);
+
+        var state = Of(await Create(Option.Some("/home/test/Apps/CloudSync.AppImage")).GetAsync(TestContext.Current.CancellationToken));
+
+        var entry = fileSystem.File.ReadAllText(EntryPath);
+        state.ShouldBe(AutostartStateFactory.CreateEnabled());
+        entry.ShouldContain("Exec=\"/home/test/Apps/CloudSync.AppImage\" --minimized");
+        entry.ShouldNotContain(".mount_");
+    }
+
+    [Fact]
+    public async Task when_the_build_is_not_installed_then_reading_the_state_leaves_an_existing_entry_alone()
+    {
+        _ = await Create(Option.Some("/tmp/.mount_CloudXYZ/usr/bin/CloudSync")).EnableAsync(TestContext.Current.CancellationToken);
+
+        _ = await Create(Option.None<string>()).GetAsync(TestContext.Current.CancellationToken);
+
+        fileSystem.File.ReadAllText(EntryPath).ShouldContain(".mount_");
+    }
 }
