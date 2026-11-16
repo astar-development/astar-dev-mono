@@ -1,0 +1,245 @@
+{
+  "version": "1",
+  "terms": [
+    {
+      "text": "doc",
+      "category": "Document",
+      "kind": "extension"
+    },
+    {
+      "text": "docx",
+      "category": "Document",
+      "kind": "extension"
+    },
+    {
+      "text": "odt",
+      "category": "Document",
+      "kind": "extension"
+    },
+    {
+      "text": "rtf",
+      "category": "Document",
+      "kind": "extension"
+    },
+    {
+      "text": "txt",
+      "category": "Document",
+      "kind": "extension"
+    },
+    {
+      "text": "md",
+      "category": "Document",
+      "kind": "extension"
+    },
+    {
+      "text": "pdf",
+      "category": "Pdf",
+      "kind": "extension"
+    },
+    {
+      "text": "xls",
+      "category": "Spreadsheet",
+      "kind": "extension"
+    },
+    {
+      "text": "xlsx",
+      "category": "Spreadsheet",
+      "kind": "extension"
+    },
+    {
+      "text": "ods",
+      "category": "Spreadsheet",
+      "kind": "extension"
+    },
+    {
+      "text": "csv",
+      "category": "Spreadsheet",
+      "kind": "extension"
+    },
+    {
+      "text": "ppt",
+      "category": "Presentation",
+      "kind": "extension"
+    },
+    {
+      "text": "pptx",
+      "category": "Presentation",
+      "kind": "extension"
+    },
+    {
+      "text": "odp",
+      "category": "Presentation",
+      "kind": "extension"
+    },
+    {
+      "text": "jpg",
+      "category": "Photo",
+      "kind": "extension"
+    },
+    {
+      "text": "jpeg",
+      "category": "Photo",
+      "kind": "extension"
+    },
+    {
+      "text": "png",
+      "category": "Photo",
+      "kind": "extension"
+    },
+    {
+      "text": "gif",
+      "category": "Photo",
+      "kind": "extension"
+    },
+    {
+      "text": "heic",
+      "category": "Photo",
+      "kind": "extension"
+    },
+    {
+      "text": "webp",
+      "category": "Photo",
+      "kind": "extension"
+    },
+    {
+      "text": "bmp",
+      "category": "Photo",
+      "kind": "extension"
+    },
+    {
+      "text": "mp4",
+      "category": "Video",
+      "kind": "extension"
+    },
+    {
+      "text": "mkv",
+      "category": "Video",
+      "kind": "extension"
+    },
+    {
+      "text": "mov",
+      "category": "Video",
+      "kind": "extension"
+    },
+    {
+      "text": "avi",
+      "category": "Video",
+      "kind": "extension"
+    },
+    {
+      "text": "wmv",
+      "category": "Video",
+      "kind": "extension"
+    },
+    {
+      "text": "mp3",
+      "category": "Audio",
+      "kind": "extension"
+    },
+    {
+      "text": "flac",
+      "category": "Audio",
+      "kind": "extension"
+    },
+    {
+      "text": "wav",
+      "category": "Audio",
+      "kind": "extension"
+    },
+    {
+      "text": "m4a",
+      "category": "Audio",
+      "kind": "extension"
+    },
+    {
+      "text": "zip",
+      "category": "Archive",
+      "kind": "extension"
+    },
+    {
+      "text": "7z",
+      "category": "Archive",
+      "kind": "extension"
+    },
+    {
+      "text": "rar",
+      "category": "Archive",
+      "kind": "extension"
+    },
+    {
+      "text": "tar",
+      "category": "Archive",
+      "kind": "extension"
+    },
+    {
+      "text": "gz",
+      "category": "Archive",
+      "kind": "extension"
+    },
+    {
+      "text": "cs",
+      "category": "Code",
+      "kind": "extension"
+    },
+    {
+      "text": "ps1",
+      "category": "Code",
+      "kind": "extension"
+    },
+    {
+      "text": "sh",
+      "category": "Code",
+      "kind": "extension"
+    },
+    {
+      "text": "json",
+      "category": "Code",
+      "kind": "extension"
+    },
+    {
+      "text": "xml",
+      "category": "Code",
+      "kind": "extension"
+    },
+    {
+      "text": "py",
+      "category": "Code",
+      "kind": "extension"
+    },
+    {
+      "text": "js",
+      "category": "Code",
+      "kind": "extension"
+    },
+    {
+      "text": "exe",
+      "category": "Installer",
+      "kind": "extension"
+    },
+    {
+      "text": "msi",
+      "category": "Installer",
+      "kind": "extension"
+    },
+    {
+      "text": "iso",
+      "category": "Installer",
+      "kind": "extension"
+    },
+    {
+      "text": "appimage",
+      "category": "Installer",
+      "kind": "extension"
+    },
+    {
+      "text": "deb",
+      "category": "Installer",
+      "kind": "extension"
+    },
+    {
+      "text": "rpm",
+      "category": "Installer",
+      "kind": "extension"
+    }
+  ]
+}
