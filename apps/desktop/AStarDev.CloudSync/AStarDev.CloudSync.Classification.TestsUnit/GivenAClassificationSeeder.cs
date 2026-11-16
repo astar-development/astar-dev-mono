@@ -22,6 +22,9 @@ public sealed class GivenAClassificationSeeder
     private static ClassificationTerm StoredTerm(string text, CategoryId category, TermSource source, TermStatus status) =>
         ClassificationTermFactory.Create(TermIdFactory.Create(Guid.NewGuid()), text, category, source, status).Match(term => term, () => throw new InvalidOperationException("The test term must be valid."));
 
+    private static ClassificationSeed LargeSeed(int termCount) =>
+        ClassificationSeedFactory.Create("9", [SeedCategoryFactory.Create("Colour")], [.. Enumerable.Range(0, termCount).Select(index => Term($"term{index}", "Colour"))]);
+
     [Fact]
     public async Task when_no_version_was_applied_then_everything_is_stored_and_the_version_recorded()
     {
@@ -60,7 +63,7 @@ public sealed class GivenAClassificationSeeder
 
         outcome.ShouldBeOfType<ClassificationSeedOutcome.AlreadyCurrent>();
         categories.UpsertCalls.ShouldBe(0);
-        terms.UpsertCalls.ShouldBe(0);
+        terms.BatchCalls.ShouldBe(0);
         state.SetCalls.ShouldBe(0);
     }
 
@@ -72,12 +75,12 @@ public sealed class GivenAClassificationSeeder
         var terms = new SeedingTermStore();
         var seeder = Create(DefaultSeed(), state, categories, terms);
         _ = await seeder.SeedAsync(CancellationToken);
-        var termCalls = terms.UpsertCalls;
+        var termCalls = terms.BatchCalls;
 
         var outcome = await seeder.SeedAsync(CancellationToken);
 
         outcome.ShouldBeOfType<ClassificationSeedOutcome.AlreadyCurrent>();
-        terms.UpsertCalls.ShouldBe(termCalls);
+        terms.BatchCalls.ShouldBe(termCalls);
         terms.Stored.Count.ShouldBe(3);
     }
 
@@ -141,27 +144,51 @@ public sealed class GivenAClassificationSeeder
     }
 
     [Fact]
-    public async Task when_one_text_is_seeded_as_a_word_and_an_extension_of_one_category_then_it_is_upserted_once()
+    public async Task when_one_text_is_seeded_as_a_word_and_an_extension_of_one_category_then_it_is_stored_once()
     {
         var terms = new SeedingTermStore();
         var seed = Seed("1", Term("jpg", "Image"), Term("jpg", "Image", SeedTermKindFactory.CreateExtension()));
 
         _ = await Create(seed, new SeedingStateStore(), new SeedingCategoryStore(), terms).SeedAsync(CancellationToken);
 
-        terms.UpsertCalls.ShouldBe(1);
+        terms.BatchSizes.ShouldBe([1]);
     }
 
     [Fact]
-    public async Task when_a_term_upsert_fails_then_the_run_fails_and_the_version_is_not_recorded()
+    public async Task when_the_seed_has_more_terms_than_one_batch_then_they_are_written_in_batches_and_the_version_is_recorded_after_all_of_them()
     {
         var state = new SeedingStateStore();
-        var terms = new SeedingTermStore { FailFromCall = 2 };
+        var terms = new SeedingTermStore();
 
-        var outcome = await Create(DefaultSeed(), state, new SeedingCategoryStore(), terms).SeedAsync(CancellationToken);
+        var outcome = await Create(LargeSeed((ClassificationSeeder.BatchSize * 2) + 500), state, new SeedingCategoryStore(), terms).SeedAsync(CancellationToken);
+
+        outcome.ShouldBeOfType<ClassificationSeedOutcome.Applied>();
+        terms.BatchSizes.ShouldBe([ClassificationSeeder.BatchSize, ClassificationSeeder.BatchSize, 500]);
+        terms.Stored.Count.ShouldBe((ClassificationSeeder.BatchSize * 2) + 500);
+        (state.Version, state.SetCalls).ShouldBe(("9", 1));
+    }
+
+    [Fact]
+    public async Task when_the_seed_fits_one_batch_then_one_store_call_is_made()
+    {
+        var terms = new SeedingTermStore();
+
+        _ = await Create(DefaultSeed(), new SeedingStateStore(), new SeedingCategoryStore(), terms).SeedAsync(CancellationToken);
+
+        terms.BatchSizes.ShouldBe([3]);
+    }
+
+    [Fact]
+    public async Task when_a_batch_fails_then_the_run_fails_no_later_batch_is_written_and_the_version_is_not_recorded()
+    {
+        var state = new SeedingStateStore();
+        var terms = new SeedingTermStore { FailFromBatch = 2 };
+
+        var outcome = await Create(LargeSeed((ClassificationSeeder.BatchSize * 2) + 500), state, new SeedingCategoryStore(), terms).SeedAsync(CancellationToken);
 
         outcome.ShouldBeOfType<ClassificationSeedOutcome.Failed>().Failure.ShouldBeOfType<ClassificationFailure.Unavailable>();
         state.SetCalls.ShouldBe(0);
-        terms.UpsertCalls.ShouldBe(2);
+        terms.BatchCalls.ShouldBe(2);
     }
 
     [Fact]
@@ -173,7 +200,7 @@ public sealed class GivenAClassificationSeeder
         var outcome = await Create(DefaultSeed(), state, new SeedingCategoryStore { FailUpserts = true }, terms).SeedAsync(CancellationToken);
 
         outcome.ShouldBeOfType<ClassificationSeedOutcome.Failed>();
-        terms.UpsertCalls.ShouldBe(0);
+        terms.BatchCalls.ShouldBe(0);
         state.SetCalls.ShouldBe(0);
     }
 
@@ -182,17 +209,17 @@ public sealed class GivenAClassificationSeeder
     {
         var state = new SeedingStateStore();
         var categories = new SeedingCategoryStore();
-        var terms = new SeedingTermStore { FailFromCall = 2 };
-        _ = await Create(DefaultSeed(), state, categories, terms).SeedAsync(CancellationToken);
+        var terms = new SeedingTermStore { FailFromBatch = 2 };
+        _ = await Create(LargeSeed(ClassificationSeeder.BatchSize + 5), state, categories, terms).SeedAsync(CancellationToken);
         var healthyTerms = new SeedingTermStore();
         foreach (var term in terms.Stored)
             healthyTerms.Add(term);
 
-        var outcome = await Create(DefaultSeed(), state, categories, healthyTerms).SeedAsync(CancellationToken);
+        var outcome = await Create(LargeSeed(ClassificationSeeder.BatchSize + 5), state, categories, healthyTerms).SeedAsync(CancellationToken);
 
         outcome.ShouldBeOfType<ClassificationSeedOutcome.Applied>();
-        healthyTerms.Stored.Count.ShouldBe(3);
-        state.Version.ShouldBe("1");
+        healthyTerms.Stored.Count.ShouldBe(ClassificationSeeder.BatchSize + 5);
+        state.Version.ShouldBe("9");
     }
 
     [Fact]
@@ -252,11 +279,11 @@ public sealed class GivenAClassificationSeeder
                 cancellation.Cancel();
         });
 
-        var outcome = await Create(DefaultSeed(), state, new SeedingCategoryStore(), terms).SeedAsync(cancellation.Token);
+        var outcome = await Create(LargeSeed((ClassificationSeeder.BatchSize * 2) + 500), state, new SeedingCategoryStore(), terms).SeedAsync(cancellation.Token);
 
         outcome.ShouldBeOfType<ClassificationSeedOutcome.Failed>();
         state.SetCalls.ShouldBe(0);
-        terms.UpsertCalls.ShouldBeLessThan(3);
+        terms.BatchCalls.ShouldBe(2);
     }
 
     [Fact]
@@ -286,7 +313,7 @@ public sealed class GivenAClassificationSeeder
     {
         var logger = new RecordingLogger<ClassificationSeeder>();
 
-        _ = await Create(DefaultSeed(), new SeedingStateStore(), new SeedingCategoryStore(), new SeedingTermStore { FailFromCall = 1 }, logger).SeedAsync(CancellationToken);
+        _ = await Create(DefaultSeed(), new SeedingStateStore(), new SeedingCategoryStore(), new SeedingTermStore { FailFromBatch = 1 }, logger).SeedAsync(CancellationToken);
 
         logger.Entries.ShouldContain(entry => entry.Level == Microsoft.Extensions.Logging.LogLevel.Warning);
         logger.Messages.ShouldAllBe(message => !message.Contains("holiday") && !message.Contains("red"));

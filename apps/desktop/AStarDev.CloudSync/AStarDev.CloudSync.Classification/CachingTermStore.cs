@@ -16,6 +16,9 @@ public sealed class CachingTermStore(ITermStore inner, IClassificationVocabulary
     public Task<Result<ClassificationTerm, ClassificationFailure>> UpsertAsync(ClassificationTerm term, CancellationToken cancellationToken) => inner.UpsertAsync(term, cancellationToken).TapAsync(_ => provider.Invalidate());
 
     /// <inheritdoc />
+    public Task<Result<IReadOnlyList<ClassificationTerm>, ClassificationFailure>> UpsertManyAsync(IReadOnlyList<ClassificationTerm> terms, CancellationToken cancellationToken) => throw new NotImplementedException($"{terms.Count} {cancellationToken}");
+
+    /// <inheritdoc />
     public Task<Result<Option<ClassificationTerm>, ClassificationFailure>> GetByIdAsync(TermId termId, CancellationToken cancellationToken) => inner.GetByIdAsync(termId, cancellationToken);
 
     /// <inheritdoc />

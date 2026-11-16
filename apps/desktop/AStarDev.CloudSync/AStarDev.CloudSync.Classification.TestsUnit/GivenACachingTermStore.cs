@@ -19,6 +19,30 @@ public sealed class GivenACachingTermStore
     }
 
     [Fact]
+    public async Task when_many_terms_are_upserted_then_the_vocabulary_is_invalidated_once()
+    {
+        var terms = new[] { Term("red", Colour), Term("blue", Colour), Term("green", Colour) };
+        var provider = new RecordingVocabularyProvider(Empty);
+        var store = new CachingTermStore(new CountingTermStore { WriteManyResult = new Ok<IReadOnlyList<ClassificationTerm>, ClassificationFailure>(terms) }, provider);
+
+        var result = await store.UpsertManyAsync(terms, TestContext.Current.CancellationToken);
+
+        (provider.Invalidations, result).ShouldBe((1, new Ok<IReadOnlyList<ClassificationTerm>, ClassificationFailure>(terms)));
+    }
+
+    [Fact]
+    public async Task when_a_batch_fails_then_the_vocabulary_is_not_invalidated_and_the_failure_is_returned()
+    {
+        var failure = new Fail<IReadOnlyList<ClassificationTerm>, ClassificationFailure>(ClassificationFailureFactory.CreateUnavailable());
+        var provider = new RecordingVocabularyProvider(Empty);
+        var store = new CachingTermStore(new CountingTermStore { WriteManyResult = failure }, provider);
+
+        var result = await store.UpsertManyAsync([Term("red", Colour)], TestContext.Current.CancellationToken);
+
+        (provider.Invalidations, result).ShouldBe((0, failure));
+    }
+
+    [Fact]
     public async Task when_a_status_is_set_then_the_vocabulary_is_invalidated()
     {
         var provider = new RecordingVocabularyProvider(Empty);

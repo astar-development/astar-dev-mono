@@ -21,6 +21,9 @@ internal sealed class SqliteTermStore(IDbContextFactory<ClassificationDbContext>
         GuardedStore.RunAsync(logger, Location, () => SaveAsync(term, cancellationToken), cancellationToken);
 
     /// <inheritdoc />
+    public Task<Result<IReadOnlyList<ClassificationTerm>, ClassificationFailure>> UpsertManyAsync(IReadOnlyList<ClassificationTerm> terms, CancellationToken cancellationToken) => throw new NotImplementedException($"{terms.Count} {cancellationToken}");
+
+    /// <inheritdoc />
     public Task<Result<Option<ClassificationTerm>, ClassificationFailure>> GetByIdAsync(TermId termId, CancellationToken cancellationToken) =>
         GuardedStore.RunAsync(logger, Location, () => ReadOneAsync(termId, cancellationToken), cancellationToken);
 
