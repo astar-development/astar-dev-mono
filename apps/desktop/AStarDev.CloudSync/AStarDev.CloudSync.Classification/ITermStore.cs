@@ -9,10 +9,15 @@ public interface ITermStore
     /// <param name="cancellationToken">Cancels the read.</param>
     Task<Result<IReadOnlyList<ClassificationTerm>, ClassificationFailure>> GetAllAsync(CancellationToken cancellationToken);
 
-    /// <summary>Adds the term, or returns the stored one when it exists. An existing ignored term stays ignored and is never recreated.</summary>
+    /// <summary>Adds the term, or returns the stored one when it exists. A term is the same when its text and category match, so one word can live in two categories. An existing ignored term stays ignored and is never recreated.</summary>
     /// <param name="term">The term to add.</param>
     /// <param name="cancellationToken">Cancels the write.</param>
     Task<Result<ClassificationTerm, ClassificationFailure>> UpsertAsync(ClassificationTerm term, CancellationToken cancellationToken);
+
+    /// <summary>Reads one term by id.</summary>
+    /// <param name="termId">The term.</param>
+    /// <param name="cancellationToken">Cancels the read.</param>
+    Task<Result<Option<ClassificationTerm>, ClassificationFailure>> GetByIdAsync(TermId termId, CancellationToken cancellationToken);
 
     /// <summary>Marks the term active or ignored. The term is never deleted.</summary>
     /// <param name="termId">The term.</param>

@@ -14,6 +14,29 @@ public interface IFileClassificationStore
     /// <param name="cancellationToken">Cancels the write.</param>
     Task<Result<Unit, ClassificationFailure>> ReplaceAutoLinksAsync(AccountId accountId, RelativeSyncPath path, IReadOnlyList<TermId> termIds, CancellationToken cancellationToken);
 
+    /// <summary>Replaces the automatic links of many files in one transaction, so a batch costs one write.</summary>
+    /// <param name="updates">The files and the terms that now apply to each.</param>
+    /// <param name="cancellationToken">Cancels the write.</param>
+    Task<Result<Unit, ClassificationFailure>> ReplaceAutoLinksAsync(IReadOnlyList<FileTermLinks> updates, CancellationToken cancellationToken);
+
+    /// <summary>Links a term to a file as the user's own choice. Automatic replacement never removes it.</summary>
+    /// <param name="accountId">The account.</param>
+    /// <param name="path">The path below the sync root.</param>
+    /// <param name="termId">The term.</param>
+    /// <param name="cancellationToken">Cancels the write.</param>
+    Task<Result<Unit, ClassificationFailure>> AssignUserLinkAsync(AccountId accountId, RelativeSyncPath path, TermId termId, CancellationToken cancellationToken);
+
+    /// <summary>Reads the terms linked to a file.</summary>
+    /// <param name="accountId">The account.</param>
+    /// <param name="path">The path below the sync root.</param>
+    /// <param name="cancellationToken">Cancels the read.</param>
+    Task<Result<IReadOnlyList<TermId>, ClassificationFailure>> GetTermsForFileAsync(AccountId accountId, RelativeSyncPath path, CancellationToken cancellationToken);
+
+    /// <summary>Reads the files linked to a term.</summary>
+    /// <param name="termId">The term.</param>
+    /// <param name="cancellationToken">Cancels the read.</param>
+    Task<Result<IReadOnlyList<ClassifiableFile>, ClassificationFailure>> GetFilesForTermAsync(TermId termId, CancellationToken cancellationToken);
+
     /// <summary>Removes every link of the file, for a deleted file.</summary>
     /// <param name="accountId">The account.</param>
     /// <param name="path">The path below the sync root.</param>

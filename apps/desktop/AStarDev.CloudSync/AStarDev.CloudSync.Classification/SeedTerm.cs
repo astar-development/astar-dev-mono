@@ -9,6 +9,9 @@ public sealed record SeedTerm
         CategoryName = categoryName;
     }
 
+    /// <summary>Returns a redacted form, because the text can come from a user's file names.</summary>
+    public override string ToString() => "SeedTerm(redacted)";
+
     /// <summary>The normalised text.</summary>
     public string Text { get; }
 

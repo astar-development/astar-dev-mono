@@ -15,6 +15,6 @@ public static class ClassificationSeedFactory
             .Where(term => known.Contains(term.CategoryName))
             .DistinctBy(term => (term.Text, term.CategoryName.ToUpperInvariant()));
 
-        return new(string.IsNullOrWhiteSpace(version) ? "0" : version.Trim(), [.. categories], [.. kept]);
+        return new(string.IsNullOrWhiteSpace(version) ? "0" : version.Trim(), [.. categories.DistinctBy(category => category.Name.ToUpperInvariant())], [.. kept]);
     }
 }

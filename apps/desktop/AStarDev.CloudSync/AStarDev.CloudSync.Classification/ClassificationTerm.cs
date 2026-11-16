@@ -12,6 +12,9 @@ public sealed record ClassificationTerm
         Status = status;
     }
 
+    /// <summary>Returns a redacted form, because the text can come from a user's file names.</summary>
+    public override string ToString() => "ClassificationTerm(redacted)";
+
     /// <summary>The id.</summary>
     public TermId Id { get; }
 
