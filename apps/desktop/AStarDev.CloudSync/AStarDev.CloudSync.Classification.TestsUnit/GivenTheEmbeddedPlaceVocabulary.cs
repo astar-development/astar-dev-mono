@@ -45,7 +45,7 @@ public sealed partial class GivenTheEmbeddedPlaceVocabulary
     [Theory]
     [InlineData("france")]
     [InlineData("london")]
-    [InlineData("new york")]
+    [InlineData("new york city")]
     [InlineData("paris")]
     [InlineData("tokyo")]
     [InlineData("united kingdom")]
