@@ -257,6 +257,29 @@ public class GivenALayoutAView
         content.GetVisualDescendants().OfType<Button>().Where(button => Equals(button.Content, "Close")).ShouldAllBe(button => !button.IsEffectivelyVisible);
     }
 
+    [AvaloniaFact]
+    public async Task when_shown_then_each_main_panel_card_name_has_the_full_name_as_its_tooltip_and_is_trimmed()
+    {
+        var window = await CreateShownWindowAsync();
+        var accounts = window.Content.ShouldBeOfType<LayoutAView>().DataContext.ShouldBeOfType<LayoutAViewModel>().Overview.Accounts;
+
+        var cardNames = window.GetVisualDescendants().OfType<TextBlock>().Where(text => ToolTip.GetTip(text) is string tip && text.Text == tip && accounts.Any(account => account.Name == tip)).ToList();
+
+        cardNames.Count.ShouldBe(accounts.Count);
+        cardNames.ShouldAllBe(text => text.TextTrimming == TextTrimming.CharacterEllipsis);
+    }
+
+    [AvaloniaFact]
+    public async Task when_shown_then_each_main_panel_card_email_line_has_its_full_text_as_its_tooltip()
+    {
+        var window = await CreateShownWindowAsync();
+        var accounts = window.Content.ShouldBeOfType<LayoutAView>().DataContext.ShouldBeOfType<LayoutAViewModel>().Overview.Accounts;
+
+        var emailLines = window.GetVisualDescendants().OfType<TextBlock>().Where(text => text.Text is { Length: > 0 } shown && ToolTip.GetTip(text) is string tip && tip == shown && accounts.Any(account => shown.Contains(account.Email, StringComparison.Ordinal))).ToList();
+
+        emailLines.Count.ShouldBe(accounts.Count);
+    }
+
     private static async Task<Window> CreateShownWindowAsync()
     {
         var overview = await TestData.CreateLoadedOverviewViewModelAsync();
