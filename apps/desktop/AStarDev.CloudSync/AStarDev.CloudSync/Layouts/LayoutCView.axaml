@@ -59,7 +59,7 @@
             <Setter Property="Fill" Value="{DynamicResource CloudSyncProviderOneDriveBrush}" />
         </Style>
         <Style Selector="Border.pair-tile">
-            <Setter Property="Height" Value="168" />
+            <Setter Property="MinHeight" Value="200" />
             <Setter Property="Padding" Value="16,14" />
             <Setter Property="CornerRadius" Value="12" />
             <Setter Property="BorderThickness" Value="1" />
