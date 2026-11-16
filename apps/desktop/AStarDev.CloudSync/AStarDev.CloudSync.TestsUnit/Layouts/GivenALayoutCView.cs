@@ -3,6 +3,7 @@ using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.CloudSync.TestHelpers.Ui;
 using AStarDev.CloudSync.ViewModels.Layouts;
 using AStarDev.CloudSync.ViewModels.SyncPairs;
+using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Headless;
@@ -171,6 +172,18 @@ public class GivenALayoutCView
         var visibleActions = VisibleCardActions(window);
         visibleActions.Count.ShouldBe(4);
         visibleActions.ShouldAllBe(button => ReferenceEquals(button.DataContext, other.DataContext));
+    }
+
+    [AvaloniaFact]
+    public async Task when_shown_then_every_pair_tile_button_sits_inside_its_tile()
+    {
+        var window = await CreateShownWindowAsync();
+        var tiles = window.GetVisualDescendants().OfType<Border>().Where(border => border.Classes.Contains("pair-tile")).ToList();
+
+        var overflowing = tiles.SelectMany(tile => tile.GetVisualDescendants().OfType<Button>().Where(button => button.IsEffectivelyVisible && button.GetVisualAncestors().OfType<Border>().All(ancestor => !ancestor.Classes.Contains("remove-question"))).Where(button => button.TranslatePoint(new Point(0, button.Bounds.Height), tile) is { } bottom && bottom.Y > tile.Bounds.Height)).ToList();
+
+        tiles.ShouldNotBeEmpty();
+        overflowing.ShouldBeEmpty();
     }
 
     private static List<Button> VisibleCardActions(Window window) =>
