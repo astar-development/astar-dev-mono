@@ -31,7 +31,7 @@ public sealed class GivenAFileClassifier
     [Fact]
     public async Task when_the_term_store_fails_then_the_file_is_unclassified()
     {
-        var classifier = new FileClassifier(Signals, new FakeTermStore(new Fail<IReadOnlyList<ClassificationTerm>, ClassificationFailure>(ClassificationFailureFactory.CreateUnavailable())), new FakeCategoryStore(new Ok<IReadOnlyList<ClassificationCategory>, ClassificationFailure>([])));
+        var classifier = new FileClassifier(Signals, new ClassificationVocabularyProvider(new FakeTermStore(new Fail<IReadOnlyList<ClassificationTerm>, ClassificationFailure>(ClassificationFailureFactory.CreateUnavailable())), new FakeCategoryStore(new Ok<IReadOnlyList<ClassificationCategory>, ClassificationFailure>([]))));
 
         var result = await classifier.ClassifyAsync(PathOf("red.jpg"), TestContext.Current.CancellationToken);
 
@@ -41,15 +41,42 @@ public sealed class GivenAFileClassifier
     [Fact]
     public async Task when_the_category_store_fails_then_the_file_is_unclassified()
     {
-        var classifier = new FileClassifier(Signals, new FakeTermStore(new Ok<IReadOnlyList<ClassificationTerm>, ClassificationFailure>([Term("red", Colour)])), new FakeCategoryStore(new Fail<IReadOnlyList<ClassificationCategory>, ClassificationFailure>(ClassificationFailureFactory.CreateUnavailable())));
+        var classifier = new FileClassifier(Signals, new ClassificationVocabularyProvider(new FakeTermStore(new Ok<IReadOnlyList<ClassificationTerm>, ClassificationFailure>([Term("red", Colour)])), new FakeCategoryStore(new Fail<IReadOnlyList<ClassificationCategory>, ClassificationFailure>(ClassificationFailureFactory.CreateUnavailable()))));
 
         var result = await classifier.ClassifyAsync(PathOf("red.jpg"), TestContext.Current.CancellationToken);
 
         result.Candidates.ShouldBeEmpty();
     }
 
+    [Fact]
+    public async Task when_many_files_are_classified_then_the_stores_are_read_once()
+    {
+        var terms = new CountingTermStore { Terms = new Ok<IReadOnlyList<ClassificationTerm>, ClassificationFailure>([Term("red", Colour)]) };
+        var classifier = new FileClassifier(Signals, new ClassificationVocabularyProvider(terms, new CountingCategoryStore()));
+
+        for (var file = 0; file < 10; file++)
+        {
+            await classifier.ClassifyAsync(PathOf($"red{file}.jpg"), TestContext.Current.CancellationToken);
+        }
+
+        terms.GetAllCalls.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_the_store_recovers_after_a_failure_then_the_next_file_is_classified()
+    {
+        var terms = new CountingTermStore { Terms = new Fail<IReadOnlyList<ClassificationTerm>, ClassificationFailure>(ClassificationFailureFactory.CreateUnavailable()) };
+        var classifier = new FileClassifier(Signals, new ClassificationVocabularyProvider(terms, new CountingCategoryStore()));
+        await classifier.ClassifyAsync(PathOf("red.jpg"), TestContext.Current.CancellationToken);
+        terms.Terms = new Ok<IReadOnlyList<ClassificationTerm>, ClassificationFailure>([Term("red", Colour)]);
+
+        var result = await classifier.ClassifyAsync(PathOf("red.jpg"), TestContext.Current.CancellationToken);
+
+        Texts(result.Candidates).ShouldBe(["red"]);
+    }
+
     private static FileClassifier Classifier(params ClassificationTerm[] terms) =>
-        new(Signals, new FakeTermStore(new Ok<IReadOnlyList<ClassificationTerm>, ClassificationFailure>(terms)), new FakeCategoryStore(new Ok<IReadOnlyList<ClassificationCategory>, ClassificationFailure>([ClassificationCategoryFactory.Create(Colour, "Colour"), ClassificationCategoryFactory.Create(Place, "Place")])));
+        new(Signals, new ClassificationVocabularyProvider(new FakeTermStore(new Ok<IReadOnlyList<ClassificationTerm>, ClassificationFailure>(terms)), new FakeCategoryStore(new Ok<IReadOnlyList<ClassificationCategory>, ClassificationFailure>([ClassificationCategoryFactory.Create(Colour, "Colour"), ClassificationCategoryFactory.Create(Place, "Place")]))));
 
     private sealed class FakeTermStore(Result<IReadOnlyList<ClassificationTerm>, ClassificationFailure> all) : ITermStore
     {
