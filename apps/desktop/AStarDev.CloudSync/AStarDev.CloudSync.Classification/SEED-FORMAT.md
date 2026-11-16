@@ -13,6 +13,8 @@ One file per vocabulary, all merged into one `ClassificationSeed`.
 ```
 
 - A term may carry `"kind": "word" | "extension" | "folder"`, default `"word"`. An extension term is the extension without the dot; a folder term is a folder name. An unknown kind makes the seed invalid. The same text may appear once per kind.
+- `kind` is a seed-time hint only. `ClassificationTerm` does not carry it and the schema does not store it. At match time an extension term is matched by `ExtensionSignal`, a folder term by `FolderSegmentSignal`, and a word signal can also match either, because every term is just text in a category.
+- The same text must not be seeded under two kinds in one category: the kinds would collapse into one stored term. `GivenTheSeedTermKinds` reads each seed file and fails when any text and category pair appears under more than one kind.
 - `text` is lower case, single spaced; multi-word phrases are allowed ("red car").
 - Every term names a category in the same or another seed file; terms with an unknown category are dropped.
 - `source` records where the list came from and its licence. The loader ignores it.

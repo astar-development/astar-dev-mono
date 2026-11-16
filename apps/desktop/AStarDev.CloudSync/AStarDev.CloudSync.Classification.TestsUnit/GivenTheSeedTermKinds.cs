@@ -14,6 +14,7 @@ public sealed class GivenTheSeedTermKinds
 
         var collisions = SeedKindCollisions.Find(terms);
 
+        terms.ShouldNotBeEmpty();
         collisions.Count.ShouldBe(0, $"{collisions.Count} text and category pairs are seeded under more than one kind: {string.Join(", ", collisions)}");
     }
 
