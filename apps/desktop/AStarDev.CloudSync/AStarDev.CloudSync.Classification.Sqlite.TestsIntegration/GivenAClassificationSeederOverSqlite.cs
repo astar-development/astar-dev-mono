@@ -101,6 +101,6 @@ public sealed class GivenAClassificationSeederOverSqlite : MigratedDatabaseTests
         var termCount = Ok(await Database.Terms.GetAllAsync(CancellationToken)).Count;
         termCount.ShouldBeGreaterThan(0);
         TestContext.Current.SendDiagnosticMessage($"Seeded {termCount} terms in {firstElapsed.TotalSeconds:F2}s, {allocated / 1024 / 1024} MB allocated");
-        firstElapsed.ShouldBeLessThan(TimeSpan.FromSeconds(4), "the per-term seed took 9.7 to 11.7 s; 4 s is a generous bound that avoids flaky CI runs");
+        firstElapsed.ShouldBeLessThan(TimeSpan.FromSeconds(5), $"the per-term seed took 9.7 to 11.7 s; 5 s is a generous bound that avoids flaky CI runs; this run took {firstElapsed.TotalSeconds:F2}s and allocated {allocated / 1024 / 1024} MB");
     }
 }

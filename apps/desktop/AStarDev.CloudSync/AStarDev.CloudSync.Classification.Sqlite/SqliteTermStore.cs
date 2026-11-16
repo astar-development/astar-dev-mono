@@ -11,6 +11,7 @@ namespace AStarDev.CloudSync.Classification.Sqlite;
 internal sealed class SqliteTermStore(IDbContextFactory<ClassificationDbContext> dbContextFactory, ILogger<SqliteTermStore> logger) : ITermStore
 {
     private const string Location = nameof(SqliteTermStore);
+    private const int TransactionSize = 1000;
 
     /// <inheritdoc />
     public Task<Result<IReadOnlyList<ClassificationTerm>, ClassificationFailure>> GetAllAsync(CancellationToken cancellationToken) =>
@@ -21,7 +22,8 @@ internal sealed class SqliteTermStore(IDbContextFactory<ClassificationDbContext>
         GuardedStore.RunAsync(logger, Location, () => SaveAsync(term, cancellationToken), cancellationToken);
 
     /// <inheritdoc />
-    public Task<Result<IReadOnlyList<ClassificationTerm>, ClassificationFailure>> UpsertManyAsync(IReadOnlyList<ClassificationTerm> terms, CancellationToken cancellationToken) => throw new NotImplementedException($"{terms.Count} {cancellationToken}");
+    public Task<Result<IReadOnlyList<ClassificationTerm>, ClassificationFailure>> UpsertManyAsync(IReadOnlyList<ClassificationTerm> terms, CancellationToken cancellationToken) =>
+        GuardedStore.RunAsync(logger, Location, () => SaveManyAsync(terms, cancellationToken), cancellationToken);
 
     /// <inheritdoc />
     public Task<Result<Option<ClassificationTerm>, ClassificationFailure>> GetByIdAsync(TermId termId, CancellationToken cancellationToken) =>
@@ -65,6 +67,70 @@ internal sealed class SqliteTermStore(IDbContextFactory<ClassificationDbContext>
         }
 
         return Result.Success<ClassificationTerm, ClassificationFailure>(TermMapping.ToTerm(stored));
+    }
+
+    private async Task<Result<IReadOnlyList<ClassificationTerm>, ClassificationFailure>> SaveManyAsync(IReadOnlyList<ClassificationTerm> terms, CancellationToken cancellationToken)
+    {
+        var stored = new List<ClassificationTerm>(terms.Count);
+        foreach (var chunk in terms.Chunk(TransactionSize))
+        {
+            var failure = await SaveChunkAsync(chunk, cancellationToken).MatchAsync(chunkStored => Keep(stored, chunkStored), Option.Some).ConfigureAwait(false);
+            if (failure.TryGetValue(out var failed))
+                return Result.Failure<IReadOnlyList<ClassificationTerm>, ClassificationFailure>(failed);
+        }
+
+        return Result.Success<IReadOnlyList<ClassificationTerm>, ClassificationFailure>(stored);
+    }
+
+    private static Option<ClassificationFailure> Keep(List<ClassificationTerm> stored, IReadOnlyList<ClassificationTerm> chunkStored)
+    {
+        stored.AddRange(chunkStored);
+
+        return Option.None<ClassificationFailure>();
+    }
+
+    private async Task<Result<IReadOnlyList<ClassificationTerm>, ClassificationFailure>> SaveChunkAsync(ClassificationTerm[] chunk, CancellationToken cancellationToken)
+    {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        dbContext.ChangeTracker.AutoDetectChangesEnabled = false;
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken).ConfigureAwait(false);
+        var categoryIds = chunk.Select(term => term.CategoryId.Value).Distinct().ToList();
+        if (await dbContext.Categories.CountAsync(category => categoryIds.Contains(category.Id), cancellationToken).ConfigureAwait(false) != categoryIds.Count)
+            return Result.Failure<IReadOnlyList<ClassificationTerm>, ClassificationFailure>(ClassificationFailureFactory.CreateNotFound());
+
+        var texts = chunk.Select(term => term.Text).Distinct().ToList();
+        var existing = await dbContext.Terms.AsNoTracking().Where(item => categoryIds.Contains(item.CategoryId) && texts.Contains(item.Text)).ToListAsync(cancellationToken).ConfigureAwait(false);
+        var existingByKey = existing.ToDictionary(item => (item.CategoryId, item.Text));
+        var resolvedByKey = new Dictionary<(Guid CategoryId, string Text), ClassificationTerm>(chunk.Length);
+        var added = new List<TermEntity>();
+        var resolved = new ClassificationTerm[chunk.Length];
+        for (var index = 0; index < chunk.Length; index++)
+        {
+            var key = (chunk[index].CategoryId.Value, chunk[index].Text);
+            if (!resolvedByKey.TryGetValue(key, out var term))
+            {
+                term = existingByKey.TryGetValue(key, out var entity) ? TermMapping.ToTerm(entity) : Added(added, chunk[index]);
+                resolvedByKey[key] = term;
+            }
+
+            resolved[index] = term;
+        }
+
+        if (added.Count > 0)
+        {
+            dbContext.Terms.AddRange(added);
+            _ = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        return Result.Success<IReadOnlyList<ClassificationTerm>, ClassificationFailure>(resolved);
+    }
+
+    private static ClassificationTerm Added(List<TermEntity> added, ClassificationTerm term)
+    {
+        added.Add(TermMapping.ToEntity(term));
+
+        return term;
     }
 
     private async Task<Result<ClassificationTerm, ClassificationFailure>> ChangeStatusAsync(TermId termId, TermStatus status, CancellationToken cancellationToken)
