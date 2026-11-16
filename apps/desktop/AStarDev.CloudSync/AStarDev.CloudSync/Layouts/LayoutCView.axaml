@@ -58,6 +58,10 @@
         <Style Selector="Ellipse.dot.onedrive">
             <Setter Property="Fill" Value="{DynamicResource CloudSyncProviderOneDriveBrush}" />
         </Style>
+        <Style Selector="TextBox#CommandSearchBox:focus /template/ Border#PART_BorderElement, TextBox#CommandSearchBox:pointerover /template/ Border#PART_BorderElement">
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
         <Style Selector="Border.pair-tile">
             <Setter Property="MinHeight" Value="200" />
             <Setter Property="Padding" Value="16,14" />
