@@ -4,9 +4,9 @@ namespace AStarDev.CloudSync.Classification.TestsUnit;
 
 public sealed partial class GivenTheEmbeddedSeedVocabularies
 {
-    private static readonly HashSet<string> AllowedDuplicates = ["tomato", "leaf"];
+    private static readonly HashSet<string> AllowedDuplicates = ["tomato", "leaf", "peru"];
 
-    private static readonly string[] ExpectedCategories = ["Colour", "Clothing", "Object", "Car"];
+    private static readonly string[] ExpectedCategories = ["Colour", "Clothing", "Object", "Car", "Place"];
 
     [Fact]
     public void when_the_seed_files_are_read_then_one_file_exists_per_vocabulary()

@@ -5,7 +5,7 @@ namespace AStarDev.CloudSync.Classification.TestsUnit;
 
 public static class EmbeddedSeedFiles
 {
-    private static readonly string[] VocabularyFiles = ["colour", "clothing", "object", "car"];
+    private static readonly string[] VocabularyFiles = ["colour", "clothing", "object", "car", "place"];
 
     public static IReadOnlyList<SeedFileDto> ReadAll() => typeof(ClassificationSeed).Assembly
         .GetManifestResourceNames()
