@@ -45,7 +45,7 @@ public class GivenALayoutAView
         source.GetOverviewAsync(Arg.Any<CancellationToken>()).Returns(SyncOverviewFactory.Create([.. Enumerable.Range(0, 30).Select(_ => TestData.CreateAccount(SyncStatusFactory.CreateUpToDate(), Option.None<DateTimeOffset>()))], [], [], [], [], 0, Option.None<DateTimeOffset>()));
         var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         await overview.LoadAsync(TestContext.Current.CancellationToken);
-        var window = new Window { Width = 1280, Height = 800, Content = new LayoutAView { DataContext = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), TestData.CreateLocalization()) } };
+        var window = new Window { Width = 1280, Height = 800, Content = new LayoutAView { DataContext = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), TestData.CreateClassificationPage(), TestData.CreateLocalization()) } };
 
         window.Show();
         Dispatcher.UIThread.RunJobs();
@@ -110,9 +110,9 @@ public class GivenALayoutAView
 
         var railButtons = window.GetVisualDescendants().OfType<Button>().Where(button => button.Classes.Contains("rail")).ToList();
 
-        railButtons.Count.ShouldBe(5);
-        railButtons.Select(button => button.Command).ShouldBe([layout.ShowAccountsCommand, layout.ShowFoldersCommand, layout.ShowActivityCommand, layout.ShowConflictsCommand, layout.ShowSearchCommand]);
-        railButtons.Select(button => button.IsEffectivelyEnabled).ShouldBe([true, true, true, true, true]);
+        railButtons.Count.ShouldBe(6);
+        railButtons.Select(button => button.Command).ShouldBe([layout.ShowAccountsCommand, layout.ShowFoldersCommand, layout.ShowActivityCommand, layout.ShowConflictsCommand, layout.ShowClassificationCommand, layout.ShowSearchCommand]);
+        railButtons.Select(button => button.IsEffectivelyEnabled).ShouldBe([true, true, true, true, true, true]);
     }
 
     [AvaloniaFact]
@@ -283,7 +283,7 @@ public class GivenALayoutAView
     private static async Task<Window> CreateShownWindowAsync()
     {
         var overview = await TestData.CreateLoadedOverviewViewModelAsync();
-        var window = new Window { Width = 1280, Height = 800, Content = new LayoutAView { DataContext = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), TestData.CreateLocalization()) } };
+        var window = new Window { Width = 1280, Height = 800, Content = new LayoutAView { DataContext = new LayoutAViewModel(overview, new RecordingSyncActions(), TestData.CreateConflictListFactory(), TestData.CreateFolderSelectionFactory(), TestData.CreateActivityListFactory(), TestData.CreateClassificationPage(), TestData.CreateLocalization()) } };
         window.Show();
         Dispatcher.UIThread.RunJobs();
 

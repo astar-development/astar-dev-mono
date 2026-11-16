@@ -16,7 +16,7 @@ public class GivenTheCloudSyncModules
     {
         var modules = CloudSyncAssemblies().Select(assembly => assembly.GetName().Name);
 
-        modules.ShouldBe(["AStarDev.CloudSync", "AStarDev.CloudSync.Accounts", "AStarDev.CloudSync.Accounts.OneDrive", "AStarDev.CloudSync.Accounts.Sqlite", "AStarDev.CloudSync.Classification", "AStarDev.CloudSync.DisplaySettings", "AStarDev.CloudSync.Overview", "AStarDev.CloudSync.Sync", "AStarDev.CloudSync.Sync.OneDrive", "AStarDev.CloudSync.Sync.Sqlite", "AStarDev.CloudSync.ViewModels"], ignoreOrder: true);
+        modules.ShouldBe(["AStarDev.CloudSync", "AStarDev.CloudSync.Accounts", "AStarDev.CloudSync.Accounts.OneDrive", "AStarDev.CloudSync.Accounts.Sqlite", "AStarDev.CloudSync.Classification", "AStarDev.CloudSync.Classification.Sqlite", "AStarDev.CloudSync.DisplaySettings", "AStarDev.CloudSync.Overview", "AStarDev.CloudSync.Sync", "AStarDev.CloudSync.Sync.OneDrive", "AStarDev.CloudSync.Sync.Sqlite", "AStarDev.CloudSync.ViewModels"], ignoreOrder: true);
     }
 
     [Fact]
