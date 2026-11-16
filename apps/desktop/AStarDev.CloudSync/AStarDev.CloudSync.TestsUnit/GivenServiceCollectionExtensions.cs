@@ -612,6 +612,24 @@ public class GivenServiceCollectionExtensions
         recorders.ShouldHaveSingleItem().ShouldBeOfType<ClassifyingUploadRecorder>();
     }
 
+    [Theory]
+    [InlineData("UploadItemExecutor")]
+    [InlineData("DownloadExecutor")]
+    [InlineData("LocalChangeDetector")]
+    [InlineData("ResolutionTransfers")]
+    public void when_application_services_are_added_then_each_sync_consumer_receives_the_classifying_baseline_writer(string consumerName)
+    {
+        var services = CreateServices();
+        using var provider = services.BuildServiceProvider();
+        var registered = services.First(descriptor => descriptor.ServiceType.Name == consumerName || descriptor.ImplementationType?.Name == consumerName).ServiceType;
+
+        var consumer = provider.GetRequiredService(registered);
+
+        var writers = consumer.GetType().GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).Where(field => field.FieldType == typeof(ISyncBaselineWriter)).Select(field => field.GetValue(consumer)).ToList();
+        writers.ShouldNotBeEmpty();
+        writers.ShouldAllBe(writer => writer is ClassifyingSyncBaselineWriter);
+    }
+
     [Fact]
     public void when_application_services_are_added_then_the_stores_are_the_caching_decorators_and_the_provider_resolves_without_a_cycle()
     {

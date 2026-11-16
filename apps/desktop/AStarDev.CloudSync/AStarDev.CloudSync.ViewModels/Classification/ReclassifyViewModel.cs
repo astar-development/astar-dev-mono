@@ -5,7 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 namespace AStarDev.CloudSync.ViewModels.Classification;
 
 /// <summary>The reclassify button of the classification page: starts a run, shows the files done, lets the user cancel and reloads the term list afterwards. The progress callback is created when the command starts, on the UI thread, so reports are marshalled back to it.</summary>
-public sealed class ReclassifyViewModel : LocalizedObservableObject
+public sealed class ReclassifyViewModel : LocalizedObservableObject, IDisposable
 {
     private readonly IClassificationReclassifier reclassifier;
     private readonly ClassificationTermListViewModel terms;
@@ -54,6 +54,9 @@ public sealed class ReclassifyViewModel : LocalizedObservableObject
 
     /// <summary>Cancels the run in progress.</summary>
     public IRelayCommand CancelCommand { get; }
+
+    /// <summary>Cancels a run in progress, so the app shutting down does not leave the reclassify working.</summary>
+    public void Dispose() => ReclassifyCommand.Cancel();
 
     private async Task RunAsync(CancellationToken cancellationToken)
     {

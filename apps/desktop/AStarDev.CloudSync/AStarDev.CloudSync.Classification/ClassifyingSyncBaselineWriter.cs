@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync.Classification;
 
-/// <summary>Decorates the sync baseline writer so each file written is classified and each file removed has its classification links removed. The inner result is always returned unchanged; a classification failure is logged and never reaches the sync. Register it in the composition root (#1822) by resolving the inner writer by its concrete type, for example <c>services.AddSingleton&lt;ISyncBaselineWriter&gt;(provider =&gt; new ClassifyingSyncBaselineWriter(provider.GetRequiredService&lt;SqliteSyncBaselineStore&gt;(), ...))</c>, so the decorator never resolves <see cref="ISyncBaselineWriter"/> itself and no cycle forms.</summary>
+/// <summary>Decorates the sync baseline writer so each file written is classified and each file removed has its classification links removed. The inner result is always returned unchanged; a classification failure is logged and never reaches the sync. Register it with <see cref="ClassificationServiceCollectionExtensions.AddClassification"/>, which resolves the inner writer by its undecorated key, so the decorator never resolves <see cref="ISyncBaselineWriter"/> itself and no cycle forms.</summary>
 /// <param name="inner">The registered writer that stores the baseline.</param>
 /// <param name="classifier">Classifies one path.</param>
 /// <param name="store">Stores the automatic links.</param>
@@ -71,14 +71,14 @@ public sealed class ClassifyingSyncBaselineWriter(ISyncBaselineWriter inner, IFi
 
     private Unit Failed(Exception exception)
     {
-        LogMessage.Warning(logger, nameof(ClassifyingSyncBaselineWriter), $"A file could not be classified after the baseline write: {exception.ErrorType()}");
+        LogMessage.Warning(logger, nameof(ClassifyingSyncBaselineWriter), "A file could not be classified after the baseline write", exception.ErrorType());
 
         return Unit.Instance;
     }
 
     private Unit Failed(ClassificationFailure failure)
     {
-        LogMessage.Warning(logger, nameof(ClassifyingSyncBaselineWriter), $"The classification links were not updated after the baseline write: {failure.GetType().Name}");
+        LogMessage.Warning(logger, nameof(ClassifyingSyncBaselineWriter), "The classification links were not updated after the baseline write", failure.GetType().Name);
 
         return Unit.Instance;
     }
