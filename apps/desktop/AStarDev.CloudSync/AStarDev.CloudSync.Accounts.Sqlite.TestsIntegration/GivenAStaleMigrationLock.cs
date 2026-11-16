@@ -62,9 +62,11 @@ public sealed class GivenAStaleMigrationLock
     }
 
     [Fact]
-    public async Task when_the_database_path_is_a_folder_then_clearing_fails_with_an_error_and_not_an_exception()
+    public async Task when_the_database_file_is_not_a_database_then_clearing_fails_with_an_error_and_not_an_exception()
     {
-        await using var database = TemporaryCloudSyncDatabase.CreateAtAFolder();
+        await using var database = TemporaryCloudSyncDatabase.CreateUnmigrated();
+        database.DatabaseFile.Directory!.Create();
+        await File.WriteAllTextAsync(database.DatabaseFile.FullName, new string('x', 4096), CancellationToken);
 
         var cleared = await database.LockClearer.ClearAsync(CancellationToken);
 

@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
+using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Logging;
 using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.ViewModels.Notifications;
@@ -45,6 +46,8 @@ public partial class App : Application, IDisposable
             var claim = Task.Run(() => guard.ClaimAsync(options, CancellationToken.None), CancellationToken.None).GetAwaiter().GetResult();
             if (claim is InstanceClaim.HandedOff or InstanceClaim.NotAnswered)
                 ExitAsSecondInstance();
+
+            _ = Task.Run(() => services.GetRequiredService<IMigrationLockClearer>().ClearAsync(CancellationToken.None), CancellationToken.None).GetAwaiter().GetResult();
 
             var window = new MainWindow { DataContext = services.GetRequiredService<MainWindowViewModel>() };
             desktop.MainWindow = window;
