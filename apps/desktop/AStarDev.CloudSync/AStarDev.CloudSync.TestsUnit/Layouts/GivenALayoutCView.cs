@@ -140,6 +140,34 @@ public class GivenALayoutCView
 
     private static List<Button> FindChips(Window window) => [.. window.GetVisualDescendants().OfType<Button>().Where(button => button.Classes.Contains("chip"))];
 
+    [AvaloniaFact]
+    public async Task when_shown_then_only_the_selected_account_card_shows_its_action_buttons()
+    {
+        var window = await CreateShownWindowAsync();
+
+        var visibleActions = VisibleCardActions(window);
+
+        visibleActions.Count.ShouldBe(4);
+        visibleActions.ShouldAllBe(button => ((LayoutCAccountCardViewModel)button.DataContext!).IsSelected);
+    }
+
+    [AvaloniaFact]
+    public async Task when_another_account_card_is_selected_then_the_action_buttons_move_to_it()
+    {
+        var window = await CreateShownWindowAsync();
+        var other = window.GetVisualDescendants().OfType<Button>().First(button => button.Classes.Contains("account-select") && !((LayoutCAccountCardViewModel)button.DataContext!).IsSelected);
+
+        other.Command!.Execute(null);
+        Dispatcher.UIThread.RunJobs();
+
+        var visibleActions = VisibleCardActions(window);
+        visibleActions.Count.ShouldBe(4);
+        visibleActions.ShouldAllBe(button => ReferenceEquals(button.DataContext, other.DataContext));
+    }
+
+    private static List<Button> VisibleCardActions(Window window) =>
+        [.. window.GetVisualDescendants().OfType<Button>().Where(button => button.Classes.Contains("secondary") && button.DataContext is LayoutCAccountCardViewModel && button.IsEffectivelyVisible)];
+
     private static async Task<Window> CreateShownWindowAsync()
     {
         var overview = await TestData.CreateLoadedOverviewViewModelAsync();
