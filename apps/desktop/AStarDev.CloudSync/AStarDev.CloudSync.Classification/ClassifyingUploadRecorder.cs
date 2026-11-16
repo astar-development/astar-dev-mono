@@ -35,14 +35,14 @@ public sealed class ClassifyingUploadRecorder(IUploadRecorder inner, IFileClassi
 
     private Unit Failed(Exception exception)
     {
-        LogMessage.Warning(logger, nameof(ClassifyingUploadRecorder), $"An uploaded file could not be classified after the baseline write: {exception.ErrorType()}");
+        LogMessage.Warning(logger, nameof(ClassifyingUploadRecorder), "An uploaded file could not be classified after the baseline write", exception.ErrorType());
 
         return Unit.Instance;
     }
 
     private Unit Failed(ClassificationFailure failure)
     {
-        LogMessage.Warning(logger, nameof(ClassifyingUploadRecorder), $"The classification links were not updated after the upload was recorded: {failure.GetType().Name}");
+        LogMessage.Warning(logger, nameof(ClassifyingUploadRecorder), "The classification links were not updated after the upload was recorded", failure.GetType().Name);
 
         return Unit.Instance;
     }

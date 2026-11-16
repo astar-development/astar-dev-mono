@@ -9,6 +9,7 @@ using AStarDev.CloudSync.Tray;
 using AStarDev.CloudSync.ViewModels;
 using AStarDev.CloudSync.ViewModels.DisplaySettings;
 using AStarDev.CloudSync.ViewModels.Overview;
+using AStarDev.FunctionalParadigm;
 using AStarDev.LoggingExtensions;
 using AStarDev.CloudSync.ViewModels.Tray;
 using AStarDev.LoggingOTel;
@@ -22,6 +23,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync;
 
@@ -84,9 +86,24 @@ public partial class App : Application, IDisposable
         if (services is null)
             return;
 
-        await services.GetRequiredService<IClassificationStartup>().RunAsync(shutdown.Token).ConfigureAwait(false);
+        var provider = services;
+        await Try.RunAsync(() => StartSyncAsync(provider), CancellationToken.None).MatchAsync(_ => Unit.Instance, exception => LogSyncStartFailed(provider, exception)).ConfigureAwait(false);
+    }
+
+    private async Task<Unit> StartSyncAsync(ServiceProvider provider)
+    {
+        await provider.GetRequiredService<IClassificationStartup>().RunAsync(shutdown.Token).ConfigureAwait(false);
         if (!shutdown.IsCancellationRequested)
-            await services.GetRequiredService<ISyncScheduler>().StartAsync(CancellationToken.None).ConfigureAwait(false);
+            await provider.GetRequiredService<ISyncScheduler>().StartAsync(CancellationToken.None).ConfigureAwait(false);
+
+        return Unit.Instance;
+    }
+
+    private static Unit LogSyncStartFailed(ServiceProvider provider, Exception exception)
+    {
+        LogMessage.ExceptionCaught(provider.GetRequiredService<ILogger<App>>(), nameof(StartSyncAfterClassificationAsync), exception.ErrorType());
+
+        return Unit.Instance;
     }
 
     private void LogUnhandledExceptions(UnhandledExceptionLogger unhandled)

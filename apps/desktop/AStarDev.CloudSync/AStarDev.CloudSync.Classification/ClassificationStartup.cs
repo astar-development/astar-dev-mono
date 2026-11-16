@@ -14,12 +14,12 @@ public sealed class ClassificationStartup(ICloudSyncDatabase database, IClassifi
     /// <inheritdoc />
     public async Task RunAsync(CancellationToken cancellationToken)
     {
-        var run = Try.RunAsync(() => MigrateAndSeedAsync(cancellationToken), cancellationToken).MatchAsync(_ => Unit.Instance, exception => Failed(exception));
+        var run = Try.RunAsync(() => MigrateAndSeedAsync(cancellationToken), cancellationToken).MatchAsync(_ => Unit.Instance, exception => Failed(exception, cancellationToken));
         await ((Task)run).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
     }
 
     private Task<Unit> MigrateAndSeedAsync(CancellationToken cancellationToken) =>
-        database.MigrateAsync(cancellationToken).MatchAsync(_ => SeedAsync(cancellationToken), _ => Task.FromResult(MigrationFailed()));
+        database.MigrateAsync(cancellationToken).MatchAsync(_ => SeedAsync(cancellationToken), _ => Task.FromResult(MigrationFailed(cancellationToken)));
 
     private async Task<Unit> SeedAsync(CancellationToken cancellationToken)
     {
@@ -28,16 +28,22 @@ public sealed class ClassificationStartup(ICloudSyncDatabase database, IClassifi
         return Unit.Instance;
     }
 
-    private Unit MigrationFailed()
+    private Unit MigrationFailed(CancellationToken cancellationToken)
     {
+        if (cancellationToken.IsCancellationRequested)
+            return Unit.Instance;
+
         LogMessage.Warning(logger, nameof(ClassificationStartup), "The classification seed was skipped because the database could not be migrated");
 
         return Unit.Instance;
     }
 
-    private Unit Failed(Exception exception)
+    private Unit Failed(Exception exception, CancellationToken cancellationToken)
     {
-        LogMessage.Warning(logger, nameof(ClassificationStartup), $"Classification startup did not finish: {exception.ErrorType()}");
+        if (cancellationToken.IsCancellationRequested)
+            return Unit.Instance;
+
+        LogMessage.Warning(logger, nameof(ClassificationStartup), "Classification startup did not finish", exception.ErrorType());
 
         return Unit.Instance;
     }

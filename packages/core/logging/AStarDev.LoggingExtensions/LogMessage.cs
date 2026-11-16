@@ -57,7 +57,8 @@ public static partial class LogMessage
     /// <param name="location">The location of the event.</param>
     /// <param name="message">The fixed warning message to log.</param>
     /// <param name="errorType">The type name of the failure.</param>
-    public static void Warning(ILogger logger, string location, string message, string errorType) => throw new NotImplementedException($"{logger}{location}{message}{errorType}");
+    [LoggerMessage(EventId = 405, Level = LogLevel.Warning, Message = "{Location} has raised: `{Message}` ({ErrorType}).")]
+    public static partial void Warning(ILogger logger, string location, string message, string errorType);
 
     /// <summary>Logs that an exception was caught, recording only the exception type name; the message, stack trace and instance are never logged (LG-02).</summary>
     /// <param name="logger">The logger used to log the event.</param>

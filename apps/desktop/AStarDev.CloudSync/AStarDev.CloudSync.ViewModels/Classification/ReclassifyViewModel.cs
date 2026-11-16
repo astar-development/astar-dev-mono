@@ -56,7 +56,7 @@ public sealed class ReclassifyViewModel : LocalizedObservableObject, IDisposable
     public IRelayCommand CancelCommand { get; }
 
     /// <summary>Cancels a run in progress, so the app shutting down does not leave the reclassify working.</summary>
-    public void Dispose() => throw new NotImplementedException();
+    public void Dispose() => ReclassifyCommand.Cancel();
 
     private async Task RunAsync(CancellationToken cancellationToken)
     {
