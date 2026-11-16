@@ -1,0 +1,1079 @@
+{
+  "version": "1",
+  "source": "Hand-written list of common concrete nouns for this project; no third-party data",
+  "categories": [
+    {
+      "name": "Object"
+    }
+  ],
+  "terms": [
+    {
+      "text": "table",
+      "category": "Object"
+    },
+    {
+      "text": "chair",
+      "category": "Object"
+    },
+    {
+      "text": "sofa",
+      "category": "Object"
+    },
+    {
+      "text": "couch",
+      "category": "Object"
+    },
+    {
+      "text": "armchair",
+      "category": "Object"
+    },
+    {
+      "text": "stool",
+      "category": "Object"
+    },
+    {
+      "text": "bed",
+      "category": "Object"
+    },
+    {
+      "text": "wardrobe",
+      "category": "Object"
+    },
+    {
+      "text": "cupboard",
+      "category": "Object"
+    },
+    {
+      "text": "shelf",
+      "category": "Object"
+    },
+    {
+      "text": "bookcase",
+      "category": "Object"
+    },
+    {
+      "text": "desk",
+      "category": "Object"
+    },
+    {
+      "text": "drawer",
+      "category": "Object"
+    },
+    {
+      "text": "mirror",
+      "category": "Object"
+    },
+    {
+      "text": "lamp",
+      "category": "Object"
+    },
+    {
+      "text": "candle",
+      "category": "Object"
+    },
+    {
+      "text": "clock",
+      "category": "Object"
+    },
+    {
+      "text": "vase",
+      "category": "Object"
+    },
+    {
+      "text": "rug",
+      "category": "Object"
+    },
+    {
+      "text": "carpet",
+      "category": "Object"
+    },
+    {
+      "text": "curtain",
+      "category": "Object"
+    },
+    {
+      "text": "cushion",
+      "category": "Object"
+    },
+    {
+      "text": "pillow",
+      "category": "Object"
+    },
+    {
+      "text": "blanket",
+      "category": "Object"
+    },
+    {
+      "text": "duvet",
+      "category": "Object"
+    },
+    {
+      "text": "towel",
+      "category": "Object"
+    },
+    {
+      "text": "plate",
+      "category": "Object"
+    },
+    {
+      "text": "bowl",
+      "category": "Object"
+    },
+    {
+      "text": "cup",
+      "category": "Object"
+    },
+    {
+      "text": "mug",
+      "category": "Object"
+    },
+    {
+      "text": "glass",
+      "category": "Object"
+    },
+    {
+      "text": "bottle",
+      "category": "Object"
+    },
+    {
+      "text": "jar",
+      "category": "Object"
+    },
+    {
+      "text": "jug",
+      "category": "Object"
+    },
+    {
+      "text": "kettle",
+      "category": "Object"
+    },
+    {
+      "text": "teapot",
+      "category": "Object"
+    },
+    {
+      "text": "pan",
+      "category": "Object"
+    },
+    {
+      "text": "saucepan",
+      "category": "Object"
+    },
+    {
+      "text": "fork",
+      "category": "Object"
+    },
+    {
+      "text": "knife",
+      "category": "Object"
+    },
+    {
+      "text": "spoon",
+      "category": "Object"
+    },
+    {
+      "text": "spatula",
+      "category": "Object"
+    },
+    {
+      "text": "whisk",
+      "category": "Object"
+    },
+    {
+      "text": "toaster",
+      "category": "Object"
+    },
+    {
+      "text": "oven",
+      "category": "Object"
+    },
+    {
+      "text": "fridge",
+      "category": "Object"
+    },
+    {
+      "text": "freezer",
+      "category": "Object"
+    },
+    {
+      "text": "microwave",
+      "category": "Object"
+    },
+    {
+      "text": "dishwasher",
+      "category": "Object"
+    },
+    {
+      "text": "sink",
+      "category": "Object"
+    },
+    {
+      "text": "bath",
+      "category": "Object"
+    },
+    {
+      "text": "shower",
+      "category": "Object"
+    },
+    {
+      "text": "toilet",
+      "category": "Object"
+    },
+    {
+      "text": "toothbrush",
+      "category": "Object"
+    },
+    {
+      "text": "comb",
+      "category": "Object"
+    },
+    {
+      "text": "brush",
+      "category": "Object"
+    },
+    {
+      "text": "razor",
+      "category": "Object"
+    },
+    {
+      "text": "soap",
+      "category": "Object"
+    },
+    {
+      "text": "sponge",
+      "category": "Object"
+    },
+    {
+      "text": "bucket",
+      "category": "Object"
+    },
+    {
+      "text": "broom",
+      "category": "Object"
+    },
+    {
+      "text": "mop",
+      "category": "Object"
+    },
+    {
+      "text": "ladder",
+      "category": "Object"
+    },
+    {
+      "text": "hammer",
+      "category": "Object"
+    },
+    {
+      "text": "screwdriver",
+      "category": "Object"
+    },
+    {
+      "text": "spanner",
+      "category": "Object"
+    },
+    {
+      "text": "wrench",
+      "category": "Object"
+    },
+    {
+      "text": "saw",
+      "category": "Object"
+    },
+    {
+      "text": "drill",
+      "category": "Object"
+    },
+    {
+      "text": "pliers",
+      "category": "Object"
+    },
+    {
+      "text": "axe",
+      "category": "Object"
+    },
+    {
+      "text": "shovel",
+      "category": "Object"
+    },
+    {
+      "text": "spade",
+      "category": "Object"
+    },
+    {
+      "text": "rake",
+      "category": "Object"
+    },
+    {
+      "text": "hose",
+      "category": "Object"
+    },
+    {
+      "text": "wheelbarrow",
+      "category": "Object"
+    },
+    {
+      "text": "door",
+      "category": "Object"
+    },
+    {
+      "text": "window",
+      "category": "Object"
+    },
+    {
+      "text": "gate",
+      "category": "Object"
+    },
+    {
+      "text": "fence",
+      "category": "Object"
+    },
+    {
+      "text": "wall",
+      "category": "Object"
+    },
+    {
+      "text": "roof",
+      "category": "Object"
+    },
+    {
+      "text": "chimney",
+      "category": "Object"
+    },
+    {
+      "text": "stairs",
+      "category": "Object"
+    },
+    {
+      "text": "bridge",
+      "category": "Object"
+    },
+    {
+      "text": "tower",
+      "category": "Object"
+    },
+    {
+      "text": "castle",
+      "category": "Object"
+    },
+    {
+      "text": "church",
+      "category": "Object"
+    },
+    {
+      "text": "house",
+      "category": "Object"
+    },
+    {
+      "text": "cottage",
+      "category": "Object"
+    },
+    {
+      "text": "barn",
+      "category": "Object"
+    },
+    {
+      "text": "shed",
+      "category": "Object"
+    },
+    {
+      "text": "garage",
+      "category": "Object"
+    },
+    {
+      "text": "tent",
+      "category": "Object"
+    },
+    {
+      "text": "bicycle",
+      "category": "Object"
+    },
+    {
+      "text": "motorbike",
+      "category": "Object"
+    },
+    {
+      "text": "bus",
+      "category": "Object"
+    },
+    {
+      "text": "train",
+      "category": "Object"
+    },
+    {
+      "text": "tram",
+      "category": "Object"
+    },
+    {
+      "text": "aeroplane",
+      "category": "Object"
+    },
+    {
+      "text": "helicopter",
+      "category": "Object"
+    },
+    {
+      "text": "boat",
+      "category": "Object"
+    },
+    {
+      "text": "ship",
+      "category": "Object"
+    },
+    {
+      "text": "yacht",
+      "category": "Object"
+    },
+    {
+      "text": "canoe",
+      "category": "Object"
+    },
+    {
+      "text": "tractor",
+      "category": "Object"
+    },
+    {
+      "text": "lorry",
+      "category": "Object"
+    },
+    {
+      "text": "van",
+      "category": "Object"
+    },
+    {
+      "text": "truck",
+      "category": "Object"
+    },
+    {
+      "text": "ambulance",
+      "category": "Object"
+    },
+    {
+      "text": "tree",
+      "category": "Object"
+    },
+    {
+      "text": "flower",
+      "category": "Object"
+    },
+    {
+      "text": "bush",
+      "category": "Object"
+    },
+    {
+      "text": "leaf",
+      "category": "Object"
+    },
+    {
+      "text": "branch",
+      "category": "Object"
+    },
+    {
+      "text": "rock",
+      "category": "Object"
+    },
+    {
+      "text": "stone",
+      "category": "Object"
+    },
+    {
+      "text": "mountain",
+      "category": "Object"
+    },
+    {
+      "text": "hill",
+      "category": "Object"
+    },
+    {
+      "text": "river",
+      "category": "Object"
+    },
+    {
+      "text": "lake",
+      "category": "Object"
+    },
+    {
+      "text": "pond",
+      "category": "Object"
+    },
+    {
+      "text": "beach",
+      "category": "Object"
+    },
+    {
+      "text": "cliff",
+      "category": "Object"
+    },
+    {
+      "text": "cave",
+      "category": "Object"
+    },
+    {
+      "text": "bone",
+      "category": "Object"
+    },
+    {
+      "text": "feather",
+      "category": "Object"
+    },
+    {
+      "text": "shell",
+      "category": "Object"
+    },
+    {
+      "text": "egg",
+      "category": "Object"
+    },
+    {
+      "text": "apple",
+      "category": "Object"
+    },
+    {
+      "text": "banana",
+      "category": "Object"
+    },
+    {
+      "text": "lemon",
+      "category": "Object"
+    },
+    {
+      "text": "pear",
+      "category": "Object"
+    },
+    {
+      "text": "grape",
+      "category": "Object"
+    },
+    {
+      "text": "strawberry",
+      "category": "Object"
+    },
+    {
+      "text": "carrot",
+      "category": "Object"
+    },
+    {
+      "text": "potato",
+      "category": "Object"
+    },
+    {
+      "text": "tomato",
+      "category": "Object"
+    },
+    {
+      "text": "onion",
+      "category": "Object"
+    },
+    {
+      "text": "bread",
+      "category": "Object"
+    },
+    {
+      "text": "cake",
+      "category": "Object"
+    },
+    {
+      "text": "biscuit",
+      "category": "Object"
+    },
+    {
+      "text": "cheese",
+      "category": "Object"
+    },
+    {
+      "text": "pizza",
+      "category": "Object"
+    },
+    {
+      "text": "sandwich",
+      "category": "Object"
+    },
+    {
+      "text": "burger",
+      "category": "Object"
+    },
+    {
+      "text": "book",
+      "category": "Object"
+    },
+    {
+      "text": "newspaper",
+      "category": "Object"
+    },
+    {
+      "text": "magazine",
+      "category": "Object"
+    },
+    {
+      "text": "letter",
+      "category": "Object"
+    },
+    {
+      "text": "envelope",
+      "category": "Object"
+    },
+    {
+      "text": "pen",
+      "category": "Object"
+    },
+    {
+      "text": "pencil",
+      "category": "Object"
+    },
+    {
+      "text": "ruler",
+      "category": "Object"
+    },
+    {
+      "text": "eraser",
+      "category": "Object"
+    },
+    {
+      "text": "scissors",
+      "category": "Object"
+    },
+    {
+      "text": "stapler",
+      "category": "Object"
+    },
+    {
+      "text": "notebook",
+      "category": "Object"
+    },
+    {
+      "text": "folder",
+      "category": "Object"
+    },
+    {
+      "text": "paper",
+      "category": "Object"
+    },
+    {
+      "text": "phone",
+      "category": "Object"
+    },
+    {
+      "text": "laptop",
+      "category": "Object"
+    },
+    {
+      "text": "computer",
+      "category": "Object"
+    },
+    {
+      "text": "keyboard",
+      "category": "Object"
+    },
+    {
+      "text": "mouse",
+      "category": "Object"
+    },
+    {
+      "text": "monitor",
+      "category": "Object"
+    },
+    {
+      "text": "television",
+      "category": "Object"
+    },
+    {
+      "text": "radio",
+      "category": "Object"
+    },
+    {
+      "text": "camera",
+      "category": "Object"
+    },
+    {
+      "text": "speaker",
+      "category": "Object"
+    },
+    {
+      "text": "headphones",
+      "category": "Object"
+    },
+    {
+      "text": "microphone",
+      "category": "Object"
+    },
+    {
+      "text": "charger",
+      "category": "Object"
+    },
+    {
+      "text": "cable",
+      "category": "Object"
+    },
+    {
+      "text": "battery",
+      "category": "Object"
+    },
+    {
+      "text": "torch",
+      "category": "Object"
+    },
+    {
+      "text": "umbrella",
+      "category": "Object"
+    },
+    {
+      "text": "bag",
+      "category": "Object"
+    },
+    {
+      "text": "backpack",
+      "category": "Object"
+    },
+    {
+      "text": "suitcase",
+      "category": "Object"
+    },
+    {
+      "text": "wallet",
+      "category": "Object"
+    },
+    {
+      "text": "purse",
+      "category": "Object"
+    },
+    {
+      "text": "key",
+      "category": "Object"
+    },
+    {
+      "text": "lock",
+      "category": "Object"
+    },
+    {
+      "text": "ring",
+      "category": "Object"
+    },
+    {
+      "text": "necklace",
+      "category": "Object"
+    },
+    {
+      "text": "bracelet",
+      "category": "Object"
+    },
+    {
+      "text": "watch",
+      "category": "Object"
+    },
+    {
+      "text": "sunglasses",
+      "category": "Object"
+    },
+    {
+      "text": "spectacles",
+      "category": "Object"
+    },
+    {
+      "text": "coin",
+      "category": "Object"
+    },
+    {
+      "text": "banknote",
+      "category": "Object"
+    },
+    {
+      "text": "ticket",
+      "category": "Object"
+    },
+    {
+      "text": "balloon",
+      "category": "Object"
+    },
+    {
+      "text": "kite",
+      "category": "Object"
+    },
+    {
+      "text": "ball",
+      "category": "Object"
+    },
+    {
+      "text": "bat",
+      "category": "Object"
+    },
+    {
+      "text": "racket",
+      "category": "Object"
+    },
+    {
+      "text": "guitar",
+      "category": "Object"
+    },
+    {
+      "text": "piano",
+      "category": "Object"
+    },
+    {
+      "text": "violin",
+      "category": "Object"
+    },
+    {
+      "text": "drum",
+      "category": "Object"
+    },
+    {
+      "text": "trumpet",
+      "category": "Object"
+    },
+    {
+      "text": "flute",
+      "category": "Object"
+    },
+    {
+      "text": "doll",
+      "category": "Object"
+    },
+    {
+      "text": "puzzle",
+      "category": "Object"
+    },
+    {
+      "text": "dice",
+      "category": "Object"
+    },
+    {
+      "text": "toy",
+      "category": "Object"
+    },
+    {
+      "text": "statue",
+      "category": "Object"
+    },
+    {
+      "text": "painting",
+      "category": "Object"
+    },
+    {
+      "text": "sculpture",
+      "category": "Object"
+    },
+    {
+      "text": "flag",
+      "category": "Object"
+    },
+    {
+      "text": "sign",
+      "category": "Object"
+    },
+    {
+      "text": "signpost",
+      "category": "Object"
+    },
+    {
+      "text": "postbox",
+      "category": "Object"
+    },
+    {
+      "text": "bin",
+      "category": "Object"
+    },
+    {
+      "text": "lamppost",
+      "category": "Object"
+    },
+    {
+      "text": "fountain",
+      "category": "Object"
+    },
+    {
+      "text": "swing",
+      "category": "Object"
+    },
+    {
+      "text": "slide",
+      "category": "Object"
+    },
+    {
+      "text": "trampoline",
+      "category": "Object"
+    },
+    {
+      "text": "fireplace",
+      "category": "Object"
+    },
+    {
+      "text": "radiator",
+      "category": "Object"
+    },
+    {
+      "text": "heater",
+      "category": "Object"
+    },
+    {
+      "text": "fan",
+      "category": "Object"
+    },
+    {
+      "text": "trolley",
+      "category": "Object"
+    },
+    {
+      "text": "basket",
+      "category": "Object"
+    },
+    {
+      "text": "box",
+      "category": "Object"
+    },
+    {
+      "text": "crate",
+      "category": "Object"
+    },
+    {
+      "text": "barrel",
+      "category": "Object"
+    },
+    {
+      "text": "tin",
+      "category": "Object"
+    },
+    {
+      "text": "can",
+      "category": "Object"
+    },
+    {
+      "text": "sack",
+      "category": "Object"
+    },
+    {
+      "text": "rope",
+      "category": "Object"
+    },
+    {
+      "text": "chain",
+      "category": "Object"
+    },
+    {
+      "text": "anchor",
+      "category": "Object"
+    },
+    {
+      "text": "sword",
+      "category": "Object"
+    },
+    {
+      "text": "shield",
+      "category": "Object"
+    },
+    {
+      "text": "arrow",
+      "category": "Object"
+    },
+    {
+      "text": "teddy bear",
+      "category": "Object"
+    },
+    {
+      "text": "traffic light",
+      "category": "Object"
+    },
+    {
+      "text": "fire engine",
+      "category": "Object"
+    },
+    {
+      "text": "street lamp",
+      "category": "Object"
+    },
+    {
+      "text": "coffee table",
+      "category": "Object"
+    },
+    {
+      "text": "dining table",
+      "category": "Object"
+    },
+    {
+      "text": "washing machine",
+      "category": "Object"
+    },
+    {
+      "text": "vacuum cleaner",
+      "category": "Object"
+    },
+    {
+      "text": "tea towel",
+      "category": "Object"
+    },
+    {
+      "text": "hot water bottle",
+      "category": "Object"
+    },
+    {
+      "text": "football",
+      "category": "Object"
+    },
+    {
+      "text": "cricket bat",
+      "category": "Object"
+    },
+    {
+      "text": "tennis racket",
+      "category": "Object"
+    },
+    {
+      "text": "road sign",
+      "category": "Object"
+    },
+    {
+      "text": "park bench",
+      "category": "Object"
+    },
+    {
+      "text": "christmas tree",
+      "category": "Object"
+    },
+    {
+      "text": "bird table",
+      "category": "Object"
+    },
+    {
+      "text": "garden gnome",
+      "category": "Object"
+    },
+    {
+      "text": "wind turbine",
+      "category": "Object"
+    },
+    {
+      "text": "lighthouse",
+      "category": "Object"
+    },
+    {
+      "text": "windmill",
+      "category": "Object"
+    },
+    {
+      "text": "skateboard",
+      "category": "Object"
+    },
+    {
+      "text": "scooter",
+      "category": "Object"
+    },
+    {
+      "text": "pram",
+      "category": "Object"
+    },
+    {
+      "text": "wheelchair",
+      "category": "Object"
+    },
+    {
+      "text": "crutch",
+      "category": "Object"
+    },
+    {
+      "text": "hat stand",
+      "category": "Object"
+    },
+    {
+      "text": "bench",
+      "category": "Object"
+    }
+  ]
+}

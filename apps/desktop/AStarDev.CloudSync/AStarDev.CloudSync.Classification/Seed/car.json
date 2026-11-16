@@ -1,0 +1,807 @@
+{
+  "version": "1",
+  "source": "Hand-written list of common car makes and popular models (UK market focus) for this project; no third-party data",
+  "categories": [
+    {
+      "name": "Car"
+    }
+  ],
+  "terms": [
+    {
+      "text": "abarth",
+      "category": "Car"
+    },
+    {
+      "text": "acura",
+      "category": "Car"
+    },
+    {
+      "text": "alpine",
+      "category": "Car"
+    },
+    {
+      "text": "audi",
+      "category": "Car"
+    },
+    {
+      "text": "bentley",
+      "category": "Car"
+    },
+    {
+      "text": "bmw",
+      "category": "Car"
+    },
+    {
+      "text": "bugatti",
+      "category": "Car"
+    },
+    {
+      "text": "buick",
+      "category": "Car"
+    },
+    {
+      "text": "byd",
+      "category": "Car"
+    },
+    {
+      "text": "cadillac",
+      "category": "Car"
+    },
+    {
+      "text": "chevrolet",
+      "category": "Car"
+    },
+    {
+      "text": "chrysler",
+      "category": "Car"
+    },
+    {
+      "text": "citroen",
+      "category": "Car"
+    },
+    {
+      "text": "cupra",
+      "category": "Car"
+    },
+    {
+      "text": "dacia",
+      "category": "Car"
+    },
+    {
+      "text": "daewoo",
+      "category": "Car"
+    },
+    {
+      "text": "daihatsu",
+      "category": "Car"
+    },
+    {
+      "text": "dodge",
+      "category": "Car"
+    },
+    {
+      "text": "ds",
+      "category": "Car"
+    },
+    {
+      "text": "ferrari",
+      "category": "Car"
+    },
+    {
+      "text": "fiat",
+      "category": "Car"
+    },
+    {
+      "text": "ford",
+      "category": "Car"
+    },
+    {
+      "text": "genesis",
+      "category": "Car"
+    },
+    {
+      "text": "honda",
+      "category": "Car"
+    },
+    {
+      "text": "hummer",
+      "category": "Car"
+    },
+    {
+      "text": "hyundai",
+      "category": "Car"
+    },
+    {
+      "text": "infiniti",
+      "category": "Car"
+    },
+    {
+      "text": "isuzu",
+      "category": "Car"
+    },
+    {
+      "text": "jaguar",
+      "category": "Car"
+    },
+    {
+      "text": "jeep",
+      "category": "Car"
+    },
+    {
+      "text": "kia",
+      "category": "Car"
+    },
+    {
+      "text": "koenigsegg",
+      "category": "Car"
+    },
+    {
+      "text": "lamborghini",
+      "category": "Car"
+    },
+    {
+      "text": "lancia",
+      "category": "Car"
+    },
+    {
+      "text": "lexus",
+      "category": "Car"
+    },
+    {
+      "text": "lotus",
+      "category": "Car"
+    },
+    {
+      "text": "maserati",
+      "category": "Car"
+    },
+    {
+      "text": "mazda",
+      "category": "Car"
+    },
+    {
+      "text": "mclaren",
+      "category": "Car"
+    },
+    {
+      "text": "mercedes",
+      "category": "Car"
+    },
+    {
+      "text": "mercedes-benz",
+      "category": "Car"
+    },
+    {
+      "text": "mg",
+      "category": "Car"
+    },
+    {
+      "text": "mini",
+      "category": "Car"
+    },
+    {
+      "text": "mitsubishi",
+      "category": "Car"
+    },
+    {
+      "text": "morgan",
+      "category": "Car"
+    },
+    {
+      "text": "nissan",
+      "category": "Car"
+    },
+    {
+      "text": "opel",
+      "category": "Car"
+    },
+    {
+      "text": "peugeot",
+      "category": "Car"
+    },
+    {
+      "text": "polestar",
+      "category": "Car"
+    },
+    {
+      "text": "pontiac",
+      "category": "Car"
+    },
+    {
+      "text": "porsche",
+      "category": "Car"
+    },
+    {
+      "text": "proton",
+      "category": "Car"
+    },
+    {
+      "text": "ram",
+      "category": "Car"
+    },
+    {
+      "text": "renault",
+      "category": "Car"
+    },
+    {
+      "text": "rolls-royce",
+      "category": "Car"
+    },
+    {
+      "text": "saab",
+      "category": "Car"
+    },
+    {
+      "text": "seat",
+      "category": "Car"
+    },
+    {
+      "text": "skoda",
+      "category": "Car"
+    },
+    {
+      "text": "smart",
+      "category": "Car"
+    },
+    {
+      "text": "subaru",
+      "category": "Car"
+    },
+    {
+      "text": "suzuki",
+      "category": "Car"
+    },
+    {
+      "text": "tesla",
+      "category": "Car"
+    },
+    {
+      "text": "toyota",
+      "category": "Car"
+    },
+    {
+      "text": "triumph",
+      "category": "Car"
+    },
+    {
+      "text": "vauxhall",
+      "category": "Car"
+    },
+    {
+      "text": "volkswagen",
+      "category": "Car"
+    },
+    {
+      "text": "volvo",
+      "category": "Car"
+    },
+    {
+      "text": "alfa romeo",
+      "category": "Car"
+    },
+    {
+      "text": "aston martin",
+      "category": "Car"
+    },
+    {
+      "text": "land rover",
+      "category": "Car"
+    },
+    {
+      "text": "range rover",
+      "category": "Car"
+    },
+    {
+      "text": "rolls royce",
+      "category": "Car"
+    },
+    {
+      "text": "mercedes benz",
+      "category": "Car"
+    },
+    {
+      "text": "fiesta",
+      "category": "Car"
+    },
+    {
+      "text": "focus",
+      "category": "Car"
+    },
+    {
+      "text": "mondeo",
+      "category": "Car"
+    },
+    {
+      "text": "mustang",
+      "category": "Car"
+    },
+    {
+      "text": "kuga",
+      "category": "Car"
+    },
+    {
+      "text": "puma",
+      "category": "Car"
+    },
+    {
+      "text": "galaxy",
+      "category": "Car"
+    },
+    {
+      "text": "transit",
+      "category": "Car"
+    },
+    {
+      "text": "ranger",
+      "category": "Car"
+    },
+    {
+      "text": "escort",
+      "category": "Car"
+    },
+    {
+      "text": "sierra",
+      "category": "Car"
+    },
+    {
+      "text": "capri",
+      "category": "Car"
+    },
+    {
+      "text": "cortina",
+      "category": "Car"
+    },
+    {
+      "text": "corsa",
+      "category": "Car"
+    },
+    {
+      "text": "astra",
+      "category": "Car"
+    },
+    {
+      "text": "insignia",
+      "category": "Car"
+    },
+    {
+      "text": "vectra",
+      "category": "Car"
+    },
+    {
+      "text": "zafira",
+      "category": "Car"
+    },
+    {
+      "text": "mokka",
+      "category": "Car"
+    },
+    {
+      "text": "golf",
+      "category": "Car"
+    },
+    {
+      "text": "polo",
+      "category": "Car"
+    },
+    {
+      "text": "passat",
+      "category": "Car"
+    },
+    {
+      "text": "tiguan",
+      "category": "Car"
+    },
+    {
+      "text": "touareg",
+      "category": "Car"
+    },
+    {
+      "text": "jetta",
+      "category": "Car"
+    },
+    {
+      "text": "beetle",
+      "category": "Car"
+    },
+    {
+      "text": "scirocco",
+      "category": "Car"
+    },
+    {
+      "text": "transporter",
+      "category": "Car"
+    },
+    {
+      "text": "caddy",
+      "category": "Car"
+    },
+    {
+      "text": "clio",
+      "category": "Car"
+    },
+    {
+      "text": "megane",
+      "category": "Car"
+    },
+    {
+      "text": "captur",
+      "category": "Car"
+    },
+    {
+      "text": "twingo",
+      "category": "Car"
+    },
+    {
+      "text": "laguna",
+      "category": "Car"
+    },
+    {
+      "text": "scenic",
+      "category": "Car"
+    },
+    {
+      "text": "kadett",
+      "category": "Car"
+    },
+    {
+      "text": "panda",
+      "category": "Car"
+    },
+    {
+      "text": "punto",
+      "category": "Car"
+    },
+    {
+      "text": "tipo",
+      "category": "Car"
+    },
+    {
+      "text": "civic",
+      "category": "Car"
+    },
+    {
+      "text": "accord",
+      "category": "Car"
+    },
+    {
+      "text": "jazz",
+      "category": "Car"
+    },
+    {
+      "text": "hr-v",
+      "category": "Car"
+    },
+    {
+      "text": "cr-v",
+      "category": "Car"
+    },
+    {
+      "text": "prius",
+      "category": "Car"
+    },
+    {
+      "text": "corolla",
+      "category": "Car"
+    },
+    {
+      "text": "yaris",
+      "category": "Car"
+    },
+    {
+      "text": "camry",
+      "category": "Car"
+    },
+    {
+      "text": "aygo",
+      "category": "Car"
+    },
+    {
+      "text": "rav4",
+      "category": "Car"
+    },
+    {
+      "text": "hilux",
+      "category": "Car"
+    },
+    {
+      "text": "avensis",
+      "category": "Car"
+    },
+    {
+      "text": "auris",
+      "category": "Car"
+    },
+    {
+      "text": "micra",
+      "category": "Car"
+    },
+    {
+      "text": "qashqai",
+      "category": "Car"
+    },
+    {
+      "text": "juke",
+      "category": "Car"
+    },
+    {
+      "text": "leaf",
+      "category": "Car"
+    },
+    {
+      "text": "almera",
+      "category": "Car"
+    },
+    {
+      "text": "primera",
+      "category": "Car"
+    },
+    {
+      "text": "swift",
+      "category": "Car"
+    },
+    {
+      "text": "vitara",
+      "category": "Car"
+    },
+    {
+      "text": "jimny",
+      "category": "Car"
+    },
+    {
+      "text": "ignis",
+      "category": "Car"
+    },
+    {
+      "text": "sx4",
+      "category": "Car"
+    },
+    {
+      "text": "impreza",
+      "category": "Car"
+    },
+    {
+      "text": "forester",
+      "category": "Car"
+    },
+    {
+      "text": "outback",
+      "category": "Car"
+    },
+    {
+      "text": "octavia",
+      "category": "Car"
+    },
+    {
+      "text": "fabia",
+      "category": "Car"
+    },
+    {
+      "text": "superb",
+      "category": "Car"
+    },
+    {
+      "text": "yeti",
+      "category": "Car"
+    },
+    {
+      "text": "kodiaq",
+      "category": "Car"
+    },
+    {
+      "text": "ibiza",
+      "category": "Car"
+    },
+    {
+      "text": "leon",
+      "category": "Car"
+    },
+    {
+      "text": "ateca",
+      "category": "Car"
+    },
+    {
+      "text": "arona",
+      "category": "Car"
+    },
+    {
+      "text": "cooper",
+      "category": "Car"
+    },
+    {
+      "text": "countryman",
+      "category": "Car"
+    },
+    {
+      "text": "clubman",
+      "category": "Car"
+    },
+    {
+      "text": "a3",
+      "category": "Car"
+    },
+    {
+      "text": "a4",
+      "category": "Car"
+    },
+    {
+      "text": "a6",
+      "category": "Car"
+    },
+    {
+      "text": "q3",
+      "category": "Car"
+    },
+    {
+      "text": "q5",
+      "category": "Car"
+    },
+    {
+      "text": "x5",
+      "category": "Car"
+    },
+    {
+      "text": "z4",
+      "category": "Car"
+    },
+    {
+      "text": "i3",
+      "category": "Car"
+    },
+    {
+      "text": "sprite",
+      "category": "Car"
+    },
+    {
+      "text": "cayenne",
+      "category": "Car"
+    },
+    {
+      "text": "macan",
+      "category": "Car"
+    },
+    {
+      "text": "boxster",
+      "category": "Car"
+    },
+    {
+      "text": "cayman",
+      "category": "Car"
+    },
+    {
+      "text": "carrera",
+      "category": "Car"
+    },
+    {
+      "text": "xc90",
+      "category": "Car"
+    },
+    {
+      "text": "xc60",
+      "category": "Car"
+    },
+    {
+      "text": "discovery",
+      "category": "Car"
+    },
+    {
+      "text": "defender",
+      "category": "Car"
+    },
+    {
+      "text": "evoque",
+      "category": "Car"
+    },
+    {
+      "text": "freelander",
+      "category": "Car"
+    },
+    {
+      "text": "e-pace",
+      "category": "Car"
+    },
+    {
+      "text": "f-pace",
+      "category": "Car"
+    },
+    {
+      "text": "xj",
+      "category": "Car"
+    },
+    {
+      "text": "xf",
+      "category": "Car"
+    },
+    {
+      "text": "xe",
+      "category": "Car"
+    },
+    {
+      "text": "e-type",
+      "category": "Car"
+    },
+    {
+      "text": "mx-5",
+      "category": "Car"
+    },
+    {
+      "text": "cx-5",
+      "category": "Car"
+    },
+    {
+      "text": "rx-8",
+      "category": "Car"
+    },
+    {
+      "text": "corvette",
+      "category": "Car"
+    },
+    {
+      "text": "camaro",
+      "category": "Car"
+    },
+    {
+      "text": "impala",
+      "category": "Car"
+    },
+    {
+      "text": "cherokee",
+      "category": "Car"
+    },
+    {
+      "text": "wrangler",
+      "category": "Car"
+    },
+    {
+      "text": "outlander",
+      "category": "Car"
+    },
+    {
+      "text": "lancer",
+      "category": "Car"
+    },
+    {
+      "text": "land cruiser",
+      "category": "Car"
+    },
+    {
+      "text": "c class",
+      "category": "Car"
+    },
+    {
+      "text": "e class",
+      "category": "Car"
+    },
+    {
+      "text": "a class",
+      "category": "Car"
+    },
+    {
+      "text": "s class",
+      "category": "Car"
+    },
+    {
+      "text": "3 series",
+      "category": "Car"
+    },
+    {
+      "text": "5 series",
+      "category": "Car"
+    },
+    {
+      "text": "model s",
+      "category": "Car"
+    },
+    {
+      "text": "model 3",
+      "category": "Car"
+    },
+    {
+      "text": "model x",
+      "category": "Car"
+    },
+    {
+      "text": "model y",
+      "category": "Car"
+    }
+  ]
+}
