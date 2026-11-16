@@ -18,11 +18,18 @@ public sealed class TemporaryCloudSyncDatabase : IAsyncDisposable
     private readonly ServiceProvider serviceProvider;
     private readonly IDirectoryInfo testFolder;
 
-    private TemporaryCloudSyncDatabase(ServiceProvider serviceProvider, IDirectoryInfo testFolder)
+    private readonly IFileInfo databaseFile;
+
+    private TemporaryCloudSyncDatabase(ServiceProvider serviceProvider, IDirectoryInfo testFolder, IFileInfo databaseFile)
     {
         this.serviceProvider = serviceProvider;
         this.testFolder = testFolder;
+        this.databaseFile = databaseFile;
     }
+
+    public IFileInfo DatabaseFile => databaseFile;
+
+    public IMigrationLockClearer LockClearer => serviceProvider.GetRequiredService<IMigrationLockClearer>();
 
     public IAccountStore AccountStore => serviceProvider.GetRequiredService<IAccountStore>();
 
@@ -66,6 +73,6 @@ public sealed class TemporaryCloudSyncDatabase : IAsyncDisposable
             .AddCloudSyncPersistence(_ => databaseFile)
             .BuildServiceProvider();
 
-        return new TemporaryCloudSyncDatabase(serviceProvider, testFolder);
+        return new TemporaryCloudSyncDatabase(serviceProvider, testFolder, databaseFile);
     }
 }
