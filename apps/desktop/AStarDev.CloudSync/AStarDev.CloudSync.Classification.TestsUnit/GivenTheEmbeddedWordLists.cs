@@ -96,7 +96,7 @@ public sealed class GivenTheEmbeddedWordLists
     {
         IFirstNameList lists = EmbeddedWordListsFactory.CreateDefault();
 
-        lists.Contains("jameses").ShouldBeTrue();
+        lists.Contains("johns").ShouldBeTrue();
     }
 
     [Theory]
@@ -128,7 +128,11 @@ public sealed class GivenTheEmbeddedWordLists
         using var stream = ClassificationAssembly.GetManifestResourceStream(resource)!;
         using var reader = new StreamReader(stream);
 
-        return [.. reader.ReadToEnd().Split('\n').Select(line => line.TrimEnd('\r'))];
+        List<string> lines = [];
+        while (reader.ReadLine() is { } line)
+            lines.Add(line);
+
+        return lines;
     }
 
     private static List<string> ReadEntries(string resource) => [.. ReadLines(resource).Where(line => !line.StartsWith('#'))];
