@@ -56,8 +56,8 @@ public sealed class FileAuditViewModel : LocalizedObservableObject
     /// <summary>Whether the failure message shows.</summary>
     public bool IsShowingError => Step is FileAuditStep.Failed;
 
-    /// <summary>Changes on every run, so the view builds a new progress bar for it (#1805).</summary>
-    public object RunIndicator { get; private set; } = new();
+    /// <summary>One item, replaced on every run, so the view builds a new progress bar for it (#1805). A content control would reuse its bar and only swap its data context.</summary>
+    public IReadOnlyList<object> RunIndicators { get; private set; } = [new object()];
 
     /// <summary>The group heading.</summary>
     public string HeadingText => Localization.GetLocal("Settings.Audit");
@@ -162,6 +162,8 @@ public sealed class FileAuditViewModel : LocalizedObservableObject
     {
         using var source = new CancellationTokenSource();
         running = source;
+        RunIndicators = [new object()];
+        OnPropertyChanged(nameof(RunIndicators));
         MoveTo(FileAuditStepFactory.CreateRunning());
         var audit = UiResumingTry.RunAsync(
             () => auditor.AuditAsync(accountId, source.Token),

@@ -250,12 +250,12 @@ public sealed class GivenAFileAuditViewModel
     {
         var viewModel = await ConfirmingAsync();
         await viewModel.ConfirmCommand.ExecuteAsync(null);
-        var first = viewModel.RunIndicator;
+        var first = viewModel.RunIndicators.Single();
         viewModel.AuditCommand.Execute(null);
 
         await viewModel.ConfirmCommand.ExecuteAsync(null);
 
-        viewModel.RunIndicator.ShouldNotBeSameAs(first);
+        viewModel.RunIndicators.Single().ShouldNotBeSameAs(first);
     }
 
     private sealed class SwitchableSource(SyncOverview initial) : ISyncOverviewSource
