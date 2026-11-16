@@ -1,0 +1,48 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:classification="using:AStarDev.CloudSync.Classification"
+             xmlns:vmClassification="using:AStarDev.CloudSync.ViewModels.Classification"
+             x:Class="AStarDev.CloudSync.Classification.ClassificationTabsContent"
+             x:DataType="vmClassification:ClassificationTabsViewModel"
+             VerticalContentAlignment="Stretch"
+             HorizontalContentAlignment="Stretch"
+             Foreground="{DynamicResource CloudSyncTextPrimaryBrush}">
+    <UserControl.Styles>
+        <Style Selector="Button.tab">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0,0,0,2" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="Padding" Value="12,6" />
+        </Style>
+        <Style Selector="Button.tab.selected">
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CloudSyncAccentBrush}" />
+        </Style>
+    </UserControl.Styles>
+    <Grid RowDefinitions="Auto,*"
+          HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch">
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="4" Margin="0,0,0,12">
+            <Button Name="TermsTab"
+                    Classes="tab"
+                    Classes.selected="{Binding IsTermsSelected}"
+                    Content="{Binding TermsTabText}"
+                    Command="{Binding ShowTermsCommand}"
+                    AutomationProperties.Name="{Binding TermsTabText}" />
+            <Button Name="SuggestionsTab"
+                    Classes="tab"
+                    Classes.selected="{Binding IsSuggestionsSelected}"
+                    Content="{Binding SuggestionsTabText}"
+                    Command="{Binding ShowSuggestionsCommand}"
+                    AutomationProperties.Name="{Binding SuggestionsTabText}" />
+        </StackPanel>
+
+        <Grid Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <classification:ClassificationTermListContent DataContext="{Binding Terms}"
+                                                          IsVisible="{Binding $parent[UserControl].((vmClassification:ClassificationTabsViewModel)DataContext).IsTermsSelected}" />
+            <classification:ClassificationSuggestionsContent DataContext="{Binding Suggestions}"
+                                                             IsVisible="{Binding $parent[UserControl].((vmClassification:ClassificationTabsViewModel)DataContext).IsSuggestionsSelected}" />
+        </Grid>
+    </Grid>
+</UserControl>
