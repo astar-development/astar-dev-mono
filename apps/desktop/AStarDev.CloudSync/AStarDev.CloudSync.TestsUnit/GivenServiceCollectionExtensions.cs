@@ -74,6 +74,7 @@ public class GivenServiceCollectionExtensions
         provider.GetRequiredService<ILogEntryReader>().ShouldBeOfType<LogEntryReader>();
         provider.GetRequiredService<ILogFileLocator>().ShouldBeOfType<CloudSyncLogFileLocator>();
         provider.GetRequiredService<LogViewerLauncher>().ShouldNotBeNull();
+        provider.GetRequiredService<UnhandledExceptionLogger>().ShouldNotBeNull();
         provider.GetRequiredService<ILogDiagnosticsClipboard>().ShouldBeOfType<AvaloniaLogDiagnosticsClipboard>();
     }
 

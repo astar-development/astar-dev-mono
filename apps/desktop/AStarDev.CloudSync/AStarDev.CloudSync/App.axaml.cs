@@ -38,6 +38,7 @@ public partial class App : Application, IDisposable
     {
         services = BuildServices();
         _ = services.GetRequiredService<TelemetryProviders>();
+        LogUnhandledExceptions(services.GetRequiredService<UnhandledExceptionLogger>());
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
@@ -75,6 +76,19 @@ public partial class App : Application, IDisposable
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private void LogUnhandledExceptions(UnhandledExceptionLogger unhandled)
+    {
+        AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+        {
+            if (e.ExceptionObject is Exception exception)
+                unhandled.Log(nameof(AppDomain), exception);
+
+            if (e.IsTerminating)
+                services?.Dispose();
+        };
+        TaskScheduler.UnobservedTaskException += (_, e) => unhandled.Log(nameof(TaskScheduler), e.Exception.GetBaseException());
     }
 
     private static void StartHiddenWhenAutostarted(Window window, string[]? arguments)
