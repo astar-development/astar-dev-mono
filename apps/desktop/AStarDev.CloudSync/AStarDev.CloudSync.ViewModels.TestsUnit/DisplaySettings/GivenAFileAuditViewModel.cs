@@ -245,6 +245,19 @@ public sealed class GivenAFileAuditViewModel
         viewModel.CanAudit.ShouldBeFalse();
     }
 
+    [Fact]
+    public async Task when_the_audit_runs_twice_then_each_run_has_its_own_indicator()
+    {
+        var viewModel = await ConfirmingAsync();
+        await viewModel.ConfirmCommand.ExecuteAsync(null);
+        var first = viewModel.RunIndicators.Single();
+        viewModel.AuditCommand.Execute(null);
+
+        await viewModel.ConfirmCommand.ExecuteAsync(null);
+
+        viewModel.RunIndicators.Single().ShouldNotBeSameAs(first);
+    }
+
     private sealed class SwitchableSource(SyncOverview initial) : ISyncOverviewSource
     {
         public SyncOverview Overview { get; set; } = initial;
