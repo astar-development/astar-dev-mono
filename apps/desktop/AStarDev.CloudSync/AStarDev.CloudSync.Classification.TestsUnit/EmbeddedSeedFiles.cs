@@ -5,9 +5,11 @@ namespace AStarDev.CloudSync.Classification.TestsUnit;
 
 public static class EmbeddedSeedFiles
 {
+    private static readonly string[] VocabularyFiles = ["colour", "clothing", "object", "car"];
+
     public static IReadOnlyList<SeedFileDto> ReadAll() => typeof(ClassificationSeed).Assembly
         .GetManifestResourceNames()
-        .Where(name => name.Contains(".Seed.", StringComparison.Ordinal) && name.EndsWith(".json", StringComparison.Ordinal))
+        .Where(name => VocabularyFiles.Any(file => name.EndsWith(".Seed." + file + ".json", StringComparison.Ordinal)))
         .Order(StringComparer.Ordinal)
         .Select(name => Read(typeof(ClassificationSeed).Assembly, name))
         .ToList();
