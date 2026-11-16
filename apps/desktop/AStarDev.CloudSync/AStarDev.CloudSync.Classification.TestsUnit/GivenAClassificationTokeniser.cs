@@ -11,6 +11,11 @@ public sealed class GivenAClassificationTokeniser
     [InlineData("Cars CAR car", new[] { "car" })]
     [InlineData("babies boxes dresses bus glass", new[] { "baby", "box", "dress", "bus", "glass" })]
     [InlineData("a b 123", new string[0])]
+    [InlineData("mp3 collection", new[] { "mp3", "collection" })]
+    [InlineData("4k photo", new[] { "4k", "photo" })]
+    [InlineData("Photo2023 trip", new[] { "photo", "trip" })]
+    [InlineData("2024beach", new[] { "beach" })]
+    [InlineData("mp3Collection", new[] { "mp3", "collection" })]
     [InlineData("", new string[0])]
     public void when_text_is_tokenised_then_the_expected_tokens_are_returned(string text, string[] expected) =>
         ClassificationTokeniser.Tokenise(text).ShouldBe(expected);
