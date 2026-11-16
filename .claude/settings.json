@@ -21,7 +21,7 @@
   },
   "enabledPlugins": {
     "csharp-lsp@claude-plugins-official": true,
-    "serena@anthropic-plugin-directory": true
+    "serena@anthropic-plugin-directory": false
   },
   "hooks": {
     "Notification": [
