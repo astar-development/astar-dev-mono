@@ -56,6 +56,9 @@ public sealed class FileAuditViewModel : LocalizedObservableObject
     /// <summary>Whether the failure message shows.</summary>
     public bool IsShowingError => Step is FileAuditStep.Failed;
 
+    /// <summary>Changes on every run, so the view builds a new progress bar for it (#1805).</summary>
+    public object RunIndicator { get; private set; } = new();
+
     /// <summary>The group heading.</summary>
     public string HeadingText => Localization.GetLocal("Settings.Audit");
 

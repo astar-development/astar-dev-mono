@@ -68,4 +68,41 @@ public sealed class GivenTheFileAuditSection
         ShownTexts(window).ShouldContain("Local files: 1,234");
         ShownTexts(window).ShouldContain("Cloud files: 5,678");
     }
+
+    [AvaloniaFact]
+    public async Task when_the_audit_runs_twice_then_each_run_shows_a_new_progress_bar()
+    {
+        var (audit, window) = await ShownAsync();
+        audit.Accounts[0].SelectCommand.Execute(null);
+        audit.AuditCommand.Execute(null);
+        var first = await RunningBarAsync(audit, window);
+        audit.AuditCommand.Execute(null);
+
+        var second = await RunningBarAsync(audit, window);
+
+        second.ShouldNotBeSameAs(first);
+    }
+
+    [AvaloniaFact]
+    public async Task when_the_audit_is_not_running_then_no_progress_bar_shows()
+    {
+        var (audit, window) = await ShownAsync();
+        audit.Accounts[0].SelectCommand.Execute(null);
+
+        window.UpdateLayout();
+
+        window.GetVisualDescendants().OfType<ProgressBar>().Where(bar => bar.IsEffectivelyVisible).ShouldBeEmpty();
+    }
+
+    private async Task<ProgressBar> RunningBarAsync(FileAuditViewModel audit, Window window)
+    {
+        auditor.Gate = new TaskCompletionSource();
+        var running = audit.ConfirmCommand.ExecuteAsync(null);
+        window.UpdateLayout();
+        var bar = window.GetVisualDescendants().OfType<ProgressBar>().Where(candidate => candidate.IsEffectivelyVisible).ShouldHaveSingleItem();
+        auditor.Gate.SetResult();
+        await running;
+
+        return bar;
+    }
 }
