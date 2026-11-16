@@ -20,6 +20,30 @@ public sealed class GivenAFileClassificationResult
     }
 
     [Fact]
+    public void when_a_low_confidence_candidate_comes_first_then_the_high_confidence_one_for_the_same_term_wins()
+    {
+        var term = Term("china");
+        var low = ClassificationCandidateFactory.Create(term, ClassificationCategoryFactory.Create(term.CategoryId, "Place"), SignalKindFactory.CreateExtension(), ClassificationConfidenceFactory.CreateLow());
+        var high = Candidate(term, SignalKindFactory.CreateVocabulary());
+
+        var result = FileClassificationResultFactory.Create(Path, [low, high]);
+
+        result.Candidates.ShouldBe([high]);
+    }
+
+    [Fact]
+    public void when_a_term_is_ignored_then_the_vocabulary_drops_it()
+    {
+        var active = Term("red");
+        var ignored = ClassificationTermFactory.Create(TermIdFactory.Create(Guid.NewGuid()), "blue", CategoryIdFactory.Create(Guid.NewGuid()), TermSourceFactory.CreateUser(), TermStatusFactory.CreateIgnored())
+            .Match(term => term, () => throw new InvalidOperationException());
+
+        var vocabulary = ClassificationVocabularyFactory.Create([], [active, ignored]);
+
+        vocabulary.Terms.ShouldBe([active]);
+    }
+
+    [Fact]
     public void when_no_candidates_are_found_then_the_result_has_none()
     {
         var result = FileClassificationResultFactory.Create(Path, []);

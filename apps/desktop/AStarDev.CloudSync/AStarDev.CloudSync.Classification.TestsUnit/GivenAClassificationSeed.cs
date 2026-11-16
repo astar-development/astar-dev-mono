@@ -28,6 +28,14 @@ public sealed class GivenAClassificationSeed
         seed.Terms.Count.ShouldBe(1);
     }
 
+    [Fact]
+    public void when_a_category_repeats_ignoring_case_then_one_is_kept()
+    {
+        var seed = ClassificationSeedFactory.Create("1", [SeedCategoryFactory.Create("Colour"), SeedCategoryFactory.Create("colour")], []);
+
+        seed.Categories.Count.ShouldBe(1);
+    }
+
     [Theory]
     [InlineData("")]
     [InlineData("  ")]

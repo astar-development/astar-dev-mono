@@ -46,6 +46,15 @@ public sealed class GivenAClassificationTermFactory
         created.Status.ShouldBeOfType<TermStatus.Ignored>();
     }
 
+    [Fact]
+    public void when_the_term_is_written_as_text_then_the_words_are_redacted()
+    {
+        var created = Create("holiday in paris").ShouldBeOfType<Option<ClassificationTerm>.Some>().Value;
+
+        created.ToString().ShouldNotContain("paris");
+        SeedTermFactory.Create("holiday in paris", "Place").ShouldBeOfType<Option<SeedTerm>.Some>().Value.ToString().ShouldNotContain("paris");
+    }
+
     private static Option<ClassificationTerm> Create(string text) =>
         ClassificationTermFactory.Create(TermIdFactory.Create(Guid.NewGuid()), text, CategoryIdFactory.Create(Guid.NewGuid()), TermSourceFactory.CreateSeed(), TermStatusFactory.CreateActive());
 }
