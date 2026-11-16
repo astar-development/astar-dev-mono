@@ -186,6 +186,21 @@ public class GivenALayoutCView
         overflowing.ShouldBeEmpty();
     }
 
+    [AvaloniaFact]
+    public async Task when_the_command_search_box_has_focus_then_it_draws_no_border_around_the_typed_text()
+    {
+        var window = await CreateShownWindowAsync();
+        var searchBox = window.GetVisualDescendants().OfType<TextBox>().Single(textBox => textBox.Name == "CommandSearchBox");
+
+        searchBox.Focus();
+        searchBox.Text = "f";
+        Dispatcher.UIThread.RunJobs();
+
+        var border = searchBox.GetVisualDescendants().OfType<Border>().Single(element => element.Name == "PART_BorderElement");
+        searchBox.IsFocused.ShouldBeTrue();
+        border.BorderThickness.ShouldBe(default);
+    }
+
     private static List<Button> VisibleCardActions(Window window) =>
         [.. window.GetVisualDescendants().OfType<Button>().Where(button => button.Classes.Contains("secondary") && button.DataContext is LayoutCAccountCardViewModel && button.IsEffectivelyVisible)];
 
