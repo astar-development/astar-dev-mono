@@ -1,0 +1,148 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:classification="using:AStarDev.CloudSync.Classification"
+             xmlns:vmClassification="using:AStarDev.CloudSync.ViewModels.Classification"
+             x:Class="AStarDev.CloudSync.Classification.ClassificationSuggestionsContent"
+             x:DataType="vmClassification:ClassificationSuggestionsViewModel"
+             VerticalContentAlignment="Stretch"
+             HorizontalContentAlignment="Stretch"
+             Foreground="{DynamicResource CloudSyncTextPrimaryBrush}">
+    <Grid RowDefinitions="Auto,*"
+          HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch">
+        <StackPanel Grid.Row="0" Spacing="8" Margin="0,0,0,8">
+            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                <TextBlock Grid.Column="0"
+                           Text="{Binding TitleText}"
+                           FontSize="18"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center" />
+                <Button Grid.Column="1"
+                        Name="CancelScanButton"
+                        Content="{Binding CancelText}"
+                        Command="{Binding CancelCommand}"
+                        IsVisible="{Binding IsLoading}"
+                        AutomationProperties.Name="{Binding CancelText}" />
+                <Button Grid.Column="2"
+                        Name="RefreshButton"
+                        Content="{Binding RefreshText}"
+                        Command="{Binding RefreshCommand}"
+                        AutomationProperties.Name="{Binding RefreshText}" />
+            </Grid>
+            <TextBox Name="SuggestionFilterBox"
+                     Height="36"
+                     Text="{Binding FilterText}"
+                     PlaceholderText="{Binding FilterPlaceholderText}"
+                     AutomationProperties.Name="{Binding FilterPlaceholderText}" />
+
+            <Border IsVisible="{Binding IsPickerOpen}"
+                    Padding="12"
+                    CornerRadius="6"
+                    BorderThickness="1"
+                    BorderBrush="{DynamicResource CloudSyncBorderBrush}"
+                    Background="{DynamicResource CloudSyncPanelBrush}">
+                <StackPanel Spacing="8">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <TextBlock Grid.Column="0"
+                                   Text="{Binding PickerTitleText}"
+                                   FontWeight="SemiBold"
+                                   TextWrapping="Wrap"
+                                   VerticalAlignment="Center" />
+                        <Button Grid.Column="1"
+                                Name="ClosePickerButton"
+                                Content="{Binding ClosePickerText}"
+                                Command="{Binding ClosePickerCommand}"
+                                AutomationProperties.Name="{Binding ClosePickerText}" />
+                    </Grid>
+                    <TextBox Name="CategoryFilterBox"
+                             Height="36"
+                             Text="{Binding CategoryFilterText}"
+                             PlaceholderText="{Binding CategoryFilterPlaceholderText}"
+                             AutomationProperties.Name="{Binding CategoryFilterPlaceholderText}" />
+                    <TextBlock Classes="muted" Text="{Binding NoCategoriesText}" IsVisible="{Binding HasNoCategories}" />
+                    <TextBlock Classes="muted" Text="{Binding NoCategoryMatchesText}" IsVisible="{Binding HasNoCategoryMatches}" />
+                    <TextBlock Text="{Binding CategoriesFailedText}"
+                               IsVisible="{Binding IsCategoriesFailed}"
+                               TextWrapping="Wrap"
+                               Foreground="{DynamicResource CloudSyncWarnBrush}" />
+                    <ScrollViewer MaxHeight="160"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl ItemsSource="{Binding Categories}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <VirtualizingStackPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="classification:ClassificationCategory">
+                                    <Button Content="{Binding Name}"
+                                            HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Left"
+                                            Command="{Binding $parent[UserControl].((vmClassification:ClassificationSuggestionsViewModel)DataContext).ChooseCategoryCommand}"
+                                            CommandParameter="{Binding}"
+                                            AutomationProperties.Name="{Binding Name}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </StackPanel>
+            </Border>
+
+            <TextBlock Classes="muted" Text="{Binding LoadingText}" IsVisible="{Binding IsLoading}" />
+            <TextBlock Classes="muted" Text="{Binding CancelledText}" IsVisible="{Binding IsCancelled}" />
+            <TextBlock Classes="muted" Text="{Binding EmptyText}" IsVisible="{Binding IsEmpty}" />
+            <TextBlock Classes="muted" Text="{Binding NoMatchesText}" IsVisible="{Binding HasNoMatches}" />
+            <TextBlock Text="{Binding LoadFailedText}"
+                       IsVisible="{Binding IsFailed}"
+                       TextWrapping="Wrap"
+                       Foreground="{DynamicResource CloudSyncWarnBrush}" />
+
+            <Grid ColumnDefinitions="*,190,80,200" ColumnSpacing="8">
+                <TextBlock Grid.Column="0" FontWeight="SemiBold" Text="{Binding WordHeaderText}" />
+                <TextBlock Grid.Column="2" FontWeight="SemiBold" Text="{Binding FileCountHeaderText}" />
+            </Grid>
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1"
+                      Name="SuggestionScroll"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      MinHeight="0">
+            <ItemsControl ItemsSource="{Binding Rows}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vmClassification:SuggestionRowViewModel">
+                        <StackPanel Margin="0,0,0,6">
+                            <Grid ColumnDefinitions="*,190,80,200" ColumnSpacing="8">
+                                <TextBlock Grid.Column="0" Text="{Binding Word}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Classes="muted" Text="{Binding HintText}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="2" Text="{Binding FileCountText}" VerticalAlignment="Center" />
+                                <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8">
+                                    <Button Name="PromoteButton"
+                                            Content="{Binding PromoteText}"
+                                            Command="{Binding $parent[UserControl].((vmClassification:ClassificationSuggestionsViewModel)DataContext).PromoteCommand}"
+                                            CommandParameter="{Binding}"
+                                            AutomationProperties.Name="{Binding PromoteText}" />
+                                    <Button Name="IgnoreButton"
+                                            Content="{Binding IgnoreText}"
+                                            Command="{Binding $parent[UserControl].((vmClassification:ClassificationSuggestionsViewModel)DataContext).IgnoreCommand}"
+                                            CommandParameter="{Binding}"
+                                            AutomationProperties.Name="{Binding IgnoreText}" />
+                                </StackPanel>
+                            </Grid>
+                            <TextBlock Text="{Binding ErrorText}"
+                                       IsVisible="{Binding HasError}"
+                                       TextWrapping="Wrap"
+                                       Foreground="{DynamicResource CloudSyncWarnBrush}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

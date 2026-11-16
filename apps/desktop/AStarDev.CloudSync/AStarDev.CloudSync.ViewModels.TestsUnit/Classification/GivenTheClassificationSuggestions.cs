@@ -205,7 +205,7 @@ public class GivenTheClassificationSuggestions
 
         await list.ChooseCategoryCommand.ExecuteAsync(list.Categories[1]);
 
-        (service.Promoted, service.ScanCount, string.Join(',', list.Rows.Select(row => row.Word)), list.IsPickerOpen).ShouldBe(([("alice", people)], 1, "sunset,harbour", false));
+        (service.Promoted.Single() == ("alice", people), service.ScanCount, string.Join(',', list.Rows.Select(row => row.Word)), list.IsPickerOpen).ShouldBe((true, 1, "sunset,harbour", false));
     }
 
     [Fact]
@@ -289,7 +289,7 @@ public class GivenTheClassificationSuggestions
         var title = (list.PickerAction, list.PickerTitleText);
         await list.ChooseCategoryCommand.ExecuteAsync(list.Categories[0]);
 
-        (title, service.Ignored, service.Promoted.Count, service.ScanCount, string.Join(',', list.Rows.Select(row => row.Word)), raised).ShouldBe(((SuggestionActionFactory.CreateIgnore(), "Choose a category for the ignored word \"sunset\""), [("sunset", colours)], 0, 1, "alice,harbour", 1));
+        (title, service.Ignored.Single() == ("sunset", colours), service.Promoted.Count, service.ScanCount, string.Join(',', list.Rows.Select(row => row.Word)), raised).ShouldBe(((SuggestionActionFactory.CreateIgnore(), "Choose a category for the ignored word \"sunset\""), true, 0, 1, "alice,harbour", 1));
     }
 
     [Fact]
