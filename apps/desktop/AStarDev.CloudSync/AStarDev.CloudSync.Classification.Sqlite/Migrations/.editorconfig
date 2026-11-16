@@ -1,0 +1,3 @@
+# EF Core generates these migrations; CA1861 fires on its constant column arrays.
+[*.cs]
+dotnet_diagnostic.CA1861.severity = none

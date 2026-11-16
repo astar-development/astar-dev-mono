@@ -14,7 +14,8 @@ public sealed class GivenATermStore : MigratedDatabaseTests
 
         var stored = Ok(await Database.Terms.UpsertAsync(term, CancellationToken));
 
-        (stored, Ok(await Database.Terms.GetAllAsync(CancellationToken))).ShouldBe((term, [term]));
+        stored.ShouldBe(term);
+        Ok(await Database.Terms.GetAllAsync(CancellationToken)).ShouldBe([term]);
     }
 
     [Fact]
@@ -70,7 +71,8 @@ public sealed class GivenATermStore : MigratedDatabaseTests
 
         var failure = Failed(await Database.Terms.UpsertAsync(term, CancellationToken));
 
-        (failure, Ok(await Database.Terms.GetAllAsync(CancellationToken))).ShouldBe((ClassificationFailureFactory.CreateNotFound(), []));
+        failure.ShouldBe(ClassificationFailureFactory.CreateNotFound());
+        Ok(await Database.Terms.GetAllAsync(CancellationToken)).ShouldBeEmpty();
     }
 
     [Fact]

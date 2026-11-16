@@ -19,7 +19,8 @@ public sealed class GivenACategoryStore : MigratedDatabaseTests
 
         var stored = Ok(await Database.Categories.UpsertAsync(category, CancellationToken));
 
-        (stored, Ok(await Database.Categories.GetAllAsync(CancellationToken))).ShouldBe((category, [category]));
+        stored.ShouldBe(category);
+        Ok(await Database.Categories.GetAllAsync(CancellationToken)).ShouldBe([category]);
     }
 
     [Fact]

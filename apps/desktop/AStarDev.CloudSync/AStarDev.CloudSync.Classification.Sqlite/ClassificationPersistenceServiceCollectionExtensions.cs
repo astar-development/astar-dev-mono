@@ -1,22 +1,40 @@
 using System.IO.Abstractions;
 using AStarDev.CloudSync.Accounts;
+using AStarDev.FunctionalParadigm;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync.Classification.Sqlite;
 
 /// <summary>Registers the SQLite classification module.</summary>
 public static class ClassificationPersistenceServiceCollectionExtensions
 {
-    /// <summary>Registers the classification tables in the same SQLite file as the accounts and sync tables, their migration, the <see cref="ITermStore"/>, <see cref="ICategoryStore"/>, <see cref="IFileClassificationStore"/>, <see cref="ISeedStateStore"/> and <see cref="IClassifiableFileSource"/>. The migration is added to the registered <see cref="ICloudSyncDatabase"/>, which runs it after the migrations registered before, so register the accounts and sync persistence first.</summary>
+    /// <summary>Registers the classification tables in the same SQLite file as the accounts and sync tables, their migration, the <see cref="ITermStore"/>, <see cref="ICategoryStore"/>, <see cref="IFileClassificationStore"/>, <see cref="ISeedStateStore"/> and <see cref="IClassifiableFileSource"/>. The classification migration is added to the registered <see cref="ICloudSyncDatabase"/>, which runs it after the migrations registered before, so register the accounts and sync persistence first. The file source needs the <see cref="IAccountStore"/> and the <see cref="Sync.ISyncBaselineReader"/>.</summary>
     /// <param name="services">The service collection to register the module with.</param>
     /// <param name="databaseFile">Resolves the SQLite database file; it must be the file the accounts persistence uses.</param>
     /// <returns>The <paramref name="services" /> collection to allow further chaining.</returns>
-    public static IServiceCollection AddClassificationPersistence(this IServiceCollection services, Func<IServiceProvider, IFileInfo> databaseFile) =>
-        services
-            .AddSingleton<ICloudSyncDatabase, ClassificationDatabase>()
+    public static IServiceCollection AddClassificationPersistence(this IServiceCollection services, Func<IServiceProvider, IFileInfo> databaseFile)
+    {
+        var previous = services.LastOrDefault(descriptor => descriptor.ServiceType == typeof(ICloudSyncDatabase));
+        if (previous is not null)
+            _ = services.Remove(previous);
+
+        return services
+            .AddDbContextFactory<ClassificationDbContext>((provider, options) => options.UseSqlite(new SqliteConnectionStringBuilder { DataSource = databaseFile(provider).FullName }.ToString(), sqlite => sqlite.MigrationsHistoryTable(ClassificationDbContext.MigrationsHistoryTable)))
+            .AddSingleton<ICloudSyncDatabase>(provider => new ClassificationDatabase(CreatePrevious(provider, previous), provider.GetRequiredService<IDbContextFactory<ClassificationDbContext>>(), provider.GetRequiredService<ILogger<ClassificationDatabase>>()))
             .AddSingleton<ITermStore, SqliteTermStore>()
             .AddSingleton<ICategoryStore, SqliteCategoryStore>()
             .AddSingleton<IFileClassificationStore, SqliteFileClassificationStore>()
             .AddSingleton<ISeedStateStore, SqliteSeedStateStore>()
             .AddSingleton<IClassifiableFileSource, SqliteClassifiableFileSource>();
+    }
+
+    private static Option<ICloudSyncDatabase> CreatePrevious(IServiceProvider provider, ServiceDescriptor? descriptor) =>
+        descriptor is null
+            ? Option.None<ICloudSyncDatabase>()
+            : Option.Some(descriptor.ImplementationInstance as ICloudSyncDatabase
+                ?? descriptor.ImplementationFactory?.Invoke(provider) as ICloudSyncDatabase
+                ?? (ICloudSyncDatabase)ActivatorUtilities.CreateInstance(provider, descriptor.ImplementationType!));
 }

@@ -110,7 +110,8 @@ public sealed class GivenAFileClassificationStore : MigratedDatabaseTests
 
         var failure = Failed(await Database.Links.ReplaceAutoLinksAsync(account, Path("a.jpg"), [TermIdFactory.Create(Guid.NewGuid())], CancellationToken));
 
-        (failure, await TermsOfAsync("a.jpg")).ShouldBe((ClassificationFailureFactory.CreateUnavailable(), [red]));
+        failure.ShouldBe(ClassificationFailureFactory.CreateUnavailable());
+        (await TermsOfAsync("a.jpg")).ShouldBe([red]);
     }
 
     [Fact]
@@ -155,7 +156,9 @@ public sealed class GivenAFileClassificationStore : MigratedDatabaseTests
 
         _ = Ok(await Database.Links.ReplaceAutoLinksAsync(updates, CancellationToken));
 
-        (await TermsOfAsync("a.jpg"), await TermsOfAsync("b.jpg"), await TermsOfAsync("c.jpg")).ShouldBe(([red], [car], []));
+        (await TermsOfAsync("a.jpg")).ShouldBe([red]);
+        (await TermsOfAsync("b.jpg")).ShouldBe([car]);
+        (await TermsOfAsync("c.jpg")).ShouldBeEmpty();
     }
 
     [Fact]
@@ -167,7 +170,8 @@ public sealed class GivenAFileClassificationStore : MigratedDatabaseTests
 
         var failure = Failed(await Database.Links.ReplaceAutoLinksAsync(updates, CancellationToken));
 
-        (failure, await TermsOfAsync("a.jpg")).ShouldBe((ClassificationFailureFactory.CreateUnavailable(), [red]));
+        failure.ShouldBe(ClassificationFailureFactory.CreateUnavailable());
+        (await TermsOfAsync("a.jpg")).ShouldBe([red]);
     }
 
     [Fact]
@@ -194,7 +198,8 @@ public sealed class GivenAFileClassificationStore : MigratedDatabaseTests
 
         _ = Ok(await Database.Links.RemoveAsync(account, Path("A.JPG"), CancellationToken));
 
-        (await TermsOfAsync("a.jpg"), await TermsOfAsync("b.jpg")).ShouldBe(([], [red]));
+        (await TermsOfAsync("a.jpg")).ShouldBeEmpty();
+        (await TermsOfAsync("b.jpg")).ShouldBe([red]);
     }
 
     [Fact]
