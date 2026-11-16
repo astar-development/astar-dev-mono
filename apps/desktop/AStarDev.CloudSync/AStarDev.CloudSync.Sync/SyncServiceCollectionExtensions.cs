@@ -31,6 +31,7 @@ public static class SyncServiceCollectionExtensions
             .AddSingleton<ILocalFolderFilter, LocalFolderFilter>()
             .AddSingleton<ILocalFileFilter, LocalFileFilter>()
             .AddSingleton<LocalTreeWalker>()
+            .AddSingleton<CloudFileCounter>()
             .AddSingleton<IFileAuditor, FileAuditor>()
             .AddSingleton<LocalChangeComparer>()
             .AddSingleton<LocalDeletionFinder>()
