@@ -3,6 +3,12 @@ namespace AStarDev.CloudSync.Classification;
 /// <summary>Finds vocabulary terms in a token sequence, longest phrase first.</summary>
 public static class PhraseMatcher
 {
+    /// <summary>Matches against a prebuilt index; same rules as <see cref="Match(IReadOnlyList{string}, IReadOnlyList{ClassificationTerm})" />. Never throws.</summary>
+    /// <param name="tokens">Tokens from <see cref="ClassificationTokeniser" />.</param>
+    /// <param name="index">The index of the terms to look for.</param>
+    /// <returns>Every term sharing the matched phrase, in token order.</returns>
+    public static IReadOnlyList<ClassificationTerm> Match(IReadOnlyList<string> tokens, PhraseIndex index) => throw new NotImplementedException($"{tokens}{index}");
+
     /// <summary>Matches terms against the tokens; a token belongs to at most one match and the longest phrase at each position wins. Never throws.</summary>
     /// <param name="tokens">Tokens from <see cref="ClassificationTokeniser" />.</param>
     /// <param name="terms">The terms to look for; a term whose text has no tokens never matches.</param>

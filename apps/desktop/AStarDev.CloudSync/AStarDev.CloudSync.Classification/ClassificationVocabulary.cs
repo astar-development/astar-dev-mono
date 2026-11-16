@@ -12,6 +12,9 @@ public sealed record ClassificationVocabulary
     /// <summary>The categories.</summary>
     public IReadOnlyList<ClassificationCategory> Categories { get; }
 
+    /// <summary>The terms indexed by phrase, built once with the vocabulary.</summary>
+    public PhraseIndex PhraseIndex => PhraseIndexFactory.Create(Terms);
+
     /// <summary>The terms.</summary>
     public IReadOnlyList<ClassificationTerm> Terms { get; }
 }
