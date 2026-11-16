@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync.Autostart;
 
-/// <summary>Registers the app to start at login with one file under the user's home folder (#1410). The file is the setting: it exists or it does not. A platform supplies where the file lives and what it holds.</summary>
+/// <summary>Registers the app to start at login with one file under the user's home folder (#1410). The file is the setting: it exists or it does not.  Reading the state rewrites an existing entry that holds a different program path (#1787). A platform supplies where the file lives and what it holds.</summary>
 /// <param name="fileSystem">Reads and writes the file.</param>
 /// <param name="home">Supplies the user's home folder.</param>
 /// <param name="launcher">Supplies the program to start, or nothing for a build that is not installed.</param>
@@ -25,7 +25,7 @@ public abstract class FileAutostartRegistration(IFileSystem fileSystem, IHomeFol
     /// <inheritdoc />
     public Task<Result<AutostartState, ErrorResponse>> GetAsync(CancellationToken cancellationToken) =>
         Task.FromResult(launcher.LauncherPath.Match(
-            _ => EntryFile().Match(file => Succeeded(file.Exists ? AutostartStateFactory.CreateEnabled() : AutostartStateFactory.CreateDisabled()), NoHome),
+            path => EntryFile().Match(file => file.Exists ? Refresh(file, path) : Succeeded(AutostartStateFactory.CreateDisabled()), NoHome),
             () => Succeeded(NotInstalled())));
 
     /// <inheritdoc />
@@ -45,6 +45,10 @@ public abstract class FileAutostartRegistration(IFileSystem fileSystem, IHomeFol
     private static Result<AutostartState, ErrorResponse> NoHome() => Result.Failure<AutostartState, ErrorResponse>(new ErrorResponse("The home folder could not be found."));
 
     private Option<IFileInfo> EntryFile() => home.Folder.Map(folder => fileSystem.FileInfo.New(fileSystem.Path.Join([folder.FullName, .. EntryPath])));
+
+    private Result<AutostartState, ErrorResponse> Refresh(IFileInfo file, string launcherPath) =>
+        Try.Run(() => fileSystem.File.ReadAllText(file.FullName) == BuildEntry(launcherPath))
+            .Match(current => current ? Succeeded(AutostartStateFactory.CreateEnabled()) : Write(file, launcherPath), _ => Write(file, launcherPath));
 
     private Result<AutostartState, ErrorResponse> Write(IFileInfo file, string launcherPath) =>
         Try.Run(() =>
