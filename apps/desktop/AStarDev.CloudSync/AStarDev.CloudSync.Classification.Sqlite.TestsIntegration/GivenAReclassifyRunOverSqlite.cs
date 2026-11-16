@@ -26,7 +26,7 @@ public sealed class GivenAReclassifyRunOverSqlite : MigratedDatabaseTests
     private async Task<TermId> AddTermAsync(string text, CategoryId category, TermStatus? status = null) => Ok(await Database.Terms.UpsertAsync(Term(text, category, status), CancellationToken)).Id;
 
     private ClassificationReclassifier Reclassifier() =>
-        new(Database.Files, new FileClassifier([new ExtensionSignal(), new FolderSegmentSignal(), new DictionaryTermSignal()], Database.Terms, Database.Categories), Database.Links, ReclassifyOptionsFactory.Create(1, 1, TimeSpan.Zero), NullLogger<ClassificationReclassifier>.Instance);
+        new(Database.Files, new FileClassifier([new ExtensionSignal(), new FolderSegmentSignal(), new DictionaryTermSignal()], new ClassificationVocabularyProvider(Database.Terms, Database.Categories)), Database.Links, ReclassifyOptionsFactory.Create(1, 1, TimeSpan.Zero), NullLogger<ClassificationReclassifier>.Instance);
 
     private async Task<List<TermId>> TermsOfAsync(AccountId account, string path) => [.. Ok(await Database.Links.GetTermsForFileAsync(account, Path(path), CancellationToken)).OrderBy(term => term.Value)];
 
