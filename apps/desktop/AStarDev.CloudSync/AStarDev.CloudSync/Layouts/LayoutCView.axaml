@@ -193,7 +193,6 @@
                             VerticalAlignment="Center"
                             Content="{Binding NewSyncPairText}"
                             Command="{Binding NewSyncPairCommand}" />
-                    <displaySettings:DisplaySettingsButton VerticalAlignment="Center" />
                 </StackPanel>
             </Grid>
         </Border>
@@ -403,9 +402,10 @@
                 Background="{DynamicResource CloudSyncPanelBrush}"
                 BorderBrush="{DynamicResource CloudSyncBorderBrush}"
                 BorderThickness="0,1,0,0">
-            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12" VerticalAlignment="Center">
-                <TextBlock Grid.Column="0" Classes="caps" Text="{Binding AccountsText}" VerticalAlignment="Center" />
-                <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" MinHeight="0">
+            <Grid ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="12" VerticalAlignment="Center">
+                <displaySettings:DisplaySettingsButton Grid.Column="0" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Classes="caps" Text="{Binding AccountsText}" VerticalAlignment="Center" />
+                <ScrollViewer Grid.Column="2" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" MinHeight="0">
                     <ItemsControl ItemsSource="{Binding AccountCards}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -439,7 +439,7 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </ScrollViewer>
-                <Button Grid.Column="2" Classes="secondary" Content="{Binding AddAccountText}" Command="{Binding AddAccountCommand}" />
+                <Button Grid.Column="3" Classes="secondary" Content="{Binding AddAccountText}" Command="{Binding AddAccountCommand}" />
             </Grid>
         </Border>
     </Grid>
