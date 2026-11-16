@@ -141,21 +141,29 @@ public class GivenALayoutCView
     private static List<Button> FindChips(Window window) => [.. window.GetVisualDescendants().OfType<Button>().Where(button => button.Classes.Contains("chip"))];
 
     [AvaloniaFact]
-    public async Task when_shown_then_only_the_selected_account_card_shows_its_action_buttons()
+    public async Task when_no_account_is_selected_then_no_account_card_shows_action_buttons_and_selecting_one_shows_only_its_buttons()
     {
         var window = await CreateShownWindowAsync();
+        var first = window.GetVisualDescendants().OfType<Button>().First(button => button.Classes.Contains("account-select"));
+        var before = VisibleCardActions(window).Count;
+
+        first.Command!.Execute(null);
+        Dispatcher.UIThread.RunJobs();
 
         var visibleActions = VisibleCardActions(window);
-
+        before.ShouldBe(0);
         visibleActions.Count.ShouldBe(4);
-        visibleActions.ShouldAllBe(button => ((LayoutCAccountCardViewModel)button.DataContext!).IsSelected);
+        visibleActions.ShouldAllBe(button => ReferenceEquals(button.DataContext, first.DataContext));
     }
 
     [AvaloniaFact]
     public async Task when_another_account_card_is_selected_then_the_action_buttons_move_to_it()
     {
         var window = await CreateShownWindowAsync();
-        var other = window.GetVisualDescendants().OfType<Button>().First(button => button.Classes.Contains("account-select") && !((LayoutCAccountCardViewModel)button.DataContext!).IsSelected);
+        var buttons = window.GetVisualDescendants().OfType<Button>().Where(button => button.Classes.Contains("account-select")).ToList();
+        buttons[0].Command!.Execute(null);
+        Dispatcher.UIThread.RunJobs();
+        var other = buttons[1];
 
         other.Command!.Execute(null);
         Dispatcher.UIThread.RunJobs();
