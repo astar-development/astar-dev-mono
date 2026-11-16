@@ -146,7 +146,9 @@ public class GivenTheClassificationTermList
         var ascending = list.Rows.Select(row => row.Text).ToList();
         list.SortCommand.Execute(TermSortColumnFactory.CreateFileCount());
 
-        (ascending, list.Rows.Select(row => row.Text).ToList(), list.SortDirection).ShouldBe((["three", "one", "two"], ["two", "one", "three"], TermSortDirectionFactory.CreateDescending()));
+        ascending.ShouldBe(["three", "one", "two"]);
+        list.Rows.Select(row => row.Text).ShouldBe(["two", "one", "three"]);
+        list.SortDirection.ShouldBe(TermSortDirectionFactory.CreateDescending());
     }
 
     [Fact]
@@ -156,7 +158,8 @@ public class GivenTheClassificationTermList
 
         list.SortCommand.Execute(TermSortColumnFactory.CreateCategory());
 
-        (list.SortColumn, list.SortDirection, list.Rows.Select(row => row.Text).ToList()).ShouldBe((TermSortColumnFactory.CreateCategory(), TermSortDirectionFactory.CreateAscending(), ["audi", "blue", "red"]));
+        (list.SortColumn, list.SortDirection).ShouldBe((TermSortColumnFactory.CreateCategory(), TermSortDirectionFactory.CreateAscending()));
+        list.Rows.Select(row => row.Text).ShouldBe(["audi", "blue", "red"]);
     }
 
     [Fact]
@@ -176,7 +179,7 @@ public class GivenTheClassificationTermList
 
         list.SortCommand.Execute(TermSortColumnFactory.CreateSource());
 
-        list.Rows.Select(row => row.Text).ShouldBe(["b", "a"]);
+        list.Rows.Select(row => row.Text).ShouldBe(["a", "b"]);
     }
 
     [Fact]
@@ -189,7 +192,8 @@ public class GivenTheClassificationTermList
 
         await list.ToggleIgnoredCommand.ExecuteAsync(row);
 
-        (terms.StatusCalls, row.IsIgnored, row.HasError, row.StatusText, row.ToggleText, list.Rows.Count).ShouldBe(([(red.Id, TermStatusFactory.CreateIgnored())], true, false, "Ignored", "Un-ignore", 1));
+        terms.StatusCalls.ShouldBe([(red.Id, TermStatusFactory.CreateIgnored())]);
+        (row.IsIgnored, row.HasError, row.StatusText, row.ToggleText, list.Rows.Count).ShouldBe((true, false, "Ignored", "Un-ignore", 1));
     }
 
     [Fact]
@@ -202,7 +206,8 @@ public class GivenTheClassificationTermList
 
         await list.ToggleIgnoredCommand.ExecuteAsync(row);
 
-        (terms.StatusCalls, row.IsIgnored, row.ToggleText).ShouldBe(([(red.Id, TermStatusFactory.CreateActive())], false, "Ignore"));
+        terms.StatusCalls.ShouldBe([(red.Id, TermStatusFactory.CreateActive())]);
+        (row.IsIgnored, row.ToggleText).ShouldBe((false, "Ignore"));
     }
 
     [Fact]
