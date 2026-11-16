@@ -60,6 +60,31 @@ public class GivenTheReclassifyViewModel
     }
 
     [Fact]
+    public async Task when_disposed_while_running_then_the_run_is_cancelled_and_the_term_list_reloads()
+    {
+        using var installed = InlineSynchronizationContext.Install(context);
+        reclassifier.Gate = new TaskCompletionSource();
+        var viewModel = Create();
+        var running = viewModel.ReclassifyCommand.ExecuteAsync(null);
+        await reclassifier.Started.Task;
+
+        viewModel.Dispose();
+        await running;
+
+        (viewModel.State, terms.GetAllCount).ShouldBe((ReclassifyStateFactory.CreateCancelled(Counts(0, 0)), 1));
+    }
+
+    [Fact]
+    public void when_disposed_while_idle_then_nothing_happens()
+    {
+        var viewModel = Create();
+
+        viewModel.Dispose();
+
+        viewModel.State.ShouldBe(ReclassifyStateFactory.CreateIdle());
+    }
+
+    [Fact]
     public async Task when_cancelled_then_the_cancelled_state_is_shown_and_the_term_list_reloads()
     {
         using var installed = InlineSynchronizationContext.Install(context);

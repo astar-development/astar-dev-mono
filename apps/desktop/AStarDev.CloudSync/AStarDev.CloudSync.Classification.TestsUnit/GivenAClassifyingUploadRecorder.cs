@@ -164,4 +164,30 @@ public sealed class GivenAClassifyingUploadRecorder
         inner.Calls.ShouldBe(20);
         store.Replaced.Select(links => links.Path.Value).Order().ShouldBe(Enumerable.Range(0, 20).Select(index => $"d{index}/f.jpg").Order());
     }
+
+    [Fact]
+    public async Task when_the_classifier_throws_then_the_warning_carries_the_error_type_as_its_own_value_and_a_fixed_message()
+    {
+        var logger = new RecordingLogger<ClassifyingUploadRecorder>();
+        var classifier = new ClassifyHookClassifier { Throws = () => new InvalidOperationException("secret holiday.jpg term") };
+        var recorder = Build(new UploadHookInnerRecorder(), classifier, new ClassifyHookStore(), logger);
+
+        await Record(recorder, FileEntry("secret/holiday.jpg"), TestContext.Current.CancellationToken);
+
+        var values = logger.Events.ShouldHaveSingleItem().Values;
+        (values["ErrorType"], values["Message"]).ShouldBe(("System.InvalidOperationException", "An uploaded file could not be classified after the baseline write"));
+    }
+
+    [Fact]
+    public async Task when_the_store_returns_a_failure_then_the_warning_carries_the_failure_type_as_its_own_value_and_a_fixed_message()
+    {
+        var logger = new RecordingLogger<ClassifyingUploadRecorder>();
+        var recorder = Build(new UploadHookInnerRecorder(), new ClassifyHookClassifier(), new ClassifyHookStore { Fails = true }, logger);
+
+        await Record(recorder, FileEntry("a.jpg"), TestContext.Current.CancellationToken);
+
+        var values = logger.Events.ShouldHaveSingleItem().Values;
+        values["Message"].ShouldBe("The classification links were not updated after the upload was recorded");
+        values["ErrorType"].ShouldBeOfType<string>().ShouldNotBeEmpty();
+    }
 }

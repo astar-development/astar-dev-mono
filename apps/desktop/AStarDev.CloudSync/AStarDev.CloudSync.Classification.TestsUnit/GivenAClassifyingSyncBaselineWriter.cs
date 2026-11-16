@@ -234,4 +234,30 @@ public sealed class GivenAClassifyingSyncBaselineWriter
         inner.Upserts.ShouldBe(20);
         store.Replaced.Select(links => links.Path.Value).Order().ShouldBe(Enumerable.Range(0, 20).Select(index => $"d{index}/f.jpg").Order());
     }
+
+    [Fact]
+    public async Task when_the_classifier_throws_then_the_warning_carries_the_error_type_as_its_own_value_and_a_fixed_message()
+    {
+        var logger = new RecordingLogger<ClassifyingSyncBaselineWriter>();
+        var classifier = new ClassifyHookClassifier { Throws = () => new InvalidOperationException("secret holiday.jpg term") };
+        var writer = Build(new ClassifyHookInnerWriter(), classifier, new ClassifyHookStore(), logger);
+
+        await writer.UpsertAsync(Account, [FileEntry("secret/holiday.jpg")], TestContext.Current.CancellationToken);
+
+        var values = logger.Events.ShouldHaveSingleItem().Values;
+        (values["ErrorType"], values["Message"]).ShouldBe(("System.InvalidOperationException", "A file could not be classified after the baseline write"));
+    }
+
+    [Fact]
+    public async Task when_the_store_returns_a_failure_then_the_warning_carries_the_failure_type_as_its_own_value_and_a_fixed_message()
+    {
+        var logger = new RecordingLogger<ClassifyingSyncBaselineWriter>();
+        var writer = Build(new ClassifyHookInnerWriter(), new ClassifyHookClassifier(), new ClassifyHookStore { Fails = true }, logger);
+
+        await writer.UpsertAsync(Account, [FileEntry("a.jpg")], TestContext.Current.CancellationToken);
+
+        var values = logger.Events.ShouldHaveSingleItem().Values;
+        values["Message"].ShouldBe("The classification links were not updated after the baseline write");
+        values["ErrorType"].ShouldBeOfType<string>().ShouldNotBeEmpty();
+    }
 }
