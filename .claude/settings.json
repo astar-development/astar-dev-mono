@@ -20,7 +20,8 @@
     ]
   },
   "enabledPlugins": {
-    "context-mode@context-mode": true
+    "csharp-lsp@claude-plugins-official": true,
+    "serena@anthropic-plugin-directory": true
   },
   "hooks": {
     "Notification": [
@@ -78,6 +79,15 @@
             "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/block-mode-only-commit.sh"
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/block-dirty-pr.sh"
+          }
+        ]
       }
     ]
   },
@@ -85,9 +95,5 @@
     "type": "command",
     "command": "~/.claude/statusline.sh",
     "padding": 2
-  },
-  "enabledPlugins": {
-    "csharp-lsp@claude-plugins-official": true,
-    "serena@anthropic-plugin-directory": true
   }
 }
