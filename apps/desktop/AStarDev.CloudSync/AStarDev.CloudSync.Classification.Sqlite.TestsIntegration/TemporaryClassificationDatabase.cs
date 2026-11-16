@@ -42,6 +42,10 @@ public sealed class TemporaryClassificationDatabase : IAsyncDisposable
 
     public ISyncBaselineWriter BaselineWriter => serviceProvider.GetRequiredService<ISyncBaselineWriter>();
 
+    public IUploadRecorder UploadRecorder => serviceProvider.GetRequiredService<IUploadRecorder>();
+
+    public ISyncBaselineReader BaselineReader => serviceProvider.GetRequiredService<ISyncBaselineReader>();
+
     public IAccountStore AccountStore => serviceProvider.GetRequiredService<IAccountStore>();
 
     public ICloudSyncDatabase Database => serviceProvider.GetRequiredService<ICloudSyncDatabase>();
