@@ -10,5 +10,5 @@ namespace AStarDev.CloudSync.Autostart;
 internal sealed class VelopackAutostartLauncher(IVelopackUpdateService updates) : IAutostartLauncher
 {
     /// <inheritdoc />
-    public Option<string> LauncherPath => updates.IsInstalled && Environment.ProcessPath is { Length: > 0 } path ? Option.Some(path) : Option.None<string>();
+    public Option<string> LauncherPath => AutostartLauncherPath.Resolve(updates.IsInstalled, Environment.ProcessPath, Environment.GetEnvironmentVariable("APPIMAGE"));
 }

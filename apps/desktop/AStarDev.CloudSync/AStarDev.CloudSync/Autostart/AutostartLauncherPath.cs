@@ -9,6 +9,14 @@ public static class AutostartLauncherPath
     /// <param name="isInstalled">Whether this copy was installed by Velopack.</param>
     /// <param name="processPath">The path of the running process.</param>
     /// <param name="appImagePath">The value of the <c>APPIMAGE</c> environment variable, if set.</param>
-    public static Option<string> Resolve(bool isInstalled, string? processPath, string? appImagePath) =>
-        throw new NotImplementedException($"{isInstalled} {processPath} {appImagePath}");
+    public static Option<string> Resolve(bool isInstalled, string? processPath, string? appImagePath)
+    {
+        if (!isInstalled)
+            return Option.None<string>();
+
+        if (!string.IsNullOrWhiteSpace(appImagePath))
+            return Option.Some(appImagePath);
+
+        return processPath is { Length: > 0 } ? Option.Some(processPath) : Option.None<string>();
+    }
 }
