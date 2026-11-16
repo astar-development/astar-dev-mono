@@ -1,0 +1,38 @@
+{
+  "version": "1",
+  "categories": [
+    {
+      "name": "Document"
+    },
+    {
+      "name": "Pdf"
+    },
+    {
+      "name": "Spreadsheet"
+    },
+    {
+      "name": "Presentation"
+    },
+    {
+      "name": "Photo"
+    },
+    {
+      "name": "Video"
+    },
+    {
+      "name": "Audio"
+    },
+    {
+      "name": "Archive"
+    },
+    {
+      "name": "Code"
+    },
+    {
+      "name": "Installer"
+    },
+    {
+      "name": "Unclassified"
+    }
+  ]
+}

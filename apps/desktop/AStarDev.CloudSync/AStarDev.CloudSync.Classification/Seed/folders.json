@@ -1,0 +1,140 @@
+{
+  "version": "1",
+  "terms": [
+    {
+      "text": "documents",
+      "category": "Document",
+      "kind": "folder"
+    },
+    {
+      "text": "docs",
+      "category": "Document",
+      "kind": "folder"
+    },
+    {
+      "text": "papers",
+      "category": "Document",
+      "kind": "folder"
+    },
+    {
+      "text": "pdfs",
+      "category": "Pdf",
+      "kind": "folder"
+    },
+    {
+      "text": "spreadsheets",
+      "category": "Spreadsheet",
+      "kind": "folder"
+    },
+    {
+      "text": "presentations",
+      "category": "Presentation",
+      "kind": "folder"
+    },
+    {
+      "text": "slides",
+      "category": "Presentation",
+      "kind": "folder"
+    },
+    {
+      "text": "pictures",
+      "category": "Photo",
+      "kind": "folder"
+    },
+    {
+      "text": "photos",
+      "category": "Photo",
+      "kind": "folder"
+    },
+    {
+      "text": "images",
+      "category": "Photo",
+      "kind": "folder"
+    },
+    {
+      "text": "screenshots",
+      "category": "Photo",
+      "kind": "folder"
+    },
+    {
+      "text": "videos",
+      "category": "Video",
+      "kind": "folder"
+    },
+    {
+      "text": "movies",
+      "category": "Video",
+      "kind": "folder"
+    },
+    {
+      "text": "music",
+      "category": "Audio",
+      "kind": "folder"
+    },
+    {
+      "text": "audio",
+      "category": "Audio",
+      "kind": "folder"
+    },
+    {
+      "text": "songs",
+      "category": "Audio",
+      "kind": "folder"
+    },
+    {
+      "text": "podcasts",
+      "category": "Audio",
+      "kind": "folder"
+    },
+    {
+      "text": "archives",
+      "category": "Archive",
+      "kind": "folder"
+    },
+    {
+      "text": "backups",
+      "category": "Archive",
+      "kind": "folder"
+    },
+    {
+      "text": "code",
+      "category": "Code",
+      "kind": "folder"
+    },
+    {
+      "text": "source",
+      "category": "Code",
+      "kind": "folder"
+    },
+    {
+      "text": "src",
+      "category": "Code",
+      "kind": "folder"
+    },
+    {
+      "text": "scripts",
+      "category": "Code",
+      "kind": "folder"
+    },
+    {
+      "text": "installers",
+      "category": "Installer",
+      "kind": "folder"
+    },
+    {
+      "text": "setup",
+      "category": "Installer",
+      "kind": "folder"
+    },
+    {
+      "text": "software",
+      "category": "Installer",
+      "kind": "folder"
+    },
+    {
+      "text": "downloads",
+      "category": "Unclassified",
+      "kind": "folder"
+    }
+  ]
+}

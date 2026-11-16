@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "categories": [ { "name": "Photo" } ],
+  "terms": [
+    { "text": "JPG", "category": "Photo", "kind": "extension" },
+    { "text": "pictures", "category": "Photo", "kind": "folder" },
+    { "text": "holiday", "category": "Photo" }
+  ]
+}
