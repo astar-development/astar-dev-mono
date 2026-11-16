@@ -25,6 +25,7 @@ public sealed class DisplaySettingsViewModel : LocalizedObservableObject
         TrashRetention = sections.TrashRetention;
         Autostart = sections.Autostart;
         LogLevels = sections.LogLevels;
+        FileAudit = sections.FileAudit;
         this.store = store;
         this.themeApplier = themeApplier;
         preferences = store.Load();
@@ -70,6 +71,9 @@ public sealed class DisplaySettingsViewModel : LocalizedObservableObject
 
     /// <summary>The per-account verbose logging setting.</summary>
     public AccountLogLevelsViewModel LogLevels { get; }
+
+    /// <summary>The per-account file audit.</summary>
+    public FileAuditViewModel FileAudit { get; }
 
     /// <summary>The settings panel title and settings button name.</summary>
     public string Title => Localization.GetLocal("Settings.Title");
