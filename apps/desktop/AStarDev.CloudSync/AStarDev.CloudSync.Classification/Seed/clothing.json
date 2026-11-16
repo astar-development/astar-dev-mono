@@ -1,0 +1,391 @@
+{
+  "version": "1",
+  "source": "Hand-written list of common clothing items in British English for this project; no third-party data",
+  "categories": [
+    {
+      "name": "Clothing"
+    }
+  ],
+  "terms": [
+    {
+      "text": "shirt",
+      "category": "Clothing"
+    },
+    {
+      "text": "t-shirt",
+      "category": "Clothing"
+    },
+    {
+      "text": "blouse",
+      "category": "Clothing"
+    },
+    {
+      "text": "jumper",
+      "category": "Clothing"
+    },
+    {
+      "text": "sweater",
+      "category": "Clothing"
+    },
+    {
+      "text": "cardigan",
+      "category": "Clothing"
+    },
+    {
+      "text": "hoodie",
+      "category": "Clothing"
+    },
+    {
+      "text": "sweatshirt",
+      "category": "Clothing"
+    },
+    {
+      "text": "jacket",
+      "category": "Clothing"
+    },
+    {
+      "text": "coat",
+      "category": "Clothing"
+    },
+    {
+      "text": "overcoat",
+      "category": "Clothing"
+    },
+    {
+      "text": "raincoat",
+      "category": "Clothing"
+    },
+    {
+      "text": "anorak",
+      "category": "Clothing"
+    },
+    {
+      "text": "parka",
+      "category": "Clothing"
+    },
+    {
+      "text": "blazer",
+      "category": "Clothing"
+    },
+    {
+      "text": "waistcoat",
+      "category": "Clothing"
+    },
+    {
+      "text": "vest",
+      "category": "Clothing"
+    },
+    {
+      "text": "trousers",
+      "category": "Clothing"
+    },
+    {
+      "text": "jeans",
+      "category": "Clothing"
+    },
+    {
+      "text": "chinos",
+      "category": "Clothing"
+    },
+    {
+      "text": "shorts",
+      "category": "Clothing"
+    },
+    {
+      "text": "leggings",
+      "category": "Clothing"
+    },
+    {
+      "text": "joggers",
+      "category": "Clothing"
+    },
+    {
+      "text": "tracksuit",
+      "category": "Clothing"
+    },
+    {
+      "text": "skirt",
+      "category": "Clothing"
+    },
+    {
+      "text": "dress",
+      "category": "Clothing"
+    },
+    {
+      "text": "gown",
+      "category": "Clothing"
+    },
+    {
+      "text": "suit",
+      "category": "Clothing"
+    },
+    {
+      "text": "tuxedo",
+      "category": "Clothing"
+    },
+    {
+      "text": "dungarees",
+      "category": "Clothing"
+    },
+    {
+      "text": "jumpsuit",
+      "category": "Clothing"
+    },
+    {
+      "text": "romper",
+      "category": "Clothing"
+    },
+    {
+      "text": "pyjamas",
+      "category": "Clothing"
+    },
+    {
+      "text": "nightie",
+      "category": "Clothing"
+    },
+    {
+      "text": "bathrobe",
+      "category": "Clothing"
+    },
+    {
+      "text": "underwear",
+      "category": "Clothing"
+    },
+    {
+      "text": "boxers",
+      "category": "Clothing"
+    },
+    {
+      "text": "briefs",
+      "category": "Clothing"
+    },
+    {
+      "text": "knickers",
+      "category": "Clothing"
+    },
+    {
+      "text": "bra",
+      "category": "Clothing"
+    },
+    {
+      "text": "socks",
+      "category": "Clothing"
+    },
+    {
+      "text": "tights",
+      "category": "Clothing"
+    },
+    {
+      "text": "stockings",
+      "category": "Clothing"
+    },
+    {
+      "text": "scarf",
+      "category": "Clothing"
+    },
+    {
+      "text": "gloves",
+      "category": "Clothing"
+    },
+    {
+      "text": "mittens",
+      "category": "Clothing"
+    },
+    {
+      "text": "hat",
+      "category": "Clothing"
+    },
+    {
+      "text": "cap",
+      "category": "Clothing"
+    },
+    {
+      "text": "beanie",
+      "category": "Clothing"
+    },
+    {
+      "text": "beret",
+      "category": "Clothing"
+    },
+    {
+      "text": "bonnet",
+      "category": "Clothing"
+    },
+    {
+      "text": "tie",
+      "category": "Clothing"
+    },
+    {
+      "text": "cravat",
+      "category": "Clothing"
+    },
+    {
+      "text": "belt",
+      "category": "Clothing"
+    },
+    {
+      "text": "braces",
+      "category": "Clothing"
+    },
+    {
+      "text": "shoes",
+      "category": "Clothing"
+    },
+    {
+      "text": "boots",
+      "category": "Clothing"
+    },
+    {
+      "text": "trainers",
+      "category": "Clothing"
+    },
+    {
+      "text": "sneakers",
+      "category": "Clothing"
+    },
+    {
+      "text": "sandals",
+      "category": "Clothing"
+    },
+    {
+      "text": "slippers",
+      "category": "Clothing"
+    },
+    {
+      "text": "heels",
+      "category": "Clothing"
+    },
+    {
+      "text": "loafers",
+      "category": "Clothing"
+    },
+    {
+      "text": "wellies",
+      "category": "Clothing"
+    },
+    {
+      "text": "swimsuit",
+      "category": "Clothing"
+    },
+    {
+      "text": "bikini",
+      "category": "Clothing"
+    },
+    {
+      "text": "trunks",
+      "category": "Clothing"
+    },
+    {
+      "text": "uniform",
+      "category": "Clothing"
+    },
+    {
+      "text": "apron",
+      "category": "Clothing"
+    },
+    {
+      "text": "kilt",
+      "category": "Clothing"
+    },
+    {
+      "text": "sari",
+      "category": "Clothing"
+    },
+    {
+      "text": "kimono",
+      "category": "Clothing"
+    },
+    {
+      "text": "poncho",
+      "category": "Clothing"
+    },
+    {
+      "text": "cape",
+      "category": "Clothing"
+    },
+    {
+      "text": "cloak",
+      "category": "Clothing"
+    },
+    {
+      "text": "shawl",
+      "category": "Clothing"
+    },
+    {
+      "text": "bodysuit",
+      "category": "Clothing"
+    },
+    {
+      "text": "leotard",
+      "category": "Clothing"
+    },
+    {
+      "text": "onesie",
+      "category": "Clothing"
+    },
+    {
+      "text": "fleece",
+      "category": "Clothing"
+    },
+    {
+      "text": "gilet",
+      "category": "Clothing"
+    },
+    {
+      "text": "polo shirt",
+      "category": "Clothing"
+    },
+    {
+      "text": "tank top",
+      "category": "Clothing"
+    },
+    {
+      "text": "dressing gown",
+      "category": "Clothing"
+    },
+    {
+      "text": "flip flops",
+      "category": "Clothing"
+    },
+    {
+      "text": "bow tie",
+      "category": "Clothing"
+    },
+    {
+      "text": "duffle coat",
+      "category": "Clothing"
+    },
+    {
+      "text": "trench coat",
+      "category": "Clothing"
+    },
+    {
+      "text": "bomber jacket",
+      "category": "Clothing"
+    },
+    {
+      "text": "denim jacket",
+      "category": "Clothing"
+    },
+    {
+      "text": "leather jacket",
+      "category": "Clothing"
+    },
+    {
+      "text": "hiking boots",
+      "category": "Clothing"
+    },
+    {
+      "text": "school uniform",
+      "category": "Clothing"
+    },
+    {
+      "text": "wedding dress",
+      "category": "Clothing"
+    },
+    {
+      "text": "evening gown",
+      "category": "Clothing"
+    }
+  ]
+}

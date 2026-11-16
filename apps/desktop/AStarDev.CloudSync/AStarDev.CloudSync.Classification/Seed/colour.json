@@ -1,0 +1,815 @@
+{
+  "version": "1",
+  "source": "CSS Color Module Level 4 named colours (https://www.w3.org/TR/css-color-4/#named-colors) plus common multi-word X11 colour names (https://en.wikipedia.org/wiki/X11_color_names) and everyday colour words, written by hand for this project",
+  "categories": [
+    {
+      "name": "Colour"
+    }
+  ],
+  "terms": [
+    {
+      "text": "aliceblue",
+      "category": "Colour"
+    },
+    {
+      "text": "antiquewhite",
+      "category": "Colour"
+    },
+    {
+      "text": "aqua",
+      "category": "Colour"
+    },
+    {
+      "text": "aquamarine",
+      "category": "Colour"
+    },
+    {
+      "text": "azure",
+      "category": "Colour"
+    },
+    {
+      "text": "beige",
+      "category": "Colour"
+    },
+    {
+      "text": "bisque",
+      "category": "Colour"
+    },
+    {
+      "text": "black",
+      "category": "Colour"
+    },
+    {
+      "text": "blanchedalmond",
+      "category": "Colour"
+    },
+    {
+      "text": "blue",
+      "category": "Colour"
+    },
+    {
+      "text": "blueviolet",
+      "category": "Colour"
+    },
+    {
+      "text": "brown",
+      "category": "Colour"
+    },
+    {
+      "text": "burlywood",
+      "category": "Colour"
+    },
+    {
+      "text": "cadetblue",
+      "category": "Colour"
+    },
+    {
+      "text": "chartreuse",
+      "category": "Colour"
+    },
+    {
+      "text": "chocolate",
+      "category": "Colour"
+    },
+    {
+      "text": "coral",
+      "category": "Colour"
+    },
+    {
+      "text": "cornflowerblue",
+      "category": "Colour"
+    },
+    {
+      "text": "cornsilk",
+      "category": "Colour"
+    },
+    {
+      "text": "crimson",
+      "category": "Colour"
+    },
+    {
+      "text": "cyan",
+      "category": "Colour"
+    },
+    {
+      "text": "darkblue",
+      "category": "Colour"
+    },
+    {
+      "text": "darkcyan",
+      "category": "Colour"
+    },
+    {
+      "text": "darkgoldenrod",
+      "category": "Colour"
+    },
+    {
+      "text": "darkgray",
+      "category": "Colour"
+    },
+    {
+      "text": "darkgreen",
+      "category": "Colour"
+    },
+    {
+      "text": "darkgrey",
+      "category": "Colour"
+    },
+    {
+      "text": "darkkhaki",
+      "category": "Colour"
+    },
+    {
+      "text": "darkmagenta",
+      "category": "Colour"
+    },
+    {
+      "text": "darkolivegreen",
+      "category": "Colour"
+    },
+    {
+      "text": "darkorange",
+      "category": "Colour"
+    },
+    {
+      "text": "darkorchid",
+      "category": "Colour"
+    },
+    {
+      "text": "darkred",
+      "category": "Colour"
+    },
+    {
+      "text": "darksalmon",
+      "category": "Colour"
+    },
+    {
+      "text": "darkseagreen",
+      "category": "Colour"
+    },
+    {
+      "text": "darkslateblue",
+      "category": "Colour"
+    },
+    {
+      "text": "darkslategray",
+      "category": "Colour"
+    },
+    {
+      "text": "darkslategrey",
+      "category": "Colour"
+    },
+    {
+      "text": "darkturquoise",
+      "category": "Colour"
+    },
+    {
+      "text": "darkviolet",
+      "category": "Colour"
+    },
+    {
+      "text": "deeppink",
+      "category": "Colour"
+    },
+    {
+      "text": "deepskyblue",
+      "category": "Colour"
+    },
+    {
+      "text": "dimgray",
+      "category": "Colour"
+    },
+    {
+      "text": "dimgrey",
+      "category": "Colour"
+    },
+    {
+      "text": "dodgerblue",
+      "category": "Colour"
+    },
+    {
+      "text": "firebrick",
+      "category": "Colour"
+    },
+    {
+      "text": "floralwhite",
+      "category": "Colour"
+    },
+    {
+      "text": "forestgreen",
+      "category": "Colour"
+    },
+    {
+      "text": "fuchsia",
+      "category": "Colour"
+    },
+    {
+      "text": "gainsboro",
+      "category": "Colour"
+    },
+    {
+      "text": "ghostwhite",
+      "category": "Colour"
+    },
+    {
+      "text": "gold",
+      "category": "Colour"
+    },
+    {
+      "text": "goldenrod",
+      "category": "Colour"
+    },
+    {
+      "text": "gray",
+      "category": "Colour"
+    },
+    {
+      "text": "green",
+      "category": "Colour"
+    },
+    {
+      "text": "greenyellow",
+      "category": "Colour"
+    },
+    {
+      "text": "grey",
+      "category": "Colour"
+    },
+    {
+      "text": "honeydew",
+      "category": "Colour"
+    },
+    {
+      "text": "hotpink",
+      "category": "Colour"
+    },
+    {
+      "text": "indianred",
+      "category": "Colour"
+    },
+    {
+      "text": "indigo",
+      "category": "Colour"
+    },
+    {
+      "text": "ivory",
+      "category": "Colour"
+    },
+    {
+      "text": "khaki",
+      "category": "Colour"
+    },
+    {
+      "text": "lavender",
+      "category": "Colour"
+    },
+    {
+      "text": "lavenderblush",
+      "category": "Colour"
+    },
+    {
+      "text": "lawngreen",
+      "category": "Colour"
+    },
+    {
+      "text": "lemonchiffon",
+      "category": "Colour"
+    },
+    {
+      "text": "lightblue",
+      "category": "Colour"
+    },
+    {
+      "text": "lightcoral",
+      "category": "Colour"
+    },
+    {
+      "text": "lightcyan",
+      "category": "Colour"
+    },
+    {
+      "text": "lightgoldenrodyellow",
+      "category": "Colour"
+    },
+    {
+      "text": "lightgray",
+      "category": "Colour"
+    },
+    {
+      "text": "lightgreen",
+      "category": "Colour"
+    },
+    {
+      "text": "lightgrey",
+      "category": "Colour"
+    },
+    {
+      "text": "lightpink",
+      "category": "Colour"
+    },
+    {
+      "text": "lightsalmon",
+      "category": "Colour"
+    },
+    {
+      "text": "lightseagreen",
+      "category": "Colour"
+    },
+    {
+      "text": "lightskyblue",
+      "category": "Colour"
+    },
+    {
+      "text": "lightslategray",
+      "category": "Colour"
+    },
+    {
+      "text": "lightslategrey",
+      "category": "Colour"
+    },
+    {
+      "text": "lightsteelblue",
+      "category": "Colour"
+    },
+    {
+      "text": "lightyellow",
+      "category": "Colour"
+    },
+    {
+      "text": "lime",
+      "category": "Colour"
+    },
+    {
+      "text": "limegreen",
+      "category": "Colour"
+    },
+    {
+      "text": "linen",
+      "category": "Colour"
+    },
+    {
+      "text": "magenta",
+      "category": "Colour"
+    },
+    {
+      "text": "maroon",
+      "category": "Colour"
+    },
+    {
+      "text": "mediumaquamarine",
+      "category": "Colour"
+    },
+    {
+      "text": "mediumblue",
+      "category": "Colour"
+    },
+    {
+      "text": "mediumorchid",
+      "category": "Colour"
+    },
+    {
+      "text": "mediumpurple",
+      "category": "Colour"
+    },
+    {
+      "text": "mediumseagreen",
+      "category": "Colour"
+    },
+    {
+      "text": "mediumslateblue",
+      "category": "Colour"
+    },
+    {
+      "text": "mediumspringgreen",
+      "category": "Colour"
+    },
+    {
+      "text": "mediumturquoise",
+      "category": "Colour"
+    },
+    {
+      "text": "mediumvioletred",
+      "category": "Colour"
+    },
+    {
+      "text": "midnightblue",
+      "category": "Colour"
+    },
+    {
+      "text": "mintcream",
+      "category": "Colour"
+    },
+    {
+      "text": "mistyrose",
+      "category": "Colour"
+    },
+    {
+      "text": "moccasin",
+      "category": "Colour"
+    },
+    {
+      "text": "navajowhite",
+      "category": "Colour"
+    },
+    {
+      "text": "navy",
+      "category": "Colour"
+    },
+    {
+      "text": "oldlace",
+      "category": "Colour"
+    },
+    {
+      "text": "olive",
+      "category": "Colour"
+    },
+    {
+      "text": "olivedrab",
+      "category": "Colour"
+    },
+    {
+      "text": "orange",
+      "category": "Colour"
+    },
+    {
+      "text": "orangered",
+      "category": "Colour"
+    },
+    {
+      "text": "orchid",
+      "category": "Colour"
+    },
+    {
+      "text": "palegoldenrod",
+      "category": "Colour"
+    },
+    {
+      "text": "palegreen",
+      "category": "Colour"
+    },
+    {
+      "text": "paleturquoise",
+      "category": "Colour"
+    },
+    {
+      "text": "palevioletred",
+      "category": "Colour"
+    },
+    {
+      "text": "papayawhip",
+      "category": "Colour"
+    },
+    {
+      "text": "peachpuff",
+      "category": "Colour"
+    },
+    {
+      "text": "peru",
+      "category": "Colour"
+    },
+    {
+      "text": "pink",
+      "category": "Colour"
+    },
+    {
+      "text": "plum",
+      "category": "Colour"
+    },
+    {
+      "text": "powderblue",
+      "category": "Colour"
+    },
+    {
+      "text": "purple",
+      "category": "Colour"
+    },
+    {
+      "text": "rebeccapurple",
+      "category": "Colour"
+    },
+    {
+      "text": "red",
+      "category": "Colour"
+    },
+    {
+      "text": "rosybrown",
+      "category": "Colour"
+    },
+    {
+      "text": "royalblue",
+      "category": "Colour"
+    },
+    {
+      "text": "saddlebrown",
+      "category": "Colour"
+    },
+    {
+      "text": "salmon",
+      "category": "Colour"
+    },
+    {
+      "text": "sandybrown",
+      "category": "Colour"
+    },
+    {
+      "text": "seagreen",
+      "category": "Colour"
+    },
+    {
+      "text": "seashell",
+      "category": "Colour"
+    },
+    {
+      "text": "sienna",
+      "category": "Colour"
+    },
+    {
+      "text": "silver",
+      "category": "Colour"
+    },
+    {
+      "text": "skyblue",
+      "category": "Colour"
+    },
+    {
+      "text": "slateblue",
+      "category": "Colour"
+    },
+    {
+      "text": "slategray",
+      "category": "Colour"
+    },
+    {
+      "text": "slategrey",
+      "category": "Colour"
+    },
+    {
+      "text": "snow",
+      "category": "Colour"
+    },
+    {
+      "text": "springgreen",
+      "category": "Colour"
+    },
+    {
+      "text": "steelblue",
+      "category": "Colour"
+    },
+    {
+      "text": "tan",
+      "category": "Colour"
+    },
+    {
+      "text": "teal",
+      "category": "Colour"
+    },
+    {
+      "text": "thistle",
+      "category": "Colour"
+    },
+    {
+      "text": "tomato",
+      "category": "Colour"
+    },
+    {
+      "text": "turquoise",
+      "category": "Colour"
+    },
+    {
+      "text": "violet",
+      "category": "Colour"
+    },
+    {
+      "text": "wheat",
+      "category": "Colour"
+    },
+    {
+      "text": "white",
+      "category": "Colour"
+    },
+    {
+      "text": "whitesmoke",
+      "category": "Colour"
+    },
+    {
+      "text": "yellow",
+      "category": "Colour"
+    },
+    {
+      "text": "yellowgreen",
+      "category": "Colour"
+    },
+    {
+      "text": "light goldenrod",
+      "category": "Colour"
+    },
+    {
+      "text": "navy blue",
+      "category": "Colour"
+    },
+    {
+      "text": "slate blue",
+      "category": "Colour"
+    },
+    {
+      "text": "sky blue",
+      "category": "Colour"
+    },
+    {
+      "text": "steel blue",
+      "category": "Colour"
+    },
+    {
+      "text": "cornflower blue",
+      "category": "Colour"
+    },
+    {
+      "text": "lime green",
+      "category": "Colour"
+    },
+    {
+      "text": "forest green",
+      "category": "Colour"
+    },
+    {
+      "text": "sea green",
+      "category": "Colour"
+    },
+    {
+      "text": "spring green",
+      "category": "Colour"
+    },
+    {
+      "text": "pale green",
+      "category": "Colour"
+    },
+    {
+      "text": "dark green",
+      "category": "Colour"
+    },
+    {
+      "text": "light green",
+      "category": "Colour"
+    },
+    {
+      "text": "olive drab",
+      "category": "Colour"
+    },
+    {
+      "text": "dark khaki",
+      "category": "Colour"
+    },
+    {
+      "text": "light yellow",
+      "category": "Colour"
+    },
+    {
+      "text": "dark orange",
+      "category": "Colour"
+    },
+    {
+      "text": "orange red",
+      "category": "Colour"
+    },
+    {
+      "text": "hot pink",
+      "category": "Colour"
+    },
+    {
+      "text": "deep pink",
+      "category": "Colour"
+    },
+    {
+      "text": "light pink",
+      "category": "Colour"
+    },
+    {
+      "text": "pale violet red",
+      "category": "Colour"
+    },
+    {
+      "text": "medium violet red",
+      "category": "Colour"
+    },
+    {
+      "text": "blue violet",
+      "category": "Colour"
+    },
+    {
+      "text": "dark orchid",
+      "category": "Colour"
+    },
+    {
+      "text": "medium orchid",
+      "category": "Colour"
+    },
+    {
+      "text": "dark violet",
+      "category": "Colour"
+    },
+    {
+      "text": "medium purple",
+      "category": "Colour"
+    },
+    {
+      "text": "light salmon",
+      "category": "Colour"
+    },
+    {
+      "text": "dark salmon",
+      "category": "Colour"
+    },
+    {
+      "text": "indian red",
+      "category": "Colour"
+    },
+    {
+      "text": "saddle brown",
+      "category": "Colour"
+    },
+    {
+      "text": "sandy brown",
+      "category": "Colour"
+    },
+    {
+      "text": "rosy brown",
+      "category": "Colour"
+    },
+    {
+      "text": "dark red",
+      "category": "Colour"
+    },
+    {
+      "text": "dark blue",
+      "category": "Colour"
+    },
+    {
+      "text": "light blue",
+      "category": "Colour"
+    },
+    {
+      "text": "dark gray",
+      "category": "Colour"
+    },
+    {
+      "text": "light gray",
+      "category": "Colour"
+    },
+    {
+      "text": "dim gray",
+      "category": "Colour"
+    },
+    {
+      "text": "slate gray",
+      "category": "Colour"
+    },
+    {
+      "text": "racing green",
+      "category": "Colour"
+    },
+    {
+      "text": "burgundy",
+      "category": "Colour"
+    },
+    {
+      "text": "cream",
+      "category": "Colour"
+    },
+    {
+      "text": "charcoal",
+      "category": "Colour"
+    },
+    {
+      "text": "mustard",
+      "category": "Colour"
+    },
+    {
+      "text": "bronze",
+      "category": "Colour"
+    },
+    {
+      "text": "copper",
+      "category": "Colour"
+    },
+    {
+      "text": "rust",
+      "category": "Colour"
+    },
+    {
+      "text": "amber",
+      "category": "Colour"
+    },
+    {
+      "text": "emerald",
+      "category": "Colour"
+    },
+    {
+      "text": "ruby",
+      "category": "Colour"
+    },
+    {
+      "text": "sapphire",
+      "category": "Colour"
+    }
+  ]
+}
