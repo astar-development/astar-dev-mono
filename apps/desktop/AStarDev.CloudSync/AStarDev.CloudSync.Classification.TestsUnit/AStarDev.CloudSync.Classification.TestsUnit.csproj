@@ -9,6 +9,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="TestSeeds/**/*.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="../AStarDev.CloudSync.Classification/AStarDev.CloudSync.Classification.csproj" />
     <ProjectReference Include="../AStarDev.CloudSync.TestHelpers/AStarDev.CloudSync.TestHelpers.csproj" />
   </ItemGroup>

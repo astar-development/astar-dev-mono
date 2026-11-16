@@ -1,0 +1,8 @@
+{
+  "version": "2",
+  "categories": [ { "name": "Audio" }, { "name": "photo" } ],
+  "terms": [
+    { "text": "mp3", "category": "Audio", "kind": "extension" },
+    { "text": "jpg", "category": "Photo", "kind": "extension" }
+  ]
+}

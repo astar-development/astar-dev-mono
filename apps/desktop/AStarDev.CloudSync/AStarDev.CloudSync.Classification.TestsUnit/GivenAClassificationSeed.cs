@@ -29,6 +29,23 @@ public sealed class GivenAClassificationSeed
     }
 
     [Fact]
+    public void when_a_term_text_is_shared_by_two_kinds_then_both_are_kept()
+    {
+        var word = SeedTermFactory.Create("music", "Audio", SeedTermKindFactory.CreateWord()).Match(term => term, () => throw new InvalidOperationException());
+        var folder = SeedTermFactory.Create("music", "Audio", SeedTermKindFactory.CreateFolder()).Match(term => term, () => throw new InvalidOperationException());
+
+        var seed = ClassificationSeedFactory.Create("1", [SeedCategoryFactory.Create("Audio")], [word, folder]);
+
+        seed.Terms.Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public void when_a_seed_term_has_no_kind_then_it_is_a_word()
+    {
+        Term("red", "Colour").Kind.ShouldBeOfType<SeedTermKind.Word>();
+    }
+
+    [Fact]
     public void when_a_category_repeats_ignoring_case_then_one_is_kept()
     {
         var seed = ClassificationSeedFactory.Create("1", [SeedCategoryFactory.Create("Colour"), SeedCategoryFactory.Create("colour")], []);
