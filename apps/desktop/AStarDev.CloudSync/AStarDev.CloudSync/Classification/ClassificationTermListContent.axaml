@@ -1,0 +1,85 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vmClassification="using:AStarDev.CloudSync.ViewModels.Classification"
+             x:Class="AStarDev.CloudSync.Classification.ClassificationTermListContent"
+             x:DataType="vmClassification:ClassificationTermListViewModel"
+             VerticalContentAlignment="Stretch"
+             HorizontalContentAlignment="Stretch"
+             Foreground="{DynamicResource CloudSyncTextPrimaryBrush}">
+    <UserControl.Styles>
+        <Style Selector="Button.term-header">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+    </UserControl.Styles>
+    <Grid RowDefinitions="Auto,*"
+          HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch">
+        <StackPanel Grid.Row="0" Spacing="8" Margin="0,0,0,8">
+            <TextBlock Text="{Binding TitleText}"
+                       FontSize="18"
+                       FontWeight="SemiBold" />
+            <TextBox Name="TermFilterBox"
+                     Height="36"
+                     Text="{Binding FilterText}"
+                     PlaceholderText="{Binding FilterPlaceholderText}"
+                     AutomationProperties.Name="{Binding FilterPlaceholderText}" />
+            <Grid ColumnDefinitions="*,*,110,80,230" ColumnSpacing="8">
+                <Button Grid.Column="0" Name="TermHeader" Classes="term-header" Content="{Binding TermHeaderText}" />
+                <Button Grid.Column="1" Name="CategoryHeader" Classes="term-header" Content="{Binding CategoryHeaderText}" />
+                <Button Grid.Column="2" Name="SourceHeader" Classes="term-header" Content="{Binding SourceHeaderText}" />
+                <Button Grid.Column="3" Name="FileCountHeader" Classes="term-header" Content="{Binding FileCountHeaderText}" />
+                <Button Grid.Column="4" Name="IgnoredHeader" Classes="term-header" Content="{Binding IgnoredHeaderText}" />
+            </Grid>
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1"
+                      Name="TermScroll"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      MinHeight="0">
+            <StackPanel Spacing="8">
+                <TextBlock Classes="muted" Text="{Binding LoadingText}" IsVisible="{Binding IsLoading}" />
+                <TextBlock Classes="muted" Text="{Binding EmptyText}" IsVisible="{Binding IsEmpty}" />
+                <TextBlock Classes="muted" Text="{Binding NoMatchesText}" IsVisible="{Binding HasNoMatches}" />
+                <TextBlock Text="{Binding LoadFailedText}"
+                           IsVisible="{Binding IsFailed}"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource CloudSyncWarnBrush}" />
+                <ItemsControl ItemsSource="{Binding Rows}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vmClassification:TermRowViewModel">
+                            <StackPanel Margin="0,0,0,6">
+                                <Grid ColumnDefinitions="*,*,110,80,230" ColumnSpacing="8">
+                                    <TextBlock Grid.Column="0" Text="{Binding Text}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Classes="muted" Text="{Binding CategoryName}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2" Classes="muted" Text="{Binding SourceText}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="3" Text="{Binding FileCountText}" VerticalAlignment="Center" />
+                                    <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Classes="muted" Text="{Binding StatusText}" VerticalAlignment="Center" />
+                                        <Button Content="{Binding ToggleText}"
+                                                Command="{Binding $parent[UserControl].((vmClassification:ClassificationTermListViewModel)DataContext).ToggleIgnoredCommand}"
+                                                CommandParameter="{Binding}"
+                                                AutomationProperties.Name="{Binding ToggleText}" />
+                                    </StackPanel>
+                                </Grid>
+                                <TextBlock Text="{Binding ErrorText}"
+                                           IsVisible="{Binding HasError}"
+                                           TextWrapping="Wrap"
+                                           Foreground="{DynamicResource CloudSyncWarnBrush}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>
