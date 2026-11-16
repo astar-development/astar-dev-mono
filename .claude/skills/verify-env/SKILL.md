@@ -13,3 +13,4 @@ Run each check, report pass/fail table, fix nothing without asking:
 6. `ldconfig -p | grep libssl`
 7. `systemctl is-active docker libvirtd`; VM networking not blocked by Docker iptables rules
 8. `git config core.fileMode`
+9. `command -v uvx`; `grep -E '^agent_interface:' ~/.serena/serena_config.yml` is `tools` not `REPL`; repo `.mcp.json` has `--project-from-cwd`; newest `~/.serena/logs/*/mcp_*.txt` says "Number of exposed tools: 29"
