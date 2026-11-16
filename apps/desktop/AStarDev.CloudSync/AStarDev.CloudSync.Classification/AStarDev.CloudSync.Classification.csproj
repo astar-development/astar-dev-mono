@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Classification module: contracts and engine that classify synced files by
+    extension, folder names and the words in their path. Must not reference
+    Avalonia or EF Core.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <IsPublishable>false</IsPublishable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../AStarDev.CloudSync.Sync/AStarDev.CloudSync.Sync.csproj" />
+    <ProjectReference Include="../../../../packages/source-generators/AStarDev.SourceGeneratorAttributes/AStarDev.SourceGeneratorAttributes.csproj" />
+    <ProjectReference Include="../../../../packages/source-generators/AStarDev.SourceGenerators/AStarDev.SourceGenerators.csproj" PrivateAssets="all" />
+  </ItemGroup>
+
+  <Target Name="AddGeneratorAnalyzerRefs" BeforeTargets="CoreCompile">
+    <MSBuild Projects="../../../../packages/source-generators/AStarDev.SourceGenerators/AStarDev.SourceGenerators.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration);TargetFramework=netstandard2.0;RuntimeIdentifier=;SelfContained=false">
+      <Output TaskParameter="TargetOutputs" ItemName="Analyzer" />
+    </MSBuild>
+    <MSBuild Projects="../../../../packages/source-generators/AStarDev.SourceGeneratorAttributes/AStarDev.SourceGeneratorAttributes.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration);TargetFramework=netstandard2.0;RuntimeIdentifier=;SelfContained=false">
+      <Output TaskParameter="TargetOutputs" ItemName="Analyzer" />
+    </MSBuild>
+  </Target>
+
+</Project>
