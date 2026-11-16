@@ -79,7 +79,7 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
     public bool IsConflictsPageShown => page is LayoutAPage.Conflicts;
 
     /// <summary>Whether the classification page is shown.</summary>
-    public bool IsClassificationPageShown => throw new NotImplementedException();
+    public bool IsClassificationPageShown => page is LayoutAPage.Classification;
 
     /// <summary>"All" followed by one chip per provider present in the accounts.</summary>
     public IReadOnlyList<LayoutAProviderChipViewModel> ProviderChips { get; private set; } = [];
@@ -134,7 +134,7 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
     public ICommand ShowConflictsCommand => field ??= new RelayCommand(ShowConflicts);
 
     /// <summary>Shows the classification page and reads the term list again.</summary>
-    public ICommand ShowClassificationCommand => throw new NotImplementedException();
+    public ICommand ShowClassificationCommand => field ??= new RelayCommand(ShowClassification);
 
     /// <summary>Shows the search page.</summary>
     public ICommand ShowSearchCommand => field ??= new RelayCommand(() => Show(LayoutAPageFactory.CreateSearch()));
@@ -152,7 +152,7 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
     public string ConflictsText => Localization.GetLocal("LayoutA.Nav.Conflicts");
 
     /// <summary>The classification rail button name.</summary>
-    public string ClassificationText => throw new NotImplementedException();
+    public string ClassificationText => Localization.GetLocal("LayoutA.Nav.Classification");
 
     /// <summary>The search rail button name.</summary>
     public string SearchText => Localization.GetLocal("LayoutA.Nav.Search");
@@ -201,6 +201,12 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
         _ = ConflictList.RefreshCommand.ExecuteAsync(null);
     }
 
+    private void ShowClassification()
+    {
+        Show(LayoutAPageFactory.CreateClassification());
+        _ = Classification.LoadCommand.ExecuteAsync(null);
+    }
+
     private void Show(LayoutAPage shown)
     {
         page = shown;
@@ -209,6 +215,7 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
         OnPropertyChanged(nameof(IsFoldersPageShown));
         OnPropertyChanged(nameof(IsAccountsPageShown));
         OnPropertyChanged(nameof(IsConflictsPageShown));
+        OnPropertyChanged(nameof(IsClassificationPageShown));
     }
 
     private void OnOverviewChanged(object? sender, PropertyChangedEventArgs e)

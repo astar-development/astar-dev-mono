@@ -1,0 +1,44 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:classification="using:AStarDev.CloudSync.Classification"
+             xmlns:vmClassification="using:AStarDev.CloudSync.ViewModels.Classification"
+             x:Class="AStarDev.CloudSync.Classification.ClassificationPageContent"
+             x:DataType="vmClassification:ClassificationPageViewModel"
+             VerticalContentAlignment="Stretch"
+             HorizontalContentAlignment="Stretch"
+             Foreground="{DynamicResource CloudSyncTextPrimaryBrush}">
+    <Grid RowDefinitions="Auto,*"
+          HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch">
+        <StackPanel Grid.Row="0" Spacing="8" Margin="0,0,0,12">
+            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                <TextBlock Grid.Column="0"
+                           Text="{Binding TitleText}"
+                           FontSize="18"
+                           FontWeight="SemiBold"
+                           VerticalAlignment="Center" />
+                <Button Grid.Column="1"
+                        Name="CancelReclassifyButton"
+                        Classes="secondary"
+                        Content="{Binding Reclassify.CancelText}"
+                        Command="{Binding Reclassify.CancelCommand}"
+                        IsVisible="{Binding Reclassify.IsRunning}"
+                        AutomationProperties.Name="{Binding Reclassify.CancelText}" />
+                <Button Grid.Column="2"
+                        Name="ReclassifyButton"
+                        Content="{Binding Reclassify.ButtonText}"
+                        Command="{Binding Reclassify.ReclassifyCommand}"
+                        AutomationProperties.Name="{Binding Reclassify.ButtonText}" />
+            </Grid>
+            <TextBlock Text="{Binding Reclassify.StatusText}"
+                       IsVisible="{Binding Reclassify.HasStatus}"
+                       Foreground="{DynamicResource CloudSyncTextMutedBrush}"
+                       TextWrapping="Wrap" />
+            <ProgressBar IsIndeterminate="True"
+                         IsVisible="{Binding Reclassify.IsRunning}"
+                         AutomationProperties.Name="{Binding Reclassify.StatusText}" />
+        </StackPanel>
+
+        <classification:ClassificationTabsContent Grid.Row="1" DataContext="{Binding Tabs}" />
+    </Grid>
+</UserControl>

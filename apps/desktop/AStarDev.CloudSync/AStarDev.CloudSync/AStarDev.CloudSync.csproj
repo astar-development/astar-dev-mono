@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../AStarDev.CloudSync.Classification/AStarDev.CloudSync.Classification.csproj" />
+    <ProjectReference Include="../AStarDev.CloudSync.Classification.Sqlite/AStarDev.CloudSync.Classification.Sqlite.csproj" />
     <ProjectReference Include="../AStarDev.CloudSync.DisplaySettings/AStarDev.CloudSync.DisplaySettings.csproj" />
     <ProjectReference Include="../AStarDev.CloudSync.Overview/AStarDev.CloudSync.Overview.csproj" />
     <ProjectReference Include="../AStarDev.CloudSync.Accounts.OneDrive/AStarDev.CloudSync.Accounts.OneDrive.csproj" />

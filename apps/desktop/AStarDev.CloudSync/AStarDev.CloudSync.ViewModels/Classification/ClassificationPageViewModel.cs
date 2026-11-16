@@ -16,7 +16,7 @@ public sealed class ClassificationPageViewModel(ClassificationTabsViewModel tabs
     public ReclassifyViewModel Reclassify { get; } = reclassify;
 
     /// <summary>The page heading.</summary>
-    public string TitleText => throw new NotImplementedException();
+    public string TitleText => Localization.GetLocal("Classification.Page.Title");
 
     /// <summary>Reads the term list; run it each time the page is shown.</summary>
     public IAsyncRelayCommand LoadCommand => Tabs.LoadCommand;
