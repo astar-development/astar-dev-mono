@@ -220,4 +220,12 @@ public sealed class GivenAClassificationReclassifier
 
         (options.BatchSize, options.DegreeOfParallelism).ShouldBe((500, 1));
     }
+
+    [Fact]
+    public void when_default_options_are_created_then_a_pause_follows_each_batch_so_a_running_sync_is_not_starved()
+    {
+        var options = ReclassifyOptionsFactory.CreateDefault();
+
+        options.DelayBetweenBatches.ShouldBe(TimeSpan.FromMilliseconds(20));
+    }
 }
