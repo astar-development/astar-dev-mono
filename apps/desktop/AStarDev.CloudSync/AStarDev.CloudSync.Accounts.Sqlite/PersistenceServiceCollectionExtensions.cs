@@ -18,5 +18,6 @@ public static class PersistenceServiceCollectionExtensions
         services
             .AddDbContextFactory<CloudSyncDbContext>((provider, options) => options.UseSqlite(new SqliteConnectionStringBuilder { DataSource = databaseFile(provider).FullName }.ToString()))
             .AddSingleton<ICloudSyncDatabase>(provider => new SqliteCloudSyncDatabase(provider.GetRequiredService<IDbContextFactory<CloudSyncDbContext>>(), databaseFile(provider), provider.GetRequiredService<ILogger<SqliteCloudSyncDatabase>>()))
+            .AddSingleton<IMigrationLockClearer>(provider => new SqliteMigrationLockClearer(provider.GetRequiredService<IDbContextFactory<CloudSyncDbContext>>(), databaseFile(provider), provider.GetRequiredService<ILogger<SqliteMigrationLockClearer>>()))
             .AddSingleton<IAccountStore, SqliteAccountStore>();
 }
