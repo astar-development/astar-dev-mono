@@ -122,6 +122,57 @@
                            IsVisible="{Binding ErrorText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
             </StackPanel>
         </Border>
+        <Border DataContext="{Binding FileAudit}">
+            <StackPanel x:DataType="vmDisplaySettings:FileAuditViewModel" Spacing="4">
+                <TextBlock Classes="muted" Text="{Binding HeadingText}" />
+                <TextBlock Text="{Binding HelpText}"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource CloudSyncTextMutedBrush}" />
+                <TextBlock Text="{Binding NoAccountsText}"
+                           TextWrapping="Wrap"
+                           IsVisible="{Binding !HasAccounts}" />
+                <ItemsControl ItemsSource="{Binding Accounts}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vmDisplaySettings:AuditAccountViewModel">
+                            <RadioButton GroupName="CloudSyncAuditAccount"
+                                         Content="{Binding Name}"
+                                         IsChecked="{Binding IsSelected, Mode=OneWay}"
+                                         Command="{Binding SelectCommand}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <Button Classes="secondary"
+                        HorizontalAlignment="Left"
+                        Content="{Binding AuditText}"
+                        Command="{Binding AuditCommand}"
+                        IsVisible="{Binding ShowsAuditButton}" />
+                <StackPanel Spacing="6" IsVisible="{Binding IsConfirming}">
+                    <TextBlock Text="{Binding WarningText}"
+                               TextWrapping="Wrap"
+                               Foreground="{DynamicResource CloudSyncWarnBrush}" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                        <Button Classes="secondary" Content="{Binding CancelText}" Command="{Binding CancelCommand}" />
+                        <Button Classes="primary" Content="{Binding ConfirmText}" Command="{Binding ConfirmCommand}" />
+                    </StackPanel>
+                </StackPanel>
+                <StackPanel Spacing="6" IsVisible="{Binding IsRunning}">
+                    <TextBlock Text="{Binding RunningText}" TextWrapping="Wrap" />
+                    <ProgressBar IsIndeterminate="True" />
+                    <Button Classes="secondary"
+                            HorizontalAlignment="Left"
+                            Content="{Binding CancelText}"
+                            Command="{Binding CancelCommand}" />
+                </StackPanel>
+                <StackPanel Spacing="2" IsVisible="{Binding IsShowingResult}">
+                    <TextBlock Text="{Binding LocalFilesText}" />
+                    <TextBlock Text="{Binding CloudFilesText}" />
+                </StackPanel>
+                <TextBlock Text="{Binding ErrorText}"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource CloudSyncWarnBrush}"
+                           IsVisible="{Binding IsShowingError}" />
+            </StackPanel>
+        </Border>
         <Border DataContext="{Binding PlaintextCacheConsent}">
             <StackPanel x:DataType="vmAccounts:PlaintextCacheConsentSettingsViewModel"
                         Spacing="6"

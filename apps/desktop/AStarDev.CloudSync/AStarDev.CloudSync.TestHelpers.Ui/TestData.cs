@@ -60,9 +60,15 @@ public static class TestData
 
     public static DisplaySettingsViewModel CreateDisplaySettings(FakePlaintextCacheConsentSettings plaintextCacheConsent) => new(new InMemoryDisplayPreferencesStore(), new RecordingThemeApplier(), CreatePlaintextCacheConsentSettings(plaintextCacheConsent), CreateDisplaySettingsSections(), CreateLocalization());
 
-    public static DisplaySettingsSections CreateDisplaySettingsSections() => DisplaySettingsSectionsFactory.Create(CreateSyncScheduleSettings(), CreateTrashRetentionSettings(), CreateAutostartSettings(), CreateAccountLogLevels());
+    public static DisplaySettingsViewModel CreateDisplaySettings(FileAuditViewModel fileAudit) => new(new InMemoryDisplayPreferencesStore(), new RecordingThemeApplier(), CreatePlaintextCacheConsentSettings(), CreateDisplaySettingsSections(fileAudit), CreateLocalization());
+
+    public static DisplaySettingsSections CreateDisplaySettingsSections() => CreateDisplaySettingsSections(CreateFileAudit());
+
+    public static DisplaySettingsSections CreateDisplaySettingsSections(FileAuditViewModel fileAudit) => DisplaySettingsSectionsFactory.Create(CreateSyncScheduleSettings(), CreateTrashRetentionSettings(), CreateAutostartSettings(), CreateAccountLogLevels(), fileAudit);
 
     public static AccountLogLevelsViewModel CreateAccountLogLevels() => new(new SyncOverviewViewModel(new PlaceholderSyncOverviewSource(CreateTime()), CreateLocalization(), CreateTime(), NullLogger<SyncOverviewViewModel>.Instance), new FakeAccountLogLevelSettings(), CreateLocalization());
+
+    public static FileAuditViewModel CreateFileAudit() => new(new SyncOverviewViewModel(new PlaceholderSyncOverviewSource(CreateTime()), CreateLocalization(), CreateTime(), NullLogger<SyncOverviewViewModel>.Instance), new FakeFileAuditor(), CreateLocalization());
 
     public static AutostartSettingsViewModel CreateAutostartSettings() => new(new FakeAutostartRegistration(), CreateLocalization());
 

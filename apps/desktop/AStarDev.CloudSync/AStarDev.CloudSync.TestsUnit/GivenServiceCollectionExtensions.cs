@@ -392,6 +392,16 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
+    public void when_application_services_are_added_then_the_file_audit_resolves_and_is_the_one_in_the_display_settings()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+
+        provider.GetRequiredService<IFileAuditor>().ShouldNotBeNull();
+        provider.GetRequiredService<AStarDev.CloudSync.ViewModels.DisplaySettings.DisplaySettingsViewModel>().FileAudit.ShouldBeSameAs(provider.GetRequiredService<AStarDev.CloudSync.ViewModels.DisplaySettings.FileAuditViewModel>());
+        provider.GetRequiredService<AStarDev.CloudSync.ViewModels.DisplaySettings.FileAuditViewModel>().HeadingText.ShouldBe("File audit");
+    }
+
+    [Fact]
     public void when_application_services_are_added_then_the_trash_retention_setting_resolves_and_is_the_one_in_the_display_settings()
     {
         using var provider = CreateServices().BuildServiceProvider();
