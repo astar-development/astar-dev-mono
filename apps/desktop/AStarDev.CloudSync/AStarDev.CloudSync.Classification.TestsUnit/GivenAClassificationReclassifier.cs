@@ -23,6 +23,8 @@ public sealed class GivenAClassificationReclassifier
         _ => throw new InvalidOperationException("The outcome carries no counts."),
     };
 
+    private static string[] Snapshot(ReclassifyFakeStore store) => [.. store.Links.Select(pair => $"{pair.Key.Item1.Value}|{pair.Key.Item2.Value}|{string.Join(',', pair.Value.Select(term => term.Value))}").Order()];
+
     private static (int, int, int) Totals(ReclassifyOutcome outcome)
     {
         var counts = Counts(outcome);
@@ -108,13 +110,13 @@ public sealed class GivenAClassificationReclassifier
         var store = new ReclassifyFakeStore();
         var reclassifier = Build(ReclassifyFakeFileSource.Numbered(Account, 700), new ReclassifyFakeClassifier(Holiday), store);
         _ = await reclassifier.StartAsync(new ReclassifyRecordingProgress(), TestContext.Current.CancellationToken);
-        var first = store.Links.ToDictionary(pair => pair.Key, pair => pair.Value.ToArray());
+        var first = Snapshot(store);
 
         var second = await reclassifier.StartAsync(new ReclassifyRecordingProgress(), TestContext.Current.CancellationToken);
 
         second.ShouldBeOfType<ReclassifyOutcome.Completed>();
         Totals(second).ShouldBe((700, 2, 0));
-        store.Links.ToDictionary(pair => pair.Key, pair => pair.Value.ToArray()).ShouldBe(first);
+        Snapshot(store).ShouldBe(first);
     }
 
     [Fact]
