@@ -3,13 +3,13 @@ namespace AStarDev.CloudSync.Classification;
 /// <summary>The terms of one vocabulary keyed by their tokenised phrase, built once so a match never re-tokenises a term.</summary>
 public sealed class PhraseIndex
 {
-    internal PhraseIndex(ILookup<string, ClassificationTerm> phrases, int longestPhrase)
+    internal PhraseIndex(Dictionary<string, ClassificationTerm[]> phrases, int longestPhrase)
     {
-        Phrases = phrases;
+        Phrases = phrases.GetAlternateLookup<ReadOnlySpan<char>>();
         LongestPhrase = longestPhrase;
     }
 
-    internal ILookup<string, ClassificationTerm> Phrases { get; }
+    internal Dictionary<string, ClassificationTerm[]>.AlternateLookup<ReadOnlySpan<char>> Phrases { get; }
 
     internal int LongestPhrase { get; }
 }
