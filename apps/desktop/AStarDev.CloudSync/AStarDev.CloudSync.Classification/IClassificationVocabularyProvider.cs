@@ -9,6 +9,9 @@ public interface IClassificationVocabularyProvider
     /// <param name="cancellationToken">Cancels the wait and, for the caller that started it, the load.</param>
     Task<Result<ClassificationVocabulary, ClassificationFailure>> GetAsync(CancellationToken cancellationToken);
 
+    /// <summary>Counts the invalidations so far. A caller that classified under one value and sees another when it is about to write, or has written, classified against a vocabulary that has since changed.</summary>
+    long Generation { get; }
+
     /// <summary>Drops the cached vocabulary so the next <see cref="GetAsync"/> reloads it. A load already running never becomes the cached one.</summary>
     void Invalidate();
 }

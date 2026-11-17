@@ -19,12 +19,16 @@ internal sealed class ClassifyHookClassifier : IFileClassifier
         }
     }
 
+    internal Action OnClassify { get; init; } = () => { };
+
     internal static TermId TermId => Term.Id;
 
     public Task<FileClassificationResult> ClassifyAsync(RelativeSyncPath path, CancellationToken cancellationToken)
     {
         lock (paths)
             paths.Add(path.Value ?? string.Empty);
+
+        OnClassify();
 
         var exception = Throws();
         if (exception is not null)

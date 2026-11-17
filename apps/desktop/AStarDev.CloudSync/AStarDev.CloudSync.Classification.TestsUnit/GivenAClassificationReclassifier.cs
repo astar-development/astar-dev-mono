@@ -212,6 +212,56 @@ public sealed class GivenAClassificationReclassifier
     }
 
     [Fact]
+    public async Task when_no_run_is_active_then_waiting_until_idle_completes_at_once()
+    {
+        var reclassifier = Build(ThreeFiles(), new ReclassifyFakeClassifier(Holiday), new ReclassifyFakeStore());
+
+        var waiting = reclassifier.WaitUntilIdleAsync(TestContext.Current.CancellationToken);
+        await waiting.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
+
+        waiting.IsCompletedSuccessfully.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task when_a_run_is_active_then_waiting_until_idle_completes_only_after_the_run_ended_and_a_new_run_can_start()
+    {
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var source = new ReclassifyFakeFileSource([ClassifiableFileFactory.Create(Account, PathOf("Holiday/a.jpg"))]) { BlockUntil = release.Task };
+        var reclassifier = Build(source, new ReclassifyFakeClassifier(Holiday), new ReclassifyFakeStore());
+        var run = reclassifier.StartAsync(new ReclassifyRecordingProgress(), TestContext.Current.CancellationToken);
+        await source.Started.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
+        var waiting = reclassifier.WaitUntilIdleAsync(TestContext.Current.CancellationToken);
+        await Task.Delay(50, TestContext.Current.CancellationToken);
+        var completedWhileRunning = waiting.IsCompleted;
+
+        release.SetResult();
+        await waiting.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
+        _ = await run;
+        var next = await reclassifier.StartAsync(new ReclassifyRecordingProgress(), TestContext.Current.CancellationToken);
+
+        completedWhileRunning.ShouldBeFalse();
+        next.ShouldBeOfType<ReclassifyOutcome.Completed>();
+    }
+
+    [Fact]
+    public async Task when_the_wait_is_cancelled_while_a_run_is_active_then_it_returns_without_throwing_and_the_run_is_unaffected()
+    {
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var source = new ReclassifyFakeFileSource([ClassifiableFileFactory.Create(Account, PathOf("Holiday/a.jpg"))]) { BlockUntil = release.Task };
+        var reclassifier = Build(source, new ReclassifyFakeClassifier(Holiday), new ReclassifyFakeStore());
+        var run = reclassifier.StartAsync(new ReclassifyRecordingProgress(), TestContext.Current.CancellationToken);
+        await source.Started.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
+        using var cancel = new CancellationTokenSource();
+        var waiting = reclassifier.WaitUntilIdleAsync(cancel.Token);
+
+        await cancel.CancelAsync();
+        await waiting.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
+        release.SetResult();
+
+        (await run).ShouldBeOfType<ReclassifyOutcome.Completed>();
+    }
+
+    [Fact]
     public async Task when_a_run_has_ended_then_a_new_run_can_start()
     {
         var reclassifier = Build(ReclassifyFakeFileSource.Numbered(Account, 3), new ReclassifyFakeClassifier(Holiday), new ReclassifyFakeStore());

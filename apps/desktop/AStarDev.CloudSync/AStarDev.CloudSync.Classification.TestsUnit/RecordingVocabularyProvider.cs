@@ -8,6 +8,8 @@ internal sealed class RecordingVocabularyProvider(Result<ClassificationVocabular
 
     public int Invalidations => Volatile.Read(ref invalidations);
 
+    public long Generation => Volatile.Read(ref invalidations);
+
     public Task<Result<ClassificationVocabulary, ClassificationFailure>> GetAsync(CancellationToken cancellationToken) => Task.FromResult(result);
 
     public void Invalidate() => Interlocked.Increment(ref invalidations);

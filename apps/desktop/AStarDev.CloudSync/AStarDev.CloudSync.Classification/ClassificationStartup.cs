@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync.Classification;
 
-/// <summary>Migrates the database, which is safe to repeat, and then seeds the classification vocabulary. When the seed is newly applied, the baseline is reclassified once, so files recorded before the seed finished are classified against the full vocabulary (#1870). Nothing here is fatal: the application works without classification.</summary>
+/// <summary>Migrates the database, which is safe to repeat, and then seeds the classification vocabulary. When the seed is newly applied, the baseline is reclassified once, so files recorded before the seed finished are classified against the full vocabulary (#1870). When a manual run is already active, the startup reclassify waits for it to end and then runs again, so a run that started against a partial vocabulary is always followed by a full one (#1876). Nothing here is fatal: the application works without classification.</summary>
 /// <param name="database">The database whose migration creates the classification tables.</param>
 /// <param name="seeder">Writes the shipped seed.</param>
 /// <param name="reclassifier">Reclassifies the baseline once a newly applied seed has changed the vocabulary.</param>
@@ -26,9 +26,19 @@ public sealed class ClassificationStartup(ICloudSyncDatabase database, IClassifi
     {
         var outcome = await seeder.SeedAsync(cancellationToken).ConfigureAwait(false);
         if (outcome is ClassificationSeedOutcome.Applied)
-            _ = await reclassifier.StartAsync(new Progress<ReclassifyProgress>(), cancellationToken).ConfigureAwait(false);
+            await ReclassifyAfterActiveRunAsync(cancellationToken).ConfigureAwait(false);
 
         return Unit.Instance;
+    }
+
+    private async Task ReclassifyAfterActiveRunAsync(CancellationToken cancellationToken)
+    {
+        var outcome = await reclassifier.StartAsync(new Progress<ReclassifyProgress>(), cancellationToken).ConfigureAwait(false);
+        while (outcome is ReclassifyOutcome.AlreadyRunning && !cancellationToken.IsCancellationRequested)
+        {
+            await reclassifier.WaitUntilIdleAsync(cancellationToken).ConfigureAwait(false);
+            outcome = await reclassifier.StartAsync(new Progress<ReclassifyProgress>(), cancellationToken).ConfigureAwait(false);
+        }
     }
 
     private Unit MigrationFailed(CancellationToken cancellationToken)

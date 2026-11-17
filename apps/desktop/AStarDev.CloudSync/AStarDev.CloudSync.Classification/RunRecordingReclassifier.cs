@@ -13,6 +13,9 @@ namespace AStarDev.CloudSync.Classification;
 public sealed class RunRecordingReclassifier(IClassificationReclassifier inner, ISeedStateStore seedState, IReclassifyRunStore runs, ReclassifyOptions options, ILogger<RunRecordingReclassifier> logger) : IClassificationReclassifier
 {
     /// <inheritdoc />
+    public Task WaitUntilIdleAsync(CancellationToken cancellationToken) => inner.WaitUntilIdleAsync(cancellationToken);
+
+    /// <inheritdoc />
     public async Task<ReclassifyOutcome> StartAsync(IProgress<ReclassifyProgress> progress, CancellationToken cancellationToken)
     {
         var seedVersion = await AppliedSeedAsync(cancellationToken).ConfigureAwait(false);

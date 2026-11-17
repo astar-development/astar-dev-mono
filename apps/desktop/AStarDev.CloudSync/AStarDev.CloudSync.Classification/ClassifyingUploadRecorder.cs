@@ -10,9 +10,12 @@ namespace AStarDev.CloudSync.Classification;
 /// <param name="inner">The registered recorder that stores the baseline and the remote index row.</param>
 /// <param name="classifier">Classifies one path.</param>
 /// <param name="store">Stores the automatic links.</param>
+/// <param name="vocabulary">Reports whether the vocabulary changed while the file was classified.</param>
 /// <param name="logger">Reports failures without paths, terms or exception messages.</param>
-public sealed class ClassifyingUploadRecorder(IUploadRecorder inner, IFileClassifier classifier, IFileClassificationStore store, ILogger<ClassifyingUploadRecorder> logger) : IUploadRecorder
+public sealed class ClassifyingUploadRecorder(IUploadRecorder inner, IFileClassifier classifier, IFileClassificationStore store, IClassificationVocabularyProvider vocabulary, ILogger<ClassifyingUploadRecorder> logger) : IUploadRecorder
 {
+    private const int MaxAttempts = 3;
+
     /// <inheritdoc />
     public async Task<Result<Unit, ErrorResponse>> RecordAsync(AccountId accountId, SyncBaselineEntry baseline, RemoteItemSnapshot remote, CancellationToken cancellationToken)
     {
@@ -26,6 +29,19 @@ public sealed class ClassifyingUploadRecorder(IUploadRecorder inner, IFileClassi
     }
 
     private async Task<Unit> ClassifyAsync(AccountId accountId, RelativeSyncPath path, CancellationToken cancellationToken)
+    {
+        for (var attempt = 1; attempt < MaxAttempts; attempt++)
+        {
+            var generation = vocabulary.Generation;
+            _ = await ClassifyOnceAsync(accountId, path, cancellationToken).ConfigureAwait(false);
+            if (vocabulary.Generation == generation)
+                return Unit.Instance;
+        }
+
+        return await ClassifyOnceAsync(accountId, path, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<Unit> ClassifyOnceAsync(AccountId accountId, RelativeSyncPath path, CancellationToken cancellationToken)
     {
         var classified = await classifier.ClassifyAsync(path, cancellationToken).ConfigureAwait(false);
         var links = FileTermLinksFactory.Create(accountId, path, [.. classified.Candidates.Select(candidate => candidate.Term.Id)]);

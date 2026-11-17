@@ -32,6 +32,14 @@ public sealed class GivenARunRecordingReclassifier
     };
 
     [Fact]
+    public async Task when_waiting_until_idle_then_the_inner_reclassifier_is_waited_on()
+    {
+        await Create(new InMemoryReclassifyRunStore()).WaitUntilIdleAsync(CancellationToken);
+
+        inner.WaitCount.ShouldBe(1);
+    }
+
+    [Fact]
     public async Task when_a_run_completes_then_the_engine_version_the_seed_version_and_the_finish_time_are_recorded()
     {
         var runs = new InMemoryReclassifyRunStore();
