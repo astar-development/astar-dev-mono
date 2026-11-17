@@ -2,8 +2,14 @@ using AStarDev.CloudSync.Classification;
 
 namespace AStarDev.CloudSync.TestHelpers.Classification;
 
-public sealed class FakeClassificationReclassifier : IClassificationReclassifier
+public sealed class FakeClassificationReclassifier : IClassificationReclassifier, IReclassifyRunRecordedSource
 {
+    public event EventHandler? RunRecorded;
+
+    public int RunRecordedSubscribers => RunRecorded?.GetInvocationList().Length ?? 0;
+
+    public void RaiseRunRecorded() => RunRecorded?.Invoke(this, EventArgs.Empty);
+
     public ReclassifyOutcome Outcome { get; set; } = ReclassifyOutcomeFactory.CreateCompleted(ReclassifyCountsFactory.Create(0, 0, 0));
 
     public IReadOnlyList<ReclassifyProgress> Reports { get; set; } = [];

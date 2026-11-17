@@ -1,4 +1,5 @@
 using AStarDev.CloudSync.Classification;
+using AStarDev.CloudSync.ViewModels.Common;
 using AStarDev.FunctionalParadigm;
 using AStarDev.Localization;
 using CommunityToolkit.Mvvm.Input;
@@ -9,6 +10,8 @@ namespace AStarDev.CloudSync.ViewModels.Classification;
 public sealed class ReclassifyViewModel : LocalizedObservableObject, IDisposable
 {
     private readonly IClassificationReclassifier reclassifier;
+    private readonly IReclassifyRunRecordedSource runRecorded;
+    private readonly IUiDispatcher dispatcher;
     private readonly IReclassifyFreshnessCheck freshnessCheck;
     private readonly ClassificationTermListViewModel terms;
     private ReclassifyState state = ReclassifyStateFactory.CreateIdle();
@@ -16,17 +19,22 @@ public sealed class ReclassifyViewModel : LocalizedObservableObject, IDisposable
 
     /// <summary>Creates the view model in the idle state.</summary>
     /// <param name="reclassifier">Runs the reclassify; a singleton, so a second run is refused.</param>
+    /// <param name="runRecorded">Raises an event when a run was recorded, so the recommendation refreshes after a run this view model did not start.</param>
+    /// <param name="dispatcher">Moves the refresh onto the UI thread.</param>
     /// <param name="freshnessCheck">Tells whether a rerun is worth recommending.</param>
     /// <param name="terms">The term list reloaded after a run.</param>
     /// <param name="localization">Supplies the text and culture.</param>
-    public ReclassifyViewModel(IClassificationReclassifier reclassifier, IReclassifyFreshnessCheck freshnessCheck, ClassificationTermListViewModel terms, ILocalizationService localization) : base(localization)
+    public ReclassifyViewModel(IClassificationReclassifier reclassifier, IReclassifyRunRecordedSource runRecorded, IUiDispatcher dispatcher, IReclassifyFreshnessCheck freshnessCheck, ClassificationTermListViewModel terms, ILocalizationService localization) : base(localization)
     {
         this.reclassifier = reclassifier;
+        this.runRecorded = runRecorded;
+        this.dispatcher = dispatcher;
         this.freshnessCheck = freshnessCheck;
         this.terms = terms;
         ReclassifyCommand = new AsyncRelayCommand(RunAsync);
         CancelCommand = new RelayCommand(ReclassifyCommand.Cancel, () => IsRunning);
         CheckCommand = new AsyncRelayCommand(CheckAsync);
+        runRecorded.RunRecorded += OnRunRecorded;
     }
 
     /// <summary>Where the button is.</summary>
@@ -72,8 +80,14 @@ public sealed class ReclassifyViewModel : LocalizedObservableObject, IDisposable
     /// <summary>Cancels the run in progress.</summary>
     public IRelayCommand CancelCommand { get; }
 
-    /// <summary>Cancels a run in progress, so the app shutting down does not leave the reclassify working.</summary>
-    public void Dispose() => ReclassifyCommand.Cancel();
+    /// <summary>Stops listening for recorded runs and cancels a run in progress, so the app shutting down does not leave the reclassify working.</summary>
+    public void Dispose()
+    {
+        runRecorded.RunRecorded -= OnRunRecorded;
+        ReclassifyCommand.Cancel();
+    }
+
+    private void OnRunRecorded(object? sender, EventArgs e) => _ = dispatcher.InvokeAsync(() => _ = CheckCommand.ExecuteAsync(null));
 
     private async Task RunAsync(CancellationToken cancellationToken)
     {

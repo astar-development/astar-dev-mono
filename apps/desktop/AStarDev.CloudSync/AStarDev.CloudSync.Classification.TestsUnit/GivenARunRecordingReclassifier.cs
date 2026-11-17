@@ -148,4 +148,44 @@ public sealed class GivenARunRecordingReclassifier
 
         runs.Last.Match(run => run.EngineVersion, () => "not recorded").ShouldBe(ClassificationEngineVersion.Current);
     }
+
+    [Fact]
+    public async Task when_a_run_is_recorded_then_the_run_recorded_event_is_raised_after_the_record_is_written()
+    {
+        var runs = new InMemoryReclassifyRunStore();
+        var recordedAtRaise = Option.None<ReclassifyRunRecord>();
+        var reclassifier = Create(runs);
+        reclassifier.RunRecorded += (_, _) => recordedAtRaise = runs.Last;
+
+        _ = await reclassifier.StartAsync(new Progress<ReclassifyProgress>(), CancellationToken);
+
+        recordedAtRaise.ShouldBe(runs.Last);
+        recordedAtRaise.Match(_ => true, () => false).ShouldBeTrue();
+    }
+
+    [Theory]
+    [MemberData(nameof(UnfinishedOutcomes))]
+    public async Task when_a_run_does_not_complete_then_the_run_recorded_event_is_not_raised(string unfinished)
+    {
+        inner.Outcome = Unfinished(unfinished);
+        var raised = 0;
+        var reclassifier = Create(new InMemoryReclassifyRunStore());
+        reclassifier.RunRecorded += (_, _) => raised++;
+
+        _ = await reclassifier.StartAsync(new Progress<ReclassifyProgress>(), CancellationToken);
+
+        raised.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task when_the_record_cannot_be_written_then_the_run_recorded_event_is_not_raised()
+    {
+        var raised = 0;
+        var reclassifier = Create(new InMemoryReclassifyRunStore { FailWrites = true });
+        reclassifier.RunRecorded += (_, _) => raised++;
+
+        _ = await reclassifier.StartAsync(new Progress<ReclassifyProgress>(), CancellationToken);
+
+        raised.ShouldBe(0);
+    }
 }

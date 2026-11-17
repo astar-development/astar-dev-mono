@@ -12,13 +12,14 @@ public class GivenTheReclassifyViewModel
     private readonly FakeClassificationReclassifier reclassifier = new();
     private readonly FakeReclassifyFreshnessCheck freshness = new();
     private readonly InlineSynchronizationContext context = new();
+    private readonly ImmediateUiDispatcher dispatcher = new();
 
     private ReclassifyViewModel Create()
     {
         var localization = TestData.CreateLocalization();
         var termList = new ClassificationTermListViewModel(terms, new FakeCategoryStore(), new FakeFileClassificationStore(), localization);
 
-        return new ReclassifyViewModel(reclassifier, freshness, termList, localization);
+        return new ReclassifyViewModel(reclassifier, reclassifier, dispatcher, freshness, termList, localization);
     }
 
     private static ReclassifyCounts Counts(int files, int batches) => ReclassifyCountsFactory.Create(files, batches, 0);
@@ -263,5 +264,38 @@ public class GivenTheReclassifyViewModel
         await viewModel.ReclassifyCommand.ExecuteAsync(null);
 
         freshness.CheckCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public void when_a_run_is_recorded_elsewhere_then_the_recommendation_is_checked_again_on_the_ui_dispatcher()
+    {
+        freshness.Outcome = Result.Success<ReclassifyFreshness, ClassificationFailure>(ReclassifyFreshnessFactory.CreateStale());
+        using var viewModel = Create();
+
+        reclassifier.RaiseRunRecorded();
+
+        (viewModel.IsRerunRecommended, dispatcher.Invocations, freshness.CheckCount).ShouldBe((true, 1, 1));
+    }
+
+    [Fact]
+    public void when_created_then_it_listens_for_recorded_runs_and_when_disposed_then_it_stops()
+    {
+        var viewModel = Create();
+        var whileAlive = reclassifier.RunRecordedSubscribers;
+
+        viewModel.Dispose();
+
+        (whileAlive, reclassifier.RunRecordedSubscribers).ShouldBe((1, 0));
+    }
+
+    [Fact]
+    public void when_disposed_then_a_run_recorded_afterwards_is_ignored()
+    {
+        var viewModel = Create();
+        viewModel.Dispose();
+
+        reclassifier.RaiseRunRecorded();
+
+        (dispatcher.Invocations, freshness.CheckCount).ShouldBe((0, 0));
     }
 }
