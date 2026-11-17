@@ -68,7 +68,7 @@ public partial class App : Application, IDisposable
             _ = Task.Run(() => services.GetRequiredService<AccountLogLevels>().LoadAsync(services.GetRequiredService<IAccountLogLevelSettings>(), CancellationToken.None), CancellationToken.None);
             _ = services.GetRequiredService<AccountLogLevelsViewModel>().LoadAsync(CancellationToken.None);
             recovery = Task.Run(() => services.GetRequiredService<IInterruptedSyncRecovery>().RecoverAsync(shutdown.Token), shutdown.Token);
-            _ = Task.Run(StartSyncAfterClassificationAsync, CancellationToken.None);
+            _ = Task.Run(() => services.GetRequiredService<SyncStartup>().RunAsync(shutdown.Token), CancellationToken.None);
             _ = services.GetRequiredService<SyncRunOverviewReloader>();
             _ = Task.Run(() => services.GetRequiredService<ISignInStateRefresher>().RefreshAllAsync(CancellationToken.None), CancellationToken.None);
 
@@ -79,31 +79,6 @@ public partial class App : Application, IDisposable
         }
 
         base.OnFrameworkInitializationCompleted();
-    }
-
-    private async Task StartSyncAfterClassificationAsync()
-    {
-        if (services is null)
-            return;
-
-        var provider = services;
-        await Try.RunAsync(() => StartSyncAsync(provider), CancellationToken.None).MatchAsync(_ => Unit.Instance, exception => LogSyncStartFailed(provider, exception)).ConfigureAwait(false);
-    }
-
-    private async Task<Unit> StartSyncAsync(ServiceProvider provider)
-    {
-        await provider.GetRequiredService<IClassificationStartup>().RunAsync(shutdown.Token).ConfigureAwait(false);
-        if (!shutdown.IsCancellationRequested)
-            await provider.GetRequiredService<ISyncScheduler>().StartAsync(CancellationToken.None).ConfigureAwait(false);
-
-        return Unit.Instance;
-    }
-
-    private static Unit LogSyncStartFailed(ServiceProvider provider, Exception exception)
-    {
-        LogMessage.ExceptionCaught(provider.GetRequiredService<ILogger<App>>(), nameof(StartSyncAfterClassificationAsync), exception.ErrorType());
-
-        return Unit.Instance;
     }
 
     private void LogUnhandledExceptions(UnhandledExceptionLogger unhandled)

@@ -6,9 +6,21 @@ namespace AStarDev.CloudSync.Accounts;
 /// <param name="database">The migration that is serialised.</param>
 public sealed class SerialCloudSyncDatabase(ICloudSyncDatabase database) : ICloudSyncDatabase, IDisposable
 {
-    /// <inheritdoc />
-    public Task<Result<Unit, ErrorResponse>> MigrateAsync(CancellationToken cancellationToken) => throw new NotImplementedException($"{database}{cancellationToken}");
+    private readonly SemaphoreSlim gate = new(1, 1);
 
     /// <inheritdoc />
-    public void Dispose() => throw new NotImplementedException();
+    public async Task<Result<Unit, ErrorResponse>> MigrateAsync(CancellationToken cancellationToken)
+    {
+        await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        var migration = MigrateOnceAsync(cancellationToken);
+        await ((Task)migration).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+        _ = gate.Release();
+
+        return await migration.ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public void Dispose() => gate.Dispose();
+
+    private async Task<Result<Unit, ErrorResponse>> MigrateOnceAsync(CancellationToken cancellationToken) => await database.MigrateAsync(cancellationToken).ConfigureAwait(false);
 }
