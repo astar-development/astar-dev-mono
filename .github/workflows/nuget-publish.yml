@@ -140,16 +140,48 @@ jobs:
       - name: Authenticate GitHub Packages source
         run: dotnet nuget update source github --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text
 
-      - name: Restore
-        run: dotnet restore "${CSPROJ}"
+      # ── Per-project versions ──────────────────────────────────────────────
+      # Do NOT pass -p:Version: a global property flows into every
+      # ProjectReference, so sibling packages (e.g. AStarDev.Utilities) get
+      # stamped with THIS package's version and the nuspec ends up depending
+      # on versions that were never published.
+      # Instead write a props file (imported by Directory.Build.props) giving
+      # each package its own version: the target gets the tag version, every
+      # other package its latest stable version published on NuGet.org.
+      - name: Generate per-project version file
+        run: |
+          VERSIONS_FILE="${RUNNER_TEMP}/pack-versions.props"
+          {
+            echo '<Project>'
+            echo '  <PropertyGroup>'
+            git tag -l '*/v*' | sed 's#/v.*##' | sort -u | while read -r NAME; do
+              if [ "$NAME" = "$PACKAGE_NAME" ]; then
+                VER="$PACKAGE_VERSION"
+              else
+                # Ask NuGet.org, not git: release-on-merge tags before the publish,
+                # so a failed push (e.g. expired API key) leaves tags with no package.
+                # Empty on 404 (never published) -> falls back to the 0.1.0 default.
+                VER=$(curl -fsS "https://api.nuget.org/v3-flatcontainer/${NAME,,}/index.json" 2>/dev/null \
+                  | jq -r '[.versions[] | select(contains("-") | not)] | last // empty')
+              fi
+              [ -n "$VER" ] && echo "    <Version Condition=\"'\$(MSBuildProjectName)' == '${NAME}'\">${VER}</Version>"
+            done
+            echo '  </PropertyGroup>'
+            echo '</Project>'
+          } > "$VERSIONS_FILE"
+          cat "$VERSIONS_FILE"
+          echo "PACK_VERSIONS_FILE=${VERSIONS_FILE}" >> $GITHUB_ENV
 
-      # ── Build — version stamped directly from the tag / workflow_call input ─
+      - name: Restore
+        run: dotnet restore "${CSPROJ}" -p:PackVersionsFile="${PACK_VERSIONS_FILE}"
+
+      # ── Build — versions come from the generated props file ───────────────
       - name: Build
         run: |
           dotnet build "${CSPROJ}" \
             --no-restore \
             --configuration Release \
-            -p:Version=${PACKAGE_VERSION} \
+            -p:PackVersionsFile="${PACK_VERSIONS_FILE}" \
             -p:TreatWarningsAsErrors=true
 
       # ── Test — finds the matching .TestsUnit project automatically ────────
@@ -182,7 +214,7 @@ jobs:
           dotnet pack "${CSPROJ}" \
             --no-build \
             --configuration Release \
-            -p:Version=${PACKAGE_VERSION} \
+            -p:PackVersionsFile="${PACK_VERSIONS_FILE}" \
             --output ./nupkgs
 
       - name: List packages
