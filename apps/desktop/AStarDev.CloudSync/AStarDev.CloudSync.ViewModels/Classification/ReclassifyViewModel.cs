@@ -41,7 +41,9 @@ public sealed class ReclassifyViewModel : LocalizedObservableObject, IDisposable
     /// <summary>The progress or outcome line; empty while idle.</summary>
     public string StatusText => state switch
     {
+        ReclassifyState.Running { FilesSkipped: > 0 } running => Localization.GetLocal("Classification.Reclassify.RunningWithSkipped", Format(running.FilesDone), Format(running.FilesSkipped)),
         ReclassifyState.Running running => Localization.GetLocal("Classification.Reclassify.Running", Format(running.FilesDone)),
+        ReclassifyState.Completed { Counts.SkippedForAccount: > 0 } completed => Localization.GetLocal("Classification.Reclassify.CompletedWithSkipped", Format(completed.Counts.FilesWritten), Format(completed.Counts.Batches), Format(completed.Counts.SkippedForAccount)),
         ReclassifyState.Completed completed => Localization.GetLocal("Classification.Reclassify.Completed", Format(completed.Counts.FilesWritten), Format(completed.Counts.Batches)),
         ReclassifyState.Cancelled cancelled => Localization.GetLocal("Classification.Reclassify.Cancelled", Format(cancelled.Counts.FilesWritten)),
         ReclassifyState.Failed failed => Localization.GetLocal("Classification.Reclassify.Failed", Format(failed.Counts.FilesWritten)),
@@ -71,7 +73,7 @@ public sealed class ReclassifyViewModel : LocalizedObservableObject, IDisposable
     private void ShowProgress(ReclassifyProgress report)
     {
         if (state is ReclassifyState.Running)
-            SetState(ReclassifyStateFactory.CreateRunning(report.FilesDone));
+            SetState(ReclassifyStateFactory.CreateRunning(report.FilesDone, report.FilesSkipped));
     }
 
     private static ReclassifyState StateOf(ReclassifyOutcome outcome) => outcome switch
