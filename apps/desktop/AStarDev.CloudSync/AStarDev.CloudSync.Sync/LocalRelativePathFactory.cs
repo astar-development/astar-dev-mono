@@ -1,4 +1,3 @@
-using System.Text;
 using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.Sync;
@@ -18,7 +17,7 @@ public static class LocalRelativePathFactory
     public static Result<LocalRelativePath, LocalFolderError> Create(string? value)
     {
         var text = (value ?? string.Empty).Trim();
-        var segments = text.Replace(Backslash, Separator).Normalize(NormalizationForm.FormC).Split(Separator, StringSplitOptions.RemoveEmptyEntries);
+        var segments = UnicodeText.Compose(text.Replace(Backslash, Separator)).Split(Separator, StringSplitOptions.RemoveEmptyEntries);
 
         return IsAbsolute(text) || segments.Any(segment => segment is "." or "..")
             ? Result.Failure<LocalRelativePath, LocalFolderError>(LocalFolderErrorFactory.CreateInvalidPath())

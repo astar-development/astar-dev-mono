@@ -20,4 +20,16 @@ public sealed class GivenAClassificationCategoryFactory
 
         category.Name.ShouldBe(ClassificationCategoryFactory.UnclassifiedName);
     }
+
+    [Theory]
+    [InlineData("bad\uD800name", "bad\uD800name")]
+    [InlineData("bad\uDC00  name", "bad\uDC00 name")]
+    [InlineData("smile\uD83D\uDE00", "smile\uD83D\uDE00")]
+    [InlineData("Cafe\u0301", "Caf\u00E9")]
+    public void when_name_has_surrogates_or_a_decomposed_accent_then_it_is_created_without_throwing(string name, string expected)
+    {
+        var category = ClassificationCategoryFactory.Create(CategoryIdFactory.Create(Guid.NewGuid()), name);
+
+        category.Name.ShouldBe(expected);
+    }
 }

@@ -1,4 +1,3 @@
-using System.Text;
 using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.Sync;
@@ -15,14 +14,12 @@ public static class RelativeSyncPathFactory
     public static Result<RelativeSyncPath, ErrorResponse> Create(string? value)
     {
         var trimmed = (value ?? string.Empty).Trim().Replace('\\', Separator).Trim(Separator);
-        var normalised = Compose(trimmed);
+        var normalised = UnicodeText.Compose(trimmed);
 
         return normalised.Length == 0 || normalised.Split(Separator).Any(IsInvalidSegment)
             ? new Fail<RelativeSyncPath, ErrorResponse>(new ErrorResponse(InvalidPathError))
             : new Ok<RelativeSyncPath, ErrorResponse>(new RelativeSyncPath(normalised));
     }
-
-    private static string Compose(string text) => Try.Run(() => text.Normalize(NormalizationForm.FormC)).Match(composed => composed, _ => text);
 
     private static bool IsInvalidSegment(string segment) => segment.Length == 0 || segment is "." or "..";
 }
