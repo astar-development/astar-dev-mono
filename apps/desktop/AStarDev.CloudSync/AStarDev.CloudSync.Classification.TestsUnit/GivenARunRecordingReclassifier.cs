@@ -203,7 +203,7 @@ public sealed class GivenARunRecordingReclassifier
         inner.Gate.SetResult();
         await running;
 
-        (during, caller.Reports, progressSource.Current).ShouldBe((Option.Some(ReclassifyProgressFactory.Create(500, 1)), [(500, 1, 0)], Option.None<ReclassifyProgress>()));
+        (during, caller.Reports.Single(), progressSource.Current).ShouldBe((Option.Some(ReclassifyProgressFactory.Create(500, 1)), (500, 1, 0), Option.None<ReclassifyProgress>()));
     }
 
     [Theory]
