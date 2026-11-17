@@ -15,6 +15,14 @@ public abstract record ClassificationFailure
         }
     }
 
+    /// <summary>The file is not in the account's current sync baseline.</summary>
+    public sealed record FileNotFound : ClassificationFailure
+    {
+        internal FileNotFound()
+        {
+        }
+    }
+
     /// <summary>The store could not be read or written.</summary>
     public sealed record Unavailable : ClassificationFailure
     {

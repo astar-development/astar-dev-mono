@@ -92,13 +92,13 @@ public sealed class GivenALinkWriteFromBeforeARootChangeOverSqlite : MigratedDat
     }
 
     [Fact]
-    public async Task when_a_user_link_is_assigned_to_an_old_root_path_then_not_found_is_returned_and_no_link_is_stored()
+    public async Task when_a_user_link_is_assigned_to_an_old_root_path_then_file_not_found_is_returned_and_no_link_is_stored()
     {
         var red = await ChangeRootAfterOldRootSyncAsync("old.jpg");
 
         var failure = Failed(await Database.Links.AssignUserLinkAsync(changedAccount, Path("old.jpg"), red, CancellationToken));
 
-        (failure, (await TermsOfAsync(changedAccount, "old.jpg")).Count).ShouldBe((ClassificationFailureFactory.CreateNotFound(), 0));
+        (failure, (await TermsOfAsync(changedAccount, "old.jpg")).Count).ShouldBe((ClassificationFailureFactory.CreateFileNotFound(), 0));
     }
 
     [Fact]

@@ -109,6 +109,24 @@ public sealed class GivenAFileClassificationStore : MigratedDatabaseTests
     }
 
     [Fact]
+    public async Task when_a_user_link_is_assigned_to_a_path_not_in_the_baseline_then_file_not_found_is_returned_and_no_link_is_stored()
+    {
+        var red = await AddTermAsync("red");
+
+        var failure = Failed(await Database.Links.AssignUserLinkAsync(account, Path("missing.jpg"), red, CancellationToken));
+
+        (failure, (await TermsOfAsync("missing.jpg")).Count).ShouldBe((ClassificationFailureFactory.CreateFileNotFound(), 0));
+    }
+
+    [Fact]
+    public async Task when_a_user_link_is_assigned_to_an_unknown_term_and_a_path_not_in_the_baseline_then_not_found_is_returned()
+    {
+        var failure = Failed(await Database.Links.AssignUserLinkAsync(account, Path("missing.jpg"), TermIdFactory.Create(Guid.NewGuid()), CancellationToken));
+
+        failure.ShouldBe(ClassificationFailureFactory.CreateNotFound());
+    }
+
+    [Fact]
     public async Task when_a_replace_names_an_unknown_term_then_it_fails_and_the_existing_links_are_untouched()
     {
         var red = await AddTermAsync("red");

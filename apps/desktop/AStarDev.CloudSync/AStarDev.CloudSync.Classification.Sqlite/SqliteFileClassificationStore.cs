@@ -97,7 +97,7 @@ internal sealed class SqliteFileClassificationStore(IDbContextFactory<Classifica
         var account = accountId.Value;
         var key = Key(path);
         if (!await InBaselineAsync(dbContext, account, key, cancellationToken).ConfigureAwait(false))
-            return Result.Failure<Unit, ClassificationFailure>(ClassificationFailureFactory.CreateNotFound());
+            return Result.Failure<Unit, ClassificationFailure>(ClassificationFailureFactory.CreateFileNotFound());
 
         var link = await dbContext.FileLinks.FirstOrDefaultAsync(item => item.AccountId == account && item.PathKey == key && item.TermId == term, cancellationToken).ConfigureAwait(false);
         if (link is null)
