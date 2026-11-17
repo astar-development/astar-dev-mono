@@ -17,7 +17,7 @@ internal sealed class AccountLeaseWaiter(IAccountSyncLock syncLock, TimeProvider
         var deadline = timeProvider.GetUtcNow() + AccountLeasePolicy.WaitForRunningWork;
         while (true)
         {
-            var attempt = syncLock.TryAcquire(accountId);
+            var attempt = await syncLock.AcquireAsync(accountId, cancellationToken).ConfigureAwait(false);
             if (attempt is SyncLockAttempt.Acquired acquired)
                 return Option.Some(acquired.Lease);
 

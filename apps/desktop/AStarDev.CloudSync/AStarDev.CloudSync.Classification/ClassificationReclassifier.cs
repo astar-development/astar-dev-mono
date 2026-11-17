@@ -10,7 +10,7 @@ namespace AStarDev.CloudSync.Classification;
 /// <param name="fileSource">Streams every file the baseline knows about.</param>
 /// <param name="classifier">Classifies one path.</param>
 /// <param name="store">Writes the automatic links.</param>
-/// <param name="syncLock">Holds each account's lease while that account's links are written, so an account removal cannot run in between.</param>
+/// <param name="syncLock">Holds each account's background lease while that account's links are written, so an account removal cannot run in between. A background lease gives way: a pass or user action waits for the short write, and a batch that finds a lease taken pauses for <see cref="ReclassifyOptions.DelayAfterContention"/>.</param>
 /// <param name="accountStore">Confirms, under the lease, that the account still exists.</param>
 /// <param name="options">Batch size, parallelism and the pause between batches.</param>
 /// <param name="logger">Reports the run without paths or terms.</param>
@@ -93,26 +93,28 @@ public sealed class ClassificationReclassifier(IClassifiableFileSource fileSourc
         var links = new FileTermLinks[batch.Count];
         var parallel = new ParallelOptions { MaxDegreeOfParallelism = options.DegreeOfParallelism, CancellationToken = cancellationToken };
         await Parallel.ForEachAsync(Enumerable.Range(0, batch.Count), parallel, async (index, token) => links[index] = await ClassifyAsync(batch[index], token).ConfigureAwait(false)).ConfigureAwait(false);
-        if (!await WriteUnderLeasesAsync(links, state, cancellationToken).ConfigureAwait(false))
+        var leases = HeldAccountLeases.Acquire(syncLock, links.Select(link => link.AccountId));
+        bool written;
+        using (leases)
+            written = await WriteUnderLeasesAsync(links, leases, state, cancellationToken).ConfigureAwait(false);
+
+        if (!written)
             return false;
 
         progress.Report(ReclassifyProgressFactory.Create(state.FilesWritten, state.Batches, state.SkippedForAccount));
 
         await Task.Yield();
-        if (options.DelayBetweenBatches > TimeSpan.Zero)
-            await Task.Delay(options.DelayBetweenBatches, cancellationToken).ConfigureAwait(false);
+        var pause = leases.Contended ? options.DelayAfterContention : options.DelayBetweenBatches;
+        if (pause > TimeSpan.Zero)
+            await Task.Delay(pause, options.TimeProvider, cancellationToken).ConfigureAwait(false);
 
         return true;
     }
 
-    private async Task<bool> WriteUnderLeasesAsync(FileTermLinks[] links, ReclassifyRunState state, CancellationToken cancellationToken)
-    {
-        using var leases = HeldAccountLeases.Acquire(syncLock, links.Select(link => link.AccountId));
-
-        return await accountStore.GetAllAsync(cancellationToken)
+    private async Task<bool> WriteUnderLeasesAsync(FileTermLinks[] links, HeldAccountLeases leases, ReclassifyRunState state, CancellationToken cancellationToken) =>
+        await accountStore.GetAllAsync(cancellationToken)
             .MatchAsync(accounts => WriteKnownAsync(links, leases, accounts, state, cancellationToken), error => Task.FromResult(AccountsUnreadable(error)))
             .ConfigureAwait(false);
-    }
 
     private async Task<bool> WriteKnownAsync(FileTermLinks[] links, HeldAccountLeases leases, IReadOnlyList<StoredAccount> accounts, ReclassifyRunState state, CancellationToken cancellationToken)
     {

@@ -33,7 +33,7 @@ internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps st
     }
 
     private async Task<Result<SyncPassSummary, SyncPassFailure>> RunIfFreeAsync(AccountId accountId, SyncTrigger trigger, CancellationToken cancellationToken) =>
-        syncLock.TryAcquire(accountId) is SyncLockAttempt.Acquired acquired
+        await syncLock.AcquireAsync(accountId, cancellationToken).ConfigureAwait(false) is SyncLockAttempt.Acquired acquired
             ? await RunHoldingAsync(acquired.Lease, accountId, trigger, cancellationToken).ConfigureAwait(false)
             : Skipped(trigger);
 

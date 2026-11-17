@@ -29,7 +29,7 @@ internal sealed class HeldDeletionDecider(IAccountSyncLock syncLock, ISyncAttent
 
     private async Task<Result<Unit, HeldDeletionRefusal>> SettleAsync(AccountId accountId, HeldDeletionId id, Operation operation, AttentionResolution resolution, CancellationToken cancellationToken)
     {
-        var attempt = syncLock.TryAcquire(accountId);
+        var attempt = await syncLock.AcquireAsync(accountId, cancellationToken).ConfigureAwait(false);
         if (attempt is not SyncLockAttempt.Acquired acquired)
             return Refused(attempt is SyncLockAttempt.Busy ? HeldDeletionRefusalFactory.CreateBusy() : HeldDeletionRefusalFactory.CreateDraining());
 
