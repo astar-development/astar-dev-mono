@@ -27,8 +27,8 @@ public sealed class GivenAClassifyingUploadRecorder
 
     private static EntityTag ETag() => EntityTagFactory.Create("e").Match(tag => tag, _ => throw new InvalidOperationException());
 
-    private static ClassifyingUploadRecorder Build(UploadHookInnerRecorder inner, ClassifyHookClassifier classifier, ClassifyHookStore store, ILogger<ClassifyingUploadRecorder>? logger = null) =>
-        new(inner, classifier, store, logger ?? NullLogger<ClassifyingUploadRecorder>.Instance);
+    private static ClassifyingUploadRecorder Build(UploadHookInnerRecorder inner, ClassifyHookClassifier classifier, ClassifyHookStore store, ILogger<ClassifyingUploadRecorder>? logger = null, IClassificationVocabularyProvider? vocabulary = null) =>
+        new(inner, classifier, store, vocabulary ?? new RecordingVocabularyProvider(new Ok<ClassificationVocabulary, ClassificationFailure>(ClassificationVocabularyFactory.Create([], []))), logger ?? NullLogger<ClassifyingUploadRecorder>.Instance);
 
     private static Task<Result<Unit, ErrorResponse>> Record(ClassifyingUploadRecorder recorder, SyncBaselineEntry entry, CancellationToken cancellationToken) =>
         recorder.RecordAsync(Account, entry, Remote(entry.Path.Value ?? string.Empty), cancellationToken);
@@ -49,6 +49,33 @@ public sealed class GivenAClassifyingUploadRecorder
         store.Replaced.Select(links => links.Path.Value).ShouldBe(["Holiday/a.jpg"]);
         store.Replaced[0].AccountId.ShouldBe(Account);
         store.Replaced[0].TermIds.ShouldBe([ClassifyHookClassifier.TermId]);
+    }
+
+    [Fact]
+    public async Task when_the_vocabulary_changes_while_the_file_is_classified_then_it_is_classified_and_written_again()
+    {
+        var vocabulary = new RecordingVocabularyProvider(new Ok<ClassificationVocabulary, ClassificationFailure>(ClassificationVocabularyFactory.Create([], [])));
+        var classifier = new ClassifyHookClassifier { OnClassify = () => { if (vocabulary.Invalidations == 0) vocabulary.Invalidate(); } };
+        var store = new ClassifyHookStore();
+        var recorder = Build(new UploadHookInnerRecorder(), classifier, store, vocabulary: vocabulary);
+
+        _ = await Record(recorder, FileEntry("Holiday/a.jpg"), TestContext.Current.CancellationToken);
+
+        classifier.Paths.Count.ShouldBe(2);
+        store.Replaced.Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task when_the_vocabulary_keeps_changing_then_the_file_is_not_reclassified_forever()
+    {
+        var vocabulary = new RecordingVocabularyProvider(new Ok<ClassificationVocabulary, ClassificationFailure>(ClassificationVocabularyFactory.Create([], [])));
+        var classifier = new ClassifyHookClassifier { OnClassify = vocabulary.Invalidate };
+        var recorder = Build(new UploadHookInnerRecorder(), classifier, new ClassifyHookStore(), vocabulary: vocabulary);
+
+        var result = await Record(recorder, FileEntry("Holiday/a.jpg"), TestContext.Current.CancellationToken);
+
+        Succeeded(result).ShouldBeTrue();
+        classifier.Paths.Count.ShouldBeLessThan(10);
     }
 
     [Fact]
