@@ -81,6 +81,29 @@ namespace AStarDev.CloudSync.Classification.Sqlite.Migrations
                     b.ToTable("FileLinks", (string)null);
                 });
 
+            modelBuilder.Entity("AStarDev.CloudSync.Classification.Sqlite.ReclassifyRunEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("EngineVersion")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("FinishedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SeedVersion")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ReclassifyRun", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_ReclassifyRun_SingleRow", "\"Id\" = 1");
+                        });
+                });
+
             modelBuilder.Entity("AStarDev.CloudSync.Classification.Sqlite.TermEntity", b =>
                 {
                     b.Property<Guid>("Id")

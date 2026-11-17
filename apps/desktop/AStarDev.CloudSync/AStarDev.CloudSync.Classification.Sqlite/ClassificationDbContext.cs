@@ -23,6 +23,9 @@ internal sealed class ClassificationDbContext(DbContextOptions<ClassificationDbC
     /// <summary>The seed state: at most one row.</summary>
     public DbSet<ClassificationStateEntity> State => Set<ClassificationStateEntity>();
 
+    /// <summary>The last completed reclassify run: at most one row.</summary>
+    public DbSet<ReclassifyRunEntity> ReclassifyRuns => Set<ReclassifyRunEntity>();
+
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -30,5 +33,6 @@ internal sealed class ClassificationDbContext(DbContextOptions<ClassificationDbC
         modelBuilder.ApplyConfiguration(new TermEntityConfiguration());
         modelBuilder.ApplyConfiguration(new FileLinkEntityConfiguration());
         modelBuilder.ApplyConfiguration(new ClassificationStateEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new ReclassifyRunEntityConfiguration());
     }
 }

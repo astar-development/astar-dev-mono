@@ -1,4 +1,5 @@
 using AStarDev.CloudSync.Classification;
+using AStarDev.FunctionalParadigm;
 using AStarDev.Localization;
 using CommunityToolkit.Mvvm.Input;
 
@@ -11,6 +12,7 @@ public sealed class ReclassifyViewModel : LocalizedObservableObject, IDisposable
     private readonly IReclassifyFreshnessCheck freshnessCheck;
     private readonly ClassificationTermListViewModel terms;
     private ReclassifyState state = ReclassifyStateFactory.CreateIdle();
+    private ReclassifyFreshness freshness = ReclassifyFreshnessFactory.CreateUpToDate();
 
     /// <summary>Creates the view model in the idle state.</summary>
     /// <param name="reclassifier">Runs the reclassify; a singleton, so a second run is refused.</param>
@@ -24,7 +26,7 @@ public sealed class ReclassifyViewModel : LocalizedObservableObject, IDisposable
         this.terms = terms;
         ReclassifyCommand = new AsyncRelayCommand(RunAsync);
         CancelCommand = new RelayCommand(ReclassifyCommand.Cancel, () => IsRunning);
-        CheckCommand = new AsyncRelayCommand(() => Task.CompletedTask);
+        CheckCommand = new AsyncRelayCommand(CheckAsync);
     }
 
     /// <summary>Where the button is.</summary>
@@ -55,11 +57,11 @@ public sealed class ReclassifyViewModel : LocalizedObservableObject, IDisposable
         _ => string.Empty
     };
 
-    /// <summary>Whether the last completed run used another engine or seed version, or no run has completed yet.</summary>
-    public bool IsRerunRecommended => freshnessCheck is null;
+    /// <summary>Whether the last completed run used another engine or seed version, or no run has completed yet. False until <see cref="CheckCommand"/> runs, and when the check fails.</summary>
+    public bool IsRerunRecommended => freshness is ReclassifyFreshness.Stale;
 
     /// <summary>The line that recommends a rerun.</summary>
-    public string RerunRecommendedText => Localization.GetLocal(string.Empty);
+    public string RerunRecommendedText => Localization.GetLocal("Classification.Reclassify.RerunRecommended");
 
     /// <summary>Checks whether a rerun is worth recommending; run it each time the page is shown.</summary>
     public IAsyncRelayCommand CheckCommand { get; }
@@ -79,8 +81,17 @@ public sealed class ReclassifyViewModel : LocalizedObservableObject, IDisposable
         var progress = new Progress<ReclassifyProgress>(report => ShowProgress(report));
         var outcome = await reclassifier.StartAsync(progress, cancellationToken).ConfigureAwait(true);
         SetState(StateOf(outcome));
-        if (outcome is not ReclassifyOutcome.AlreadyRunning)
-            await terms.LoadCommand.ExecuteAsync(null).ConfigureAwait(true);
+        if (outcome is ReclassifyOutcome.AlreadyRunning)
+            return;
+
+        await terms.LoadCommand.ExecuteAsync(null).ConfigureAwait(true);
+        await CheckCommand.ExecuteAsync(null).ConfigureAwait(true);
+    }
+
+    private async Task CheckAsync(CancellationToken cancellationToken)
+    {
+        freshness = await freshnessCheck.CheckAsync(cancellationToken).MatchAsync(current => current, _ => ReclassifyFreshnessFactory.CreateUpToDate()).ConfigureAwait(true);
+        OnPropertyChanged(nameof(IsRerunRecommended));
     }
 
     private void ShowProgress(ReclassifyProgress report)

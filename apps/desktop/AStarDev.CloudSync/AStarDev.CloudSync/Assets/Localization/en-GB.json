@@ -238,6 +238,7 @@
   "Classification.Reclassify.Cancelled": "Reclassify cancelled after {0} files",
   "Classification.Reclassify.Failed": "Reclassify failed after {0} files",
   "Classification.Reclassify.AlreadyRunning": "A reclassify is already running",
+  "Classification.Reclassify.RerunRecommended": "The classification rules have changed since the last full reclassify, or none has finished yet. Reclassify to bring the file tags up to date.",
   "Search.Placeholder": "Search accounts and folders",
   "Search.Accounts": "Accounts",
   "Search.Folders": "Folders",
