@@ -23,7 +23,7 @@ public sealed class GivenClassificationPersistenceServiceCollectionExtensions
     {
         var services = Added();
 
-        new[] { typeof(ITermStore), typeof(ICategoryStore), typeof(IFileClassificationStore), typeof(ISeedStateStore), typeof(IClassifiableFileSource), typeof(ICloudSyncDatabase) }
+        new[] { typeof(ITermStore), typeof(ICategoryStore), typeof(IFileClassificationStore), typeof(ISeedStateStore), typeof(IReclassifyRunStore), typeof(IClassifiableFileSource), typeof(ICloudSyncDatabase) }
             .Select(port => services.Single(descriptor => descriptor.ServiceType == port).Lifetime)
             .ShouldAllBe(lifetime => lifetime == ServiceLifetime.Singleton);
     }
