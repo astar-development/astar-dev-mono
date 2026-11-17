@@ -7,4 +7,8 @@ public interface IClassificationReclassifier
     /// <param name="progress">Receives a report after each batch, including a batch whose files were all skipped, so the display never looks frozen.</param>
     /// <param name="cancellationToken">Cancels the run.</param>
     Task<ReclassifyOutcome> StartAsync(IProgress<ReclassifyProgress> progress, CancellationToken cancellationToken);
+
+    /// <summary>Completes when no run is active, at once when none is. A caller that got AlreadyRunning and needs a run that starts after the active one ended waits here and then calls <see cref="StartAsync"/> again, which may return AlreadyRunning again if another run won the gap. Never throws for a cancel: a cancelled wait just returns.</summary>
+    /// <param name="cancellationToken">Stops the wait.</param>
+    Task WaitUntilIdleAsync(CancellationToken cancellationToken);
 }

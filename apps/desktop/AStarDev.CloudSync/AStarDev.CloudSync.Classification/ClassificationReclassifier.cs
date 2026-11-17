@@ -19,6 +19,9 @@ public sealed class ClassificationReclassifier(IClassifiableFileSource fileSourc
     private int running;
 
     /// <inheritdoc />
+    public Task WaitUntilIdleAsync(CancellationToken cancellationToken) => throw new NotImplementedException($"{nameof(cancellationToken)} wait");
+
+    /// <inheritdoc />
     public async Task<ReclassifyOutcome> StartAsync(IProgress<ReclassifyProgress> progress, CancellationToken cancellationToken)
     {
         if (Interlocked.CompareExchange(ref running, 1, 0) != 0)
