@@ -127,7 +127,9 @@ public sealed class GivenASyncNowAction : IDisposable
         Steps.DownloadGate = Option.Some(gate);
         var racing = Enumerable.Range(0, 20).Select(_ => Task.Run(() => SyncNowAsync(Personal), CancellationToken)).ToArray();
         await gate.Entered.WaitAsync(Limit, CancellationToken);
-        await Task.Delay(50, CancellationToken);
+        var pending = racing.ToList();
+        while (pending.Count > 1)
+            pending.Remove(await Task.WhenAny(pending).WaitAsync(Limit, CancellationToken));
 
         gate.Release();
         await Task.WhenAll(racing).WaitAsync(Limit, CancellationToken);
