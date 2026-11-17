@@ -190,7 +190,7 @@ public sealed class GivenAnInterruptedSyncRecovery : IDisposable
         using var exit = CancellationTokenSource.CreateLinkedTokenSource(CancellationToken);
 
         var recovering = Task.Run(() => next.Recovery.RecoverAsync(exit.Token), CancellationToken);
-        await UntilRecoveryRunsAsync(1).WaitAsync(Limit, CancellationToken);
+        await UntilFinishedRecoveryRunsAsync(1).WaitAsync(Limit, CancellationToken);
         await exit.CancelAsync();
         var outcomes = await recovering.WaitAsync(Limit, CancellationToken);
 
@@ -227,6 +227,12 @@ public sealed class GivenAnInterruptedSyncRecovery : IDisposable
     private async Task UntilRecoveryRunsAsync(int count)
     {
         while (RecoveryRuns() < count)
+            await Task.Delay(5, CancellationToken);
+    }
+
+    private async Task UntilFinishedRecoveryRunsAsync(int count)
+    {
+        while (journal.Runs.Count(run => run.Trigger is SyncTrigger.Recovery && run.Outcome is Option<SyncRunOutcome>.Some) < count)
             await Task.Delay(5, CancellationToken);
     }
 }
