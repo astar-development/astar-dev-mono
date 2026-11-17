@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync.Classification.Sqlite;
 
-/// <summary>Keeps the links between files and terms in SQLite. Paths match ignoring case through an upper-case key. Every write runs in one serializable transaction, so a failed batch changes nothing and concurrent writes to one file leave one consistent set of links. Removing an account or changing its sync root deletes its links; terms and categories stay.</summary>
+/// <summary>Keeps the links between files and terms in SQLite. Paths match ignoring case through an upper-case key. Every write runs in one serializable transaction, so a failed batch changes nothing and concurrent writes to one file leave one consistent set of links. Removing an account or changing its sync root deletes its links; terms and categories stay. A write for a path that is no longer in the account's sync baseline is dropped inside the write transaction, so a batch streamed before a root change or removal cannot bring old-root links back (#1873). The baseline is read from the <c>SyncBaseline</c> table of the same database file, which the sync persistence owns.</summary>
 /// <param name="dbContextFactory">Creates a context per operation.</param>
 /// <param name="logger">Reports reads and writes that fail, by exception type only.</param>
 internal sealed class SqliteFileClassificationStore(IDbContextFactory<ClassificationDbContext> dbContextFactory, ILogger<SqliteFileClassificationStore> logger) : IFileClassificationStore, IAccountRemovalParticipant, ISyncRootChangeParticipant
@@ -58,6 +58,9 @@ internal sealed class SqliteFileClassificationStore(IDbContextFactory<Classifica
 
     private static string Key(RelativeSyncPath path) => (path.Value ?? string.Empty).ToUpperInvariant();
 
+    private static async Task<bool> InBaselineAsync(ClassificationDbContext dbContext, Guid accountId, string key, CancellationToken cancellationToken) =>
+        await dbContext.Database.SqlQuery<int>($"SELECT COUNT(*) AS \"Value\" FROM \"SyncBaseline\" WHERE \"AccountId\" = {accountId} AND \"PathKey\" = {key}").SingleAsync(cancellationToken).ConfigureAwait(false) > 0;
+
     private static FileLinkEntity NewLink(Guid accountId, RelativeSyncPath path, Guid termId, string origin) => new() { AccountId = accountId, Path = path.Value ?? string.Empty, TermId = termId, Origin = origin };
 
     private async Task<Result<Unit, ClassificationFailure>> ReplaceAsync(IReadOnlyList<FileTermLinks> updates, CancellationToken cancellationToken)
@@ -68,6 +71,9 @@ internal sealed class SqliteFileClassificationStore(IDbContextFactory<Classifica
         {
             var account = update.AccountId.Value;
             var key = Key(update.Path);
+            if (!await InBaselineAsync(dbContext, account, key, cancellationToken).ConfigureAwait(false))
+                continue;
+
             _ = await dbContext.FileLinks.Where(link => link.AccountId == account && link.PathKey == key && link.Origin == FileLinkOrigins.Auto).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
             var kept = await dbContext.FileLinks.Where(link => link.AccountId == account && link.PathKey == key).Select(link => link.TermId).ToListAsync(cancellationToken).ConfigureAwait(false);
             dbContext.FileLinks.AddRange(update.TermIds.Select(termId => termId.Value).Distinct().Where(termId => !kept.Contains(termId)).Select(termId => NewLink(account, update.Path, termId, FileLinkOrigins.Auto)));
@@ -90,6 +96,9 @@ internal sealed class SqliteFileClassificationStore(IDbContextFactory<Classifica
 
         var account = accountId.Value;
         var key = Key(path);
+        if (!await InBaselineAsync(dbContext, account, key, cancellationToken).ConfigureAwait(false))
+            return Result.Failure<Unit, ClassificationFailure>(ClassificationFailureFactory.CreateNotFound());
+
         var link = await dbContext.FileLinks.FirstOrDefaultAsync(item => item.AccountId == account && item.PathKey == key && item.TermId == term, cancellationToken).ConfigureAwait(false);
         if (link is null)
             _ = dbContext.FileLinks.Add(NewLink(account, path, term, FileLinkOrigins.User));

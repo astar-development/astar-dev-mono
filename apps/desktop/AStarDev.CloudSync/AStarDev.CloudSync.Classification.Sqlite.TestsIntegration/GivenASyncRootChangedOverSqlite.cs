@@ -34,6 +34,7 @@ public sealed class GivenASyncRootChangedOverSqlite : MigratedDatabaseTests
         var car = await AddTermAsync("car");
         foreach (var account in new[] { changedAccount, keptAccount })
         {
+            await InBaselineAsync(account, "auto.jpg", "user.jpg");
             _ = Ok(await Database.Links.ReplaceAutoLinksAsync(account, Path("auto.jpg"), [red], CancellationToken));
             _ = Ok(await Database.Links.AssignUserLinkAsync(account, Path("user.jpg"), car, CancellationToken));
         }
@@ -75,6 +76,7 @@ public sealed class GivenASyncRootChangedOverSqlite : MigratedDatabaseTests
     {
         var (red, car) = await LinkBothAccountsAsync();
         _ = await SetRootAsync(changedAccount, SecondRoot);
+        await InBaselineAsync(changedAccount, "auto.jpg", "user.jpg");
 
         _ = Ok(await Database.Links.ReplaceAutoLinksAsync(changedAccount, Path("auto.jpg"), [car], CancellationToken));
         _ = Ok(await Database.Links.ReplaceAutoLinksAsync(changedAccount, Path("user.jpg"), [red], CancellationToken));
