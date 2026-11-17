@@ -105,7 +105,7 @@ public sealed class GivenALinkWriteFromBeforeARootChangeOverSqlite : MigratedDat
     public async Task when_twenty_parallel_link_writes_race_a_root_change_then_no_old_root_links_are_left()
     {
         _ = await SetRootAsync(changedAccount, FirstRoot);
-        await InBaselineAsync(changedAccount, "old.jpg", "Old.JPG");
+        await InBaselineAsync(changedAccount, "old.jpg");
         var red = await AddTermAsync("red");
 
         var outcomes = await InParallelAsync(21, async index => index == 10
