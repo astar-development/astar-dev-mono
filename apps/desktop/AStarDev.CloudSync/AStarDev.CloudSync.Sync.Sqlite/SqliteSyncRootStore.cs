@@ -14,9 +14,10 @@ namespace AStarDev.CloudSync.Sync.Sqlite;
 /// <param name="policy">Decides whether a candidate crosses another account's root.</param>
 /// <param name="homeFolder">The folder an account must not sync into.</param>
 /// <param name="fileSystem">Rebuilds the stored paths as folders.</param>
+/// <param name="caseRule">Decides whether a re-saved root differs from the stored one, so a casing variant of the same folder on a case-insensitive file system is not a root change (#1872).</param>
 /// <param name="participants">Delete their per-file data for an account whose root changed.</param>
 /// <param name="logger">Reports reads and saves that fail, by exception type only.</param>
-internal sealed class SqliteSyncRootStore(IDbContextFactory<SyncDbContext> dbContextFactory, ISyncRootPolicy policy, IHomeFolder homeFolder, IFileSystem fileSystem, IEnumerable<ISyncRootChangeParticipant> participants, ILogger<SqliteSyncRootStore> logger) : ISyncRootReader, ISyncRootWriter, IAccountRemovalParticipant
+internal sealed class SqliteSyncRootStore(IDbContextFactory<SyncDbContext> dbContextFactory, ISyncRootPolicy policy, IHomeFolder homeFolder, IFileSystem fileSystem, IFileSystemCaseRule caseRule, IEnumerable<ISyncRootChangeParticipant> participants, ILogger<SqliteSyncRootStore> logger) : ISyncRootReader, ISyncRootWriter, IAccountRemovalParticipant
 {
     private const string Location = nameof(SqliteSyncRootStore);
 
@@ -63,7 +64,7 @@ internal sealed class SqliteSyncRootStore(IDbContextFactory<SyncDbContext> dbCon
         return await checkedRoot.MatchAsync(
                 async accepted =>
                 {
-                    var changed = entities.Any(entity => entity.AccountId == accountId.Value && !string.Equals(entity.Path, accepted.Directory.FullName, StringComparison.Ordinal));
+                    var changed = entities.Any(entity => entity.AccountId == accountId.Value && !string.Equals(entity.Path, accepted.Directory.FullName, caseRule.Comparison));
                     if (changed)
                         _ = await dbContext.SyncBaseline.Where(entry => entry.AccountId == accountId.Value).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
 
