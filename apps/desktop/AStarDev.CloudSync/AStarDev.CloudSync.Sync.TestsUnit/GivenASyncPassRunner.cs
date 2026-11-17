@@ -240,6 +240,18 @@ public sealed class GivenASyncPassRunner : IDisposable
     }
 
     [Fact]
+    public async Task when_a_reclassify_write_holds_the_lease_then_sync_now_waits_for_it_and_runs()
+    {
+        var background = services.SyncLock.TryAcquireBackground(Personal).ShouldBeOfType<SyncLockAttempt.Acquired>().Lease;
+
+        var manual = RunAsync(Personal, Manual);
+        background.Dispose();
+        var result = await manual.WaitAsync(Limit, CancellationToken);
+
+        Outcome(result).ShouldBe("ran");
+    }
+
+    [Fact]
     public async Task when_a_manual_trigger_hits_a_running_tray_run_then_only_one_pass_runs()
     {
         var gate = new WriteGate();

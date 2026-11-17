@@ -75,6 +75,19 @@ public sealed class GivenAccountActionsRemovingAnAccount : IDisposable
     }
 
     [Fact]
+    public async Task when_a_reclassify_write_holds_the_lease_then_the_removal_goes_ahead_once_it_ends_without_polling()
+    {
+        var accountId = await services.AddAsync(Personal, CancellationToken);
+        var background = services.SyncLock.TryAcquireBackground(accountId).ShouldBeOfType<SyncLockAttempt.Acquired>().Lease;
+
+        var removing = services.Actions.RemoveAsync(accountId, CancellationToken);
+        background.Dispose();
+        var result = await removing.WaitAsync(TimeSpan.FromSeconds(30), CancellationToken);
+
+        result.Match(_ => (object)"removed", error => error).ShouldBe("removed");
+    }
+
+    [Fact]
     public async Task when_the_provider_cannot_sign_out_then_the_removal_stops_and_nothing_is_deleted()
     {
         var accountId = await services.AddAsync(Personal, CancellationToken);

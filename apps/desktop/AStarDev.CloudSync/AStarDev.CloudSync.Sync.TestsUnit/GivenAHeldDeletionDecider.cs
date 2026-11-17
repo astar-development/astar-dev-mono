@@ -206,6 +206,21 @@ public sealed class GivenAHeldDeletionDecider : IDisposable
     }
 
     [Fact]
+    public async Task when_a_reclassify_write_holds_the_lease_then_confirming_waits_for_it_and_trashes_the_file()
+    {
+        var run = await StartAsync();
+        run.Synced("Docs/a.txt", "one", "id-a");
+        var id = run.Hold(DeletionDirectionFactory.CreateDeleteLocal(), "Docs/a.txt");
+        var background = run.SyncLock.TryAcquireBackground(run.Account).ShouldBeOfType<SyncLockAttempt.Acquired>().Lease;
+
+        var confirming = run.Decider.ConfirmAsync(run.Account, id, CancellationToken);
+        background.Dispose();
+        var result = await confirming;
+
+        (result.Match(_ => "ok", _ => "refused"), run.TrashedFiles().Count).ShouldBe(("ok", 1));
+    }
+
+    [Fact]
     public async Task when_the_decider_runs_then_the_lease_is_released_afterwards()
     {
         var run = await StartAsync();

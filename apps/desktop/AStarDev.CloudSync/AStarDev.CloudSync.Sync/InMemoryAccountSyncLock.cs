@@ -31,6 +31,12 @@ internal sealed class InMemoryAccountSyncLock : IAccountSyncLock
     }
 
     /// <inheritdoc />
+    public Task<SyncLockAttempt> AcquireAsync(AccountId accountId, CancellationToken cancellationToken) => throw new NotImplementedException($"{accountId}{cancellationToken}");
+
+    /// <inheritdoc />
+    public SyncLockAttempt TryAcquireBackground(AccountId accountId) => throw new NotImplementedException($"{accountId}");
+
+    /// <inheritdoc />
     public async Task<SyncDrain> DrainAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
