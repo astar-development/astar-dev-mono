@@ -16,25 +16,25 @@ public sealed class GivenASqliteBusyTimeoutInterceptor
     }
 
     [Fact]
-    public void when_a_connection_is_opened_synchronously_then_its_busy_timeout_is_thirty_seconds()
+    public void when_a_connection_is_opened_synchronously_then_its_busy_timeout_is_five_seconds()
     {
         using var connection = new SqliteConnection("Data Source=:memory:");
         connection.Open();
 
         SqliteBusyTimeoutInterceptor.Instance.ConnectionOpened(connection, null!);
 
-        BusyTimeout(connection).ShouldBe(30000L);
+        BusyTimeout(connection).ShouldBe(5000L);
     }
 
     [Fact]
-    public async Task when_a_connection_is_opened_asynchronously_then_its_busy_timeout_is_thirty_seconds()
+    public async Task when_a_connection_is_opened_asynchronously_then_its_busy_timeout_is_five_seconds()
     {
         await using var connection = new SqliteConnection("Data Source=:memory:");
         await connection.OpenAsync(CancellationToken);
 
         await SqliteBusyTimeoutInterceptor.Instance.ConnectionOpenedAsync(connection, null!, CancellationToken);
 
-        BusyTimeout(connection).ShouldBe(30000L);
+        BusyTimeout(connection).ShouldBe(5000L);
     }
 
     [Fact]

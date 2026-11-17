@@ -2,6 +2,7 @@ using Microsoft.Data.Sqlite;
 
 namespace AStarDev.CloudSync.Classification.Sqlite.TestsIntegration;
 
+[Collection(SharedConnectionPool.Name)]
 public sealed class GivenAConnectionWaitingForTheWriteLock : MigratedDatabaseTests
 {
     [Fact]
@@ -15,6 +16,6 @@ public sealed class GivenAConnectionWaitingForTheWriteLock : MigratedDatabaseTes
         command.CommandText = "PRAGMA busy_timeout;";
         var busyTimeout = await command.ExecuteScalarAsync(CancellationToken);
 
-        busyTimeout.ShouldBe(30000L);
+        busyTimeout.ShouldBe(5000L);
     }
 }
