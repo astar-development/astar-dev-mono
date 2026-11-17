@@ -86,6 +86,18 @@ public sealed class GivenAnAccountRemovedOverSqlite : MigratedDatabaseTests
 
         var removed = await Database.LinksParticipant.RemoveAccountDataAsync(removedAccount, CancellationToken);
 
-        removed.Match(_ => (object)"removed", error => error).ShouldBeOfType<ErrorResponse>();
+        removed.Match(_ => "removed", error => error.Message).ShouldBe("The account's classification links could not be removed.");
+    }
+
+    [Fact]
+    public async Task when_the_removal_is_cancelled_then_it_throws_and_the_links_stay()
+    {
+        var (red, _) = await LinkBothAccountsAsync();
+        using var cancelled = new CancellationTokenSource();
+        await cancelled.CancelAsync();
+
+        _ = await Should.ThrowAsync<OperationCanceledException>(() => Database.LinksParticipant.RemoveAccountDataAsync(removedAccount, cancelled.Token));
+
+        (await TermsOfAsync(removedAccount, "auto.jpg")).ShouldBe([red]);
     }
 }
