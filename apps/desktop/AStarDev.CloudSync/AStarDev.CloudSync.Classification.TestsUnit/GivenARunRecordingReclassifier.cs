@@ -14,11 +14,12 @@ public sealed class GivenARunRecordingReclassifier
 
     private readonly FakeClassificationReclassifier inner = new();
     private readonly SeedingStateStore seedState = new() { Version = "v1" };
+    private readonly ReclassifyProgressSource progressSource = new();
     private readonly RecordingLogger<RunRecordingReclassifier> logger = new();
 
     private RunRecordingReclassifier Create(IReclassifyRunStore runs) => Create(runs, seedState);
 
-    private RunRecordingReclassifier Create(IReclassifyRunStore runs, ISeedStateStore seeds) => new(inner, seeds, runs, ReclassifyOptionsFactory.Create(10, 1, TimeSpan.Zero, TimeSpan.Zero, new FakeTimeProvider(Now)), logger);
+    private RunRecordingReclassifier Create(IReclassifyRunStore runs, ISeedStateStore seeds) => new(inner, seeds, runs, ReclassifyOptionsFactory.Create(10, 1, TimeSpan.Zero, TimeSpan.Zero, new FakeTimeProvider(Now)), progressSource, logger);
 
     private static ReclassifyCounts Counts() => ReclassifyCountsFactory.Create(3, 1, 0);
 
@@ -187,5 +188,55 @@ public sealed class GivenARunRecordingReclassifier
         _ = await reclassifier.StartAsync(new Progress<ReclassifyProgress>(), CancellationToken);
 
         raised.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task when_a_run_reports_then_the_caller_and_the_progress_source_both_see_it_and_the_snapshot_clears_at_the_end()
+    {
+        inner.Reports = [ReclassifyProgressFactory.Create(500, 1)];
+        inner.Gate = new TaskCompletionSource();
+        var caller = new ReclassifyRecordingProgress();
+
+        var running = Create(new InMemoryReclassifyRunStore()).StartAsync(caller, CancellationToken);
+        await inner.Started.Task;
+        var during = progressSource.Current;
+        inner.Gate.SetResult();
+        await running;
+
+        (during, caller.Reports, progressSource.Current).ShouldBe((Option.Some(ReclassifyProgressFactory.Create(500, 1)), [(500, 1, 0)], Option.None<ReclassifyProgress>()));
+    }
+
+    [Theory]
+    [MemberData(nameof(UnfinishedOutcomes))]
+    public async Task when_a_run_does_not_complete_then_the_progress_snapshot_is_cleared(string unfinished)
+    {
+        inner.Reports = [ReclassifyProgressFactory.Create(500, 1)];
+        inner.Outcome = Unfinished(unfinished);
+
+        _ = await Create(new InMemoryReclassifyRunStore()).StartAsync(new Progress<ReclassifyProgress>(), CancellationToken);
+
+        progressSource.Current.ShouldBe(Option.None<ReclassifyProgress>());
+    }
+
+    [Fact]
+    public async Task when_a_second_run_is_refused_while_the_first_reports_then_the_first_snapshot_stays()
+    {
+        inner.Reports = [ReclassifyProgressFactory.Create(500, 1)];
+        var firstGate = new TaskCompletionSource();
+        inner.Gate = firstGate;
+        var reclassifier = Create(new InMemoryReclassifyRunStore());
+        var first = reclassifier.StartAsync(new Progress<ReclassifyProgress>(), CancellationToken);
+        await inner.Started.Task;
+        inner.Reports = [];
+        inner.Gate = null;
+        inner.Outcome = ReclassifyOutcomeFactory.CreateAlreadyRunning();
+
+        _ = await reclassifier.StartAsync(new Progress<ReclassifyProgress>(), CancellationToken);
+
+        var during = progressSource.Current;
+        firstGate.SetResult();
+        await first;
+
+        during.ShouldBe(Option.Some(ReclassifyProgressFactory.Create(500, 1)));
     }
 }

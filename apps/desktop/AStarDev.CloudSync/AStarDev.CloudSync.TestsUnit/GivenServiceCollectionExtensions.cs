@@ -668,6 +668,8 @@ public class GivenServiceCollectionExtensions
         provider.GetRequiredService<IClassificationReclassifier>().ShouldBeSameAs(provider.GetRequiredService<IClassificationReclassifier>());
         provider.GetRequiredService<IClassificationReclassifier>().ShouldBeOfType<RunRecordingReclassifier>();
         provider.GetRequiredService<IReclassifyRunRecordedSource>().ShouldBeSameAs(provider.GetRequiredService<IClassificationReclassifier>());
+        provider.GetRequiredService<IReclassifyProgressSource>().ShouldBeSameAs(provider.GetRequiredService<IReclassifyProgressSource>());
+        provider.GetRequiredService<IReclassifyProgressSource>().ShouldBeSameAs(provider.GetRequiredService<ReclassifyProgressSource>());
     }
 
     [Fact]
