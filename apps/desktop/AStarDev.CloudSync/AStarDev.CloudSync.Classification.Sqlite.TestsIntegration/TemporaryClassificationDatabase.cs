@@ -85,14 +85,20 @@ public sealed class TemporaryClassificationDatabase : IAsyncDisposable
     public async Task RestartAsync()
     {
         await serviceProvider.DisposeAsync();
-        SqliteConnection.ClearAllPools();
+        ClearOwnPool();
         serviceProvider = build();
     }
 
     public async ValueTask DisposeAsync()
     {
         await serviceProvider.DisposeAsync();
-        SqliteConnection.ClearAllPools();
+        ClearOwnPool();
         testFolder.Delete(recursive: true);
+    }
+
+    private void ClearOwnPool()
+    {
+        using var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = DatabasePath }.ToString());
+        SqliteConnection.ClearPool(connection);
     }
 }
