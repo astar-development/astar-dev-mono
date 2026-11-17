@@ -1,4 +1,5 @@
 using System.Data;
+using System.Text.Json;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Sync;
 using AStarDev.FunctionalParadigm;
@@ -67,23 +68,40 @@ internal sealed class SqliteFileClassificationStore(IDbContextFactory<Classifica
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using var transaction = await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken).ConfigureAwait(false);
-        foreach (var update in updates)
-        {
-            var account = update.AccountId.Value;
-            var key = Key(update.Path);
-            if (!await InBaselineAsync(dbContext, account, key, cancellationToken).ConfigureAwait(false))
-                continue;
-
-            _ = await dbContext.FileLinks.Where(link => link.AccountId == account && link.PathKey == key && link.Origin == FileLinkOrigins.Auto).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-            var kept = await dbContext.FileLinks.Where(link => link.AccountId == account && link.PathKey == key).Select(link => link.TermId).ToListAsync(cancellationToken).ConfigureAwait(false);
-            dbContext.FileLinks.AddRange(update.TermIds.Select(termId => termId.Value).Distinct().Where(termId => !kept.Contains(termId)).Select(termId => NewLink(account, update.Path, termId, FileLinkOrigins.Auto)));
-            _ = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-            dbContext.ChangeTracker.Clear();
-        }
+        foreach (var accountUpdates in LastUpdatePerFile(updates).GroupBy(update => update.AccountId.Value))
+            await ReplaceForAccountAsync(dbContext, accountUpdates.Key, [.. accountUpdates], cancellationToken).ConfigureAwait(false);
 
         await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
 
         return Result.Success<Unit, ClassificationFailure>(Unit.Instance);
+    }
+
+    /// <summary>Keeps the last update for each account and path key, as the per-file writes did: a later update for the same file replaces an earlier one.</summary>
+    private static IEnumerable<FileTermLinks> LastUpdatePerFile(IReadOnlyList<FileTermLinks> updates) =>
+        updates.GroupBy(update => (update.AccountId.Value, Key(update.Path))).Select(sameFile => sameFile.Last());
+
+    /// <summary>Formats a GUID the way EF Core's SQLite provider stores it (upper-case text), so rows built from JSON match keys written through EF.</summary>
+    private static string GuidText(Guid value) => value.ToString("D").ToUpperInvariant();
+
+    /// <summary>Two statements per account, keys and rows passed as one JSON parameter each, so no SQLite parameter limit applies. The delete drops the automatic links of the batch's baseline paths; the insert skips rows that already exist, which after the delete are only user links. Paths not in the baseline are skipped by both.</summary>
+    private static async Task ReplaceForAccountAsync(ClassificationDbContext dbContext, Guid accountId, IReadOnlyList<FileTermLinks> updates, CancellationToken cancellationToken)
+    {
+        var keys = JsonSerializer.Serialize(updates.Select(update => Key(update.Path)).ToArray());
+        var rows = JsonSerializer.Serialize(updates.SelectMany(update => update.TermIds.Select(termId => new[] { Key(update.Path), update.Path.Value ?? string.Empty, GuidText(termId.Value) })).ToArray());
+        _ = await dbContext.Database.ExecuteSqlAsync(
+            $"""
+            DELETE FROM "FileLinks"
+            WHERE "AccountId" = {accountId} AND "Origin" = {FileLinkOrigins.Auto}
+              AND "PathKey" IN (SELECT "value" FROM json_each({keys}))
+              AND EXISTS (SELECT 1 FROM "SyncBaseline" WHERE "SyncBaseline"."AccountId" = {accountId} AND "SyncBaseline"."PathKey" = "FileLinks"."PathKey")
+            """, cancellationToken).ConfigureAwait(false);
+        _ = await dbContext.Database.ExecuteSqlAsync(
+            $"""
+            INSERT OR IGNORE INTO "FileLinks" ("AccountId", "PathKey", "Path", "TermId", "Origin")
+            SELECT {accountId}, json_extract("value", '$[0]'), json_extract("value", '$[1]'), json_extract("value", '$[2]'), {FileLinkOrigins.Auto}
+            FROM json_each({rows})
+            WHERE EXISTS (SELECT 1 FROM "SyncBaseline" WHERE "SyncBaseline"."AccountId" = {accountId} AND "SyncBaseline"."PathKey" = json_extract("value", '$[0]'))
+            """, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<Result<Unit, ClassificationFailure>> AssignAsync(AccountId accountId, RelativeSyncPath path, TermId termId, CancellationToken cancellationToken)
