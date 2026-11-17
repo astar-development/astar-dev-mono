@@ -1,4 +1,5 @@
 using AStarDev.CloudSync.Accounts;
+using AStarDev.CloudSync.TestHelpers.Classification;
 using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.FunctionalParadigm;
 using Microsoft.Extensions.Logging;
@@ -11,8 +12,9 @@ public sealed class GivenAClassificationStartup
 
     private readonly List<string> calls = [];
     private readonly RecordingLogger<ClassificationStartup> logger = new();
+    private readonly FakeClassificationReclassifier reclassifier = new();
 
-    private ClassificationStartup Create(ICloudSyncDatabase database, IClassificationSeeder seeder) => new(database, seeder, logger);
+    private ClassificationStartup Create(ICloudSyncDatabase database, IClassificationSeeder seeder) => new(database, seeder, reclassifier, logger);
 
     [Fact]
     public async Task when_run_then_the_database_is_migrated_before_the_seed_is_applied()
@@ -90,5 +92,75 @@ public sealed class GivenAClassificationStartup
         await startup.RunAsync(cancelled.Token);
 
         logger.Entries.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_the_seed_is_applied_then_the_baseline_is_reclassified_once()
+    {
+        var startup = Create(new StartupFakeDatabase(calls), new StartupFakeSeeder(calls));
+
+        await startup.RunAsync(CancellationToken);
+
+        reclassifier.StartCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_the_seed_is_already_current_then_nothing_is_reclassified()
+    {
+        var startup = Create(new StartupFakeDatabase(calls), new StartupFakeSeeder(calls) { Outcome = ClassificationSeedOutcomeFactory.CreateAlreadyCurrent() });
+
+        await startup.RunAsync(CancellationToken);
+
+        reclassifier.StartCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task when_the_seed_outcome_is_a_failure_then_nothing_is_reclassified()
+    {
+        var failed = ClassificationSeedOutcomeFactory.CreateFailed(ClassificationFailureFactory.CreateUnavailable());
+        var startup = Create(new StartupFakeDatabase(calls), new StartupFakeSeeder(calls) { Outcome = failed });
+
+        await startup.RunAsync(CancellationToken);
+
+        reclassifier.StartCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task when_the_migration_fails_then_nothing_is_reclassified()
+    {
+        var failing = new StartupFakeDatabase(calls) { Outcome = Result.Failure<Unit, ErrorResponse>(new ErrorResponse("locked")) };
+        var startup = Create(failing, new StartupFakeSeeder(calls));
+
+        await startup.RunAsync(CancellationToken);
+
+        reclassifier.StartCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task when_shutdown_is_requested_during_the_reclassify_then_run_completes_without_a_warning()
+    {
+        using var shutdown = new CancellationTokenSource();
+        reclassifier.Gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var startup = Create(new StartupFakeDatabase(calls), new StartupFakeSeeder(calls));
+
+        var run = startup.RunAsync(shutdown.Token);
+        await Task.WhenAny(reclassifier.Started.Task, run);
+        var startedBeforeShutdown = reclassifier.Started.Task.IsCompleted;
+        await shutdown.CancelAsync();
+        await run.WaitAsync(CancellationToken);
+
+        startedBeforeShutdown.ShouldBeTrue();
+        logger.Entries.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_the_reclassify_fails_then_run_completes_without_throwing()
+    {
+        reclassifier.Outcome = ReclassifyOutcomeFactory.CreateFailed(ReclassifyCountsFactory.Create(0, 0, 0));
+        var startup = Create(new StartupFakeDatabase(calls), new StartupFakeSeeder(calls));
+
+        await Should.NotThrowAsync(() => startup.RunAsync(CancellationToken));
+
+        reclassifier.StartCount.ShouldBe(1);
     }
 }

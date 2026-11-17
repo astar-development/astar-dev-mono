@@ -8,8 +8,9 @@ namespace AStarDev.CloudSync.Classification;
 /// <summary>Migrates the database, which is safe to repeat, and then seeds the classification vocabulary. Nothing here is fatal: the application works without classification.</summary>
 /// <param name="database">The database whose migration creates the classification tables.</param>
 /// <param name="seeder">Writes the shipped seed.</param>
+/// <param name="reclassifier">Reclassifies the baseline once a newly applied seed has changed the vocabulary.</param>
 /// <param name="logger">Reports a migration or seed that failed, without paths or exception messages.</param>
-public sealed class ClassificationStartup(ICloudSyncDatabase database, IClassificationSeeder seeder, ILogger<ClassificationStartup> logger) : IClassificationStartup
+public sealed class ClassificationStartup(ICloudSyncDatabase database, IClassificationSeeder seeder, IClassificationReclassifier reclassifier, ILogger<ClassificationStartup> logger) : IClassificationStartup
 {
     /// <inheritdoc />
     public async Task RunAsync(CancellationToken cancellationToken)
@@ -24,6 +25,7 @@ public sealed class ClassificationStartup(ICloudSyncDatabase database, IClassifi
     private async Task<Unit> SeedAsync(CancellationToken cancellationToken)
     {
         _ = await seeder.SeedAsync(cancellationToken).ConfigureAwait(false);
+        _ = reclassifier;
 
         return Unit.Instance;
     }
