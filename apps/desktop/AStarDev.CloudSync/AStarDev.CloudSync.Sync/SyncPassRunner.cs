@@ -62,11 +62,10 @@ internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps st
     {
         var started = timeProvider.GetTimestamp();
         var tally = new SyncPassTally();
-        RunningPass pass;
         Result<SyncPassSummary, SyncPassFailure> outcome;
         using (lease)
         {
-            pass = registry.Begin(accountId, trigger, cancellationToken);
+            var pass = registry.Begin(accountId, trigger, cancellationToken);
             var runId = await steps.After.Journal.StartAsync(accountId, trigger).ConfigureAwait(false);
             outcome = Stopped<SyncPassSummary>(SyncPassFailureFactory.CreateUnexpected());
             try
@@ -81,12 +80,18 @@ internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps st
             }
             finally
             {
-                _ = await steps.After.Journal.FinishAsync(runId, outcome).ConfigureAwait(false);
+                try
+                {
+                    _ = await steps.After.Journal.FinishAsync(runId, outcome).ConfigureAwait(false);
+                }
+                finally
+                {
+                    lease.Dispose();
+                    registry.End(pass, outcome);
+                    LogEnd(trigger, outcome, timeProvider.GetElapsedTime(started));
+                }
             }
         }
-
-        registry.End(pass, outcome);
-        LogEnd(trigger, outcome, timeProvider.GetElapsedTime(started));
 
         return outcome;
     }
