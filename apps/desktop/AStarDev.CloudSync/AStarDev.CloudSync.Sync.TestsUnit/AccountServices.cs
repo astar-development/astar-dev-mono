@@ -12,8 +12,9 @@ public sealed class AccountServices : IDisposable
 {
     private readonly ServiceProvider provider;
 
-    public AccountServices(IAccountStore? store = null, WriteGate? gate = null, IAccountSyncLock? syncLock = null)
+    public AccountServices(IAccountStore? store = null, WriteGate? gate = null, IAccountSyncLock? syncLock = null, FakeTimeProvider? time = null)
     {
+        Time = time ?? new FakeTimeProvider(new DateTimeOffset(2026, 11, 9, 9, 0, 0, TimeSpan.Zero));
         Store = store ?? new InMemoryAccountStore();
         SyncRoots = new InMemorySyncRootStore(new SyncRootPolicy());
         Rules = new FakeSelectionRuleWriter();
@@ -61,7 +62,7 @@ public sealed class AccountServices : IDisposable
 
     public FakeSignInProbe Probe { get; } = new();
 
-    public FakeTimeProvider Time { get; } = new(new DateTimeOffset(2026, 11, 9, 9, 0, 0, TimeSpan.Zero));
+    public FakeTimeProvider Time { get; }
 
     public RecordingLoggerProvider Logs { get; } = new();
 
