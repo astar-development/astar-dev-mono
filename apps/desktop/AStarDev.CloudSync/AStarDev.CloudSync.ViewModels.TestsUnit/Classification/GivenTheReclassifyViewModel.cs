@@ -89,6 +89,26 @@ public class GivenTheReclassifyViewModel
     }
 
     [Fact]
+    public async Task when_a_run_skips_every_file_then_the_completed_status_shows_nothing_written_and_the_skipped_count()
+    {
+        using var installed = InlineSynchronizationContext.Install(context);
+        reclassifier.Outcome = ReclassifyOutcomeFactory.CreateCompleted(ReclassifyCountsFactory.Create(0, 0, 0, 3));
+        var viewModel = Create();
+
+        await viewModel.ReclassifyCommand.ExecuteAsync(null);
+
+        viewModel.StatusText.ShouldBe("Reclassified 0 files in 0 batches, 3 skipped because their account was busy or removed");
+    }
+
+    [Fact]
+    public void when_a_running_state_is_created_with_a_negative_skipped_count_then_it_becomes_zero()
+    {
+        var state = ReclassifyStateFactory.CreateRunning(5, -1);
+
+        state.ShouldBe(ReclassifyStateFactory.CreateRunning(5, 0));
+    }
+
+    [Fact]
     public async Task when_disposed_while_running_then_the_run_is_cancelled_and_the_term_list_reloads()
     {
         using var installed = InlineSynchronizationContext.Install(context);

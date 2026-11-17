@@ -373,7 +373,7 @@ public sealed class GivenAClassificationReclassifier
         var progress = new RemovalRacingProgress(50);
         var reclassifier = Build(new ReclassifyFakeFileSource(files), new ReclassifyFakeClassifier(Holiday), store, Batches(5), syncLock, accounts);
         var run = Task.Run(() => reclassifier.StartAsync(progress, cancellationToken), cancellationToken);
-        await progress.FirstBatchWritten.Task.WaitAsync(cancellationToken);
+        await progress.FirstBatchReported.Task.WaitAsync(cancellationToken);
         var removals = accountIds.Select(accountId => Task.Run(() => RemoveUnderLeaseAsync(syncLock, accounts, store, accountId, cancellationToken), cancellationToken)).ToArray();
 
         await Task.WhenAll(removals);
