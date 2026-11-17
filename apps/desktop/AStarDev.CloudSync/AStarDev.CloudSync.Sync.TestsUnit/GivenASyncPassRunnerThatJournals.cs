@@ -85,6 +85,18 @@ public sealed class GivenASyncPassRunnerThatJournals : IDisposable
     }
 
     [Fact]
+    public async Task when_a_step_after_the_pass_throws_then_the_account_ends_idle_and_the_pass_is_released()
+    {
+        services.ActivityLog.Throws = true;
+        services.Steps.Downloaded = Result.Success<DownloadPassSummary, DownloadPassFailure>(DownloadPassSummaryFactory.Create([DownloadItemOutcomeFactory.CreateDownloaded(100)], []));
+
+        _ = await Record.ExceptionAsync(() => RunAsync(SyncTriggerFactory.CreateManual()));
+
+        services.Activity.ActivityOf(Personal).ShouldBe(AccountSyncActivityFactory.CreateIdle());
+        services.SyncLock.TryAcquire(Personal).ShouldBeOfType<SyncLockAttempt.Acquired>();
+    }
+
+    [Fact]
     public async Task when_a_run_is_skipped_because_another_is_running_then_no_row_is_journaled()
     {
         var gate = new WriteGate();
