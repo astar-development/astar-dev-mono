@@ -5,7 +5,7 @@ namespace AStarDev.CloudSync.Sync;
 /// <summary>Allows one sync pass per account at a time, and lets an update or an account removal wait for every running pass.</summary>
 public interface IAccountSyncLock
 {
-    /// <summary>Starts a pass for the account if none is running and the lock is not drained. Never waits.</summary>
+    /// <summary>Starts a pass for the account if none is running and the lock is not drained. Never waits, not even behind a background lease; passes and user actions use <see cref="AcquireAsync"/> instead.</summary>
     /// <param name="accountId">The account to sync.</param>
     SyncLockAttempt TryAcquire(AccountId accountId);
 

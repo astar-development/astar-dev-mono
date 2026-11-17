@@ -17,7 +17,7 @@ internal sealed class AccountLeaseWaiter(IAccountSyncLock syncLock, TimeProvider
         var deadline = timeProvider.GetUtcNow() + AccountLeasePolicy.WaitForRunningWork;
         while (true)
         {
-            var attempt = await syncLock.AcquireAsync(accountId, cancellationToken).ConfigureAwait(false);
+            var attempt = await AttemptAsync(accountId, deadline - timeProvider.GetUtcNow(), cancellationToken).ConfigureAwait(false);
             if (attempt is SyncLockAttempt.Acquired acquired)
                 return Option.Some(acquired.Lease);
 
@@ -26,5 +26,13 @@ internal sealed class AccountLeaseWaiter(IAccountSyncLock syncLock, TimeProvider
 
             await Task.Delay(AccountLeasePolicy.RetryInterval, timeProvider, cancellationToken).ConfigureAwait(false);
         }
+    }
+
+    private async Task<SyncLockAttempt> AttemptAsync(AccountId accountId, TimeSpan remaining, CancellationToken cancellationToken)
+    {
+        using var budget = new CancellationTokenSource(remaining > TimeSpan.Zero ? remaining : TimeSpan.Zero, timeProvider);
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, budget.Token);
+
+        return await syncLock.AcquireAsync(accountId, linked.Token).ConfigureAwait(false);
     }
 }
