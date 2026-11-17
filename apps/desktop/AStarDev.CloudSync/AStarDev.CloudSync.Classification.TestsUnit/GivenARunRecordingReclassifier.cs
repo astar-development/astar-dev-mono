@@ -128,4 +128,16 @@ public sealed class GivenARunRecordingReclassifier
 
         outcome.ShouldBeSameAs(inner.Outcome);
     }
+
+    [Fact]
+    public async Task when_the_caller_cancels_after_the_run_completed_then_the_run_is_still_recorded()
+    {
+        using var cancelled = new CancellationTokenSource();
+        await cancelled.CancelAsync();
+        var runs = new TokenHonouringReclassifyRunStore();
+
+        _ = await Create(runs).StartAsync(new Progress<ReclassifyProgress>(), cancelled.Token);
+
+        runs.Last.Match(run => run.EngineVersion, () => "not recorded").ShouldBe(ClassificationEngineVersion.Current);
+    }
 }
