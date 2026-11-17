@@ -25,8 +25,15 @@ public sealed class GivenAReclassifyRunOverSqlite : MigratedDatabaseTests
 
     private async Task<TermId> AddTermAsync(string text, CategoryId category, TermStatus? status = null) => Ok(await Database.Terms.UpsertAsync(Term(text, category, status), CancellationToken)).Id;
 
-    private ClassificationReclassifier Reclassifier() =>
-        new(Database.Files, new FileClassifier([new ExtensionSignal(), new FolderSegmentSignal(), new DictionaryTermSignal()], new ClassificationVocabularyProvider(Database.Terms, Database.Categories)), Database.Links, ReclassifyOptionsFactory.Create(1, 1, TimeSpan.Zero), NullLogger<ClassificationReclassifier>.Instance);
+    private ClassificationReclassifier Reclassifier(IAccountSyncLock? syncLock = null) =>
+        new(Database.Files, new FileClassifier([new ExtensionSignal(), new FolderSegmentSignal(), new DictionaryTermSignal()], new ClassificationVocabularyProvider(Database.Terms, Database.Categories)), Database.Links, syncLock ?? AccountSyncLocks.Create(), Database.AccountStore, ReclassifyOptionsFactory.Create(1, 1, TimeSpan.Zero), NullLogger<ClassificationReclassifier>.Instance);
+
+    private async Task RemoveAccountUnderLeaseAsync(IAccountSyncLock syncLock, AccountId account)
+    {
+        using var lease = syncLock.TryAcquire(account).ShouldBeOfType<SyncLockAttempt.Acquired>().Lease;
+        _ = Valid(await Database.LinksParticipant.RemoveAccountDataAsync(account, CancellationToken));
+        _ = Valid(await Database.AccountStore.RemoveAsync(account, CancellationToken));
+    }
 
     private async Task<List<TermId>> TermsOfAsync(AccountId account, string path) => [.. Ok(await Database.Links.GetTermsForFileAsync(account, Path(path), CancellationToken)).OrderBy(term => term.Value)];
 
@@ -70,5 +77,23 @@ public sealed class GivenAReclassifyRunOverSqlite : MigratedDatabaseTests
         second.ShouldBeOfType<ReclassifyOutcome.Completed>();
         (await TermsOfAsync(account, "Holiday/red car.jpg")).ShouldBe(first);
         first.Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task when_the_account_is_removed_while_its_files_are_being_reclassified_then_no_links_are_left_for_it()
+    {
+        var account = await AddAccountAsync();
+        _ = Valid(await Database.BaselineWriter.UpsertAsync(account, [FileEntry(account, "Holiday/a.jpg", "i1"), FileEntry(account, "Holiday/b.jpg", "i2")], CancellationToken));
+        var category = Ok(await Database.Categories.UpsertAsync(Category("Things"), CancellationToken)).Id;
+        _ = await AddTermAsync("jpg", category);
+        var syncLock = AccountSyncLocks.Create();
+        var progress = new RemovingAfterFirstBatchProgress(() => RemoveAccountUnderLeaseAsync(syncLock, account));
+
+        var outcome = await Reclassifier(syncLock).StartAsync(progress, CancellationToken);
+
+        var counts = outcome.ShouldBeOfType<ReclassifyOutcome.Completed>().Counts;
+        (counts.FilesWritten, counts.SkippedForAccount).ShouldBe((1, 1));
+        (await TermsOfAsync(account, "Holiday/a.jpg")).ShouldBeEmpty();
+        (await TermsOfAsync(account, "Holiday/b.jpg")).ShouldBeEmpty();
     }
 }

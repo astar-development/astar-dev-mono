@@ -10,9 +10,11 @@ namespace AStarDev.CloudSync.Classification;
 /// <param name="fileSource">Streams every file the baseline knows about.</param>
 /// <param name="classifier">Classifies one path.</param>
 /// <param name="store">Writes the automatic links.</param>
+/// <param name="syncLock">Holds each account's lease while that account's links are written, so an account removal cannot run in between.</param>
+/// <param name="accountStore">Confirms, under the lease, that the account still exists.</param>
 /// <param name="options">Batch size, parallelism and the pause between batches.</param>
 /// <param name="logger">Reports the run without paths or terms.</param>
-public sealed class ClassificationReclassifier(IClassifiableFileSource fileSource, IFileClassifier classifier, IFileClassificationStore store, ReclassifyOptions options, ILogger<ClassificationReclassifier> logger) : IClassificationReclassifier
+public sealed class ClassificationReclassifier(IClassifiableFileSource fileSource, IFileClassifier classifier, IFileClassificationStore store, IAccountSyncLock syncLock, IAccountStore accountStore, ReclassifyOptions options, ILogger<ClassificationReclassifier> logger) : IClassificationReclassifier
 {
     private int running;
 
@@ -100,6 +102,8 @@ public sealed class ClassificationReclassifier(IClassifiableFileSource fileSourc
 
         return true;
     }
+
+    internal string LeaseStub() => throw new NotImplementedException($"{syncLock}{accountStore}");
 
     private bool WriteFailed(ClassificationFailure failure)
     {
