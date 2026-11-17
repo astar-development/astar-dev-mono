@@ -50,6 +50,8 @@ public sealed class TemporaryClassificationDatabase : IAsyncDisposable
 
     public IAccountStore AccountStore => serviceProvider.GetRequiredService<IAccountStore>();
 
+    public ISyncRootWriter SyncRootWriter => serviceProvider.GetRequiredService<ISyncRootWriter>();
+
     public ICloudSyncDatabase Database => serviceProvider.GetRequiredService<ICloudSyncDatabase>();
 
     public static async Task<TemporaryClassificationDatabase> CreateMigratedAsync(CancellationToken cancellationToken)
@@ -75,6 +77,8 @@ public sealed class TemporaryClassificationDatabase : IAsyncDisposable
 
         throw new InvalidOperationException("The test database could not be migrated.");
     }
+
+    public IDirectoryInfo Folder(string path) => serviceProvider.GetRequiredService<IFileSystem>().DirectoryInfo.New(path);
 
     public async Task RestartAsync()
     {
