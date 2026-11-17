@@ -148,16 +148,18 @@ public sealed class TemporarySyncDatabase : IAsyncDisposable
     public async Task RestartAsync()
     {
         await serviceProvider.DisposeAsync();
-        SqliteConnection.ClearAllPools();
+        ClearOwnPool();
         serviceProvider = build();
     }
+
+    public void ClearOwnPool() => SqliteConnection.ClearPool(new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = DatabasePath }.ToString()));
 
     public IDirectoryInfo Folder(string path) => FileSystem.DirectoryInfo.New(path);
 
     public async ValueTask DisposeAsync()
     {
         await serviceProvider.DisposeAsync();
-        SqliteConnection.ClearAllPools();
+        ClearOwnPool();
         testFolder.Delete(recursive: true);
     }
 }
