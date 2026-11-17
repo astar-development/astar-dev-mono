@@ -34,6 +34,10 @@
                        IsVisible="{Binding Reclassify.HasStatus}"
                        Foreground="{DynamicResource CloudSyncTextMutedBrush}"
                        TextWrapping="Wrap" />
+            <TextBlock Name="RerunRecommendedText"
+                       Text="{Binding Reclassify.RerunRecommendedText}"
+                       IsVisible="{Binding Reclassify.IsRerunRecommended}"
+                       TextWrapping="Wrap" />
             <ProgressBar IsIndeterminate="True"
                          IsVisible="{Binding Reclassify.IsRunning}"
                          AutomationProperties.Name="{Binding Reclassify.StatusText}" />

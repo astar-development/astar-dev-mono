@@ -2,6 +2,7 @@ using AStarDev.CloudSync.Classification;
 using AStarDev.CloudSync.TestHelpers.Classification;
 using AStarDev.CloudSync.TestHelpers.Ui;
 using AStarDev.CloudSync.ViewModels.Classification;
+using AStarDev.FunctionalParadigm;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
@@ -65,5 +66,26 @@ public class GivenTheClassificationPageContent
         var header = ButtonNamed(window, "ReclassifyButton");
 
         header.TranslatePoint(new Point(0, 0), window)!.Value.Y.ShouldBeLessThan(tabs.TranslatePoint(new Point(0, 0), window)!.Value.Y);
+    }
+
+    [AvaloniaFact]
+    public async Task when_the_reclassify_is_stale_then_the_rerun_recommendation_is_shown_under_the_header()
+    {
+        var freshness = new FakeReclassifyFreshnessCheck { Outcome = Result.Success<ReclassifyFreshness, ClassificationFailure>(ReclassifyFreshnessFactory.CreateStale()) };
+        var page = TestData.CreateClassificationPage(new FakeClassificationReclassifier(), freshness);
+        var window = Shown(page);
+
+        await page.Reclassify.CheckCommand.ExecuteAsync(null);
+        Dispatcher.UIThread.RunJobs();
+
+        window.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Name == "RerunRecommendedText").IsEffectivelyVisible.ShouldBeTrue();
+    }
+
+    [AvaloniaFact]
+    public void when_the_reclassify_is_up_to_date_then_the_rerun_recommendation_is_hidden()
+    {
+        var window = Shown(TestData.CreateClassificationPage());
+
+        window.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Name == "RerunRecommendedText").IsEffectivelyVisible.ShouldBeFalse();
     }
 }

@@ -5,7 +5,7 @@ namespace AStarDev.CloudSync.Classification.Sqlite.TestsIntegration;
 
 public sealed class GivenAClassificationMigration : MigratedDatabaseTests
 {
-    private static readonly string[] ExpectedTables = ["Accounts", "SyncBaseline", "Categories", "Terms", "FileLinks", "ClassificationState", "__ClassificationMigrationsHistory", "__SyncMigrationsHistory"];
+    private static readonly string[] ExpectedTables = ["Accounts", "SyncBaseline", "Categories", "Terms", "FileLinks", "ClassificationState", "ReclassifyRun", "__ClassificationMigrationsHistory", "__SyncMigrationsHistory"];
 
     private async Task<List<string>> TablesAsync()
     {

@@ -18,6 +18,6 @@ public sealed class ClassificationPageViewModel(ClassificationTabsViewModel tabs
     /// <summary>The page heading.</summary>
     public string TitleText => Localization.GetLocal("Classification.Page.Title");
 
-    /// <summary>Reads the term list; run it each time the page is shown.</summary>
-    public IAsyncRelayCommand LoadCommand => Tabs.LoadCommand;
+    /// <summary>Reads the term list and checks whether a reclassify is worth recommending; run it each time the page is shown.</summary>
+    public IAsyncRelayCommand LoadCommand { get; } = new AsyncRelayCommand(() => Task.WhenAll(tabs.LoadCommand.ExecuteAsync(null), reclassify.CheckCommand.ExecuteAsync(null)));
 }

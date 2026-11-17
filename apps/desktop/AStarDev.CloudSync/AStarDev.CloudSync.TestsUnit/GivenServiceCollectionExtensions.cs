@@ -653,6 +653,8 @@ public class GivenServiceCollectionExtensions
         provider.GetRequiredService<SyncStartup>().ShouldBeSameAs(provider.GetRequiredService<SyncStartup>());
         provider.GetRequiredService<IFileClassificationStore>().ShouldNotBeNull();
         provider.GetRequiredService<ISeedStateStore>().ShouldNotBeNull();
+        provider.GetRequiredService<IReclassifyRunStore>().ShouldNotBeNull();
+        provider.GetRequiredService<IReclassifyFreshnessCheck>().ShouldBeOfType<ReclassifyFreshnessCheck>();
         provider.GetRequiredService<IClassifiableFileSource>().ShouldNotBeNull();
     }
 
@@ -664,7 +666,7 @@ public class GivenServiceCollectionExtensions
         provider.GetRequiredService<IKnownWordList>().ShouldBeSameAs(provider.GetRequiredService<IFirstNameList>());
         provider.GetRequiredService<IClassificationSuggestions>().ShouldBeSameAs(provider.GetRequiredService<IClassificationSuggestions>());
         provider.GetRequiredService<IClassificationReclassifier>().ShouldBeSameAs(provider.GetRequiredService<IClassificationReclassifier>());
-        provider.GetRequiredService<IClassificationReclassifier>().ShouldBeOfType<ClassificationReclassifier>();
+        provider.GetRequiredService<IClassificationReclassifier>().ShouldBeOfType<RunRecordingReclassifier>();
     }
 
     [Fact]

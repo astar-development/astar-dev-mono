@@ -2,6 +2,7 @@ using AStarDev.CloudSync.Classification;
 using AStarDev.CloudSync.TestHelpers.Classification;
 using AStarDev.CloudSync.TestHelpers.Ui;
 using AStarDev.CloudSync.ViewModels.Classification;
+using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.ViewModels.TestsUnit.Classification;
 
@@ -9,6 +10,7 @@ public class GivenTheReclassifyViewModel
 {
     private readonly GetAllCountingTermStore terms = new();
     private readonly FakeClassificationReclassifier reclassifier = new();
+    private readonly FakeReclassifyFreshnessCheck freshness = new();
     private readonly InlineSynchronizationContext context = new();
 
     private ReclassifyViewModel Create()
@@ -16,7 +18,7 @@ public class GivenTheReclassifyViewModel
         var localization = TestData.CreateLocalization();
         var termList = new ClassificationTermListViewModel(terms, new FakeCategoryStore(), new FakeFileClassificationStore(), localization);
 
-        return new ReclassifyViewModel(reclassifier, termList, localization);
+        return new ReclassifyViewModel(reclassifier, freshness, termList, localization);
     }
 
     private static ReclassifyCounts Counts(int files, int batches) => ReclassifyCountsFactory.Create(files, batches, 0);
@@ -182,5 +184,84 @@ public class GivenTheReclassifyViewModel
         await viewModel.ReclassifyCommand.ExecuteAsync(null);
 
         reclassifier.StartCount.ShouldBe(2);
+    }
+
+    [Fact]
+    public void when_created_then_no_rerun_is_recommended_before_the_check_runs()
+    {
+        var viewModel = Create();
+
+        (viewModel.IsRerunRecommended, freshness.CheckCount).ShouldBe((false, 0));
+    }
+
+    [Fact]
+    public async Task when_the_check_finds_the_links_stale_then_a_rerun_is_recommended_with_the_localised_text()
+    {
+        freshness.Outcome = Result.Success<ReclassifyFreshness, ClassificationFailure>(ReclassifyFreshnessFactory.CreateStale());
+        var viewModel = Create();
+
+        await viewModel.CheckCommand.ExecuteAsync(null);
+
+        (viewModel.IsRerunRecommended, viewModel.RerunRecommendedText).ShouldBe((true, "The classification rules have changed since the last full reclassify, or none has finished yet. Reclassify to bring the file tags up to date."));
+    }
+
+    [Fact]
+    public async Task when_the_check_finds_the_links_up_to_date_then_no_rerun_is_recommended()
+    {
+        var viewModel = Create();
+
+        await viewModel.CheckCommand.ExecuteAsync(null);
+
+        (viewModel.IsRerunRecommended, freshness.CheckCount).ShouldBe((false, 1));
+    }
+
+    [Fact]
+    public async Task when_the_check_fails_then_no_rerun_is_recommended()
+    {
+        freshness.Outcome = Result.Failure<ReclassifyFreshness, ClassificationFailure>(ClassificationFailureFactory.CreateUnavailable());
+        var viewModel = Create();
+
+        await viewModel.CheckCommand.ExecuteAsync(null);
+
+        viewModel.IsRerunRecommended.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task when_the_check_result_changes_then_the_recommendation_is_announced()
+    {
+        freshness.Outcome = Result.Success<ReclassifyFreshness, ClassificationFailure>(ReclassifyFreshnessFactory.CreateStale());
+        var viewModel = Create();
+        var changed = new List<string?>();
+        viewModel.PropertyChanged += (_, args) => changed.Add(args.PropertyName);
+
+        await viewModel.CheckCommand.ExecuteAsync(null);
+
+        changed.ShouldContain(nameof(ReclassifyViewModel.IsRerunRecommended));
+    }
+
+    [Fact]
+    public async Task when_a_run_completes_then_the_check_runs_again_and_clears_the_recommendation()
+    {
+        using var installed = InlineSynchronizationContext.Install(context);
+        freshness.Outcome = Result.Success<ReclassifyFreshness, ClassificationFailure>(ReclassifyFreshnessFactory.CreateStale());
+        var viewModel = Create();
+        await viewModel.CheckCommand.ExecuteAsync(null);
+        freshness.Outcome = Result.Success<ReclassifyFreshness, ClassificationFailure>(ReclassifyFreshnessFactory.CreateUpToDate());
+
+        await viewModel.ReclassifyCommand.ExecuteAsync(null);
+
+        (viewModel.IsRerunRecommended, freshness.CheckCount).ShouldBe((false, 2));
+    }
+
+    [Fact]
+    public async Task when_another_run_is_in_progress_then_the_check_does_not_run_again()
+    {
+        using var installed = InlineSynchronizationContext.Install(context);
+        reclassifier.Outcome = ReclassifyOutcomeFactory.CreateAlreadyRunning();
+        var viewModel = Create();
+
+        await viewModel.ReclassifyCommand.ExecuteAsync(null);
+
+        freshness.CheckCount.ShouldBe(0);
     }
 }

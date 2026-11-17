@@ -40,6 +40,8 @@ public sealed class TemporaryClassificationDatabase : IAsyncDisposable
 
     public ISeedStateStore SeedState => serviceProvider.GetRequiredService<ISeedStateStore>();
 
+    public IReclassifyRunStore Runs => serviceProvider.GetRequiredService<IReclassifyRunStore>();
+
     public IClassifiableFileSource Files => serviceProvider.GetRequiredService<IClassifiableFileSource>();
 
     public ISyncBaselineWriter BaselineWriter => serviceProvider.GetRequiredService<ISyncBaselineWriter>();
