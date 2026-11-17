@@ -35,6 +35,24 @@ public class GivenSyncPersistenceServiceCollectionExtensions
     }
 
     [Fact]
+    public void when_the_module_is_added_then_one_file_system_case_rule_is_registered_as_a_singleton()
+    {
+        var services = new ServiceCollection().AddSyncPersistence(_ => new MockFileSystem().FileInfo.New("/data/cloudsync.db"));
+
+        services.Where(descriptor => descriptor.ServiceType == typeof(IFileSystemCaseRule)).Select(descriptor => descriptor.Lifetime).ShouldBe([ServiceLifetime.Singleton]);
+    }
+
+    [Fact]
+    public void when_a_file_system_case_rule_is_already_registered_then_the_module_keeps_it()
+    {
+        var existing = new FixedFileSystemCaseRule(StringComparison.Ordinal);
+
+        var services = new ServiceCollection().AddSingleton<IFileSystemCaseRule>(existing).AddSyncPersistence(_ => new MockFileSystem().FileInfo.New("/data/cloudsync.db"));
+
+        services.Where(descriptor => descriptor.ServiceType == typeof(IFileSystemCaseRule)).Select(descriptor => descriptor.ImplementationInstance).ShouldBe([existing]);
+    }
+
+    [Fact]
     public void when_the_module_is_added_then_the_pause_reader_and_writer_are_registered_as_singletons_and_the_store_takes_part_in_account_removal()
     {
         var services = new ServiceCollection().AddSyncPersistence(_ => new MockFileSystem().FileInfo.New("/data/cloudsync.db"));
