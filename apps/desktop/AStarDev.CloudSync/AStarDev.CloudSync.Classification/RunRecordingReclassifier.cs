@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync.Classification;
 
-/// <summary>Records each completed run with the engine version, the seed version applied when it started and when it finished, so <see cref="IReclassifyFreshnessCheck"/> can tell when a rerun is worth offering. A cancelled, failed or refused run records nothing. The seed version is read before the run, so a run that started while a new seed was still being written records the old one and stays stale (#1876). Like the inner reclassifier, it never throws for a cancel: a seed read that fails or is cancelled records no seed version, and a record write that fails or is cancelled leaves the outcome as it was.</summary>
+/// <summary>Records each completed run with the engine version, the seed version applied when it started and when it finished, so <see cref="IReclassifyFreshnessCheck"/> can tell when a rerun is worth offering. A cancelled, failed or refused run records nothing. The seed version is read before the run, so a run that started while a new seed was still being written records the old one and stays stale (#1876). Like the inner reclassifier, it never throws for a cancel: a seed read that fails or is cancelled records no seed version, and a record write that fails leaves the outcome as it was. The record is written with <see cref="CancellationToken.None"/>: the run's work is already done, and a cancel or shutdown in the gap must not drop the one-row write and leave a full run looking stale.</summary>
 /// <param name="inner">Runs the reclassify.</param>
 /// <param name="seedState">Reads the applied seed version.</param>
 /// <param name="runs">Keeps the completed run.</param>
@@ -18,7 +18,7 @@ public sealed class RunRecordingReclassifier(IClassificationReclassifier inner, 
         var seedVersion = await AppliedSeedAsync(cancellationToken).ConfigureAwait(false);
         var outcome = await inner.StartAsync(progress, cancellationToken).ConfigureAwait(false);
         if (outcome is ReclassifyOutcome.Completed)
-            await RecordAsync(ReclassifyRunRecordFactory.Create(ClassificationEngineVersion.Current, seedVersion, options.TimeProvider.GetUtcNow()), cancellationToken).ConfigureAwait(false);
+            await RecordAsync(ReclassifyRunRecordFactory.Create(ClassificationEngineVersion.Current, seedVersion, options.TimeProvider.GetUtcNow())).ConfigureAwait(false);
 
         return outcome;
     }
@@ -31,9 +31,9 @@ public sealed class RunRecordingReclassifier(IClassificationReclassifier inner, 
         return read.IsCompletedSuccessfully ? read.Result : Option.None<string>();
     }
 
-    private async Task RecordAsync(ReclassifyRunRecord run, CancellationToken cancellationToken)
+    private async Task RecordAsync(ReclassifyRunRecord run)
     {
-        var write = runs.SetLastCompletedAsync(run, cancellationToken).MatchAsync(_ => Unit.Instance, RecordFailed);
+        var write = runs.SetLastCompletedAsync(run, CancellationToken.None).MatchAsync(_ => Unit.Instance, RecordFailed);
         await ((Task)write).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
     }
 
