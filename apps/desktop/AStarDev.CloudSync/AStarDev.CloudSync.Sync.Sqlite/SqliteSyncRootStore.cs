@@ -9,13 +9,14 @@ using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync.Sync.Sqlite;
 
-/// <summary>Keeps the accounts' sync roots in the sync tables. A save reads every root, checks the candidate and writes it inside one immediate transaction, so two crossing changes never both succeed. Changing an account's root clears that account's baseline in the same transaction (#1520), so the next pass is a first sync and an empty new root never reads as everything deleted.</summary>
+/// <summary>Keeps the accounts' sync roots in the sync tables. A save reads every root, checks the candidate and writes it inside one immediate transaction, so two crossing changes never both succeed. Changing an account's root clears that account's baseline in the same transaction (#1520), so the next pass is a first sync and an empty new root never reads as everything deleted. After the change commits, every <see cref="ISyncRootChangeParticipant"/> deletes its per-file data for the account (#1858); a participant failure never fails the save.</summary>
 /// <param name="dbContextFactory">Creates a database context per operation.</param>
 /// <param name="policy">Decides whether a candidate crosses another account's root.</param>
 /// <param name="homeFolder">The folder an account must not sync into.</param>
 /// <param name="fileSystem">Rebuilds the stored paths as folders.</param>
+/// <param name="participants">Delete their per-file data for an account whose root changed.</param>
 /// <param name="logger">Reports reads and saves that fail, by exception type only.</param>
-internal sealed class SqliteSyncRootStore(IDbContextFactory<SyncDbContext> dbContextFactory, ISyncRootPolicy policy, IHomeFolder homeFolder, IFileSystem fileSystem, ILogger<SqliteSyncRootStore> logger) : ISyncRootReader, ISyncRootWriter, IAccountRemovalParticipant
+internal sealed class SqliteSyncRootStore(IDbContextFactory<SyncDbContext> dbContextFactory, ISyncRootPolicy policy, IHomeFolder homeFolder, IFileSystem fileSystem, IEnumerable<ISyncRootChangeParticipant> participants, ILogger<SqliteSyncRootStore> logger) : ISyncRootReader, ISyncRootWriter, IAccountRemovalParticipant
 {
     private const string Location = nameof(SqliteSyncRootStore);
 
@@ -62,17 +63,26 @@ internal sealed class SqliteSyncRootStore(IDbContextFactory<SyncDbContext> dbCon
         return await checkedRoot.MatchAsync(
                 async accepted =>
                 {
-                    if (entities.Any(entity => entity.AccountId == accountId.Value && !string.Equals(entity.Path, accepted.Directory.FullName, StringComparison.Ordinal)))
+                    var changed = entities.Any(entity => entity.AccountId == accountId.Value && !string.Equals(entity.Path, accepted.Directory.FullName, StringComparison.Ordinal));
+                    if (changed)
                         _ = await dbContext.SyncBaseline.Where(entry => entry.AccountId == accountId.Value).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
 
                     _ = Upsert(dbContext, entities, accountId, accepted);
                     _ = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
                     await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+                    if (changed)
+                        await RemoveRootDataAsync(accountId).ConfigureAwait(false);
 
                     return Result.Success<SyncRoot, SyncRootRejection>(accepted);
                 },
                 rejection => Task.FromResult(Result.Failure<SyncRoot, SyncRootRejection>(rejection)))
             .ConfigureAwait(false);
+    }
+
+    private async Task RemoveRootDataAsync(AccountId accountId)
+    {
+        foreach (var participant in participants)
+            _ = await Try.RunAsync(() => participant.RemoveRootDataAsync(accountId, CancellationToken.None), CancellationToken.None).MatchAsync(_ => Unit.Instance, exception => ParticipantFailed(exception)).ConfigureAwait(false);
     }
 
     private static Unit Upsert(SyncDbContext dbContext, List<SyncRootEntity> entities, AccountId accountId, SyncRoot root) =>
@@ -114,6 +124,13 @@ internal sealed class SqliteSyncRootStore(IDbContextFactory<SyncDbContext> dbCon
         LogMessage.ExceptionCaught(logger, Location, exception.ErrorType());
 
         return Result.Failure<T, ErrorResponse>(new ErrorResponse(message));
+    }
+
+    private Unit ParticipantFailed(Exception exception)
+    {
+        LogMessage.ExceptionCaught(logger, Location, exception.ErrorType());
+
+        return Unit.Instance;
     }
 
     private Result<SyncRoot, SyncRootRejection> SaveFailed(Exception exception)
