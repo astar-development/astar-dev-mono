@@ -1,6 +1,7 @@
 using System.IO.Abstractions;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Sync;
+using AStarDev.EFCoreSqlite;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,7 +28,7 @@ public static class SyncPersistenceServiceCollectionExtensions
         services.TryAddSingleton<IFileSystemCaseRule, SystemFileSystemCaseRule>();
 
         return services
-            .AddDbContextFactory<SyncDbContext>((provider, options) => options.UseSqlite(new SqliteConnectionStringBuilder { DataSource = databaseFile(provider).FullName }.ToString(), sqlite => sqlite.MigrationsHistoryTable(SyncDbContext.MigrationsHistoryTable)))
+            .AddDbContextFactory<SyncDbContext>((provider, options) => options.UseSqlite(new SqliteConnectionStringBuilder { DataSource = databaseFile(provider).FullName }.ToString(), sqlite => sqlite.MigrationsHistoryTable(SyncDbContext.MigrationsHistoryTable)).AddInterceptors(SqliteBusyTimeoutInterceptor.Instance))
             .AddSingleton<ICloudSyncDatabase>(provider => Compose(provider, accountsDatabase))
             .AddSingleton<IDatabaseHealthCheck>(provider => new SqliteDatabaseHealthCheck(databaseFile(provider), provider.GetRequiredService<ILogger<SqliteDatabaseHealthCheck>>()))
             .AddSingleton<ISyncRootPolicy, SyncRootPolicy>()

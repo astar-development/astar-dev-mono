@@ -1,5 +1,6 @@
 using System.IO.Abstractions;
 using AStarDev.CloudSync.Accounts;
+using AStarDev.EFCoreSqlite;
 using AStarDev.FunctionalParadigm;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +23,7 @@ public static class ClassificationPersistenceServiceCollectionExtensions
             _ = services.Remove(previous);
 
         return services
-            .AddDbContextFactory<ClassificationDbContext>((provider, options) => options.UseSqlite(new SqliteConnectionStringBuilder { DataSource = databaseFile(provider).FullName }.ToString(), sqlite => sqlite.MigrationsHistoryTable(ClassificationDbContext.MigrationsHistoryTable)))
+            .AddDbContextFactory<ClassificationDbContext>((provider, options) => options.UseSqlite(new SqliteConnectionStringBuilder { DataSource = databaseFile(provider).FullName }.ToString(), sqlite => sqlite.MigrationsHistoryTable(ClassificationDbContext.MigrationsHistoryTable)).AddInterceptors(SqliteBusyTimeoutInterceptor.Instance))
             .AddSingleton<ICloudSyncDatabase>(provider => new ClassificationDatabase(CreatePrevious(provider, previous), provider.GetRequiredService<IDbContextFactory<ClassificationDbContext>>(), provider.GetRequiredService<ILogger<ClassificationDatabase>>()))
             .AddSingleton<ITermStore, SqliteTermStore>()
             .AddSingleton<ICategoryStore, SqliteCategoryStore>()
