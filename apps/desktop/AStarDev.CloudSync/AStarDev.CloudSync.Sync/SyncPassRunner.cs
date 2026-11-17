@@ -74,6 +74,7 @@ internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps st
                 var running = StepsAsync(accountId, tally, pass.Token);
                 await ((Task)running).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
                 var stepped = running.IsCompletedSuccessfully ? await running.ConfigureAwait(false) : Abandoned(running);
+                outcome = stepped.Match(_ => outcome, failure => failure is SyncPassFailure.Cancelled ? stepped : outcome);
                 await RefreshQuotaAsync(accountId, stepped, pass.Token).ConfigureAwait(false);
                 await steps.After.Activity.RecordAsync(accountId, stepped, tally.Download).ConfigureAwait(false);
                 outcome = stepped;

@@ -42,6 +42,18 @@ public sealed class GivenASyncPassRunnerThatJournals : IDisposable
     }
 
     [Fact]
+    public async Task when_a_run_is_cancelled_and_a_step_after_the_pass_throws_then_the_row_still_ends_cancelled()
+    {
+        services.Steps.Downloaded = Result.Success<DownloadPassSummary, DownloadPassFailure>(DownloadPassSummaryFactory.Create([DownloadItemOutcomeFactory.CreateDownloaded(100)], []));
+        services.Steps.UploadThrows = Option.Some<Exception>(new OperationCanceledException());
+        services.ActivityLog.Throws = true;
+
+        _ = await Record.ExceptionAsync(() => RunAsync(SyncTriggerFactory.CreateManual()));
+
+        services.Journal.Runs.ShouldHaveSingleItem().Outcome.ShouldBe(Option.Some(SyncRunOutcomeFactory.CreateCancelled()));
+    }
+
+    [Fact]
     public async Task when_a_run_fails_then_the_row_ends_failed_with_the_reason()
     {
         services.Steps.Scan = Result.Failure<LocalChangeSet, LocalScanFailure>(LocalScanFailureFactory.CreateRootUnavailable());
