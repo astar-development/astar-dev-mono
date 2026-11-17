@@ -60,6 +60,35 @@ public class GivenTheReclassifyViewModel
     }
 
     [Fact]
+    public async Task when_the_run_reports_skipped_files_then_the_running_status_shows_the_skipped_count()
+    {
+        using var installed = InlineSynchronizationContext.Install(context);
+        reclassifier.Reports = [ReclassifyProgressFactory.Create(0, 0, 500), ReclassifyProgressFactory.Create(1000, 1, 1500)];
+        reclassifier.Gate = new TaskCompletionSource();
+        var viewModel = Create();
+        var running = viewModel.ReclassifyCommand.ExecuteAsync(null);
+        await reclassifier.Started.Task;
+
+        var during = (viewModel.State, viewModel.StatusText);
+        reclassifier.Gate.SetResult();
+        await running;
+
+        during.ShouldBe((ReclassifyStateFactory.CreateRunning(1000, 1500), "Reclassifying: 1,000 files done, 1,500 skipped"));
+    }
+
+    [Fact]
+    public async Task when_a_run_completes_with_skipped_files_then_the_skipped_count_is_shown()
+    {
+        using var installed = InlineSynchronizationContext.Install(context);
+        reclassifier.Outcome = ReclassifyOutcomeFactory.CreateCompleted(ReclassifyCountsFactory.Create(1234, 3, 0, 2500));
+        var viewModel = Create();
+
+        await viewModel.ReclassifyCommand.ExecuteAsync(null);
+
+        viewModel.StatusText.ShouldBe("Reclassified 1,234 files in 3 batches, 2,500 skipped because their account was busy or removed");
+    }
+
+    [Fact]
     public async Task when_disposed_while_running_then_the_run_is_cancelled_and_the_term_list_reloads()
     {
         using var installed = InlineSynchronizationContext.Install(context);

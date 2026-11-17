@@ -72,7 +72,7 @@ public sealed class GivenAClassificationReclassifier
 
         outcome.ShouldBeOfType<ReclassifyOutcome.Completed>();
         Totals(outcome).ShouldBe((1200, 3, 0));
-        progress.Reports.ShouldBe([(500, 1), (1000, 2), (1200, 3)]);
+        progress.Reports.ShouldBe([(500, 1, 0), (1000, 2, 0), (1200, 3, 0)]);
         store.BatchSizes.ShouldBe([500, 500, 200]);
     }
 
@@ -289,7 +289,7 @@ public sealed class GivenAClassificationReclassifier
     }
 
     [Fact]
-    public async Task when_the_lock_is_drained_then_every_file_is_skipped_and_the_run_completes_with_nothing_written()
+    public async Task when_the_lock_is_drained_then_every_file_is_skipped_and_the_skipped_batch_still_reports_progress()
     {
         var syncLock = AccountSyncLocks.Create();
         using var drain = await syncLock.DrainAsync(TestContext.Current.CancellationToken);
@@ -303,7 +303,34 @@ public sealed class GivenAClassificationReclassifier
         Totals(outcome).ShouldBe((0, 0, 0));
         Counts(outcome).SkippedForAccount.ShouldBe(3);
         store.BatchSizes.ShouldBeEmpty();
-        progress.Reports.ShouldBeEmpty();
+        progress.Reports.ShouldBe([(0, 0, 3)]);
+    }
+
+    [Fact]
+    public async Task when_every_batch_of_an_account_is_skipped_then_progress_is_reported_after_each_batch_with_the_skipped_count()
+    {
+        var syncLock = AccountSyncLocks.Create();
+        using var held = syncLock.TryAcquire(Account).ShouldBeOfType<SyncLockAttempt.Acquired>().Lease;
+        var progress = new ReclassifyRecordingProgress();
+        var reclassifier = Build(ReclassifyFakeFileSource.Numbered(Account, 1200), new ReclassifyFakeClassifier(Holiday), new ReclassifyFakeStore(), syncLock: syncLock);
+
+        var outcome = await reclassifier.StartAsync(progress, TestContext.Current.CancellationToken);
+
+        Counts(outcome).SkippedForAccount.ShouldBe(1200);
+        progress.Reports.ShouldBe([(0, 0, 500), (0, 0, 1000), (0, 0, 1200)]);
+    }
+
+    [Fact]
+    public async Task when_a_batch_is_partly_skipped_then_its_progress_carries_the_written_and_skipped_counts()
+    {
+        var syncLock = AccountSyncLocks.Create();
+        using var held = syncLock.TryAcquire(Account).ShouldBeOfType<SyncLockAttempt.Acquired>().Lease;
+        var progress = new ReclassifyRecordingProgress();
+        var reclassifier = Build(ThreeFiles(), new ReclassifyFakeClassifier(Holiday), new ReclassifyFakeStore(), syncLock: syncLock);
+
+        _ = await reclassifier.StartAsync(progress, TestContext.Current.CancellationToken);
+
+        progress.Reports.ShouldBe([(1, 1, 2)]);
     }
 
     [Fact]

@@ -71,6 +71,19 @@ public class GivenTheClassificationPageSnapshots
     [AvaloniaTheory]
     [InlineData("dark")]
     [InlineData("light")]
+    public async Task when_completed_with_skipped_files_then_the_page_header_shows_the_skipped_count_and_matches_the_baseline(string theme)
+    {
+        Assert.SkipUnless(OperatingSystem.IsLinux(), Snapshot.LinuxOnlyReason);
+        var page = TestData.CreateClassificationPage(new FakeClassificationReclassifier { Outcome = ReclassifyOutcomeFactory.CreateCompleted(ReclassifyCountsFactory.Create(1234, 3, 0, 2500)) });
+        await page.LoadCommand.ExecuteAsync(null);
+        await page.Reclassify.ReclassifyCommand.ExecuteAsync(null);
+
+        Snapshot.ShouldMatchBaseline(Host(page), Theme(theme), $"classification-page-completed-skipped-{theme}", 900, 300);
+    }
+
+    [AvaloniaTheory]
+    [InlineData("dark")]
+    [InlineData("light")]
     public async Task when_failed_then_the_page_header_shows_the_failure_and_matches_the_baseline(string theme)
     {
         Assert.SkipUnless(OperatingSystem.IsLinux(), Snapshot.LinuxOnlyReason);

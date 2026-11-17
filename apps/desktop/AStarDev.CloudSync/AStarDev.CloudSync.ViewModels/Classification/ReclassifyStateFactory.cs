@@ -10,7 +10,12 @@ public static class ReclassifyStateFactory
 
     /// <summary>Creates the <see cref="ReclassifyState.Running"/> case. A negative count becomes zero.</summary>
     /// <param name="filesDone">The files written so far.</param>
-    public static ReclassifyState CreateRunning(int filesDone) => new ReclassifyState.Running(Math.Max(filesDone, 0));
+    public static ReclassifyState CreateRunning(int filesDone) => CreateRunning(filesDone, 0);
+
+    /// <summary>Creates the <see cref="ReclassifyState.Running"/> case, with the files skipped because their account was busy or removed. A negative count becomes zero.</summary>
+    /// <param name="filesDone">The files written so far.</param>
+    /// <param name="filesSkipped">The files skipped so far.</param>
+    public static ReclassifyState CreateRunning(int filesDone, int filesSkipped) => new ReclassifyState.Running(Math.Max(filesDone, 0), Math.Max(filesSkipped, 0));
 
     /// <summary>Creates the <see cref="ReclassifyState.Completed"/> case.</summary>
     /// <param name="counts">What the run did.</param>
