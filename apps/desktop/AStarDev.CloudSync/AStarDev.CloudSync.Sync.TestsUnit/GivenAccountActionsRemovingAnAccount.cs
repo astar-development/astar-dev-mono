@@ -91,14 +91,28 @@ public sealed class GivenAccountActionsRemovingAnAccount : IDisposable
     [Fact]
     public async Task when_a_lease_attempt_keeps_waiting_then_the_removal_still_gives_up_within_the_ten_second_wait()
     {
-        using var stalled = new AccountServices(syncLock: new StallingAccountSyncLock());
+        var time = new TimerRecordingTimeProvider();
+        using var stalled = new AccountServices(syncLock: new StallingAccountSyncLock(), time: time);
         var accountId = await stalled.AddAsync(Personal, CancellationToken);
-        var started = stalled.Time.GetUtcNow();
+        var started = time.GetUtcNow();
 
-        var result = await stalled.AdvanceUntilAsync(stalled.Actions.RemoveAsync(accountId, CancellationToken)).WaitAsync(TimeSpan.FromSeconds(30), CancellationToken);
+        var removing = stalled.Actions.RemoveAsync(accountId, CancellationToken);
+        await AdvanceThroughTheRetryThenTheStalledAttemptAsync(time);
+        var result = await removing.WaitAsync(TimeSpan.FromSeconds(30), CancellationToken);
 
         result.Match(_ => (object)"removed", error => error).ShouldBe(AccountRemovalFailureFactory.CreateSyncStillRunning());
-        (stalled.Time.GetUtcNow() - started).ShouldBeLessThanOrEqualTo(AccountLeasePolicy.WaitForRunningWork + AccountLeasePolicy.RetryInterval);
+        (time.GetUtcNow() - started).ShouldBeLessThanOrEqualTo(AccountLeasePolicy.WaitForRunningWork + AccountLeasePolicy.RetryInterval);
+    }
+
+    private static async Task AdvanceThroughTheRetryThenTheStalledAttemptAsync(TimerRecordingTimeProvider time)
+    {
+        TimeSpan dueTime;
+        do
+            dueTime = await time.NextTimerAsync(CancellationToken);
+        while (dueTime != AccountLeasePolicy.RetryInterval);
+
+        time.Advance(AccountLeasePolicy.RetryInterval);
+        time.Advance(await time.NextTimerAsync(CancellationToken));
     }
 
     [Fact]
