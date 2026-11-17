@@ -321,7 +321,7 @@ public sealed class GivenAnUploadPass : IDisposable
 
         _ = await fixture.BuildAsync(CancellationToken);
         var running = fixture.RunAsync(CancellationToken);
-        await gate.Entered.WaitAsync(TimeSpan.FromSeconds(5), CancellationToken);
+        await fixture.Uploader.WhenInFlightAsync(4).WaitAsync(TimeSpan.FromSeconds(30), CancellationToken);
         await Task.Delay(100, CancellationToken);
         gate.Release();
         _ = await running;
@@ -354,7 +354,7 @@ public sealed class GivenAnUploadPass : IDisposable
 
         _ = await fixture.BuildAsync(CancellationToken);
         var running = fixture.RunAsync(CancellationToken);
-        await gate.Entered.WaitAsync(TimeSpan.FromSeconds(5), CancellationToken);
+        await fixture.Uploader.WhenInFlightAsync(3).WaitAsync(TimeSpan.FromSeconds(30), CancellationToken);
         await Task.Delay(100, CancellationToken);
         gate.Release();
         var result = await running;

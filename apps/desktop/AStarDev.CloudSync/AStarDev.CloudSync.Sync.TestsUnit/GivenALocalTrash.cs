@@ -45,7 +45,7 @@ public sealed class GivenALocalTrash : IDisposable
         fileSystem.Directory.CreateDirectory("/root/Docs");
         fileSystem.File.WriteAllText("/root/Docs/a.txt", "hello");
 
-        var result = await Files.TrashAsync(fileSystem.DirectoryInfo.New("/root"), fileSystem.FileInfo.New("/root/Docs/a.txt"), CancellationToken);
+        var result = await SettledAsync(Files.TrashAsync(fileSystem.DirectoryInfo.New("/root"), fileSystem.FileInfo.New("/root/Docs/a.txt"), CancellationToken));
 
         Outcome(result).ShouldBe("ok");
         fileSystem.File.Exists("/root/Docs/a.txt").ShouldBeFalse();
@@ -61,7 +61,7 @@ public sealed class GivenALocalTrash : IDisposable
         fileSystem.File.WriteAllText("/root/Docs/Sub/a.txt", "a");
         fileSystem.File.WriteAllText("/root/Docs/b.txt", "b");
 
-        var result = await Files.TrashAsync(fileSystem.DirectoryInfo.New("/root"), fileSystem.DirectoryInfo.New("/root/Docs"), CancellationToken);
+        var result = await SettledAsync(Files.TrashAsync(fileSystem.DirectoryInfo.New("/root"), fileSystem.DirectoryInfo.New("/root/Docs"), CancellationToken));
 
         Outcome(result).ShouldBe("ok");
         fileSystem.Directory.Exists("/root/Docs").ShouldBeFalse();
@@ -73,7 +73,7 @@ public sealed class GivenALocalTrash : IDisposable
     {
         fileSystem.Directory.CreateDirectory("/root");
 
-        var result = await Files.TrashAsync(fileSystem.DirectoryInfo.New("/root"), fileSystem.FileInfo.New("/root/none.txt"), CancellationToken);
+        var result = await SettledAsync(Files.TrashAsync(fileSystem.DirectoryInfo.New("/root"), fileSystem.FileInfo.New("/root/none.txt"), CancellationToken));
 
         Outcome(result).ShouldBe("ok");
         TrashedFiles(fileSystem, "/root").ShouldBeEmpty();
@@ -85,7 +85,7 @@ public sealed class GivenALocalTrash : IDisposable
         fileSystem.Directory.CreateDirectory("/root/.sync-trash/old");
         fileSystem.File.WriteAllText("/root/.sync-trash/old/a.txt", "kept");
 
-        var result = await Files.TrashAsync(fileSystem.DirectoryInfo.New("/root"), fileSystem.FileInfo.New("/root/.sync-trash/old/a.txt"), CancellationToken);
+        var result = await SettledAsync(Files.TrashAsync(fileSystem.DirectoryInfo.New("/root"), fileSystem.FileInfo.New("/root/.sync-trash/old/a.txt"), CancellationToken));
 
         Outcome(result).ShouldBe("ok");
         TrashedFiles(fileSystem, "/root").ShouldBe(["/root/.sync-trash/old/a.txt"]);
@@ -98,7 +98,7 @@ public sealed class GivenALocalTrash : IDisposable
         fileSystem.Directory.CreateDirectory("/root/.SYNC-TRASH/old");
         fileSystem.File.WriteAllText("/root/.SYNC-TRASH/old/a.txt", "kept");
 
-        var result = await Files.TrashAsync(fileSystem.DirectoryInfo.New("/root"), fileSystem.FileInfo.New("/root/.SYNC-TRASH/old/a.txt"), CancellationToken);
+        var result = await SettledAsync(Files.TrashAsync(fileSystem.DirectoryInfo.New("/root"), fileSystem.FileInfo.New("/root/.SYNC-TRASH/old/a.txt"), CancellationToken));
 
         Outcome(result).ShouldBe("ok");
         fileSystem.File.Exists("/root/.SYNC-TRASH/old/a.txt").ShouldBeTrue();
@@ -112,7 +112,7 @@ public sealed class GivenALocalTrash : IDisposable
         fileSystem.Directory.CreateDirectory("/elsewhere");
         fileSystem.File.WriteAllText("/elsewhere/a.txt", "a");
 
-        var result = await Files.TrashAsync(fileSystem.DirectoryInfo.New("/root"), fileSystem.FileInfo.New("/elsewhere/a.txt"), CancellationToken);
+        var result = await SettledAsync(Files.TrashAsync(fileSystem.DirectoryInfo.New("/root"), fileSystem.FileInfo.New("/elsewhere/a.txt"), CancellationToken));
 
         Outcome(result).ShouldBe("Unexpected");
         fileSystem.File.Exists("/elsewhere/a.txt").ShouldBeTrue();
@@ -123,10 +123,10 @@ public sealed class GivenALocalTrash : IDisposable
     {
         fileSystem.Directory.CreateDirectory("/root");
         fileSystem.File.WriteAllText("/root/a.txt", "first");
-        _ = await Files.TrashAsync(fileSystem.DirectoryInfo.New("/root"), fileSystem.FileInfo.New("/root/a.txt"), CancellationToken);
+        _ = await SettledAsync(Files.TrashAsync(fileSystem.DirectoryInfo.New("/root"), fileSystem.FileInfo.New("/root/a.txt"), CancellationToken));
         fileSystem.File.WriteAllText("/root/a.txt", "second");
 
-        _ = await Files.TrashAsync(fileSystem.DirectoryInfo.New("/root"), fileSystem.FileInfo.New("/root/a.txt"), CancellationToken);
+        _ = await SettledAsync(Files.TrashAsync(fileSystem.DirectoryInfo.New("/root"), fileSystem.FileInfo.New("/root/a.txt"), CancellationToken));
 
         TrashedFiles(fileSystem, "/root").Select(fileSystem.File.ReadAllText).Order().ShouldBe(["first", "second"]);
     }
@@ -136,10 +136,10 @@ public sealed class GivenALocalTrash : IDisposable
     {
         windows.Directory.CreateDirectory(@"C:\root");
         windows.File.WriteAllText(@"C:\root\A.txt", "first");
-        _ = await Files.TrashAsync(windows.DirectoryInfo.New(@"C:\root"), windows.FileInfo.New(@"C:\root\A.txt"), CancellationToken);
+        _ = await SettledAsync(Files.TrashAsync(windows.DirectoryInfo.New(@"C:\root"), windows.FileInfo.New(@"C:\root\A.txt"), CancellationToken));
         windows.File.WriteAllText(@"C:\root\a.txt", "second");
 
-        var result = await Files.TrashAsync(windows.DirectoryInfo.New(@"C:\root"), windows.FileInfo.New(@"C:\root\a.txt"), CancellationToken);
+        var result = await SettledAsync(Files.TrashAsync(windows.DirectoryInfo.New(@"C:\root"), windows.FileInfo.New(@"C:\root\a.txt"), CancellationToken));
 
         Outcome(result).ShouldBe("ok");
         windows.Directory.GetFiles(@"C:\root\.sync-trash", "*", SearchOption.AllDirectories).Select(windows.File.ReadAllText).Order().ShouldBe(["first", "second"]);

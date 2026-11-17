@@ -10,6 +10,8 @@ public sealed class FakeUploader : IRemoteFileUploader
     private readonly List<(UploadTarget Target, string Name, UploadPrecondition Precondition)> calls = [];
     private int inFlight;
     private int peak;
+    private int awaitedInFlight = int.MaxValue;
+    private readonly TaskCompletionSource awaitedReached = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     public Func<string, Result<UploadedFile, ProviderError>> Respond { get; set; } = name => Result.Success<UploadedFile, ProviderError>(UploadedFileFactory.Create(UploadPlanFixture.Id($"id-{name}"), new ContentTag($"c-{name}"), new EntityTag($"e-{name}"), 10, UploadPlanFixture.Hash($"h-{name}")));
 
@@ -20,6 +22,18 @@ public sealed class FakeUploader : IRemoteFileUploader
     public Action BeforeEachReport { get; set; } = () => { };
 
     public int Peak => peak;
+
+    public Task WhenInFlightAsync(int count)
+    {
+        lock (gate)
+        {
+            awaitedInFlight = count;
+            if (inFlight >= count)
+                awaitedReached.TrySetResult();
+        }
+
+        return awaitedReached.Task;
+    }
 
     public IReadOnlyList<(UploadTarget Target, string Name, UploadPrecondition Precondition)> Calls
     {
@@ -36,6 +50,8 @@ public sealed class FakeUploader : IRemoteFileUploader
         {
             calls.Add((target, source.Name, precondition));
             peak = Math.Max(peak, ++inFlight);
+            if (inFlight >= awaitedInFlight)
+                awaitedReached.TrySetResult();
         }
 
         if (Gate is { } waiting)
