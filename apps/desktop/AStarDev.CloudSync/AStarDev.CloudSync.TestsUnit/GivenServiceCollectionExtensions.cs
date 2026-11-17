@@ -477,14 +477,14 @@ public class GivenServiceCollectionExtensions
     }
 
     [Fact]
-    public void when_application_services_are_added_then_the_account_store_comes_from_the_accounts_sqlite_module_and_the_combined_database_from_the_classification_sqlite_module()
+    public void when_application_services_are_added_then_the_account_store_comes_from_the_accounts_sqlite_module_and_the_combined_database_runs_one_migration_at_a_time()
     {
         using var provider = CreateServices().BuildServiceProvider();
         var sqliteModule = typeof(PersistenceServiceCollectionExtensions).Assembly;
 
         (provider.GetRequiredService<IAccountStore>(), provider.GetRequiredService<ICloudSyncDatabase>()).ShouldSatisfyAllConditions(
             services => services.Item1.GetType().Assembly.ShouldBe(sqliteModule),
-            services => services.Item2.GetType().Assembly.ShouldBe(typeof(ClassificationPersistenceServiceCollectionExtensions).Assembly));
+            services => services.Item2.ShouldBeOfType<SerialCloudSyncDatabase>());
     }
 
     [Fact]
@@ -650,6 +650,7 @@ public class GivenServiceCollectionExtensions
         provider.GetRequiredService<IClassificationSeedSource>().ShouldBeOfType<EmbeddedClassificationSeedSource>();
         provider.GetRequiredService<IClassificationSeeder>().ShouldBeOfType<ClassificationSeeder>();
         provider.GetRequiredService<IClassificationStartup>().ShouldBeOfType<ClassificationStartup>();
+        provider.GetRequiredService<SyncStartup>().ShouldBeSameAs(provider.GetRequiredService<SyncStartup>());
         provider.GetRequiredService<IFileClassificationStore>().ShouldNotBeNull();
         provider.GetRequiredService<ISeedStateStore>().ShouldNotBeNull();
         provider.GetRequiredService<IClassifiableFileSource>().ShouldNotBeNull();
