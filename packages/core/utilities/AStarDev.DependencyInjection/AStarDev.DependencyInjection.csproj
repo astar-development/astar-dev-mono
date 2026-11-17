@@ -19,7 +19,7 @@
     <PackageProjectUrl>https://github.com/astar-development/astar-dev-mono/tree/main/packages/core/utilities</PackageProjectUrl>
     <DocumentationFile>$(AssemblyName).xml</DocumentationFile>
     <PackageReleaseNotes>
-    v0.1.0 Initial release: ServiceDescriptor.CreateInstance extension, moved from AStarDev.CloudSync.Sync.
+        v0.1.0 refactor(di): move ServiceDescriptor.CreateInstance into AStarDev.DependencyInjection (#1900)
     </PackageReleaseNotes>
     <RepositoryType>git</RepositoryType>
     <PackageReadmeFile>README.md</PackageReadmeFile>
