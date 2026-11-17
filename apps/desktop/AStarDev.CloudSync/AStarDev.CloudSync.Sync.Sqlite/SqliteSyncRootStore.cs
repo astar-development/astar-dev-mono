@@ -82,7 +82,7 @@ internal sealed class SqliteSyncRootStore(IDbContextFactory<SyncDbContext> dbCon
     private async Task RemoveRootDataAsync(AccountId accountId)
     {
         foreach (var participant in participants)
-            _ = await participant.RemoveRootDataAsync(accountId, CancellationToken.None).ConfigureAwait(false);
+            _ = await Try.RunAsync(() => participant.RemoveRootDataAsync(accountId, CancellationToken.None), CancellationToken.None).MatchAsync(_ => Unit.Instance, exception => ParticipantFailed(exception)).ConfigureAwait(false);
     }
 
     private static Unit Upsert(SyncDbContext dbContext, List<SyncRootEntity> entities, AccountId accountId, SyncRoot root) =>
@@ -124,6 +124,13 @@ internal sealed class SqliteSyncRootStore(IDbContextFactory<SyncDbContext> dbCon
         LogMessage.ExceptionCaught(logger, Location, exception.ErrorType());
 
         return Result.Failure<T, ErrorResponse>(new ErrorResponse(message));
+    }
+
+    private Unit ParticipantFailed(Exception exception)
+    {
+        LogMessage.ExceptionCaught(logger, Location, exception.ErrorType());
+
+        return Unit.Instance;
     }
 
     private Result<SyncRoot, SyncRootRejection> SaveFailed(Exception exception)
