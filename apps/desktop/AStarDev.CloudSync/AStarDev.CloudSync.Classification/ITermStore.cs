@@ -14,6 +14,11 @@ public interface ITermStore
     /// <param name="cancellationToken">Cancels the write.</param>
     Task<Result<ClassificationTerm, ClassificationFailure>> UpsertAsync(ClassificationTerm term, CancellationToken cancellationToken);
 
+    /// <summary>Adds the terms, or returns the stored ones, with the same rules as <see cref="UpsertAsync" /> for each term. The stored terms come back in the order of <paramref name="terms" />; terms that share a category and text give the same stored term. An implementation writes in bounded transactions, so a very large list is written in several. When any term fails, the result is the failure.</summary>
+    /// <param name="terms">The terms to add.</param>
+    /// <param name="cancellationToken">Cancels the write.</param>
+    Task<Result<IReadOnlyList<ClassificationTerm>, ClassificationFailure>> UpsertManyAsync(IReadOnlyList<ClassificationTerm> terms, CancellationToken cancellationToken);
+
     /// <summary>Reads one term by id.</summary>
     /// <param name="termId">The term.</param>
     /// <param name="cancellationToken">Cancels the read.</param>

@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync.Classification;
 
-/// <summary>Writes the shipped seed into the stores when its version is new. The stores take one term per call, so a full run makes one store call per distinct term and category.</summary>
+/// <summary>Writes the shipped seed into the stores when its version is new. The terms go to the store in batches of <see cref="BatchSize" />.</summary>
 /// <param name="seedSource">Loads the seed.</param>
 /// <param name="seedState">Remembers the applied version.</param>
 /// <param name="categories">Stores categories.</param>
@@ -12,6 +12,9 @@ namespace AStarDev.CloudSync.Classification;
 /// <param name="logger">Reports the outcome without terms or paths.</param>
 public sealed class ClassificationSeeder(IClassificationSeedSource seedSource, ISeedStateStore seedState, ICategoryStore categories, ITermStore terms, ILogger<ClassificationSeeder> logger) : IClassificationSeeder
 {
+    /// <summary>The most terms written in one store call, so one write transaction stays short.</summary>
+    public const int BatchSize = 1000;
+
     /// <inheritdoc />
     public async Task<ClassificationSeedOutcome> SeedAsync(CancellationToken cancellationToken)
     {
@@ -75,10 +78,10 @@ public sealed class ClassificationSeeder(IClassificationSeedSource seedSource, I
 
     private async Task<ClassificationSeedOutcome> WriteTermsAsync(ClassificationSeed seed, IReadOnlyDictionary<string, CategoryId> ids, CancellationToken cancellationToken)
     {
-        foreach (var seedTerm in seed.Terms.DistinctBy(term => (term.Text, term.CategoryName.ToUpperInvariant())))
+        foreach (var batch in seed.Terms.DistinctBy(term => (term.Text, term.CategoryName.ToUpperInvariant())).Chunk(BatchSize))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var failure = await UpsertTermAsync(seedTerm, ids, cancellationToken).ConfigureAwait(false);
+            var failure = await UpsertBatchAsync(batch, ids, cancellationToken).ConfigureAwait(false);
             if (failure.TryGetValue(out var failed))
                 return ClassificationSeedOutcomeFactory.CreateFailed(failed);
         }
@@ -86,9 +89,18 @@ public sealed class ClassificationSeeder(IClassificationSeedSource seedSource, I
         return await seedState.SetAppliedVersionAsync(seed.Version, cancellationToken).MatchAsync(_ => ClassificationSeedOutcomeFactory.CreateApplied(), ClassificationSeedOutcomeFactory.CreateFailed).ConfigureAwait(false);
     }
 
-    private Task<Option<ClassificationFailure>> UpsertTermAsync(SeedTerm seedTerm, IReadOnlyDictionary<string, CategoryId> ids, CancellationToken cancellationToken) =>
-        ids.TryGetValue(seedTerm.CategoryName, out var categoryId)
-            ? ClassificationTermFactory.Create(TermIdFactory.Create(Guid.NewGuid()), seedTerm.Text, categoryId, TermSourceFactory.CreateSeed(), TermStatusFactory.CreateActive())
-                .MatchAsync(term => terms.UpsertAsync(term, cancellationToken).MatchAsync(_ => Option.None<ClassificationFailure>(), Option.Some), () => Task.FromResult(Option.None<ClassificationFailure>()))
-            : Task.FromResult(Option.Some(ClassificationFailureFactory.CreateInvalidSeed()));
+    private async Task<Option<ClassificationFailure>> UpsertBatchAsync(SeedTerm[] batch, IReadOnlyDictionary<string, CategoryId> ids, CancellationToken cancellationToken)
+    {
+        var batchTerms = new List<ClassificationTerm>(batch.Length);
+        foreach (var seedTerm in batch)
+        {
+            if (!ids.TryGetValue(seedTerm.CategoryName, out var categoryId))
+                return Option.Some(ClassificationFailureFactory.CreateInvalidSeed());
+
+            if (ClassificationTermFactory.Create(TermIdFactory.Create(Guid.NewGuid()), seedTerm.Text, categoryId, TermSourceFactory.CreateSeed(), TermStatusFactory.CreateActive()).TryGetValue(out var term))
+                batchTerms.Add(term);
+        }
+
+        return await terms.UpsertManyAsync(batchTerms, cancellationToken).MatchAsync(_ => Option.None<ClassificationFailure>(), Option.Some).ConfigureAwait(false);
+    }
 }

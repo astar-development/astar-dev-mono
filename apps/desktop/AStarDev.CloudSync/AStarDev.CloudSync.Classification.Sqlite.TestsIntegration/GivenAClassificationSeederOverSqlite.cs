@@ -88,16 +88,36 @@ public sealed class GivenAClassificationSeederOverSqlite : MigratedDatabaseTests
     public async Task when_the_embedded_seed_is_applied_then_the_sqlite_stores_hold_it_and_the_second_run_is_a_no_op()
     {
         var seeder = SeederFor(EmbeddedClassificationSeedSourceFactory.CreateDefault());
+        var allocatedBefore = GC.GetTotalAllocatedBytes(precise: true);
         var clock = System.Diagnostics.Stopwatch.StartNew();
 
         var first = await seeder.SeedAsync(CancellationToken);
         var firstElapsed = clock.Elapsed;
+        var allocated = GC.GetTotalAllocatedBytes(precise: true) - allocatedBefore;
         var second = await seeder.SeedAsync(CancellationToken);
 
         first.ShouldBeOfType<ClassificationSeedOutcome.Applied>();
         second.ShouldBeOfType<ClassificationSeedOutcome.AlreadyCurrent>();
         var termCount = Ok(await Database.Terms.GetAllAsync(CancellationToken)).Count;
         termCount.ShouldBeGreaterThan(0);
-        TestContext.Current.SendDiagnosticMessage($"Seeded {termCount} terms in {firstElapsed.TotalSeconds:F1}s");
+        TestContext.Current.SendDiagnosticMessage($"Seeded {termCount} terms in {firstElapsed.TotalSeconds:F2}s, {allocated / 1024 / 1024} MB allocated");
+    }
+
+    [Fact]
+    public async Task when_many_terms_are_written_as_batches_then_it_is_faster_than_one_upsert_per_term_on_the_same_machine()
+    {
+        var category = await AddCategoryAsync("Colour");
+        var batchTerms = Enumerable.Range(0, 3000).Select(index => Term($"batch{index}", category.Id)).ToArray();
+        var singleTerms = Enumerable.Range(0, 3000).Select(index => Term($"single{index}", category.Id)).ToArray();
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        foreach (var term in singleTerms)
+            _ = Ok(await Database.Terms.UpsertAsync(term, CancellationToken));
+
+        var singleElapsed = clock.Elapsed;
+        clock.Restart();
+
+        _ = Ok(await Database.Terms.UpsertManyAsync(batchTerms, CancellationToken));
+
+        clock.Elapsed.ShouldBeLessThan(singleElapsed, $"batch took {clock.Elapsed.TotalMilliseconds:F0} ms, one per term took {singleElapsed.TotalMilliseconds:F0} ms; the ratio is used because absolute time varies on shared CI runners");
     }
 }

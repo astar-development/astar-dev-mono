@@ -13,6 +13,8 @@ internal sealed class CountingTermStore : ITermStore
 
     public Result<ClassificationTerm, ClassificationFailure> WriteResult { get; set; } = new Ok<ClassificationTerm, ClassificationFailure>(Term("written", Colour));
 
+    public Result<IReadOnlyList<ClassificationTerm>, ClassificationFailure> WriteManyResult { get; set; } = new Ok<IReadOnlyList<ClassificationTerm>, ClassificationFailure>([]);
+
     public Task Gate { get; set; } = Task.CompletedTask;
 
     public TaskCompletionSource Entered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -31,6 +33,8 @@ internal sealed class CountingTermStore : ITermStore
     }
 
     public Task<Result<ClassificationTerm, ClassificationFailure>> UpsertAsync(ClassificationTerm term, CancellationToken cancellationToken) => Task.FromResult(WriteResult);
+
+    public Task<Result<IReadOnlyList<ClassificationTerm>, ClassificationFailure>> UpsertManyAsync(IReadOnlyList<ClassificationTerm> terms, CancellationToken cancellationToken) => Task.FromResult(WriteManyResult);
 
     public Task<Result<Option<ClassificationTerm>, ClassificationFailure>> GetByIdAsync(TermId termId, CancellationToken cancellationToken) =>
         Task.FromResult<Result<Option<ClassificationTerm>, ClassificationFailure>>(new Ok<Option<ClassificationTerm>, ClassificationFailure>(Option.None<ClassificationTerm>()));
