@@ -399,4 +399,22 @@ public class GivenTheReclassifyViewModel
     {
         ReclassifyStateFactory.CreateObserving(-1, -2).ShouldBe(ReclassifyStateFactory.CreateObserving(0, 0));
     }
+
+    [Fact]
+    public void when_the_view_model_is_disposed_with_a_queued_progress_change_then_running_it_does_nothing()
+    {
+        var queued = new QueuedUiDispatcher();
+        var localization = TestData.CreateLocalization();
+        var termList = new ClassificationTermListViewModel(terms, new FakeCategoryStore(), new FakeFileClassificationStore(), localization);
+        var viewModel = new ReclassifyViewModel(reclassifier, reclassifier, progressSource, queued, freshness, termList, localization);
+        var foreign = StartForeignRun();
+        foreign.Report(ReclassifyProgressFactory.Create(10, 1));
+        queued.RunQueued();
+        foreign.Dispose();
+        viewModel.Dispose();
+
+        queued.RunQueued();
+
+        (viewModel.State, terms.GetAllCount, freshness.CheckCount).ShouldBe((ReclassifyStateFactory.CreateObserving(10, 0), 0, 0));
+    }
 }
