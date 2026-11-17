@@ -25,6 +25,7 @@ public sealed class GivenAnAccountRemovedOverSqlite : MigratedDatabaseTests
         var car = await AddTermAsync("car");
         foreach (var account in new[] { removedAccount, keptAccount })
         {
+            await InBaselineAsync(account, "auto.jpg", "user.jpg");
             _ = Ok(await Database.Links.ReplaceAutoLinksAsync(account, Path("auto.jpg"), [red], CancellationToken));
             _ = Ok(await Database.Links.AssignUserLinkAsync(account, Path("user.jpg"), car, CancellationToken));
         }

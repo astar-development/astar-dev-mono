@@ -8,6 +8,12 @@ public sealed class GivenAFileClassificationStore : MigratedDatabaseTests
 {
     private readonly AccountId account = NewAccount();
 
+    public override async ValueTask InitializeAsync()
+    {
+        await base.InitializeAsync();
+        await InBaselineAsync(account, "a.jpg", "b.jpg", "c.jpg", "Photos/Holiday.JPG", "Ärger/a.jpg");
+    }
+
     private async Task<TermId> AddTermAsync(string text, string category = "Things")
     {
         var stored = Ok(await Database.Categories.UpsertAsync(Category(category), CancellationToken));
@@ -179,6 +185,7 @@ public sealed class GivenAFileClassificationStore : MigratedDatabaseTests
     {
         var red = await AddTermAsync("red");
         var other = NewAccount();
+        await InBaselineAsync(other, "b.jpg");
         _ = Ok(await Database.Links.ReplaceAutoLinksAsync(account, Path("a.jpg"), [red], CancellationToken));
         _ = Ok(await Database.Links.AssignUserLinkAsync(other, Path("b.jpg"), red, CancellationToken));
 
