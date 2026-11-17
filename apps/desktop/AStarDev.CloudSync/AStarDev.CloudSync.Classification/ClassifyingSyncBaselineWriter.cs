@@ -10,9 +10,12 @@ namespace AStarDev.CloudSync.Classification;
 /// <param name="inner">The registered writer that stores the baseline.</param>
 /// <param name="classifier">Classifies one path.</param>
 /// <param name="store">Stores the automatic links.</param>
+/// <param name="vocabulary">Reports whether the vocabulary changed while a batch was classified.</param>
 /// <param name="logger">Reports failures without paths, terms or exception messages.</param>
-public sealed class ClassifyingSyncBaselineWriter(ISyncBaselineWriter inner, IFileClassifier classifier, IFileClassificationStore store, ILogger<ClassifyingSyncBaselineWriter> logger) : ISyncBaselineWriter
+public sealed class ClassifyingSyncBaselineWriter(ISyncBaselineWriter inner, IFileClassifier classifier, IFileClassificationStore store, IClassificationVocabularyProvider vocabulary, ILogger<ClassifyingSyncBaselineWriter> logger) : ISyncBaselineWriter
 {
+    private readonly IClassificationVocabularyProvider vocabularyProvider = vocabulary;
+
     /// <inheritdoc />
     public async Task<Result<Unit, ErrorResponse>> UpsertAsync(AccountId accountId, IReadOnlyList<SyncBaselineEntry> entries, CancellationToken cancellationToken)
     {

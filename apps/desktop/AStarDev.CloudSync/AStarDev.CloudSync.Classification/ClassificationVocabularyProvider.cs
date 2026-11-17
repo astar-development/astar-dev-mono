@@ -14,6 +14,9 @@ public sealed class ClassificationVocabularyProvider(ITermStore termStore, ICate
     private Option<Task<Result<ClassificationVocabulary, ClassificationFailure>>> current = Option.None<Task<Result<ClassificationVocabulary, ClassificationFailure>>>();
 
     /// <inheritdoc />
+    public long Generation => 0;
+
+    /// <inheritdoc />
     public async Task<Result<ClassificationVocabulary, ClassificationFailure>> GetAsync(CancellationToken cancellationToken)
     {
         while (true)
