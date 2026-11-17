@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace AStarDev.EFCoreSqlite;
 
-/// <summary>Sets the SQLite busy timeout on every connection EF Core opens, so a command waiting for a lock another connection holds is retried by SQLite within milliseconds of its release. Without it Microsoft.Data.Sqlite sets no busy handler and polls a busy lock every 150 ms, so a writer behind a loop of short write transactions can miss the gaps between them for seconds. The 30 seconds match the default command timeout. Add it with <c>options.AddInterceptors(SqliteBusyTimeoutInterceptor.Instance)</c>.</summary>
+/// <summary>Sets the SQLite busy timeout on every connection EF Core opens, so a command waiting for a lock another connection holds is retried by SQLite within milliseconds of its release. Without it Microsoft.Data.Sqlite sets no busy handler and polls a busy lock every 150 ms, so a writer behind a loop of short write transactions can miss the gaps between them for seconds. The wait inside SQLite cannot be cancelled, so it is capped at 5 seconds; past that, Microsoft.Data.Sqlite's own cancellable retry covers the rest of the command timeout. Add it with <c>options.AddInterceptors(SqliteBusyTimeoutInterceptor.Instance)</c>.</summary>
 public sealed class SqliteBusyTimeoutInterceptor : DbConnectionInterceptor
 {
-    private const string SetBusyTimeout = "PRAGMA busy_timeout = 30000;";
+    private const string SetBusyTimeout = "PRAGMA busy_timeout = 5000;";
 
     private SqliteBusyTimeoutInterceptor()
     {
