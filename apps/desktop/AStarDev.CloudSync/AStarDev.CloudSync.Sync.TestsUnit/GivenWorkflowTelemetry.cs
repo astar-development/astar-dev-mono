@@ -65,7 +65,7 @@ public sealed class GivenWorkflowTelemetry : IDisposable
 
         _ = await telemetry.TrackAsync(TelemetryWorkflowFactory.CreateSignIn(), () => Task.FromResult(0), _ => TelemetryOutcomeFactory.CreateFailed());
 
-        var span = finished.Single(stopped => stopped.Parent == testRoot);
+        System.Diagnostics.Activity span = finished.Single(stopped => stopped.Parent == testRoot);
         (measurements.Single(entry => entry.Instrument == "cloudsync.workflow.runs").Tags, span.OperationName, span.Status).ShouldBe(("outcome=failed,workflow=sign_in", "sign_in", ActivityStatusCode.Error));
     }
 
