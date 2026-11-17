@@ -24,6 +24,7 @@ public interface IFileClassificationStore
     /// <param name="path">The path below the sync root.</param>
     /// <param name="termId">The term.</param>
     /// <param name="cancellationToken">Cancels the write.</param>
+    /// <returns><see cref="Unit"/> once the link is stored, <see cref="ClassificationFailure.NotFound"/> when the term does not exist, <see cref="ClassificationFailure.FileNotFound"/> when the path is not in the account's current sync baseline, or <see cref="ClassificationFailure.Unavailable"/> when the database fails.</returns>
     Task<Result<Unit, ClassificationFailure>> AssignUserLinkAsync(AccountId accountId, RelativeSyncPath path, TermId termId, CancellationToken cancellationToken);
 
     /// <summary>Reads the terms linked to a file.</summary>
