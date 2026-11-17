@@ -216,7 +216,10 @@ public sealed class GivenAClassificationReclassifier
     {
         var reclassifier = Build(ThreeFiles(), new ReclassifyFakeClassifier(Holiday), new ReclassifyFakeStore());
 
-        await reclassifier.WaitUntilIdleAsync(TestContext.Current.CancellationToken).WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
+        var waiting = reclassifier.WaitUntilIdleAsync(TestContext.Current.CancellationToken);
+        await waiting.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
+
+        waiting.IsCompletedSuccessfully.ShouldBeTrue();
     }
 
     [Fact]

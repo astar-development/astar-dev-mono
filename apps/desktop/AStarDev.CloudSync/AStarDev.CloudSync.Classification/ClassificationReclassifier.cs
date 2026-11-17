@@ -25,7 +25,7 @@ public sealed class ClassificationReclassifier(IClassifiableFileSource fileSourc
     public async Task WaitUntilIdleAsync(CancellationToken cancellationToken)
     {
         var wait = runGate.WaitAsync(cancellationToken);
-        await ((Task)wait).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+        await wait.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
         if (wait.IsCompletedSuccessfully)
             _ = runGate.Release();
     }
@@ -33,7 +33,7 @@ public sealed class ClassificationReclassifier(IClassifiableFileSource fileSourc
     /// <inheritdoc />
     public async Task<ReclassifyOutcome> StartAsync(IProgress<ReclassifyProgress> progress, CancellationToken cancellationToken)
     {
-        if (!runGate.Wait(0, CancellationToken.None))
+        if (!await runGate.WaitAsync(TimeSpan.Zero, CancellationToken.None).ConfigureAwait(false))
             return ReclassifyOutcomeFactory.CreateAlreadyRunning();
 
         var state = new ReclassifyRunState();
