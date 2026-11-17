@@ -20,12 +20,12 @@ public sealed class GivenARecoveryAfterADownload
             if (++reached == 3)
                 fixture.Journal.Kill();
         };
-        _ = await fixture.RunSyncAsync(CancellationToken);
+        _ = await fixture.AdvanceUntilAsync(fixture.RunSyncAsync(CancellationToken), CancellationToken);
         fixture.Journal.Restart();
         fixture.Remote.File("Docs/b.txt", "b", "c-downloaded", 10);
         fixture.Downloader.Content["b"] = new byte[10];
 
-        var outcomes = await fixture.Recovery.RecoverAsync(CancellationToken);
+        var outcomes = await fixture.AdvanceUntilAsync(fixture.Recovery.RecoverAsync(CancellationToken), CancellationToken);
 
         outcomes.ShouldHaveSingleItem().ShouldBeOfType<RecoveryOutcome.Resumed>();
         fixture.Downloader.Calls.ShouldBe(["a", "b"]);

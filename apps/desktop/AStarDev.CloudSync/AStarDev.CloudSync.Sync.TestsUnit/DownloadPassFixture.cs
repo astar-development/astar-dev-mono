@@ -72,6 +72,17 @@ public sealed class DownloadPassFixture : IDisposable
     public Task<Result<SyncPassSummary, SyncPassFailure>> RunSyncAsync(CancellationToken cancellationToken) =>
         provider.GetRequiredService<ISyncPassRunner>().RunAsync(Account, SyncTriggerFactory.CreateManual(), cancellationToken);
 
+    public async Task<T> AdvanceUntilAsync<T>(Task<T> running, CancellationToken cancellationToken)
+    {
+        while (!running.IsCompleted)
+        {
+            Time.Advance(TimeSpan.FromMilliseconds(200));
+            await Task.Delay(1, cancellationToken);
+        }
+
+        return await running.WaitAsync(TimeSpan.FromSeconds(30), cancellationToken);
+    }
+
     public MockFileSystem FileSystem { get; }
 
     public FakeTimeProvider Time { get; } = new(Start);
