@@ -86,11 +86,6 @@ public static class SyncPersistenceServiceCollectionExtensions
     {
         var syncDatabase = new SqliteSyncDatabase(provider.GetRequiredService<IDbContextFactory<SyncDbContext>>(), provider.GetRequiredService<ILogger<SqliteSyncDatabase>>());
 
-        return accountsDatabase is null ? syncDatabase : new CompositeCloudSyncDatabase(CreateAccountsDatabase(provider, accountsDatabase), syncDatabase);
+        return accountsDatabase is null ? syncDatabase : new CompositeCloudSyncDatabase(accountsDatabase.CreateInstance<ICloudSyncDatabase>(provider), syncDatabase);
     }
-
-    private static ICloudSyncDatabase CreateAccountsDatabase(IServiceProvider provider, ServiceDescriptor descriptor) =>
-        descriptor.ImplementationInstance as ICloudSyncDatabase
-        ?? descriptor.ImplementationFactory?.Invoke(provider) as ICloudSyncDatabase
-        ?? (ICloudSyncDatabase)ActivatorUtilities.CreateInstance(provider, descriptor.ImplementationType!);
 }

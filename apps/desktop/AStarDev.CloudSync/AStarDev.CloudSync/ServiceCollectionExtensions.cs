@@ -166,13 +166,8 @@ public static class ServiceCollectionExtensions
     {
         var migrations = services.Last(descriptor => descriptor.ServiceType == typeof(ICloudSyncDatabase));
 
-        return services.AddSingleton<ICloudSyncDatabase>(provider => new SerialCloudSyncDatabase(MigrationsFrom(provider, migrations)));
+        return services.AddSingleton<ICloudSyncDatabase>(provider => new SerialCloudSyncDatabase(migrations.CreateInstance<ICloudSyncDatabase>(provider)));
     }
-
-    private static ICloudSyncDatabase MigrationsFrom(IServiceProvider provider, ServiceDescriptor descriptor) =>
-        descriptor.ImplementationInstance as ICloudSyncDatabase
-        ?? descriptor.ImplementationFactory?.Invoke(provider) as ICloudSyncDatabase
-        ?? (ICloudSyncDatabase)ActivatorUtilities.CreateInstance(provider, descriptor.ImplementationType!);
 
     private static IAutostartRegistration AutostartRegistrationFor(IServiceProvider provider)
     {
