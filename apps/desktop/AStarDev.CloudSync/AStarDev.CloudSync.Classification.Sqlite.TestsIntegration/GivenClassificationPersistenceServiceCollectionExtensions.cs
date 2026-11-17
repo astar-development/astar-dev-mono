@@ -29,6 +29,22 @@ public sealed class GivenClassificationPersistenceServiceCollectionExtensions
     }
 
     [Fact]
+    public void when_the_module_is_added_then_one_account_removal_participant_is_registered_as_a_singleton()
+    {
+        var services = Added();
+
+        services.Where(descriptor => descriptor.ServiceType == typeof(IAccountRemovalParticipant)).Select(descriptor => descriptor.Lifetime).ShouldBe([ServiceLifetime.Singleton]);
+    }
+
+    [Fact]
+    public async Task when_the_module_is_built_then_the_removal_participant_is_the_file_link_store()
+    {
+        await using var database = await TemporaryClassificationDatabase.CreateMigratedAsync(TestContext.Current.CancellationToken);
+
+        database.LinksParticipant.ShouldBeSameAs(database.Links);
+    }
+
+    [Fact]
     public void when_the_module_is_added_after_another_database_then_one_database_registration_remains()
     {
         var services = new ServiceCollection().AddSingleton<ICloudSyncDatabase>(_ => throw new InvalidOperationException("Not built in this test."));

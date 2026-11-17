@@ -36,6 +36,8 @@ public sealed class TemporaryClassificationDatabase : IAsyncDisposable
 
     public IFileClassificationStore Links => serviceProvider.GetRequiredService<IFileClassificationStore>();
 
+    public IAccountRemovalParticipant LinksParticipant => serviceProvider.GetServices<IAccountRemovalParticipant>().First(participant => participant.GetType().Name == "SqliteFileClassificationStore");
+
     public ISeedStateStore SeedState => serviceProvider.GetRequiredService<ISeedStateStore>();
 
     public IClassifiableFileSource Files => serviceProvider.GetRequiredService<IClassifiableFileSource>();
