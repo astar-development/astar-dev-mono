@@ -101,6 +101,23 @@ public sealed class GivenAClassificationSeederOverSqlite : MigratedDatabaseTests
         var termCount = Ok(await Database.Terms.GetAllAsync(CancellationToken)).Count;
         termCount.ShouldBeGreaterThan(0);
         TestContext.Current.SendDiagnosticMessage($"Seeded {termCount} terms in {firstElapsed.TotalSeconds:F2}s, {allocated / 1024 / 1024} MB allocated");
-        firstElapsed.ShouldBeLessThan(TimeSpan.FromSeconds(5), $"the per-term seed took 9.7 to 11.7 s; 5 s is a generous bound that avoids flaky CI runs; this run took {firstElapsed.TotalSeconds:F2}s and allocated {allocated / 1024 / 1024} MB");
+    }
+
+    [Fact]
+    public async Task when_many_terms_are_written_as_batches_then_it_is_faster_than_one_upsert_per_term_on_the_same_machine()
+    {
+        var category = await AddCategoryAsync("Colour");
+        var batchTerms = Enumerable.Range(0, 3000).Select(index => Term($"batch{index}", category.Id)).ToArray();
+        var singleTerms = Enumerable.Range(0, 3000).Select(index => Term($"single{index}", category.Id)).ToArray();
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        foreach (var term in singleTerms)
+            _ = Ok(await Database.Terms.UpsertAsync(term, CancellationToken));
+
+        var singleElapsed = clock.Elapsed;
+        clock.Restart();
+
+        _ = Ok(await Database.Terms.UpsertManyAsync(batchTerms, CancellationToken));
+
+        clock.Elapsed.ShouldBeLessThan(singleElapsed, $"batch took {clock.Elapsed.TotalMilliseconds:F0} ms, one per term took {singleElapsed.TotalMilliseconds:F0} ms; the ratio is used because absolute time varies on shared CI runners");
     }
 }
