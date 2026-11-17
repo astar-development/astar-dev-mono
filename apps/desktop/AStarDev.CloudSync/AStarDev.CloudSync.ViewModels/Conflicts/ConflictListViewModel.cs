@@ -17,17 +17,11 @@ namespace AStarDev.CloudSync.ViewModels.Conflicts;
 public sealed class ConflictListViewModel : LocalizedObservableObject
 {
     private readonly ConflictListSources sources;
-    private readonly IConflictResolver resolver;
-    private readonly IHeldDeletionDecider heldDecider;
     private readonly IConflictResolutionPlanner planner;
     private readonly ILogger<ConflictListViewModel> logger;
-    private readonly ConcurrentDictionary<ConflictId, string> errorKeys = new();
-    private readonly ConcurrentDictionary<ConflictId, byte> skipped = new();
     private readonly ConcurrentDictionary<ConflictId, byte> selected = new();
-    private readonly ConcurrentDictionary<HeldDeletionId, string> heldErrorKeys = new();
-    private readonly ConcurrentDictionary<HeldDeletionId, byte> deferred = new();
-    private readonly ConcurrentDictionary<HeldDeletionId, byte> expanded = new();
-    private readonly HeldDeletionActions heldActions;
+    private readonly ConflictResolutionHandler resolution;
+    private readonly HeldDeletionHandler held;
     private int loadsStarted;
     private int bulkBusy;
     private Option<string> bulkErrorKey = Option.None<string>();
@@ -46,10 +40,10 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
     public ConflictListViewModel(ConflictListSources sources, IConflictResolver resolver, IHeldDeletionDecider heldDecider, IConflictResolutionPlanner planner, ILocalizationService localization, ILogger<ConflictListViewModel> logger) : base(localization)
     {
         this.sources = sources;
-        this.resolver = resolver;
-        this.heldDecider = heldDecider;
         this.planner = planner;
         this.logger = logger;
+        resolution = new ConflictResolutionHandler(resolver, logger, LoadAsync);
+        held = new HeldDeletionHandler(heldDecider, localization, logger, LoadAsync);
         Filters =
         [
             new ConflictKindFilterViewModel(Option.None<ConflictKind>(), localization),
@@ -64,7 +58,6 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
             }.Select(kind => new ConflictKindFilterViewModel(Option.Some(kind), localization))
         ];
         selectedFilter = Filters[0];
-        heldActions = new HeldDeletionActions(ConfirmHeldAsync, RestoreHeldAsync, DecideLater, expanded.ContainsKey, RememberExpanded);
         BulkOptions =
         [
             CreateBulkOption(ConflictStrategyFactory.CreateLocalWins()),
@@ -265,7 +258,7 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
     private Unit Show(IReadOnlyList<AccountQueue> queues)
     {
         PruneRemembered(queues);
-        accounts = [.. queues.Select(queue => new AccountItems(queue.AccountName, [.. queue.Items.OfType<SyncAttentionItem.Conflict>().Select(CreateItem)], [.. queue.Items.OfType<SyncAttentionItem.HeldDeletions>().Select(held => CreateHeldItem(queue, held))]))];
+        accounts = [.. queues.Select(queue => new AccountItems(queue.AccountName, [.. queue.Items.OfType<SyncAttentionItem.Conflict>().Select(CreateItem)], [.. queue.Items.OfType<SyncAttentionItem.HeldDeletions>().Select(heldItem => held.CreateItem(queue.AccountName, queue.PairNames, heldItem))]))];
         SetLoadState(SyncOverviewLoadStateFactory.CreateLoaded());
         ApplyFilter();
 
@@ -276,25 +269,13 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
     {
         var openItems = queues.SelectMany(queue => queue.Items).ToList();
         var open = openItems.OfType<SyncAttentionItem.Conflict>().Select(conflict => conflict.Id).ToHashSet();
-        var openHeld = openItems.OfType<SyncAttentionItem.HeldDeletions>().Select(held => held.Id).ToHashSet();
-
-        foreach (var id in errorKeys.Keys.Where(id => !open.Contains(id)))
-            _ = errorKeys.TryRemove(id, out _);
-
-        foreach (var id in skipped.Keys.Where(id => !open.Contains(id)))
-            _ = skipped.TryRemove(id, out _);
+        var openHeld = openItems.OfType<SyncAttentionItem.HeldDeletions>().Select(heldItem => heldItem.Id).ToHashSet();
 
         foreach (var id in selected.Keys.Where(id => !open.Contains(id)))
             _ = selected.TryRemove(id, out _);
 
-        foreach (var id in heldErrorKeys.Keys.Where(id => !openHeld.Contains(id)))
-            _ = heldErrorKeys.TryRemove(id, out _);
-
-        foreach (var id in deferred.Keys.Where(id => !openHeld.Contains(id)))
-            _ = deferred.TryRemove(id, out _);
-
-        foreach (var id in expanded.Keys.Where(id => !openHeld.Contains(id)))
-            _ = expanded.TryRemove(id, out _);
+        resolution.Prune(open);
+        held.Prune(openHeld);
     }
 
     private Unit NotRead(ErrorResponse error)
@@ -347,17 +328,10 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
 
     private ConflictItemViewModel CreateItem(SyncAttentionItem.Conflict conflict)
     {
-        var item = new ConflictItemViewModel(conflict, planner, ResolveAsync, errorKeys.TryGetValue(conflict.Id, out var key) ? Option.Some(key) : Option.None<string>(), skipped.ContainsKey(conflict.Id), selected.ContainsKey(conflict.Id), Localization);
+        var item = new ConflictItemViewModel(conflict, planner, resolution.ResolveAsync, resolution.ErrorKeyOf(conflict.Id), resolution.IsSkipped(conflict.Id), selected.ContainsKey(conflict.Id), Localization);
         item.PropertyChanged += OnItemChanged;
 
         return item;
-    }
-
-    private HeldDeletionItemViewModel CreateHeldItem(AccountQueue queue, SyncAttentionItem.HeldDeletions held)
-    {
-        var pairName = queue.PairNames.TryGetValue(held.PairId, out var name) ? name : Localization.GetLocal("Held.PairUnknown");
-
-        return new HeldDeletionItemViewModel(held, queue.AccountName, pairName, heldActions, heldErrorKeys.TryGetValue(held.Id, out var key) ? Option.Some(key) : Option.None<string>(), deferred.ContainsKey(held.Id), Localization);
     }
 
     private void OnItemChanged(object? sender, PropertyChangedEventArgs e)
@@ -427,144 +401,21 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
 
     private async Task ApplyToAccountAsync(AccountId accountId, IReadOnlyList<ConflictItemViewModel> items, ConflictStrategy strategy, CancellationToken cancellationToken)
     {
-        IReadOnlyList<ConflictId> ids = [.. items.Select(item => item.Id)];
-
-        await await UiResumingTry.RunTreatingTimeoutAsFailureAsync(() => resolver.ResolveAsync(accountId, ids, strategy, cancellationToken), result => result.Match(summary => Recorded(ids, strategy, summary), refusal => RefuseAllAsync(items, refusal)), exception => ThrewAllAsync(items, exception), cancellationToken);
+        var failure = await resolution.ResolveManyAsync(accountId, items, strategy, cancellationToken);
+        _ = failure.Match(key => SetBulkErrorUnit(key), () => Unit.Instance);
     }
 
-    private Task Recorded(IReadOnlyList<ConflictId> ids, ConflictStrategy strategy, ResolutionSummary summary)
+    private Unit SetBulkErrorUnit(string key)
     {
-        Record(ids, strategy, summary);
-
-        return Task.CompletedTask;
-    }
-
-    private Task RefuseAllAsync(IReadOnlyList<ConflictItemViewModel> items, ConflictRefusal refusal)
-    {
-        ConflictListLog.ResolveRefused(logger, refusal.GetType().Name);
-        RememberAll(items, ConflictTexts.RefusedKey(refusal));
-
-        return Task.CompletedTask;
-    }
-
-    private Task ThrewAllAsync(IReadOnlyList<ConflictItemViewModel> items, Exception exception)
-    {
-        ConflictListLog.ResolveThrew(logger, exception.ErrorType());
-        RememberAll(items, ConflictTexts.UnexpectedKey);
-
-        return Task.CompletedTask;
-    }
-
-    private void RememberAll(IReadOnlyList<ConflictItemViewModel> items, string key)
-    {
-        foreach (var item in items)
-            Remember(item, key);
-
         SetBulkError(Option.Some(key));
+
+        return Unit.Instance;
     }
 
     private void SetBulkError(Option<string> key)
     {
         bulkErrorKey = key;
         OnPropertyChanged(nameof(BulkErrorText));
-    }
-
-    private Task ConfirmHeldAsync(HeldDeletionItemViewModel item, CancellationToken cancellationToken) => SettleHeldAsync(item, () => heldDecider.ConfirmAsync(item.AccountId, item.Id, cancellationToken), cancellationToken);
-
-    private Task RestoreHeldAsync(HeldDeletionItemViewModel item, CancellationToken cancellationToken) => SettleHeldAsync(item, () => heldDecider.RestoreAsync(item.AccountId, item.Id, cancellationToken), cancellationToken);
-
-    private async Task SettleHeldAsync(HeldDeletionItemViewModel item, Func<Task<Result<Unit, HeldDeletionRefusal>>> settle, CancellationToken cancellationToken) =>
-        await await UiResumingTry.RunTreatingTimeoutAsFailureAsync(settle, result => result.Match(_ => HeldSettledAsync(item, cancellationToken), refusal => HeldNotSettledAsync(item, refusal)), exception => HeldThrewAsync(item, exception), cancellationToken);
-
-    private Task HeldSettledAsync(HeldDeletionItemViewModel item, CancellationToken cancellationToken)
-    {
-        _ = heldErrorKeys.TryRemove(item.Id, out _);
-        _ = deferred.TryRemove(item.Id, out _);
-
-        return LoadAsync(cancellationToken);
-    }
-
-    private Task HeldNotSettledAsync(HeldDeletionItemViewModel item, HeldDeletionRefusal refusal)
-    {
-        ConflictListLog.HeldNotSettled(logger);
-        RememberHeld(item, ConflictTexts.HeldRefusedKey(refusal));
-
-        return Task.CompletedTask;
-    }
-
-    private Task HeldThrewAsync(HeldDeletionItemViewModel item, Exception exception)
-    {
-        ConflictListLog.HeldThrew(logger, exception.ErrorType());
-        RememberHeld(item, ConflictTexts.UnexpectedKey);
-
-        return Task.CompletedTask;
-    }
-
-    private void RememberHeld(HeldDeletionItemViewModel item, string key)
-    {
-        heldErrorKeys[item.Id] = key;
-        item.ShowError(key);
-    }
-
-    private void RememberExpanded(HeldDeletionId id, bool isExpanded)
-    {
-        if (isExpanded)
-            _ = expanded.TryAdd(id, 0);
-        else
-            _ = expanded.TryRemove(id, out _);
-    }
-
-    private void DecideLater(HeldDeletionItemViewModel item)
-    {
-        _ = deferred.TryAdd(item.Id, 0);
-        item.MarkDeferred();
-    }
-
-    private async Task ResolveAsync(ConflictItemViewModel item, ConflictStrategy strategy, CancellationToken cancellationToken) =>
-        await await UiResumingTry.RunTreatingTimeoutAsFailureAsync(() => resolver.ResolveAsync(item.AccountId, [item.Id], strategy, cancellationToken), result => result.Match(summary => SettleAsync(item, strategy, summary, cancellationToken), refusal => RefuseAsync(item, refusal)), exception => ThrewAsync(item, exception), cancellationToken);
-
-    private Task SettleAsync(ConflictItemViewModel item, ConflictStrategy strategy, ResolutionSummary summary, CancellationToken cancellationToken)
-    {
-        Record([item.Id], strategy, summary);
-
-        return LoadAsync(cancellationToken);
-    }
-
-    private void Record(IReadOnlyList<ConflictId> ids, ConflictStrategy strategy, ResolutionSummary summary)
-    {
-        foreach (var id in ids)
-            _ = errorKeys.TryRemove(id, out _);
-
-        foreach (var failed in summary.Failed)
-            errorKeys[failed.Id] = ConflictTexts.FailureKey(failed.Reason);
-
-        if (strategy is not ConflictStrategy.Skip)
-            return;
-
-        foreach (var id in ids.Where(id => summary.Failed.All(failed => failed.Id != id)))
-            _ = skipped.TryAdd(id, 0);
-    }
-
-    private Task RefuseAsync(ConflictItemViewModel item, ConflictRefusal refusal)
-    {
-        ConflictListLog.ResolveRefused(logger, refusal.GetType().Name);
-        Remember(item, ConflictTexts.RefusedKey(refusal));
-
-        return Task.CompletedTask;
-    }
-
-    private Task ThrewAsync(ConflictItemViewModel item, Exception exception)
-    {
-        ConflictListLog.ResolveThrew(logger, exception.ErrorType());
-        Remember(item, ConflictTexts.UnexpectedKey);
-
-        return Task.CompletedTask;
-    }
-
-    private void Remember(ConflictItemViewModel item, string key)
-    {
-        errorKeys[item.Id] = key;
-        item.ShowError(key);
     }
 
     private sealed class BulkScope(ConflictListViewModel owner) : IDisposable
