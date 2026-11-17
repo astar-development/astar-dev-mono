@@ -58,8 +58,14 @@ public sealed class TemporaryCloudSyncDatabase : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         await serviceProvider.DisposeAsync();
-        SqliteConnection.ClearAllPools();
+        ClearOwnPool();
         testFolder.Delete(recursive: true);
+    }
+
+    private void ClearOwnPool()
+    {
+        using var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = databaseFile.FullName }.ToString());
+        SqliteConnection.ClearPool(connection);
     }
 
     private static TemporaryCloudSyncDatabase Create(Func<IDirectoryInfo, IFileInfo> databaseFileIn)
