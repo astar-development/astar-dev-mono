@@ -72,4 +72,25 @@ public class GivenARelativeSyncPathFactory
 
         (comparer.Equals(SyncPaths.Of("Documents/Report.docx"), SyncPaths.Of("documents/REPORT.docx")), comparer.GetHashCode(SyncPaths.Of("Documents/Report.docx")) == comparer.GetHashCode(SyncPaths.Of("documents/REPORT.docx"))).ShouldBe((true, true));
     }
+
+    [Theory]
+    [InlineData("Photos/bad\uD800name.jpg")]
+    [InlineData("Photos/bad\uDC00name.jpg")]
+    public void when_a_path_has_an_unpaired_surrogate_then_the_raw_path_is_kept(string value)
+    {
+        var created = RelativeSyncPathFactory.Create(value);
+
+        created.Match(path => path.Value, error => error.Message).ShouldBe(value);
+    }
+
+    [Theory]
+    [InlineData("Photos/smile\uD83D\uDE00.jpg", "Photos/smile\uD83D\uDE00.jpg")]
+    [InlineData("Caf\u00E9/menu.txt", "Caf\u00E9/menu.txt")]
+    [InlineData("Cafe\u0301/menu.txt", "Caf\u00E9/menu.txt")]
+    public void when_a_path_is_valid_unicode_then_it_is_composed(string value, string expected)
+    {
+        var created = RelativeSyncPathFactory.Create(value);
+
+        created.Match(path => path.Value, error => error.Message).ShouldBe(expected);
+    }
 }
