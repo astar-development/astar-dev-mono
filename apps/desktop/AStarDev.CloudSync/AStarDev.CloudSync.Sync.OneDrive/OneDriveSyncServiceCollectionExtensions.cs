@@ -16,6 +16,10 @@ public static class OneDriveSyncServiceCollectionExtensions
         services.TryAddSingleton(new RetryHandlerOption());
         services.TryAddSingleton<OneDriveGraphAccess>();
         services.TryAddSingleton<OneDriveTransferHttp>();
+        services.TryAddSingleton<OneDriveUploadSessionKeeper>();
+        services.TryAddSingleton<OneDriveUploadSessionCreator>();
+        services.TryAddSingleton<OneDriveFragmentUploader>();
+        services.TryAddSingleton<OneDriveEmptyFileUploader>();
         _ = services.AddTransient<AccountThrottleHandler>()
             .AddHttpClient(OneDriveSyncHttp.ClientName)
             .RemoveAllLoggers()
