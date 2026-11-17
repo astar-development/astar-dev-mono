@@ -12,5 +12,15 @@ public static class ServiceDescriptorExtensions
     /// <returns>The service the descriptor describes.</returns>
     public static TService CreateInstance<TService>(this ServiceDescriptor descriptor, IServiceProvider provider)
         where TService : class =>
-        throw new NotImplementedException($"{descriptor}{provider}");
+        (TService)(descriptor.IsKeyedService ? CreateKeyed(descriptor, provider) : CreateUnkeyed(descriptor, provider));
+
+    private static object CreateUnkeyed(ServiceDescriptor descriptor, IServiceProvider provider) =>
+        descriptor.ImplementationInstance
+        ?? descriptor.ImplementationFactory?.Invoke(provider)
+        ?? ActivatorUtilities.CreateInstance(provider, descriptor.ImplementationType!);
+
+    private static object CreateKeyed(ServiceDescriptor descriptor, IServiceProvider provider) =>
+        descriptor.KeyedImplementationInstance
+        ?? descriptor.KeyedImplementationFactory?.Invoke(provider, descriptor.ServiceKey)
+        ?? ActivatorUtilities.CreateInstance(provider, descriptor.KeyedImplementationType!);
 }

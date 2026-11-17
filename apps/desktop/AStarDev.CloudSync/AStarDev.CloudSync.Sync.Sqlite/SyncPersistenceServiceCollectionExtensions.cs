@@ -1,6 +1,7 @@
 using System.IO.Abstractions;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Sync;
+using AStarDev.DependencyInjection;
 using AStarDev.EFCoreSqlite;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;

@@ -20,6 +20,7 @@ using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.Sync.OneDrive;
 using AStarDev.CloudSync.Sync.Sqlite;
 using AStarDev.CloudSync.Theming;
+using AStarDev.DependencyInjection;
 using AStarDev.CloudSync.Updates;
 using AStarDev.CloudSync.Tray;
 using AStarDev.CloudSync.ViewModels;
