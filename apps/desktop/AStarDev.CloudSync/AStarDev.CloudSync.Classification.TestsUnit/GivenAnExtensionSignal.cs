@@ -35,18 +35,26 @@ public sealed class GivenAnExtensionSignal
         signal.Evaluate(PathOf("a.jpg"), Vocabulary(Term("jpg", Colour, TermSourceFactory.CreateSuggested(), TermStatusFactory.CreateActive())))[0].Confidence.ShouldBeOfType<ClassificationConfidence.Low>();
 
     [Fact]
-    public void when_a_large_vocabulary_is_evaluated_repeatedly_then_the_lookup_does_not_scan_every_term()
+    public void when_a_large_vocabulary_is_evaluated_repeatedly_then_the_lookup_is_faster_than_a_tenth_as_many_linear_scans()
     {
         var terms = Enumerable.Range(0, 100_000).Select(index => Term($"term{index}", Colour)).Append(Term(".jpg", Colour)).ToArray();
         var vocabulary = Vocabulary(terms);
         var path = PathOf("Photos/holiday.jpg");
         _ = signal.Evaluate(path, vocabulary);
+        _ = LinearScanCount(vocabulary, "jpg");
         var watch = System.Diagnostics.Stopwatch.StartNew();
+        var scanCounts = Enumerable.Range(0, 200).Select(_ => LinearScanCount(vocabulary, "jpg")).ToArray();
+        var linearScanElapsed = watch.Elapsed;
+        watch.Restart();
 
         var counts = Enumerable.Range(0, 2000).Select(_ => signal.Evaluate(path, vocabulary).Count).ToArray();
 
-        watch.Stop();
+        var lookupElapsed = watch.Elapsed;
         counts.ShouldAllBe(count => count == 1);
-        watch.ElapsedMilliseconds.ShouldBeLessThan(500);
+        scanCounts.ShouldAllBe(count => count == 1);
+        lookupElapsed.ShouldBeLessThan(linearScanElapsed, $"2000 lookups took {lookupElapsed.TotalMilliseconds:F1} ms, 200 linear scans took {linearScanElapsed.TotalMilliseconds:F1} ms; a same-machine ratio is used because absolute time varies on shared CI runners");
     }
+
+    private static int LinearScanCount(ClassificationVocabulary vocabulary, string extension) =>
+        vocabulary.Terms.Count(term => string.Equals(term.Text.TrimStart('.'), extension, StringComparison.OrdinalIgnoreCase));
 }
