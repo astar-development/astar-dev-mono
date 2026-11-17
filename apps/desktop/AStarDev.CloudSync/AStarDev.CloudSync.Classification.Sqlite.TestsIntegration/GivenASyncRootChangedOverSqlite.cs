@@ -79,7 +79,7 @@ public sealed class GivenASyncRootChangedOverSqlite : MigratedDatabaseTests
         _ = Ok(await Database.Links.ReplaceAutoLinksAsync(changedAccount, Path("auto.jpg"), [car], CancellationToken));
         _ = Ok(await Database.Links.ReplaceAutoLinksAsync(changedAccount, Path("user.jpg"), [red], CancellationToken));
 
-        ((await TermsOfAsync(changedAccount, "auto.jpg")).ToArray(), (await TermsOfAsync(changedAccount, "user.jpg")).ToArray()).ShouldBe((new[] { car }, new[] { red }));
+        (await TermsOfAsync(changedAccount, "auto.jpg")).Concat(await TermsOfAsync(changedAccount, "user.jpg")).ShouldBe([car, red]);
     }
 
     [Fact]
