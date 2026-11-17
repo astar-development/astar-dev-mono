@@ -6,13 +6,15 @@ using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync.Classification;
 
-/// <summary>Reclassifies the whole baseline in batches, one store transaction per batch. The set of files already seen is held in memory to drop duplicates, which costs one small entry per file; a baseline of millions of files would need a store-side distinct instead.</summary>
+/// <summary>Reclassifies the whole baseline in batches, one store transaction per batch. Each batch takes the lease of each of its accounts without waiting and writes only the files of accounts it holds and that still exist, so a running reclassify cannot recreate links for an account being removed; the other files are skipped and counted, and the next run picks up those of a busy account. The set of files already seen is held in memory to drop duplicates, which costs one small entry per file; a baseline of millions of files would need a store-side distinct instead.</summary>
 /// <param name="fileSource">Streams every file the baseline knows about.</param>
 /// <param name="classifier">Classifies one path.</param>
 /// <param name="store">Writes the automatic links.</param>
+/// <param name="syncLock">Holds each account's lease while that account's links are written, so an account removal cannot run in between.</param>
+/// <param name="accountStore">Confirms, under the lease, that the account still exists.</param>
 /// <param name="options">Batch size, parallelism and the pause between batches.</param>
 /// <param name="logger">Reports the run without paths or terms.</param>
-public sealed class ClassificationReclassifier(IClassifiableFileSource fileSource, IFileClassifier classifier, IFileClassificationStore store, ReclassifyOptions options, ILogger<ClassificationReclassifier> logger) : IClassificationReclassifier
+public sealed class ClassificationReclassifier(IClassifiableFileSource fileSource, IFileClassifier classifier, IFileClassificationStore store, IAccountSyncLock syncLock, IAccountStore accountStore, ReclassifyOptions options, ILogger<ClassificationReclassifier> logger) : IClassificationReclassifier
 {
     private int running;
 
@@ -77,6 +79,9 @@ public sealed class ClassificationReclassifier(IClassifiableFileSource fileSourc
         if (batch.Count > 0 && !await CommitAsync(batch, state, progress, cancellationToken).ConfigureAwait(false))
             return ReclassifyOutcomeFactory.CreateFailed(state.ToCounts());
 
+        if (state.SkippedForAccount > 0)
+            LogMessage.Information(logger, "Reclassification skipped the files of busy or removed accounts; the run result counts them.");
+
         LogMessage.Information(logger, "Reclassification completed.");
 
         return ReclassifyOutcomeFactory.CreateCompleted(state.ToCounts());
@@ -88,17 +93,48 @@ public sealed class ClassificationReclassifier(IClassifiableFileSource fileSourc
         var links = new FileTermLinks[batch.Count];
         var parallel = new ParallelOptions { MaxDegreeOfParallelism = options.DegreeOfParallelism, CancellationToken = cancellationToken };
         await Parallel.ForEachAsync(Enumerable.Range(0, batch.Count), parallel, async (index, token) => links[index] = await ClassifyAsync(batch[index], token).ConfigureAwait(false)).ConfigureAwait(false);
-        var written = await store.ReplaceAutoLinksAsync(links, cancellationToken).MatchAsync(_ => true, WriteFailed).ConfigureAwait(false);
-        if (!written)
+        var committed = state.Batches;
+        if (!await WriteUnderLeasesAsync(links, state, cancellationToken).ConfigureAwait(false))
             return false;
 
-        state.CommitBatch(batch.Count);
-        progress.Report(ReclassifyProgressFactory.Create(state.FilesWritten, state.Batches));
+        if (state.Batches > committed)
+            progress.Report(ReclassifyProgressFactory.Create(state.FilesWritten, state.Batches));
+
         await Task.Yield();
         if (options.DelayBetweenBatches > TimeSpan.Zero)
             await Task.Delay(options.DelayBetweenBatches, cancellationToken).ConfigureAwait(false);
 
         return true;
+    }
+
+    private async Task<bool> WriteUnderLeasesAsync(FileTermLinks[] links, ReclassifyRunState state, CancellationToken cancellationToken)
+    {
+        using var leases = HeldAccountLeases.Acquire(syncLock, links.Select(link => link.AccountId));
+
+        return await accountStore.GetAllAsync(cancellationToken)
+            .MatchAsync(accounts => WriteKnownAsync(links, leases, accounts, state, cancellationToken), error => Task.FromResult(AccountsUnreadable(error)))
+            .ConfigureAwait(false);
+    }
+
+    private async Task<bool> WriteKnownAsync(FileTermLinks[] links, HeldAccountLeases leases, IReadOnlyList<StoredAccount> accounts, ReclassifyRunState state, CancellationToken cancellationToken)
+    {
+        var writable = links.Where(link => leases.Holds(link.AccountId) && accounts.Any(account => account.Id == link.AccountId)).ToList();
+        state.SkipForAccount(links.Length - writable.Count);
+        if (writable.Count == 0)
+            return true;
+
+        var written = await store.ReplaceAutoLinksAsync(writable, cancellationToken).MatchAsync(_ => true, WriteFailed).ConfigureAwait(false);
+        if (written)
+            state.CommitBatch(writable.Count);
+
+        return written;
+    }
+
+    private bool AccountsUnreadable(ErrorResponse error)
+    {
+        LogMessage.Error(logger, "The accounts could not be read for reclassification.", error.GetType().Name);
+
+        return false;
     }
 
     private bool WriteFailed(ClassificationFailure failure)

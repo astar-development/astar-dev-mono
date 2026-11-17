@@ -8,7 +8,11 @@ internal sealed class ReclassifyRunState
 
     internal int DuplicatesSkipped { get; private set; }
 
+    internal int SkippedForAccount { get; private set; }
+
     internal void SkipDuplicate() => DuplicatesSkipped++;
+
+    internal void SkipForAccount(int files) => SkippedForAccount += files;
 
     internal void CommitBatch(int files)
     {
@@ -16,5 +20,5 @@ internal sealed class ReclassifyRunState
         Batches++;
     }
 
-    internal ReclassifyCounts ToCounts() => ReclassifyCountsFactory.Create(FilesWritten, Batches, DuplicatesSkipped);
+    internal ReclassifyCounts ToCounts() => ReclassifyCountsFactory.Create(FilesWritten, Batches, DuplicatesSkipped, SkippedForAccount);
 }

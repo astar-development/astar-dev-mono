@@ -1,4 +1,7 @@
 using AStarDev.CloudSync.Accounts;
+using AStarDev.CloudSync.Sync;
+using AStarDev.CloudSync.TestHelpers.Accounts;
+using AStarDev.FunctionalParadigm;
 using Microsoft.Extensions.Logging.Abstractions;
 using static AStarDev.CloudSync.Classification.TestsUnit.ClassificationTestData;
 
@@ -12,8 +15,34 @@ public sealed class GivenAClassificationReclassifier
 
     private static ReclassifyOptions Batches(int size, int parallelism = 1, int delayMilliseconds = 0) => ReclassifyOptionsFactory.Create(size, parallelism, TimeSpan.FromMilliseconds(delayMilliseconds));
 
-    private static ClassificationReclassifier Build(IClassifiableFileSource source, IFileClassifier classifier, IFileClassificationStore store, ReclassifyOptions? options = null) =>
-        new(source, classifier, store, options ?? ReclassifyOptionsFactory.CreateDefault(), NullLogger<ClassificationReclassifier>.Instance);
+    private static ClassificationReclassifier Build(IClassifiableFileSource source, IFileClassifier classifier, IFileClassificationStore store, ReclassifyOptions? options = null, IAccountSyncLock? syncLock = null, IAccountStore? accounts = null) =>
+        new(source, classifier, store, syncLock ?? AccountSyncLocks.Create(), accounts ?? Known(Account, OtherAccount), options ?? ReclassifyOptionsFactory.CreateDefault(), NullLogger<ClassificationReclassifier>.Instance);
+
+    private static AccountRegistration Registration(string key) =>
+        AccountRegistrationFactory.Create(ProviderAccountKeyFactory.Create(key).Match(created => created, _ => throw new InvalidOperationException("The test key must be valid.")), CloudProviderFactory.CreateOneDrive(), key, $"{key}@example.com", new DriveId("8A3F2C1D0E9B7A65"), StorageUsageFactory.Create(1, 2));
+
+    private static FakeAccountStore Known(params AccountId[] accountIds) =>
+        new() { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([.. accountIds.Select(accountId => StoredAccountFactory.Create(accountId, Registration(accountId.Value.ToString("N"))))]) };
+
+    private static ReclassifyFakeFileSource ThreeFiles() => new([
+        ClassifiableFileFactory.Create(Account, PathOf("Holiday/a.jpg")),
+        ClassifiableFileFactory.Create(OtherAccount, PathOf("Holiday/b.jpg")),
+        ClassifiableFileFactory.Create(Account, PathOf("Holiday/c.jpg")),
+    ]);
+
+    private static async Task RemoveUnderLeaseAsync(IAccountSyncLock syncLock, InMemoryAccountStore accounts, ReclassifyFakeStore store, AccountId accountId, CancellationToken cancellationToken)
+    {
+        var attempt = syncLock.TryAcquire(accountId);
+        while (attempt is not SyncLockAttempt.Acquired)
+        {
+            await Task.Yield();
+            attempt = syncLock.TryAcquire(accountId);
+        }
+
+        using var lease = ((SyncLockAttempt.Acquired)attempt).Lease;
+        store.RemoveAccount(accountId);
+        _ = await accounts.RemoveAsync(accountId, cancellationToken);
+    }
 
     private static ReclassifyCounts Counts(ReclassifyOutcome outcome) => outcome switch
     {
@@ -227,5 +256,105 @@ public sealed class GivenAClassificationReclassifier
         var options = ReclassifyOptionsFactory.CreateDefault();
 
         options.DelayBetweenBatches.ShouldBe(TimeSpan.FromMilliseconds(20));
+    }
+
+    [Fact]
+    public async Task when_another_pass_holds_an_accounts_lease_then_its_files_are_skipped_and_counted_and_the_other_account_is_written()
+    {
+        var syncLock = AccountSyncLocks.Create();
+        using var held = syncLock.TryAcquire(Account).ShouldBeOfType<SyncLockAttempt.Acquired>().Lease;
+        var store = new ReclassifyFakeStore();
+        var reclassifier = Build(ThreeFiles(), new ReclassifyFakeClassifier(Holiday), store, syncLock: syncLock);
+
+        var outcome = await reclassifier.StartAsync(new ReclassifyRecordingProgress(), TestContext.Current.CancellationToken);
+
+        outcome.ShouldBeOfType<ReclassifyOutcome.Completed>();
+        Totals(outcome).ShouldBe((1, 1, 0));
+        Counts(outcome).SkippedForAccount.ShouldBe(2);
+        store.Links.Keys.ShouldBe([(OtherAccount, PathOf("Holiday/b.jpg"))]);
+    }
+
+    [Fact]
+    public async Task when_an_account_has_been_removed_then_its_files_are_skipped_and_counted_and_no_links_are_written_for_it()
+    {
+        var store = new ReclassifyFakeStore();
+        var reclassifier = Build(ThreeFiles(), new ReclassifyFakeClassifier(Holiday), store, accounts: Known(OtherAccount));
+
+        var outcome = await reclassifier.StartAsync(new ReclassifyRecordingProgress(), TestContext.Current.CancellationToken);
+
+        outcome.ShouldBeOfType<ReclassifyOutcome.Completed>();
+        Totals(outcome).ShouldBe((1, 1, 0));
+        Counts(outcome).SkippedForAccount.ShouldBe(2);
+        store.Links.Keys.ShouldBe([(OtherAccount, PathOf("Holiday/b.jpg"))]);
+    }
+
+    [Fact]
+    public async Task when_the_lock_is_drained_then_every_file_is_skipped_and_the_run_completes_with_nothing_written()
+    {
+        var syncLock = AccountSyncLocks.Create();
+        using var drain = await syncLock.DrainAsync(TestContext.Current.CancellationToken);
+        var store = new ReclassifyFakeStore();
+        var progress = new ReclassifyRecordingProgress();
+        var reclassifier = Build(ThreeFiles(), new ReclassifyFakeClassifier(Holiday), store, syncLock: syncLock);
+
+        var outcome = await reclassifier.StartAsync(progress, TestContext.Current.CancellationToken);
+
+        outcome.ShouldBeOfType<ReclassifyOutcome.Completed>();
+        Totals(outcome).ShouldBe((0, 0, 0));
+        Counts(outcome).SkippedForAccount.ShouldBe(3);
+        store.BatchSizes.ShouldBeEmpty();
+        progress.Reports.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_the_accounts_cannot_be_read_then_the_run_fails_and_nothing_is_written()
+    {
+        var store = new ReclassifyFakeStore();
+        var accounts = new FakeAccountStore { All = () => Result.Failure<IReadOnlyList<StoredAccount>, ErrorResponse>(new ErrorResponse("The accounts could not be read.")) };
+        var reclassifier = Build(ThreeFiles(), new ReclassifyFakeClassifier(Holiday), store, accounts: accounts);
+
+        var outcome = await reclassifier.StartAsync(new ReclassifyRecordingProgress(), TestContext.Current.CancellationToken);
+
+        outcome.ShouldBeOfType<ReclassifyOutcome.Failed>();
+        store.Links.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task when_a_run_has_ended_then_every_account_lease_is_released()
+    {
+        var syncLock = AccountSyncLocks.Create();
+        var accounts = new FakeAccountStore { All = () => Result.Failure<IReadOnlyList<StoredAccount>, ErrorResponse>(new ErrorResponse("The accounts could not be read.")) };
+        _ = await Build(ThreeFiles(), new ReclassifyFakeClassifier(Holiday), new ReclassifyFakeStore(), syncLock: syncLock).StartAsync(new ReclassifyRecordingProgress(), TestContext.Current.CancellationToken);
+        _ = await Build(ThreeFiles(), new ReclassifyFakeClassifier(Holiday), new ReclassifyFakeStore(), syncLock: syncLock, accounts: accounts).StartAsync(new ReclassifyRecordingProgress(), TestContext.Current.CancellationToken);
+
+        using var first = syncLock.TryAcquire(Account).ShouldBeOfType<SyncLockAttempt.Acquired>().Lease;
+        using var second = syncLock.TryAcquire(OtherAccount).ShouldBeOfType<SyncLockAttempt.Acquired>().Lease;
+    }
+
+    [Fact]
+    public async Task when_about_twenty_accounts_are_removed_in_parallel_with_a_run_then_no_links_remain_for_any_of_them()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var syncLock = AccountSyncLocks.Create();
+        var accounts = new InMemoryAccountStore();
+        var accountIds = new List<AccountId>();
+        foreach (var index in Enumerable.Range(0, 20))
+            accountIds.Add((await accounts.AddAsync(Registration($"account-{index}"), cancellationToken)).ShouldBeOfType<AccountAddOutcome.Added>().AccountId);
+
+        var files = accountIds.SelectMany(accountId => Enumerable.Range(0, 25).Select(index => ClassifiableFileFactory.Create(accountId, PathOf($"Holiday/file-{index:D3}.jpg")))).ToList();
+        var store = new ReclassifyFakeStore();
+        var progress = new RemovalRacingProgress(50);
+        var reclassifier = Build(new ReclassifyFakeFileSource(files), new ReclassifyFakeClassifier(Holiday), store, Batches(5), syncLock, accounts);
+        var run = Task.Run(() => reclassifier.StartAsync(progress, cancellationToken), cancellationToken);
+        await progress.FirstBatchWritten.Task.WaitAsync(cancellationToken);
+        var removals = accountIds.Select(accountId => Task.Run(() => RemoveUnderLeaseAsync(syncLock, accounts, store, accountId, cancellationToken), cancellationToken)).ToArray();
+
+        await Task.WhenAll(removals);
+        progress.RemovalsDone.SetResult();
+        var outcome = await run;
+
+        outcome.ShouldBeOfType<ReclassifyOutcome.Completed>();
+        (Counts(outcome).FilesWritten + Counts(outcome).SkippedForAccount).ShouldBe(500);
+        store.Links.ShouldBeEmpty();
     }
 }

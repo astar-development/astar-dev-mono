@@ -7,5 +7,12 @@ public static class ReclassifyCountsFactory
     /// <param name="filesWritten">The files written.</param>
     /// <param name="batches">The batches committed.</param>
     /// <param name="duplicatesSkipped">The duplicates skipped.</param>
-    public static ReclassifyCounts Create(int filesWritten, int batches, int duplicatesSkipped) => new(filesWritten, batches, duplicatesSkipped);
+    public static ReclassifyCounts Create(int filesWritten, int batches, int duplicatesSkipped) => Create(filesWritten, batches, duplicatesSkipped, 0);
+
+    /// <summary>Creates the counts, with the files skipped because their account was busy or removed.</summary>
+    /// <param name="filesWritten">The files written.</param>
+    /// <param name="batches">The batches committed.</param>
+    /// <param name="duplicatesSkipped">The duplicates skipped.</param>
+    /// <param name="skippedForAccount">The files skipped because their account was busy or removed.</param>
+    public static ReclassifyCounts Create(int filesWritten, int batches, int duplicatesSkipped, int skippedForAccount) => new(filesWritten, batches, duplicatesSkipped, skippedForAccount);
 }
