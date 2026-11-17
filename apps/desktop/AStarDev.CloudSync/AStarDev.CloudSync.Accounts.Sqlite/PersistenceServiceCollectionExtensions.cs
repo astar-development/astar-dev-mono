@@ -1,5 +1,6 @@
 using System.IO.Abstractions;
 using AStarDev.CloudSync.Accounts;
+using AStarDev.EFCoreSqlite;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +17,7 @@ public static class PersistenceServiceCollectionExtensions
     /// <returns>The <paramref name="services" /> collection to allow further chaining.</returns>
     public static IServiceCollection AddCloudSyncPersistence(this IServiceCollection services, Func<IServiceProvider, IFileInfo> databaseFile) =>
         services
-            .AddDbContextFactory<CloudSyncDbContext>((provider, options) => options.UseSqlite(new SqliteConnectionStringBuilder { DataSource = databaseFile(provider).FullName }.ToString()))
+            .AddDbContextFactory<CloudSyncDbContext>((provider, options) => options.UseSqlite(new SqliteConnectionStringBuilder { DataSource = databaseFile(provider).FullName }.ToString()).AddInterceptors(SqliteBusyTimeoutInterceptor.Instance))
             .AddSingleton<ICloudSyncDatabase>(provider => new SqliteCloudSyncDatabase(provider.GetRequiredService<IDbContextFactory<CloudSyncDbContext>>(), databaseFile(provider), provider.GetRequiredService<ILogger<SqliteCloudSyncDatabase>>()))
             .AddSingleton<IMigrationLockClearer>(provider => new SqliteMigrationLockClearer(provider.GetRequiredService<IDbContextFactory<CloudSyncDbContext>>(), databaseFile(provider), provider.GetRequiredService<ILogger<SqliteMigrationLockClearer>>()))
             .AddSingleton<IAccountStore, SqliteAccountStore>();
