@@ -461,6 +461,23 @@ public sealed class GivenAConflictResolver : IDisposable
     }
 
     [Fact]
+    public async Task when_a_reclassify_write_holds_the_lease_then_the_resolution_waits_for_it_and_runs()
+    {
+        var run = await StartAsync();
+        run.Local("Docs/a.txt", "mine");
+        run.Remote.File("Docs/a.txt", "id-a", "c-current", 4);
+        var id = run.Conflict("Docs/a.txt", ConflictKindFactory.CreateBothModified());
+        var background = run.SyncLock.TryAcquireBackground(run.Account).ShouldBeOfType<SyncLockAttempt.Acquired>().Lease;
+
+        var resolving = run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateLocalWins(), CancellationToken);
+        var waitedForTheWrite = !resolving.IsCompleted;
+        background.Dispose();
+        _ = await resolving;
+
+        (waitedForTheWrite, run.Uploader.Calls.Count, run.Attention.ClosedConflicts.Count).ShouldBe((true, 1, 1));
+    }
+
+    [Fact]
     public async Task when_the_lock_is_draining_then_the_call_is_refused_as_draining()
     {
         var run = await StartAsync();

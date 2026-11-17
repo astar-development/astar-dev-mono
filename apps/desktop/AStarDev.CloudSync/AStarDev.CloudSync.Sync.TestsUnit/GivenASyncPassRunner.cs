@@ -240,6 +240,32 @@ public sealed class GivenASyncPassRunner : IDisposable
     }
 
     [Fact]
+    public async Task when_a_reclassify_write_holds_the_lease_then_sync_now_waits_for_it_and_runs()
+    {
+        var background = services.SyncLock.TryAcquireBackground(Personal).ShouldBeOfType<SyncLockAttempt.Acquired>().Lease;
+
+        var manual = RunAsync(Personal, Manual);
+        var waitedForTheWrite = !manual.IsCompleted;
+        background.Dispose();
+        var result = await manual.WaitAsync(Limit, CancellationToken);
+
+        (waitedForTheWrite, Outcome(result)).ShouldBe((true, "ran"));
+    }
+
+    [Fact]
+    public async Task when_sync_now_is_cancelled_while_waiting_for_a_reclassify_write_then_the_pass_is_reported_cancelled()
+    {
+        using var background = services.SyncLock.TryAcquireBackground(Personal).ShouldBeOfType<SyncLockAttempt.Acquired>().Lease;
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(CancellationToken);
+
+        var manual = services.Runner.RunAsync(Personal, Manual, cancellation.Token);
+        await cancellation.CancelAsync();
+        var result = await manual.WaitAsync(Limit, CancellationToken);
+
+        Outcome(result).ShouldBe(SyncPassFailureFactory.CreateCancelled());
+    }
+
+    [Fact]
     public async Task when_a_manual_trigger_hits_a_running_tray_run_then_only_one_pass_runs()
     {
         var gate = new WriteGate();

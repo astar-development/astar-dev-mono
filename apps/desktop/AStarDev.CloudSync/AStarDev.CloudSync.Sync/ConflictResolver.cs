@@ -19,7 +19,7 @@ internal sealed class ConflictResolver(IAccountSyncLock syncLock, ISyncAttention
     /// <inheritdoc />
     public async Task<Result<ResolutionSummary, ConflictRefusal>> ResolveAsync(AccountId accountId, IReadOnlyList<ConflictId> ids, ConflictStrategy strategy, CancellationToken cancellationToken)
     {
-        var attempt = syncLock.TryAcquire(accountId);
+        var attempt = await syncLock.AcquireAsync(accountId, cancellationToken).ConfigureAwait(false);
         if (attempt is not SyncLockAttempt.Acquired acquired)
             return Result.Failure<ResolutionSummary, ConflictRefusal>(attempt is SyncLockAttempt.Busy ? ConflictRefusalFactory.CreateBusy() : ConflictRefusalFactory.CreateDraining());
 

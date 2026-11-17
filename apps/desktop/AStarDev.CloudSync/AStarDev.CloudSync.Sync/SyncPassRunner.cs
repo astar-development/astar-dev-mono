@@ -32,10 +32,13 @@ internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps st
         };
     }
 
-    private async Task<Result<SyncPassSummary, SyncPassFailure>> RunIfFreeAsync(AccountId accountId, SyncTrigger trigger, CancellationToken cancellationToken) =>
-        syncLock.TryAcquire(accountId) is SyncLockAttempt.Acquired acquired
-            ? await RunHoldingAsync(acquired.Lease, accountId, trigger, cancellationToken).ConfigureAwait(false)
-            : Skipped(trigger);
+    private async Task<Result<SyncPassSummary, SyncPassFailure>> RunIfFreeAsync(AccountId accountId, SyncTrigger trigger, CancellationToken cancellationToken)
+    {
+        if (await syncLock.AcquireAsync(accountId, cancellationToken).ConfigureAwait(false) is SyncLockAttempt.Acquired acquired)
+            return await RunHoldingAsync(acquired.Lease, accountId, trigger, cancellationToken).ConfigureAwait(false);
+
+        return cancellationToken.IsCancellationRequested ? Stopped<SyncPassSummary>(SyncPassFailureFactory.CreateCancelled()) : Skipped(trigger);
+    }
 
     private Result<SyncPassSummary, SyncPassFailure> Refused(SyncTrigger trigger)
     {

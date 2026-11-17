@@ -16,20 +16,31 @@ internal sealed class ReclassifyFakeStore : IFileClassificationStore
 
     internal IReadOnlyDictionary<(AccountId, RelativeSyncPath), IReadOnlyList<TermId>> Links => links;
 
-    public Task<Result<Unit, ClassificationFailure>> ReplaceAutoLinksAsync(IReadOnlyList<FileTermLinks> updates, CancellationToken cancellationToken)
+    internal TaskCompletionSource WriteEntered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    internal Task HoldWrite { get; init; } = Task.CompletedTask;
+
+    public async Task<Result<Unit, ClassificationFailure>> ReplaceAutoLinksAsync(IReadOnlyList<FileTermLinks> updates, CancellationToken cancellationToken)
+    {
+        _ = WriteEntered.TrySetResult();
+        await HoldWrite.WaitAsync(cancellationToken);
+        return Replace(updates, cancellationToken);
+    }
+
+    private Result<Unit, ClassificationFailure> Replace(IReadOnlyList<FileTermLinks> updates, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         lock (gate)
         {
             if (batchSizes.Count + 1 == FailOnBatch)
-                return Task.FromResult(Result.Failure<Unit, ClassificationFailure>(ClassificationFailureFactory.CreateUnavailable()));
+                return Result.Failure<Unit, ClassificationFailure>(ClassificationFailureFactory.CreateUnavailable());
 
             batchSizes.Add(updates.Count);
             foreach (var update in updates)
                 links[(update.AccountId, update.Path)] = update.TermIds;
         }
 
-        return Task.FromResult(Result.Success<Unit, ClassificationFailure>(Unit.Instance));
+        return Result.Success<Unit, ClassificationFailure>(Unit.Instance);
     }
 
     internal void RemoveAccount(AccountId accountId)

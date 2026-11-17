@@ -275,6 +275,66 @@ public sealed class GivenAClassificationReclassifier
     }
 
     [Fact]
+    public async Task when_a_batch_write_holds_the_lease_then_a_user_action_waits_for_that_write_instead_of_bouncing()
+    {
+        var syncLock = AccountSyncLocks.Create();
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var store = new ReclassifyFakeStore { HoldWrite = release.Task };
+        var reclassifier = Build(ThreeFiles(), new ReclassifyFakeClassifier(Holiday), store, syncLock: syncLock);
+        var run = reclassifier.StartAsync(new ReclassifyRecordingProgress(), TestContext.Current.CancellationToken);
+        await store.WriteEntered.Task.WaitAsync(TestContext.Current.CancellationToken);
+
+        var userAction = syncLock.AcquireAsync(Account, TestContext.Current.CancellationToken);
+        var waitedForTheWrite = !userAction.IsCompleted;
+        release.SetResult();
+        var attempt = await userAction;
+
+        using var lease = attempt.ShouldBeOfType<SyncLockAttempt.Acquired>().Lease;
+        waitedForTheWrite.ShouldBeTrue();
+        _ = await run;
+    }
+
+    [Fact]
+    public async Task when_a_batch_finds_an_accounts_lease_taken_then_the_run_backs_off_for_the_longer_contention_pause()
+    {
+        var syncLock = AccountSyncLocks.Create();
+        using var pass = syncLock.TryAcquire(Account).ShouldBeOfType<SyncLockAttempt.Acquired>().Lease;
+        var time = new DelayRecordingTimeProvider();
+        var options = ReclassifyOptionsFactory.Create(1, 1, TimeSpan.FromMilliseconds(20), TimeSpan.FromMilliseconds(500), time);
+        var reclassifier = Build(ThreeFiles(), new ReclassifyFakeClassifier(Holiday), new ReclassifyFakeStore(), options, syncLock);
+        var run = reclassifier.StartAsync(new ReclassifyRecordingProgress(), TestContext.Current.CancellationToken);
+        var delays = new List<TimeSpan>();
+
+        for (var batch = 0; batch < 3; batch++)
+        {
+            var delay = await time.NextDelayAsync(TestContext.Current.CancellationToken).WaitAsync(TimeSpan.FromSeconds(30), TestContext.Current.CancellationToken);
+            delays.Add(delay);
+            time.Advance(delay);
+        }
+
+        var outcome = await run;
+
+        delays.ShouldBe([TimeSpan.FromMilliseconds(500), TimeSpan.FromMilliseconds(20), TimeSpan.FromMilliseconds(500)]);
+        Counts(outcome).SkippedForAccount.ShouldBe(2);
+    }
+
+    [Fact]
+    public void when_options_are_created_with_a_negative_contention_pause_then_it_becomes_none()
+    {
+        var options = ReclassifyOptionsFactory.Create(10, 1, TimeSpan.Zero, TimeSpan.FromSeconds(-1), TimeProvider.System);
+
+        options.DelayAfterContention.ShouldBe(TimeSpan.Zero);
+    }
+
+    [Fact]
+    public void when_default_options_are_created_then_the_contention_pause_is_longer_than_the_lease_retry_interval()
+    {
+        var options = ReclassifyOptionsFactory.CreateDefault();
+
+        (options.DelayAfterContention > AccountLeasePolicy.RetryInterval, options.TimeProvider).ShouldBe((true, TimeProvider.System));
+    }
+
+    [Fact]
     public async Task when_an_account_has_been_removed_then_its_files_are_skipped_and_counted_and_no_links_are_written_for_it()
     {
         var store = new ReclassifyFakeStore();

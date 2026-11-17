@@ -75,6 +75,33 @@ public sealed class GivenAccountActionsRemovingAnAccount : IDisposable
     }
 
     [Fact]
+    public async Task when_a_reclassify_write_holds_the_lease_then_the_removal_goes_ahead_once_it_ends_without_polling()
+    {
+        var accountId = await services.AddAsync(Personal, CancellationToken);
+        var background = services.SyncLock.TryAcquireBackground(accountId).ShouldBeOfType<SyncLockAttempt.Acquired>().Lease;
+
+        var removing = services.Actions.RemoveAsync(accountId, CancellationToken);
+        var waitedForTheWrite = !removing.IsCompleted;
+        background.Dispose();
+        var result = await removing.WaitAsync(TimeSpan.FromSeconds(30), CancellationToken);
+
+        (waitedForTheWrite, result.Match(_ => (object)"removed", error => error)).ShouldBe((true, "removed"));
+    }
+
+    [Fact]
+    public async Task when_a_lease_attempt_keeps_waiting_then_the_removal_still_gives_up_within_the_ten_second_wait()
+    {
+        using var stalled = new AccountServices(syncLock: new StallingAccountSyncLock());
+        var accountId = await stalled.AddAsync(Personal, CancellationToken);
+        var started = stalled.Time.GetUtcNow();
+
+        var result = await stalled.AdvanceUntilAsync(stalled.Actions.RemoveAsync(accountId, CancellationToken)).WaitAsync(TimeSpan.FromSeconds(30), CancellationToken);
+
+        result.Match(_ => (object)"removed", error => error).ShouldBe(AccountRemovalFailureFactory.CreateSyncStillRunning());
+        (stalled.Time.GetUtcNow() - started).ShouldBeLessThanOrEqualTo(AccountLeasePolicy.WaitForRunningWork + AccountLeasePolicy.RetryInterval);
+    }
+
+    [Fact]
     public async Task when_the_provider_cannot_sign_out_then_the_removal_stops_and_nothing_is_deleted()
     {
         var accountId = await services.AddAsync(Personal, CancellationToken);
