@@ -29,6 +29,8 @@ public static class ClassificationServiceCollectionExtensions
             .AddSingleton<IFirstNameList>(provider => provider.GetRequiredService<EmbeddedWordLists>())
             .AddSingleton<IClassificationSuggestions, ClassificationSuggestions>()
             .AddSingleton(ReclassifyOptionsFactory.CreateDefault())
+            .AddSingleton<ReclassifyProgressSource>()
+            .AddSingleton<IReclassifyProgressSource>(provider => provider.GetRequiredService<ReclassifyProgressSource>())
             .AddSingleton(provider => ActivatorUtilities.CreateInstance<RunRecordingReclassifier>(provider, ActivatorUtilities.CreateInstance<ClassificationReclassifier>(provider)))
             .AddSingleton<IClassificationReclassifier>(provider => provider.GetRequiredService<RunRecordingReclassifier>())
             .AddSingleton<IReclassifyRunRecordedSource>(provider => provider.GetRequiredService<RunRecordingReclassifier>())

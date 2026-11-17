@@ -33,6 +33,22 @@ public abstract record ReclassifyState
         public int FilesSkipped { get; }
     }
 
+    /// <summary>A run this page did not start is in progress, such as the startup reclassify. The page cannot cancel it.</summary>
+    public sealed record Observing : ReclassifyState
+    {
+        internal Observing(int filesDone, int filesSkipped)
+        {
+            FilesDone = filesDone;
+            FilesSkipped = filesSkipped;
+        }
+
+        /// <summary>The files written so far.</summary>
+        public int FilesDone { get; }
+
+        /// <summary>The files skipped so far because their account was busy or removed.</summary>
+        public int FilesSkipped { get; }
+    }
+
     /// <summary>The last run wrote every file.</summary>
     public sealed record Completed : ReclassifyState
     {

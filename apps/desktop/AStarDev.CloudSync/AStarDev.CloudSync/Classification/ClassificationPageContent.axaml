@@ -39,7 +39,7 @@
                        IsVisible="{Binding Reclassify.IsRerunRecommended}"
                        TextWrapping="Wrap" />
             <ProgressBar IsIndeterminate="True"
-                         IsVisible="{Binding Reclassify.IsRunning}"
+                         IsVisible="{Binding Reclassify.IsBusy}"
                          AutomationProperties.Name="{Binding Reclassify.StatusText}" />
         </StackPanel>
 

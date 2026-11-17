@@ -13,13 +13,14 @@ public class GivenTheReclassifyViewModel
     private readonly FakeReclassifyFreshnessCheck freshness = new();
     private readonly InlineSynchronizationContext context = new();
     private readonly ImmediateUiDispatcher dispatcher = new();
+    private readonly ReclassifyProgressSource progressSource = new();
 
     private ReclassifyViewModel Create()
     {
         var localization = TestData.CreateLocalization();
         var termList = new ClassificationTermListViewModel(terms, new FakeCategoryStore(), new FakeFileClassificationStore(), localization);
 
-        return new ReclassifyViewModel(reclassifier, reclassifier, dispatcher, freshness, termList, localization);
+        return new ReclassifyViewModel(reclassifier, reclassifier, progressSource, dispatcher, freshness, termList, localization);
     }
 
     private static ReclassifyCounts Counts(int files, int batches) => ReclassifyCountsFactory.Create(files, batches, 0);
@@ -297,5 +298,123 @@ public class GivenTheReclassifyViewModel
         reclassifier.RaiseRunRecorded();
 
         (dispatcher.Invocations, freshness.CheckCount).ShouldBe((0, 0));
+    }
+
+    private IReclassifyRunScope StartForeignRun() => progressSource.Begin(new Progress<ReclassifyProgress>());
+
+    [Fact]
+    public void when_the_page_opens_mid_run_then_the_current_progress_is_shown_at_once_without_cancel()
+    {
+        using var foreign = StartForeignRun();
+        foreign.Report(ReclassifyProgressFactory.Create(1500, 3));
+
+        var viewModel = Create();
+
+        (viewModel.State, viewModel.IsRunning, viewModel.IsBusy, viewModel.HasStatus, viewModel.StatusText, viewModel.ReclassifyCommand.CanExecute(null), viewModel.CancelCommand.CanExecute(null))
+            .ShouldBe((ReclassifyStateFactory.CreateObserving(1500, 0), false, true, true, "Reclassifying: 1,500 files done", false, false));
+    }
+
+    [Fact]
+    public void when_a_foreign_run_reports_progress_then_the_status_follows_it()
+    {
+        var viewModel = Create();
+        using var foreign = StartForeignRun();
+
+        foreign.Report(ReclassifyProgressFactory.Create(500, 1));
+        foreign.Report(ReclassifyProgressFactory.Create(1000, 2, 40));
+
+        (viewModel.State, viewModel.StatusText, viewModel.ReclassifyCommand.CanExecute(null)).ShouldBe((ReclassifyStateFactory.CreateObserving(1000, 40), "Reclassifying: 1,000 files done, 40 skipped", false));
+    }
+
+    [Fact]
+    public void when_a_foreign_run_finishes_then_the_page_is_idle_the_button_is_enabled_the_terms_reload_and_the_freshness_is_rechecked()
+    {
+        var viewModel = Create();
+        var foreign = StartForeignRun();
+        foreign.Report(ReclassifyProgressFactory.Create(500, 1));
+
+        foreign.Dispose();
+
+        (viewModel.State, viewModel.IsBusy, viewModel.ReclassifyCommand.CanExecute(null), terms.GetAllCount, freshness.CheckCount).ShouldBe((ReclassifyStateFactory.CreateIdle(), false, true, 1, 1));
+    }
+
+    [Fact]
+    public void when_a_foreign_run_finishes_and_the_rerun_is_no_longer_needed_then_the_recommendation_clears()
+    {
+        freshness.Outcome = Result.Success<ReclassifyFreshness, ClassificationFailure>(ReclassifyFreshnessFactory.CreateStale());
+        using var viewModel = Create();
+        _ = viewModel.CheckCommand.ExecuteAsync(null);
+        var foreign = StartForeignRun();
+        foreign.Report(ReclassifyProgressFactory.Create(500, 1));
+        freshness.Outcome = Result.Success<ReclassifyFreshness, ClassificationFailure>(ReclassifyFreshnessFactory.CreateUpToDate());
+
+        foreign.Dispose();
+
+        viewModel.IsRerunRecommended.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void when_a_foreign_run_that_never_reported_ends_then_nothing_changes()
+    {
+        var viewModel = Create();
+        var foreign = StartForeignRun();
+
+        foreign.Dispose();
+
+        (viewModel.State, terms.GetAllCount, freshness.CheckCount).ShouldBe((ReclassifyStateFactory.CreateIdle(), 0, 0));
+    }
+
+    [Fact]
+    public async Task when_the_page_started_the_run_then_foreign_reports_do_not_replace_its_state_and_cancel_stays_available()
+    {
+        using var installed = InlineSynchronizationContext.Install(context);
+        reclassifier.Gate = new TaskCompletionSource();
+        var viewModel = Create();
+        var running = viewModel.ReclassifyCommand.ExecuteAsync(null);
+        await reclassifier.Started.Task;
+        using var foreign = StartForeignRun();
+
+        foreign.Report(ReclassifyProgressFactory.Create(9999, 9));
+        var during = (viewModel.State, viewModel.IsRunning, viewModel.CancelCommand.CanExecute(null));
+        reclassifier.Gate.SetResult();
+        await running;
+
+        during.ShouldBe((ReclassifyStateFactory.CreateRunning(0), true, true));
+    }
+
+    [Fact]
+    public void when_created_then_it_listens_for_progress_and_when_disposed_then_it_stops()
+    {
+        var viewModel = Create();
+        viewModel.Dispose();
+        using var foreign = StartForeignRun();
+
+        foreign.Report(ReclassifyProgressFactory.Create(500, 1));
+
+        (viewModel.State, dispatcher.Invocations).ShouldBe((ReclassifyStateFactory.CreateIdle(), 0));
+    }
+
+    [Fact]
+    public void when_a_negative_count_is_observed_then_it_becomes_zero()
+    {
+        ReclassifyStateFactory.CreateObserving(-1, -2).ShouldBe(ReclassifyStateFactory.CreateObserving(0, 0));
+    }
+
+    [Fact]
+    public void when_the_view_model_is_disposed_with_a_queued_progress_change_then_running_it_does_nothing()
+    {
+        var queued = new QueuedUiDispatcher();
+        var localization = TestData.CreateLocalization();
+        var termList = new ClassificationTermListViewModel(terms, new FakeCategoryStore(), new FakeFileClassificationStore(), localization);
+        var viewModel = new ReclassifyViewModel(reclassifier, reclassifier, progressSource, queued, freshness, termList, localization);
+        var foreign = StartForeignRun();
+        foreign.Report(ReclassifyProgressFactory.Create(10, 1));
+        queued.RunQueued();
+        foreign.Dispose();
+        viewModel.Dispose();
+
+        queued.RunQueued();
+
+        (viewModel.State, terms.GetAllCount, freshness.CheckCount).ShouldBe((ReclassifyStateFactory.CreateObserving(10, 0), 0, 0));
     }
 }

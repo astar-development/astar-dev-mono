@@ -1,5 +1,6 @@
 using System.Globalization;
 using AStarDev.CloudSync.Accounts;
+using AStarDev.CloudSync.Classification;
 using AStarDev.CloudSync.TestHelpers.Classification;
 using AStarDev.CloudSync.ViewModels.Classification;
 using AStarDev.CloudSync.Overview;
@@ -122,14 +123,16 @@ public static class TestData
 
     public static ClassificationPageViewModel CreateClassificationPage(FakeClassificationReclassifier reclassifier) => CreateClassificationPage(reclassifier, new FakeReclassifyFreshnessCheck());
 
-    public static ClassificationPageViewModel CreateClassificationPage(FakeClassificationReclassifier reclassifier, FakeReclassifyFreshnessCheck freshness)
+    public static ClassificationPageViewModel CreateClassificationPage(FakeClassificationReclassifier reclassifier, FakeReclassifyFreshnessCheck freshness) => CreateClassificationPage(reclassifier, freshness, new ReclassifyProgressSource());
+
+    public static ClassificationPageViewModel CreateClassificationPage(FakeClassificationReclassifier reclassifier, FakeReclassifyFreshnessCheck freshness, IReclassifyProgressSource progressSource)
     {
         var localization = CreateLocalization();
         var categories = new FakeCategoryStore();
         var terms = new ClassificationTermListViewModel(new FakeTermStore(), categories, new FakeFileClassificationStore(), localization);
         var suggestions = new ClassificationSuggestionsViewModel(new FakeClassificationSuggestions(), categories, localization);
 
-        return new ClassificationPageViewModel(new ClassificationTabsViewModel(terms, suggestions, localization), new ReclassifyViewModel(reclassifier, reclassifier, new ImmediateUiDispatcher(), freshness, terms, localization), localization);
+        return new ClassificationPageViewModel(new ClassificationTabsViewModel(terms, suggestions, localization), new ReclassifyViewModel(reclassifier, reclassifier, progressSource, new ImmediateUiDispatcher(), freshness, terms, localization), localization);
     }
 
     public static IFolderSelectionFactory CreateFolderSelectionFactory(FakeFolderTreeSource tree) => new FolderSelectionFactory(tree, new FakeSelectionRuleReader(), new FakeSelectionRuleWriter(), new SyncSelectionEvaluator(), new FakeSyncPairReader(), new InMemoryAccountStore(), CreateLocalization());
