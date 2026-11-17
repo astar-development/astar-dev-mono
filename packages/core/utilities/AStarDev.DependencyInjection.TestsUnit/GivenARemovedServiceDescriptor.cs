@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
 
-namespace AStarDev.CloudSync.Sync.TestsUnit;
+namespace AStarDev.DependencyInjection.TestsUnit;
 
 public sealed class GivenARemovedServiceDescriptor : IDisposable
 {
