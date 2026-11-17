@@ -7,6 +7,8 @@ namespace AStarDev.EFCoreExtensions.TestsUnit.Support;
 internal sealed class SqliteFixture<TContext> : IDisposable
     where TContext : DbContext
 {
+    private static readonly Lock RelationalModelFirstUseGate = new();
+
     private readonly SqliteConnection connection = new("Data Source=:memory:");
     private readonly DbContextOptions<TContext> options;
 
@@ -15,7 +17,11 @@ internal sealed class SqliteFixture<TContext> : IDisposable
         connection.Open();
         options = new DbContextOptionsBuilder<TContext>().UseSqlite(connection).Options;
         using var context = CreateContext();
-        context.Database.EnsureCreated();
+        lock (RelationalModelFirstUseGate)
+        {
+            context.Database.EnsureCreated();
+            _ = context.Model.GetRelationalModel();
+        }
     }
 
     public TContext CreateContext() => (TContext)Activator.CreateInstance(typeof(TContext), options)!;
