@@ -10,8 +10,15 @@ namespace AStarDev.CloudSync.Classification;
 /// <param name="runs">Keeps the completed run.</param>
 /// <param name="options">Supplies the clock.</param>
 /// <param name="logger">Reports a record that could not be written, by failure type only.</param>
-public sealed class RunRecordingReclassifier(IClassificationReclassifier inner, ISeedStateStore seedState, IReclassifyRunStore runs, ReclassifyOptions options, ILogger<RunRecordingReclassifier> logger) : IClassificationReclassifier
+public sealed class RunRecordingReclassifier(IClassificationReclassifier inner, ISeedStateStore seedState, IReclassifyRunStore runs, ReclassifyOptions options, ILogger<RunRecordingReclassifier> logger) : IClassificationReclassifier, IReclassifyRunRecordedSource
 {
+    /// <inheritdoc />
+    public event EventHandler? RunRecorded
+    {
+        add { }
+        remove { }
+    }
+
     /// <inheritdoc />
     public Task WaitUntilIdleAsync(CancellationToken cancellationToken) => inner.WaitUntilIdleAsync(cancellationToken);
 

@@ -1,4 +1,5 @@
 using AStarDev.CloudSync.Classification;
+using AStarDev.CloudSync.ViewModels.Common;
 using AStarDev.FunctionalParadigm;
 using AStarDev.Localization;
 using CommunityToolkit.Mvvm.Input;
@@ -16,10 +17,12 @@ public sealed class ReclassifyViewModel : LocalizedObservableObject, IDisposable
 
     /// <summary>Creates the view model in the idle state.</summary>
     /// <param name="reclassifier">Runs the reclassify; a singleton, so a second run is refused.</param>
+    /// <param name="runRecorded">Raises an event when a run was recorded, so the recommendation refreshes after a run this view model did not start.</param>
+    /// <param name="dispatcher">Moves the refresh onto the UI thread.</param>
     /// <param name="freshnessCheck">Tells whether a rerun is worth recommending.</param>
     /// <param name="terms">The term list reloaded after a run.</param>
     /// <param name="localization">Supplies the text and culture.</param>
-    public ReclassifyViewModel(IClassificationReclassifier reclassifier, IReclassifyFreshnessCheck freshnessCheck, ClassificationTermListViewModel terms, ILocalizationService localization) : base(localization)
+    public ReclassifyViewModel(IClassificationReclassifier reclassifier, IReclassifyRunRecordedSource runRecorded, IUiDispatcher dispatcher, IReclassifyFreshnessCheck freshnessCheck, ClassificationTermListViewModel terms, ILocalizationService localization) : base(localization)
     {
         this.reclassifier = reclassifier;
         this.freshnessCheck = freshnessCheck;

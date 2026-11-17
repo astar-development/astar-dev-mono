@@ -14,7 +14,9 @@ public sealed class GivenAClassificationStartup
     private readonly RecordingLogger<ClassificationStartup> logger = new();
     private readonly FakeClassificationReclassifier reclassifier = new();
 
-    private ClassificationStartup Create(ICloudSyncDatabase database, IClassificationSeeder seeder) => new(database, seeder, reclassifier, logger);
+    private readonly InMemoryReclassifyRunStore runs = new() { Last = Option.Some(ReclassifyRunRecordFactory.Create(ClassificationEngineVersion.Current, Option.Some("v1"), DateTimeOffset.UnixEpoch)) };
+
+    private ClassificationStartup Create(ICloudSyncDatabase database, IClassificationSeeder seeder) => new(database, seeder, reclassifier, runs, logger);
 
     [Fact]
     public async Task when_run_then_the_database_is_migrated_before_the_seed_is_applied()
@@ -213,5 +215,50 @@ public sealed class GivenAClassificationStartup
 
         logger.Entries.ShouldContain(entry => entry.Level == LogLevel.Warning);
         logger.Messages.ShouldAllBe(message => !message.Contains("secret"));
+    }
+
+    [Fact]
+    public async Task when_the_seed_is_already_current_and_no_run_was_ever_recorded_then_the_baseline_is_reclassified_once()
+    {
+        runs.Last = Option.None<ReclassifyRunRecord>();
+        var startup = Create(new StartupFakeDatabase(calls), new StartupFakeSeeder(calls) { Outcome = ClassificationSeedOutcomeFactory.CreateAlreadyCurrent() });
+
+        await startup.RunAsync(CancellationToken);
+
+        reclassifier.StartCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_the_seed_is_applied_and_no_run_was_ever_recorded_then_the_baseline_is_reclassified_once()
+    {
+        runs.Last = Option.None<ReclassifyRunRecord>();
+        var startup = Create(new StartupFakeDatabase(calls), new StartupFakeSeeder(calls));
+
+        await startup.RunAsync(CancellationToken);
+
+        reclassifier.StartCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_the_run_record_cannot_be_read_and_the_seed_is_already_current_then_nothing_is_reclassified()
+    {
+        var unreadable = new InMemoryReclassifyRunStore { FailReads = true };
+        var startup = new ClassificationStartup(new StartupFakeDatabase(calls), new StartupFakeSeeder(calls) { Outcome = ClassificationSeedOutcomeFactory.CreateAlreadyCurrent() }, reclassifier, unreadable, logger);
+
+        await startup.RunAsync(CancellationToken);
+
+        reclassifier.StartCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task when_the_seed_failed_and_no_run_was_ever_recorded_then_nothing_is_reclassified()
+    {
+        runs.Last = Option.None<ReclassifyRunRecord>();
+        var failed = ClassificationSeedOutcomeFactory.CreateFailed(ClassificationFailureFactory.CreateUnavailable());
+        var startup = Create(new StartupFakeDatabase(calls), new StartupFakeSeeder(calls) { Outcome = failed });
+
+        await startup.RunAsync(CancellationToken);
+
+        reclassifier.StartCount.ShouldBe(0);
     }
 }

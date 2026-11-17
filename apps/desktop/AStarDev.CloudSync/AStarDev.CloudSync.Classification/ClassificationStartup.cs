@@ -9,9 +9,12 @@ namespace AStarDev.CloudSync.Classification;
 /// <param name="database">The database whose migration creates the classification tables.</param>
 /// <param name="seeder">Writes the shipped seed.</param>
 /// <param name="reclassifier">Reclassifies the baseline once a newly applied seed has changed the vocabulary.</param>
+/// <param name="runs">Tells whether any reclassify run has ever completed.</param>
 /// <param name="logger">Reports a migration or seed that failed, without paths or exception messages.</param>
-public sealed class ClassificationStartup(ICloudSyncDatabase database, IClassificationSeeder seeder, IClassificationReclassifier reclassifier, ILogger<ClassificationStartup> logger) : IClassificationStartup
+public sealed class ClassificationStartup(ICloudSyncDatabase database, IClassificationSeeder seeder, IClassificationReclassifier reclassifier, IReclassifyRunStore runs, ILogger<ClassificationStartup> logger) : IClassificationStartup
 {
+    private readonly IReclassifyRunStore runStore = runs;
+
     /// <inheritdoc />
     public async Task RunAsync(CancellationToken cancellationToken)
     {

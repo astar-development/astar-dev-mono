@@ -129,7 +129,7 @@ public static class TestData
         var terms = new ClassificationTermListViewModel(new FakeTermStore(), categories, new FakeFileClassificationStore(), localization);
         var suggestions = new ClassificationSuggestionsViewModel(new FakeClassificationSuggestions(), categories, localization);
 
-        return new ClassificationPageViewModel(new ClassificationTabsViewModel(terms, suggestions, localization), new ReclassifyViewModel(reclassifier, freshness, terms, localization), localization);
+        return new ClassificationPageViewModel(new ClassificationTabsViewModel(terms, suggestions, localization), new ReclassifyViewModel(reclassifier, reclassifier, new ImmediateUiDispatcher(), freshness, terms, localization), localization);
     }
 
     public static IFolderSelectionFactory CreateFolderSelectionFactory(FakeFolderTreeSource tree) => new FolderSelectionFactory(tree, new FakeSelectionRuleReader(), new FakeSelectionRuleWriter(), new SyncSelectionEvaluator(), new FakeSyncPairReader(), new InMemoryAccountStore(), CreateLocalization());
