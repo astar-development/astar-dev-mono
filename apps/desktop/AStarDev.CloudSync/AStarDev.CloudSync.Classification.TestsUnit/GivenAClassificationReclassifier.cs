@@ -289,7 +289,27 @@ public sealed class GivenAClassificationReclassifier
     {
         var options = ReclassifyOptionsFactory.Create(0, -3, TimeSpan.FromSeconds(-1));
 
-        (options.BatchSize, options.DegreeOfParallelism, options.DelayBetweenBatches).ShouldBe((500, 1, TimeSpan.Zero));
+        (options.BatchSize, options.DegreeOfParallelism, options.DelayBetweenBatches).ShouldBe((500, 1, TimeSpan.FromMilliseconds(5)));
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    [InlineData(1)]
+    [InlineData(4)]
+    public void when_the_pause_between_batches_is_below_the_minimum_then_it_is_raised_to_five_milliseconds(int milliseconds)
+    {
+        var options = ReclassifyOptionsFactory.Create(10, 1, TimeSpan.FromMilliseconds(milliseconds));
+
+        options.DelayBetweenBatches.ShouldBe(TimeSpan.FromMilliseconds(5));
+    }
+
+    [Fact]
+    public void when_the_pause_between_batches_is_above_the_minimum_then_it_is_kept()
+    {
+        var options = ReclassifyOptionsFactory.Create(10, 1, TimeSpan.FromMilliseconds(50));
+
+        options.DelayBetweenBatches.ShouldBe(TimeSpan.FromMilliseconds(50));
     }
 
     [Fact]
