@@ -15,6 +15,7 @@ public sealed class ReclassifyViewModel : LocalizedObservableObject, IDisposable
     private readonly IUiDispatcher dispatcher;
     private readonly IReclassifyFreshnessCheck freshnessCheck;
     private readonly ClassificationTermListViewModel terms;
+    private bool disposed;
     private ReclassifyState state = ReclassifyStateFactory.CreateIdle();
     private ReclassifyFreshness freshness = ReclassifyFreshnessFactory.CreateUpToDate();
 
@@ -93,6 +94,7 @@ public sealed class ReclassifyViewModel : LocalizedObservableObject, IDisposable
     /// <summary>Stops listening for recorded runs and cancels a run in progress, so the app shutting down does not leave the reclassify working.</summary>
     public void Dispose()
     {
+        disposed = true;
         runRecorded.RunRecorded -= OnRunRecorded;
         progressSource.Changed -= OnProgressChanged;
         ReclassifyCommand.Cancel();
@@ -100,10 +102,19 @@ public sealed class ReclassifyViewModel : LocalizedObservableObject, IDisposable
 
     private void OnRunRecorded(object? sender, EventArgs e) => _ = dispatcher.InvokeAsync(() => _ = CheckCommand.ExecuteAsync(null));
 
-    private void OnProgressChanged(object? sender, EventArgs e) => _ = dispatcher.InvokeAsync(() => _ = ShowObservedAsync());
+    private void OnProgressChanged(object? sender, EventArgs e) => _ = dispatcher.InvokeAsync(() => _ = ObserveAsync());
 
-    private async Task ShowObservedAsync()
+    private async Task ObserveAsync()
     {
+        var observe = Try.RunAsync(ShowObservedAsync, CancellationToken.None).MatchAsync(done => done, _ => Unit.Instance);
+        await ((Task)observe).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+    }
+
+    private async Task<Unit> ShowObservedAsync()
+    {
+        if (disposed)
+            return Unit.Instance;
+
         var wasObserving = state is ReclassifyState.Observing;
         ShowObserved();
         if (wasObserving && state is ReclassifyState.Idle)
@@ -111,6 +122,8 @@ public sealed class ReclassifyViewModel : LocalizedObservableObject, IDisposable
             await terms.LoadCommand.ExecuteAsync(null).ConfigureAwait(true);
             await CheckCommand.ExecuteAsync(null).ConfigureAwait(true);
         }
+
+        return Unit.Instance;
     }
 
     private void ShowObserved()
