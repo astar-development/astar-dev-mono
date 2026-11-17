@@ -53,7 +53,8 @@ public sealed class GivenALinkWriteFromBeforeARootChangeOverSqlite : MigratedDat
 
         _ = Ok(await Database.Links.ReplaceAutoLinksAsync([FileTermLinksFactory.Create(changedAccount, Path("old.jpg"), [red]), FileTermLinksFactory.Create(changedAccount, Path("new.jpg"), [red])], CancellationToken));
 
-        ((await TermsOfAsync(changedAccount, "old.jpg")).Count, await TermsOfAsync(changedAccount, "new.jpg")).ShouldBe((0, [red]));
+        (await TermsOfAsync(changedAccount, "old.jpg")).ShouldBeEmpty();
+        (await TermsOfAsync(changedAccount, "new.jpg")).ShouldBe([red]);
     }
 
     [Fact]
@@ -65,7 +66,8 @@ public sealed class GivenALinkWriteFromBeforeARootChangeOverSqlite : MigratedDat
 
         _ = Ok(await Database.Links.ReplaceAutoLinksAsync([FileTermLinksFactory.Create(changedAccount, Path("old.jpg"), [red]), FileTermLinksFactory.Create(keptAccount, Path("old.jpg"), [red])], CancellationToken));
 
-        ((await TermsOfAsync(changedAccount, "old.jpg")).Count, await TermsOfAsync(keptAccount, "old.jpg")).ShouldBe((0, [red]));
+        (await TermsOfAsync(changedAccount, "old.jpg")).ShouldBeEmpty();
+        (await TermsOfAsync(keptAccount, "old.jpg")).ShouldBe([red]);
     }
 
     [Fact]
