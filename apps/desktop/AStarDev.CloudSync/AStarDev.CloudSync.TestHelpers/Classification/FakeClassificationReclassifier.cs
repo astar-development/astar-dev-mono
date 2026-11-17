@@ -14,9 +14,17 @@ public sealed class FakeClassificationReclassifier : IClassificationReclassifier
 
     public int StartCount { get; private set; }
 
+    public CancellationToken ReceivedToken { get; private set; }
+
+    public bool Throws { get; set; }
+
     public async Task<ReclassifyOutcome> StartAsync(IProgress<ReclassifyProgress> progress, CancellationToken cancellationToken)
     {
         StartCount++;
+        ReceivedToken = cancellationToken;
+        if (Throws)
+            throw new InvalidOperationException("reclassify exploded with C:\\secret\\path");
+
         foreach (var report in Reports)
             progress.Report(report);
 

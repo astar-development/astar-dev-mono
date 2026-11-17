@@ -146,10 +146,13 @@ public sealed class GivenAClassificationStartup
         var run = startup.RunAsync(shutdown.Token);
         await Task.WhenAny(reclassifier.Started.Task, run);
         var startedBeforeShutdown = reclassifier.Started.Task.IsCompleted;
+        var receivedShutdownToken = reclassifier.ReceivedToken == shutdown.Token;
         await shutdown.CancelAsync();
+        _ = reclassifier.Gate.TrySetResult();
         await run.WaitAsync(CancellationToken);
 
         startedBeforeShutdown.ShouldBeTrue();
+        receivedShutdownToken.ShouldBeTrue();
         logger.Entries.ShouldBeEmpty();
     }
 
@@ -162,5 +165,17 @@ public sealed class GivenAClassificationStartup
         await Should.NotThrowAsync(() => startup.RunAsync(CancellationToken));
 
         reclassifier.StartCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task when_the_reclassify_throws_then_a_warning_is_logged_without_its_message_and_run_completes()
+    {
+        reclassifier.Throws = true;
+        var startup = Create(new StartupFakeDatabase(calls), new StartupFakeSeeder(calls));
+
+        await startup.RunAsync(CancellationToken);
+
+        logger.Entries.ShouldContain(entry => entry.Level == LogLevel.Warning);
+        logger.Messages.ShouldAllBe(message => !message.Contains("secret"));
     }
 }
