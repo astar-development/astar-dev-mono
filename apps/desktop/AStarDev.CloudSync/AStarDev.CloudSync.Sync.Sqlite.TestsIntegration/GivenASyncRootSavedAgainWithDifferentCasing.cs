@@ -24,7 +24,7 @@ public sealed class GivenASyncRootSavedAgainWithDifferentCasing
 
         var saved = await SetRootAsync(database, OneDriveLowerCase);
 
-        (saved, await BaselineCountAsync(database), recording.Calls.Count).ShouldBe((OneDriveLowerCase, 3, 0));
+        (saved, await StoredRootAsync(database), await BaselineCountAsync(database), recording.Calls.Count).ShouldBe((OneDriveLowerCase, OneDriveLowerCase, 3, 0));
     }
 
     [Fact]
@@ -60,6 +60,9 @@ public sealed class GivenASyncRootSavedAgainWithDifferentCasing
 
     private static async Task<string> SetRootAsync(TemporarySyncDatabase database, string path) =>
         (await database.Writer.SetAsync(FirstAccount, database.Folder(path), CancellationToken)).Match(root => root.Directory.FullName, rejection => rejection.GetType().Name);
+
+    private static async Task<string> StoredRootAsync(TemporarySyncDatabase database) =>
+        (await database.Reader.GetAsync(FirstAccount, CancellationToken)).Match(root => root.Match(found => found.Directory.FullName, () => "none"), error => error.Message);
 
     private static async Task SeedBaselineAsync(TemporarySyncDatabase database, int count)
     {
