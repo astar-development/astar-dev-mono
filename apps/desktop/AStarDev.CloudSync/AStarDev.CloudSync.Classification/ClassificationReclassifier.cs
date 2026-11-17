@@ -14,23 +14,32 @@ namespace AStarDev.CloudSync.Classification;
 /// <param name="accountStore">Confirms, under the lease, that the account still exists.</param>
 /// <param name="options">Batch size, parallelism and the pause between batches.</param>
 /// <param name="logger">Reports the run without paths or terms.</param>
-public sealed class ClassificationReclassifier(IClassifiableFileSource fileSource, IFileClassifier classifier, IFileClassificationStore store, IAccountSyncLock syncLock, IAccountStore accountStore, ReclassifyOptions options, ILogger<ClassificationReclassifier> logger) : IClassificationReclassifier
+public sealed class ClassificationReclassifier(IClassifiableFileSource fileSource, IFileClassifier classifier, IFileClassificationStore store, IAccountSyncLock syncLock, IAccountStore accountStore, ReclassifyOptions options, ILogger<ClassificationReclassifier> logger) : IClassificationReclassifier, IDisposable
 {
-    private int running;
+    private readonly SemaphoreSlim runGate = new(1, 1);
+
+    /// <summary>Releases the run guard.</summary>
+    public void Dispose() => runGate.Dispose();
 
     /// <inheritdoc />
-    public Task WaitUntilIdleAsync(CancellationToken cancellationToken) => throw new NotImplementedException($"{nameof(cancellationToken)} wait");
+    public async Task WaitUntilIdleAsync(CancellationToken cancellationToken)
+    {
+        var wait = runGate.WaitAsync(cancellationToken);
+        await ((Task)wait).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+        if (wait.IsCompletedSuccessfully)
+            _ = runGate.Release();
+    }
 
     /// <inheritdoc />
     public async Task<ReclassifyOutcome> StartAsync(IProgress<ReclassifyProgress> progress, CancellationToken cancellationToken)
     {
-        if (Interlocked.CompareExchange(ref running, 1, 0) != 0)
+        if (!runGate.Wait(0, CancellationToken.None))
             return ReclassifyOutcomeFactory.CreateAlreadyRunning();
 
         var state = new ReclassifyRunState();
         var run = Task.Run(() => RunAsync(state, progress, cancellationToken), cancellationToken);
         await ((Task)run).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
-        _ = Interlocked.Exchange(ref running, 0);
+        _ = runGate.Release();
 
         return Resolve(run, state, cancellationToken);
     }
