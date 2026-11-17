@@ -1,4 +1,3 @@
-using System.Text;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.FunctionalParadigm;
 using System.IO.Abstractions;
@@ -30,7 +29,7 @@ public sealed class DefaultSyncRootProvider(IHomeFolder homeFolder, ISyncRootPol
 
     private static string SafeName(string? displayName)
     {
-        var replaced = new string([.. (displayName ?? string.Empty).Normalize(NormalizationForm.FormC).Select(character => char.IsControl(character) || UnsafeCharacters.Contains(character) ? '_' : character)]);
+        var replaced = new string([.. UnicodeText.Compose(displayName ?? string.Empty).Select(character => char.IsControl(character) || UnsafeCharacters.Contains(character) ? '_' : character)]);
         var trimmed = replaced.Trim().TrimEnd('.', ' ');
 
         return trimmed.Length == 0 ? FallbackName : trimmed;

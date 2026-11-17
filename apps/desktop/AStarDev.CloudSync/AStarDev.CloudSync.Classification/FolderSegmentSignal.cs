@@ -6,6 +6,16 @@ namespace AStarDev.CloudSync.Classification;
 public sealed class FolderSegmentSignal : IClassificationSignal
 {
     /// <inheritdoc />
-    public IReadOnlyList<ClassificationCandidate> Evaluate(RelativeSyncPath path, ClassificationVocabulary vocabulary) =>
-        SignalCandidates.Create((path.Value ?? string.Empty).Split('/').SkipLast(1).SelectMany(folder => PhraseMatcher.Match(ClassificationTokeniser.Tokenise(folder), vocabulary.PhraseIndex)), vocabulary, SignalKindFactory.CreateFolderName());
+    public IReadOnlyList<ClassificationCandidate> Evaluate(RelativeSyncPath path, ClassificationVocabulary vocabulary)
+    {
+        var value = path.Value.AsSpan();
+        var folders = value[..Math.Max(value.LastIndexOf('/'), 0)];
+        var matches = new List<ClassificationTerm>();
+        foreach (var folder in folders.Split('/'))
+        {
+            PhraseMatcher.MatchInto(matches, ClassificationTokeniser.Tokenise(folders[folder]), vocabulary.PhraseIndex);
+        }
+
+        return SignalCandidates.Create(matches, vocabulary, SignalKindFactory.CreateFolderName());
+    }
 }

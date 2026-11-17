@@ -86,4 +86,16 @@ public class GivenADefaultSyncRootProvider
             "personal@example.com",
             new DriveId("8A3F2C1D0E9B7A65"),
             StorageUsageFactory.Create(1, 2));
+
+    [Theory]
+    [InlineData("bad\uD800name", "OneDrive-bad\uD800name")]
+    [InlineData("bad\uDC00name", "OneDrive-bad\uDC00name")]
+    [InlineData("smile\uD83D\uDE00", "OneDrive-smile\uD83D\uDE00")]
+    [InlineData("Cafe\u0301", "OneDrive-Caf\u00E9")]
+    public void when_the_display_name_has_surrogates_or_a_decomposed_accent_then_a_folder_is_still_proposed(string displayName, string expectedFolder)
+    {
+        var result = Provider().CreateFor(Registration(displayName), []);
+
+        result.Match(root => (object)root.Directory.Name, rejection => rejection).ShouldBe(expectedFolder);
+    }
 }

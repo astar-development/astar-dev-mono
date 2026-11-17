@@ -68,4 +68,16 @@ public class GivenALocalRelativePathFactory
 
         path.ToString().ShouldNotContain("Taxes");
     }
+
+    [Theory]
+    [InlineData("Photos/bad\uD800name", "Photos/bad\uD800name")]
+    [InlineData("Photos\\bad\uDC00name", "Photos/bad\uDC00name")]
+    [InlineData("Photos/smile\uD83D\uDE00", "Photos/smile\uD83D\uDE00")]
+    [InlineData("Cafe\u0301/menu", "Caf\u00E9/menu")]
+    public void when_the_path_has_surrogates_or_a_decomposed_accent_then_it_is_created_without_throwing(string value, string expected)
+    {
+        var result = LocalRelativePathFactory.Create(value);
+
+        result.Match(path => path.Value, _ => "invalid").ShouldBe(expected);
+    }
 }

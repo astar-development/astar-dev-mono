@@ -10,9 +10,12 @@ namespace AStarDev.CloudSync.Classification;
 /// <param name="inner">The registered writer that stores the baseline.</param>
 /// <param name="classifier">Classifies one path.</param>
 /// <param name="store">Stores the automatic links.</param>
+/// <param name="vocabulary">Reports whether the vocabulary changed while a batch was classified.</param>
 /// <param name="logger">Reports failures without paths, terms or exception messages.</param>
-public sealed class ClassifyingSyncBaselineWriter(ISyncBaselineWriter inner, IFileClassifier classifier, IFileClassificationStore store, ILogger<ClassifyingSyncBaselineWriter> logger) : ISyncBaselineWriter
+public sealed class ClassifyingSyncBaselineWriter(ISyncBaselineWriter inner, IFileClassifier classifier, IFileClassificationStore store, IClassificationVocabularyProvider vocabulary, ILogger<ClassifyingSyncBaselineWriter> logger) : ISyncBaselineWriter
 {
+    private const int MaxAttempts = 3;
+
     /// <inheritdoc />
     public async Task<Result<Unit, ErrorResponse>> UpsertAsync(AccountId accountId, IReadOnlyList<SyncBaselineEntry> entries, CancellationToken cancellationToken)
     {
@@ -39,6 +42,19 @@ public sealed class ClassifyingSyncBaselineWriter(ISyncBaselineWriter inner, IFi
     }
 
     private async Task<Unit> ClassifyAsync(AccountId accountId, IReadOnlyList<SyncBaselineEntry> entries, CancellationToken cancellationToken)
+    {
+        for (var attempt = 1; attempt < MaxAttempts; attempt++)
+        {
+            var generation = vocabulary.Generation;
+            _ = await ClassifyOnceAsync(accountId, entries, cancellationToken).ConfigureAwait(false);
+            if (vocabulary.Generation == generation)
+                return Unit.Instance;
+        }
+
+        return await ClassifyOnceAsync(accountId, entries, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<Unit> ClassifyOnceAsync(AccountId accountId, IReadOnlyList<SyncBaselineEntry> entries, CancellationToken cancellationToken)
     {
         var links = new List<FileTermLinks>();
         foreach (var path in LastFilePaths(entries))

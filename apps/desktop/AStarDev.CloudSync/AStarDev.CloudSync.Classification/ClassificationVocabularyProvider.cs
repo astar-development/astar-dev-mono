@@ -10,8 +10,12 @@ namespace AStarDev.CloudSync.Classification;
 /// </summary>
 public sealed class ClassificationVocabularyProvider(ITermStore termStore, ICategoryStore categoryStore) : IClassificationVocabularyProvider
 {
+    private long generation;
     private readonly Lock gate = new();
     private Option<Task<Result<ClassificationVocabulary, ClassificationFailure>>> current = Option.None<Task<Result<ClassificationVocabulary, ClassificationFailure>>>();
+
+    /// <inheritdoc />
+    public long Generation => Interlocked.Read(ref generation);
 
     /// <inheritdoc />
     public async Task<Result<ClassificationVocabulary, ClassificationFailure>> GetAsync(CancellationToken cancellationToken)
@@ -35,6 +39,7 @@ public sealed class ClassificationVocabularyProvider(ITermStore termStore, ICate
     {
         lock (gate)
         {
+            _ = Interlocked.Increment(ref generation);
             current = Option.None<Task<Result<ClassificationVocabulary, ClassificationFailure>>>();
         }
     }

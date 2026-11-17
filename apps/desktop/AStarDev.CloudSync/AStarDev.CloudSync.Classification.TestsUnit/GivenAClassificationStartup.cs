@@ -105,6 +105,42 @@ public sealed class GivenAClassificationStartup
     }
 
     [Fact]
+    public async Task when_the_startup_reclassify_gets_already_running_then_it_waits_for_the_active_run_and_starts_again()
+    {
+        reclassifier.AlreadyRunningBeforeSuccess = 1;
+        var startup = Create(new StartupFakeDatabase(calls), new StartupFakeSeeder(calls));
+
+        await startup.RunAsync(CancellationToken);
+
+        reclassifier.Calls.ShouldBe(["start", "wait", "start"]);
+    }
+
+    [Fact]
+    public async Task when_a_manual_run_keeps_winning_the_gap_then_the_startup_reclassify_keeps_waiting_until_it_gets_a_run()
+    {
+        reclassifier.AlreadyRunningBeforeSuccess = 3;
+        var startup = Create(new StartupFakeDatabase(calls), new StartupFakeSeeder(calls));
+
+        await startup.RunAsync(CancellationToken);
+
+        reclassifier.StartCount.ShouldBe(4);
+        reclassifier.WaitCount.ShouldBe(3);
+    }
+
+    [Fact]
+    public async Task when_shutdown_is_requested_while_waiting_for_the_active_run_then_run_stops_waiting_without_a_warning()
+    {
+        using var shutdown = new CancellationTokenSource();
+        reclassifier.AlreadyRunningBeforeSuccess = int.MaxValue;
+        reclassifier.OnWait = shutdown.Cancel;
+        var startup = Create(new StartupFakeDatabase(calls), new StartupFakeSeeder(calls));
+
+        await startup.RunAsync(shutdown.Token).WaitAsync(TimeSpan.FromSeconds(10), CancellationToken);
+
+        logger.Entries.ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task when_the_seed_is_already_current_then_nothing_is_reclassified()
     {
         var startup = Create(new StartupFakeDatabase(calls), new StartupFakeSeeder(calls) { Outcome = ClassificationSeedOutcomeFactory.CreateAlreadyCurrent() });

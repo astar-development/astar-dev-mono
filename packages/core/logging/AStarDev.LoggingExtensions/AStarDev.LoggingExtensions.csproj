@@ -9,18 +9,19 @@
         <PackageId>AStarDev.LoggingExtensions</PackageId>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReleaseNotes>
-        v4.3.1 fix(cloudsync): classification wiring review leftovers (#1856)
-        v4.3.0 feat(cloudsync): log files roll at 10 MB, keep 7 days and 100 MB in total (slice 5 of #1411)
-        v4.2.0 feat(cloudsync): account hash in log lines and a reader for the local log files (slice 4 of #1411)
-        v4.1.0 feat(cloudsync): per-account verbose log level and filter (slice 2 of #1411)
-        v4.0.1 refactor(logging): drop InternalsVisibleTo from LoggingExtensions (#1417)
-        v4.0.0 chore(logging)!: make LoggerMessage placeholder names PascalCase (#1375)
-        v3.1.0 feat(logging): export error.type on failed operations (#1374)
-        v3.0.0 fix(logging)!: hash paths and account ids, drop URLs and users from log attributes (#1376)
-        v2.0.0 feat(logging)!: complete the OTel resource (service.version, instance id, deployment environment) (#1370)
-        v1.0.0 fix(logging)!: log exception type names only, remove exception-taking templates (#1371)
-        v0.1.0 fix(logging)!: log exception type names only, remove exception-taking templates (#1371)
-        v0.1.0 fix(logging): log page views as PageView and 500 errors with EventId 500 (#1377)
+        v4.3.3 perf(cloudsync): span-based tokenising and phrase lookup for the path signals (#1889)
+        v0.7.1 fix(cloudsync): classification wiring review leftovers (#1856)
+        v0.7.0 feat(cloudsync): log files roll at 10 MB, keep 7 days and 100 MB in total (slice 5 of #1411)
+        v0.6.0 feat(cloudsync): account hash in log lines and a reader for the local log files (slice 4 of #1411)
+        v0.5.0 feat(cloudsync): per-account verbose log level and filter (slice 2 of #1411)
+        v0.4.2 refactor(logging): drop InternalsVisibleTo from LoggingExtensions (#1417)
+        v0.4.1 chore(logging)!: make LoggerMessage placeholder names PascalCase (#1375)
+        v0.4.0 feat(logging): export error.type on failed operations (#1374)
+        v0.3.1 fix(logging)!: hash paths and account ids, drop URLs and users from log attributes (#1376)
+        v0.3.0 feat(logging)!: complete the OTel resource (service.version, instance id, deployment environment) (#1370)
+        v0.2.3 fix(logging)!: log exception type names only, remove exception-taking templates (#1371)
+        v0.2.2 fix(logging)!: log exception type names only, remove exception-taking templates (#1371)
+        v0.2.1 fix(logging): log page views as PageView and 500 errors with EventId 500 (#1377)
         v0.2.0 feat: key-point logging and a local log file
         v0.1.2 chore: enforce code style in build repo-wide
         v0.1.1 chore: solution cleanup - namespaces, XML doc formatting, test folder alignment

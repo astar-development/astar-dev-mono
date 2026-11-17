@@ -24,8 +24,8 @@ public sealed class GivenAClassifyingSyncBaselineWriter
 
     private static EntityTag ETag() => EntityTagFactory.Create("e").Match(tag => tag, _ => throw new InvalidOperationException());
 
-    private static ClassifyingSyncBaselineWriter Build(ClassifyHookInnerWriter inner, ClassifyHookClassifier classifier, ClassifyHookStore store, ILogger<ClassifyingSyncBaselineWriter>? logger = null) =>
-        new(inner, classifier, store, logger ?? NullLogger<ClassifyingSyncBaselineWriter>.Instance);
+    private static ClassifyingSyncBaselineWriter Build(ClassifyHookInnerWriter inner, ClassifyHookClassifier classifier, ClassifyHookStore store, ILogger<ClassifyingSyncBaselineWriter>? logger = null, IClassificationVocabularyProvider? vocabulary = null) =>
+        new(inner, classifier, store, vocabulary ?? new RecordingVocabularyProvider(new Ok<ClassificationVocabulary, ClassificationFailure>(ClassificationVocabularyFactory.Create([], []))), logger ?? NullLogger<ClassifyingSyncBaselineWriter>.Instance);
 
     private static bool Succeeded(Result<Unit, ErrorResponse> result) => result.Match(_ => true, _ => false);
 
@@ -43,6 +43,44 @@ public sealed class GivenAClassifyingSyncBaselineWriter
         store.Replaced.Select(links => links.Path.Value).ShouldBe(["Holiday/a.jpg"]);
         store.Replaced[0].AccountId.ShouldBe(Account);
         store.Replaced[0].TermIds.ShouldBe([ClassifyHookClassifier.TermId]);
+    }
+
+    [Fact]
+    public async Task when_the_vocabulary_changes_while_a_batch_is_classified_then_the_batch_is_classified_and_written_again()
+    {
+        var vocabulary = new RecordingVocabularyProvider(new Ok<ClassificationVocabulary, ClassificationFailure>(ClassificationVocabularyFactory.Create([], [])));
+        var classifier = new ClassifyHookClassifier { OnClassify = () => { if (vocabulary.Invalidations == 0) vocabulary.Invalidate(); } };
+        var store = new ClassifyHookStore();
+        var writer = Build(new ClassifyHookInnerWriter(), classifier, store, vocabulary: vocabulary);
+
+        _ = await writer.UpsertAsync(Account, [FileEntry("a/1.jpg"), FileEntry("a/2.jpg")], TestContext.Current.CancellationToken);
+
+        classifier.Paths.Count.ShouldBe(4);
+        store.Replaced.Count.ShouldBe(4);
+    }
+
+    [Fact]
+    public async Task when_the_vocabulary_keeps_changing_then_the_batch_is_not_reclassified_forever()
+    {
+        var vocabulary = new RecordingVocabularyProvider(new Ok<ClassificationVocabulary, ClassificationFailure>(ClassificationVocabularyFactory.Create([], [])));
+        var classifier = new ClassifyHookClassifier { OnClassify = vocabulary.Invalidate };
+        var writer = Build(new ClassifyHookInnerWriter(), classifier, new ClassifyHookStore(), vocabulary: vocabulary);
+
+        var result = await writer.UpsertAsync(Account, [FileEntry("a/1.jpg")], TestContext.Current.CancellationToken);
+
+        Succeeded(result).ShouldBeTrue();
+        classifier.Paths.Count.ShouldBeLessThan(10);
+    }
+
+    [Fact]
+    public async Task when_the_vocabulary_is_unchanged_then_the_batch_is_classified_once()
+    {
+        var classifier = new ClassifyHookClassifier();
+        var writer = Build(new ClassifyHookInnerWriter(), classifier, new ClassifyHookStore());
+
+        _ = await writer.UpsertAsync(Account, [FileEntry("a/1.jpg")], TestContext.Current.CancellationToken);
+
+        classifier.Paths.Count.ShouldBe(1);
     }
 
     [Fact]

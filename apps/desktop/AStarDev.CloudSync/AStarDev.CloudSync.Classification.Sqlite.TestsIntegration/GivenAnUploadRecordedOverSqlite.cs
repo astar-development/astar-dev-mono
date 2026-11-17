@@ -35,8 +35,9 @@ public sealed class GivenAnUploadRecordedOverSqlite : MigratedDatabaseTests
         var category = Ok(await Database.Categories.UpsertAsync(Category("Things"), CancellationToken)).Id;
         var jpg = Ok(await Database.Terms.UpsertAsync(Term("jpg", category), CancellationToken)).Id;
         var holiday = Ok(await Database.Terms.UpsertAsync(Term("holiday", category), CancellationToken)).Id;
-        var classifier = new FileClassifier([new ExtensionSignal(), new FolderSegmentSignal(), new DictionaryTermSignal()], new ClassificationVocabularyProvider(Database.Terms, Database.Categories));
-        var recorder = new ClassifyingUploadRecorder(Database.UploadRecorder, classifier, Database.Links, NullLogger<ClassifyingUploadRecorder>.Instance);
+        var vocabulary = new ClassificationVocabularyProvider(Database.Terms, Database.Categories);
+        var classifier = new FileClassifier([new ExtensionSignal(), new FolderSegmentSignal(), new DictionaryTermSignal()], vocabulary);
+        var recorder = new ClassifyingUploadRecorder(Database.UploadRecorder, classifier, Database.Links, vocabulary, NullLogger<ClassifyingUploadRecorder>.Instance);
 
         var result = await recorder.RecordAsync(account, FileEntry(account, "Holiday/red car.jpg"), Remote(), CancellationToken);
 
