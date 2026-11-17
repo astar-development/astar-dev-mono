@@ -18,9 +18,30 @@ public sealed class FakeClassificationReclassifier : IClassificationReclassifier
 
     public bool Throws { get; set; }
 
+    public int AlreadyRunningBeforeSuccess { get; set; }
+
+    public Action? OnWait { get; set; }
+
+    public int WaitCount { get; private set; }
+
+    public List<string> Calls { get; } = [];
+
+    public Task WaitUntilIdleAsync(CancellationToken cancellationToken)
+    {
+        WaitCount++;
+        Calls.Add("wait");
+        OnWait?.Invoke();
+
+        return Task.CompletedTask;
+    }
+
     public async Task<ReclassifyOutcome> StartAsync(IProgress<ReclassifyProgress> progress, CancellationToken cancellationToken)
     {
         StartCount++;
+        Calls.Add("start");
+        if (StartCount <= AlreadyRunningBeforeSuccess)
+            return ReclassifyOutcomeFactory.CreateAlreadyRunning();
+
         ReceivedToken = cancellationToken;
         if (Throws)
             throw new InvalidOperationException("reclassify exploded with C:\\secret\\path");

@@ -33,6 +33,29 @@ public sealed class GivenAClassificationVocabularyProvider
     }
 
     [Fact]
+    public void when_invalidated_then_the_generation_increases_each_time()
+    {
+        var provider = new ClassificationVocabularyProvider(new CountingTermStore(), new CountingCategoryStore());
+        var before = provider.Generation;
+
+        provider.Invalidate();
+        provider.Invalidate();
+
+        provider.Generation.ShouldBe(before + 2);
+    }
+
+    [Fact]
+    public async Task when_loaded_without_invalidation_then_the_generation_is_unchanged()
+    {
+        var provider = new ClassificationVocabularyProvider(new CountingTermStore(), new CountingCategoryStore());
+        var before = provider.Generation;
+
+        await provider.GetAsync(TestContext.Current.CancellationToken);
+
+        provider.Generation.ShouldBe(before);
+    }
+
+    [Fact]
     public async Task when_invalidated_then_the_next_call_reloads_new_data()
     {
         var terms = new CountingTermStore { Terms = TermsOf(Term("red", Colour)) };
