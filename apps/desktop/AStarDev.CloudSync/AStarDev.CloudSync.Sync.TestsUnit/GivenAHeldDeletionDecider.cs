@@ -214,10 +214,11 @@ public sealed class GivenAHeldDeletionDecider : IDisposable
         var background = run.SyncLock.TryAcquireBackground(run.Account).ShouldBeOfType<SyncLockAttempt.Acquired>().Lease;
 
         var confirming = run.Decider.ConfirmAsync(run.Account, id, CancellationToken);
+        var waitedForTheWrite = !confirming.IsCompleted;
         background.Dispose();
         var result = await confirming;
 
-        (result.Match(_ => "ok", _ => "refused"), run.TrashedFiles().Count).ShouldBe(("ok", 1));
+        (waitedForTheWrite, result.Match(_ => "ok", _ => "refused"), run.TrashedFiles().Count).ShouldBe((true, "ok", 1));
     }
 
     [Fact]

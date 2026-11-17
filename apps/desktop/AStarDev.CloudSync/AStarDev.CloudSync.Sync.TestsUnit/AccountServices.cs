@@ -12,7 +12,7 @@ public sealed class AccountServices : IDisposable
 {
     private readonly ServiceProvider provider;
 
-    public AccountServices(IAccountStore? store = null, WriteGate? gate = null)
+    public AccountServices(IAccountStore? store = null, WriteGate? gate = null, IAccountSyncLock? syncLock = null)
     {
         Store = store ?? new InMemoryAccountStore();
         SyncRoots = new InMemorySyncRootStore(new SyncRootPolicy());
@@ -20,7 +20,7 @@ public sealed class AccountServices : IDisposable
         SignOut = new FakeProviderSignOut(Steps);
         Cache = new FakeRemovalParticipant(Steps, "token-cache");
         Sync = new FakeRemovalParticipant(Steps, "sync-data");
-        provider = new ServiceCollection()
+        var services = new ServiceCollection()
             .AddLogging(logging => logging.ClearProviders().AddProvider(Logs))
             .AddSingleton<TimeProvider>(Time)
             .AddSingleton(Store)
@@ -34,8 +34,11 @@ public sealed class AccountServices : IDisposable
             .AddKeyedSingleton<IAccountSignInProbe>(CloudProviderFactory.CreateOneDrive(), Probe)
             .AddSingleton<IAccountRemovalParticipant>(Cache)
             .AddSingleton<IAccountRemovalParticipant>(Sync)
-            .AddCloudSync()
-            .BuildServiceProvider();
+            .AddCloudSync();
+        if (syncLock is not null)
+            _ = services.AddSingleton(syncLock);
+
+        provider = services.BuildServiceProvider();
     }
 
     public List<string> Steps { get; } = [];

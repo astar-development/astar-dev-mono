@@ -470,10 +470,11 @@ public sealed class GivenAConflictResolver : IDisposable
         var background = run.SyncLock.TryAcquireBackground(run.Account).ShouldBeOfType<SyncLockAttempt.Acquired>().Lease;
 
         var resolving = run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateLocalWins(), CancellationToken);
+        var waitedForTheWrite = !resolving.IsCompleted;
         background.Dispose();
         _ = await resolving;
 
-        (run.Uploader.Calls.Count, run.Attention.ClosedConflicts.Count).ShouldBe((1, 1));
+        (waitedForTheWrite, run.Uploader.Calls.Count, run.Attention.ClosedConflicts.Count).ShouldBe((true, 1, 1));
     }
 
     [Fact]

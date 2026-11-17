@@ -141,13 +141,14 @@ public sealed class GivenABackgroundLease : IDisposable
     public async Task when_twenty_callers_wait_on_one_background_lease_then_exactly_one_gets_the_lease()
     {
         var background = Background(Personal);
-        var callers = Enumerable.Range(0, 20).Select(_ => Task.Run(() => SyncLock.AcquireAsync(Personal, CancellationToken), CancellationToken)).ToList();
-        await Task.Yield();
+        var callers = Enumerable.Range(0, 20).Select(_ => SyncLock.AcquireAsync(Personal, CancellationToken)).ToList();
+        var allWaiting = callers.All(caller => !caller.IsCompleted);
 
         background.Dispose();
         var attempts = await Task.WhenAll(callers);
 
         var acquired = attempts.OfType<SyncLockAttempt.Acquired>().ToList();
+        allWaiting.ShouldBeTrue();
         acquired.Count.ShouldBe(1);
         attempts.Count(attempt => attempt is SyncLockAttempt.Busy).ShouldBe(19);
         acquired[0].Lease.Dispose();

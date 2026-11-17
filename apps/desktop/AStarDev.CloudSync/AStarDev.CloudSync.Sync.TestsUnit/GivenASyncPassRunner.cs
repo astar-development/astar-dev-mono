@@ -245,10 +245,24 @@ public sealed class GivenASyncPassRunner : IDisposable
         var background = services.SyncLock.TryAcquireBackground(Personal).ShouldBeOfType<SyncLockAttempt.Acquired>().Lease;
 
         var manual = RunAsync(Personal, Manual);
+        var waitedForTheWrite = !manual.IsCompleted;
         background.Dispose();
         var result = await manual.WaitAsync(Limit, CancellationToken);
 
-        Outcome(result).ShouldBe("ran");
+        (waitedForTheWrite, Outcome(result)).ShouldBe((true, "ran"));
+    }
+
+    [Fact]
+    public async Task when_sync_now_is_cancelled_while_waiting_for_a_reclassify_write_then_the_pass_is_reported_cancelled()
+    {
+        using var background = services.SyncLock.TryAcquireBackground(Personal).ShouldBeOfType<SyncLockAttempt.Acquired>().Lease;
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(CancellationToken);
+
+        var manual = services.Runner.RunAsync(Personal, Manual, cancellation.Token);
+        await cancellation.CancelAsync();
+        var result = await manual.WaitAsync(Limit, CancellationToken);
+
+        Outcome(result).ShouldBe(SyncPassFailureFactory.CreateCancelled());
     }
 
     [Fact]
