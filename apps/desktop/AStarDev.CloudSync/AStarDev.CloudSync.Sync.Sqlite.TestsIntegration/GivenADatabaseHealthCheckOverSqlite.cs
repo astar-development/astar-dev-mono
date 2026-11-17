@@ -39,7 +39,7 @@ public sealed class GivenADatabaseHealthCheckOverSqlite : IAsyncLifetime
     private async Task CorruptAsync(int from = 100)
     {
         await Database.RestartAsync();
-        SqliteConnection.ClearAllPools();
+        Database.ClearOwnPool();
         var bytes = await File.ReadAllBytesAsync(Database.DatabasePath, CancellationToken);
         Array.Fill(bytes, (byte)0xFF, from, bytes.Length - from);
         await File.WriteAllBytesAsync(Database.DatabasePath, bytes, CancellationToken);
@@ -65,7 +65,7 @@ public sealed class GivenADatabaseHealthCheckOverSqlite : IAsyncLifetime
     public async Task when_the_file_is_not_a_database_then_the_check_fails()
     {
         await Database.RestartAsync();
-        SqliteConnection.ClearAllPools();
+        Database.ClearOwnPool();
         await File.WriteAllBytesAsync(Database.DatabasePath, "this is not a sqlite database, not even close"u8.ToArray(), CancellationToken);
 
         var result = await CheckAsync();
@@ -131,7 +131,7 @@ public sealed class GivenADatabaseHealthCheckOverSqlite : IAsyncLifetime
         var before = await File.ReadAllBytesAsync(Database.DatabasePath, CancellationToken);
 
         _ = await CheckAsync();
-        SqliteConnection.ClearAllPools();
+        Database.ClearOwnPool();
         var after = await File.ReadAllBytesAsync(Database.DatabasePath, CancellationToken);
 
         after.ShouldBe(before);
