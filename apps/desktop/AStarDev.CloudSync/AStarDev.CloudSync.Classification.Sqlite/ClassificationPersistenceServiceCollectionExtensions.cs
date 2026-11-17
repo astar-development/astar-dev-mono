@@ -1,5 +1,6 @@
 using System.IO.Abstractions;
 using AStarDev.CloudSync.Accounts;
+using AStarDev.CloudSync.Sync;
 using AStarDev.EFCoreSqlite;
 using AStarDev.FunctionalParadigm;
 using Microsoft.Data.Sqlite;
@@ -39,7 +40,5 @@ public static class ClassificationPersistenceServiceCollectionExtensions
     private static Option<ICloudSyncDatabase> CreatePrevious(IServiceProvider provider, ServiceDescriptor? descriptor) =>
         descriptor is null
             ? Option.None<ICloudSyncDatabase>()
-            : Option.Some(descriptor.ImplementationInstance as ICloudSyncDatabase
-                ?? descriptor.ImplementationFactory?.Invoke(provider) as ICloudSyncDatabase
-                ?? (ICloudSyncDatabase)ActivatorUtilities.CreateInstance(provider, descriptor.ImplementationType!));
+            : Option.Some(descriptor.CreateInstance<ICloudSyncDatabase>(provider));
 }
