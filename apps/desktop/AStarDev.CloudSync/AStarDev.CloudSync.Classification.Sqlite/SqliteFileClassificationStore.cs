@@ -7,10 +7,10 @@ using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync.Classification.Sqlite;
 
-/// <summary>Keeps the links between files and terms in SQLite. Paths match ignoring case through an upper-case key. Every write runs in one serializable transaction, so a failed batch changes nothing and concurrent writes to one file leave one consistent set of links. Removing an account deletes its links; terms and categories stay.</summary>
+/// <summary>Keeps the links between files and terms in SQLite. Paths match ignoring case through an upper-case key. Every write runs in one serializable transaction, so a failed batch changes nothing and concurrent writes to one file leave one consistent set of links. Removing an account or changing its sync root deletes its links; terms and categories stay.</summary>
 /// <param name="dbContextFactory">Creates a context per operation.</param>
 /// <param name="logger">Reports reads and writes that fail, by exception type only.</param>
-internal sealed class SqliteFileClassificationStore(IDbContextFactory<ClassificationDbContext> dbContextFactory, ILogger<SqliteFileClassificationStore> logger) : IFileClassificationStore, IAccountRemovalParticipant
+internal sealed class SqliteFileClassificationStore(IDbContextFactory<ClassificationDbContext> dbContextFactory, ILogger<SqliteFileClassificationStore> logger) : IFileClassificationStore, IAccountRemovalParticipant, ISyncRootChangeParticipant
 {
     private const string Location = nameof(SqliteFileClassificationStore);
 
@@ -45,6 +45,9 @@ internal sealed class SqliteFileClassificationStore(IDbContextFactory<Classifica
     /// <inheritdoc />
     public Task<Result<Unit, ErrorResponse>> RemoveAccountDataAsync(AccountId accountId, CancellationToken cancellationToken) =>
         RemoveAccountLinksAsync(accountId, cancellationToken).MatchAsync(Result.Success<Unit, ErrorResponse>, _ => Result.Failure<Unit, ErrorResponse>(new ErrorResponse("The account's classification links could not be removed.")));
+
+    /// <inheritdoc />
+    public Task<Result<Unit, ErrorResponse>> RemoveRootDataAsync(AccountId accountId, CancellationToken cancellationToken) => RemoveAccountDataAsync(accountId, cancellationToken);
 
     /// <summary>Deletes every link of the account, automatic and user-assigned. Terms and categories stay. Deleting an account with no links succeeds.</summary>
     /// <param name="accountId">The account whose links are deleted.</param>
