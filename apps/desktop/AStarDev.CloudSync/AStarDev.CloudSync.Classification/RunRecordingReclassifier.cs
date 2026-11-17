@@ -13,11 +13,7 @@ namespace AStarDev.CloudSync.Classification;
 public sealed class RunRecordingReclassifier(IClassificationReclassifier inner, ISeedStateStore seedState, IReclassifyRunStore runs, ReclassifyOptions options, ILogger<RunRecordingReclassifier> logger) : IClassificationReclassifier, IReclassifyRunRecordedSource
 {
     /// <inheritdoc />
-    public event EventHandler? RunRecorded
-    {
-        add { }
-        remove { }
-    }
+    public event EventHandler? RunRecorded;
 
     /// <inheritdoc />
     public Task WaitUntilIdleAsync(CancellationToken cancellationToken) => inner.WaitUntilIdleAsync(cancellationToken);
@@ -43,8 +39,15 @@ public sealed class RunRecordingReclassifier(IClassificationReclassifier inner, 
 
     private async Task RecordAsync(ReclassifyRunRecord run)
     {
-        var write = runs.SetLastCompletedAsync(run, CancellationToken.None).MatchAsync(_ => Unit.Instance, RecordFailed);
+        var write = runs.SetLastCompletedAsync(run, CancellationToken.None).MatchAsync(_ => RecordSucceeded(), RecordFailed);
         await ((Task)write).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+    }
+
+    private Unit RecordSucceeded()
+    {
+        RunRecorded?.Invoke(this, EventArgs.Empty);
+
+        return Unit.Instance;
     }
 
     private Unit RecordFailed(ClassificationFailure failure)
