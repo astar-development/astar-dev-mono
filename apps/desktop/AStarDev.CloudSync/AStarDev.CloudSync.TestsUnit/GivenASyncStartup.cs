@@ -66,6 +66,7 @@ public sealed class GivenASyncStartup
         await Should.NotThrowAsync(() => startup.RunAsync(shutdown.Token));
 
         scheduler.Starts.ShouldBe(0);
+        classification.Runs.ShouldBe(0);
     }
 
     [Fact]

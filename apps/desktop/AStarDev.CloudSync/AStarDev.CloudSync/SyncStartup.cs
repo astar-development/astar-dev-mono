@@ -18,8 +18,7 @@ public sealed class SyncStartup(IClassificationStartup classification, ISyncSche
     public async Task RunAsync(CancellationToken cancellationToken)
     {
         var classifying = Task.Run(() => ClassifyAsync(cancellationToken), cancellationToken);
-        if (!cancellationToken.IsCancellationRequested)
-            _ = await Try.RunAsync(() => StartSchedulerAsync(), CancellationToken.None).MatchAsync(_ => Unit.Instance, SchedulerFailed).ConfigureAwait(false);
+        _ = await Try.RunAsync(() => StartSchedulerAsync(cancellationToken), CancellationToken.None).MatchAsync(_ => Unit.Instance, SchedulerFailed).ConfigureAwait(false);
 
         await ((Task)classifying).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
     }
@@ -34,16 +33,17 @@ public sealed class SyncStartup(IClassificationStartup classification, ISyncSche
         return Unit.Instance;
     }
 
-    private async Task<Unit> StartSchedulerAsync()
+    private async Task<Unit> StartSchedulerAsync(CancellationToken cancellationToken)
     {
-        await scheduler.StartAsync(CancellationToken.None).ConfigureAwait(false);
+        if (!cancellationToken.IsCancellationRequested)
+            await scheduler.StartAsync(CancellationToken.None).ConfigureAwait(false);
 
         return Unit.Instance;
     }
 
     private Unit ClassificationFailed(Exception exception)
     {
-        LogMessage.Warning(logger, nameof(SyncStartup), "Classification startup did not finish", exception.ErrorType());
+        LogMessage.Warning(logger, nameof(SyncStartup), "Classification did not run in the background", exception.ErrorType());
 
         return Unit.Instance;
     }

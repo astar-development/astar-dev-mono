@@ -33,6 +33,7 @@ public partial class App : Application, IDisposable
     private ServiceProvider? services;
     private readonly CancellationTokenSource shutdown = new();
     private Task recovery = Task.CompletedTask;
+    private Task startup = Task.CompletedTask;
     private bool disposed;
 
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
@@ -68,7 +69,7 @@ public partial class App : Application, IDisposable
             _ = Task.Run(() => services.GetRequiredService<AccountLogLevels>().LoadAsync(services.GetRequiredService<IAccountLogLevelSettings>(), CancellationToken.None), CancellationToken.None);
             _ = services.GetRequiredService<AccountLogLevelsViewModel>().LoadAsync(CancellationToken.None);
             recovery = Task.Run(() => services.GetRequiredService<IInterruptedSyncRecovery>().RecoverAsync(shutdown.Token), shutdown.Token);
-            _ = Task.Run(() => services.GetRequiredService<SyncStartup>().RunAsync(shutdown.Token), CancellationToken.None);
+            startup = Task.Run(() => services.GetRequiredService<SyncStartup>().RunAsync(shutdown.Token), CancellationToken.None);
             _ = services.GetRequiredService<SyncRunOverviewReloader>();
             _ = Task.Run(() => services.GetRequiredService<ISignInStateRefresher>().RefreshAllAsync(CancellationToken.None), CancellationToken.None);
 
@@ -164,6 +165,7 @@ public partial class App : Application, IDisposable
         using var patience = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         Task.Run(() => services.GetRequiredService<ISyncScheduler>().StopAsync(patience.Token), CancellationToken.None).GetAwaiter().GetResult();
         Task.Run(async () => await recovery.WaitAsync(patience.Token).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing), CancellationToken.None).GetAwaiter().GetResult();
+        Task.Run(async () => await startup.WaitAsync(patience.Token).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing), CancellationToken.None).GetAwaiter().GetResult();
     }
 
     private static void BringForward(Window window)
