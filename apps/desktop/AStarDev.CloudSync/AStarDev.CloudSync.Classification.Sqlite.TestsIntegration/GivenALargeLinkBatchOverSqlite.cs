@@ -113,4 +113,20 @@ public sealed class GivenALargeLinkBatchOverSqlite : MigratedDatabaseTests
 
         (await TermsOfAsync("a.jpg")).ShouldBe(Sorted(red, car));
     }
+
+    [Fact]
+    public async Task when_the_second_account_of_a_batch_names_an_unknown_term_then_the_first_account_is_untouched()
+    {
+        var red = await AddTermAsync("red");
+        var car = await AddTermAsync("car");
+        var other = NewAccount();
+        await InBaselineAsync(account, "a.jpg");
+        await InBaselineAsync(other, "b.jpg");
+        _ = Ok(await Database.Links.ReplaceAutoLinksAsync([FileTermLinksFactory.Create(account, Path("a.jpg"), [red])], CancellationToken));
+
+        var failure = Failed(await Database.Links.ReplaceAutoLinksAsync([FileTermLinksFactory.Create(account, Path("a.jpg"), [car]), FileTermLinksFactory.Create(other, Path("b.jpg"), [TermIdFactory.Create(Guid.NewGuid())])], CancellationToken));
+
+        failure.ShouldBe(ClassificationFailureFactory.CreateUnavailable());
+        (await TermsOfAsync("a.jpg")).ShouldBe([red]);
+    }
 }
