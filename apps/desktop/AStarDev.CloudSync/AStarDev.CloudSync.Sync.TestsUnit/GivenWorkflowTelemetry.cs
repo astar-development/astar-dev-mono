@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using Microsoft.Extensions.Time.Testing;
@@ -11,7 +12,7 @@ public sealed class GivenWorkflowTelemetry : IDisposable
     private readonly MeterListener listener = new();
     private readonly ActivityListener activities;
     private readonly List<(string Instrument, double Value, string Tags)> measurements = [];
-    private readonly List<System.Diagnostics.Activity> finished = [];
+    private readonly ConcurrentQueue<System.Diagnostics.Activity> finished = [];
 
     public GivenWorkflowTelemetry()
     {
@@ -28,7 +29,7 @@ public sealed class GivenWorkflowTelemetry : IDisposable
         {
             ShouldListenTo = source => source.Name == WorkflowTelemetry.SourceName,
             Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
-            ActivityStopped = finished.Add,
+            ActivityStopped = finished.Enqueue,
         };
         ActivitySource.AddActivityListener(activities);
     }
@@ -60,9 +61,12 @@ public sealed class GivenWorkflowTelemetry : IDisposable
     [Fact]
     public async Task when_a_workflow_fails_then_the_run_and_its_span_are_marked_failed()
     {
+        using var testRoot = new System.Diagnostics.Activity(nameof(when_a_workflow_fails_then_the_run_and_its_span_are_marked_failed)).Start();
+
         _ = await telemetry.TrackAsync(TelemetryWorkflowFactory.CreateSignIn(), () => Task.FromResult(0), _ => TelemetryOutcomeFactory.CreateFailed());
 
-        (measurements.Single(entry => entry.Instrument == "cloudsync.workflow.runs").Tags, finished.Single().OperationName, finished.Single().Status).ShouldBe(("outcome=failed,workflow=sign_in", "sign_in", ActivityStatusCode.Error));
+        var span = finished.Single(stopped => stopped.Parent == testRoot);
+        (measurements.Single(entry => entry.Instrument == "cloudsync.workflow.runs").Tags, span.OperationName, span.Status).ShouldBe(("outcome=failed,workflow=sign_in", "sign_in", ActivityStatusCode.Error));
     }
 
     [Fact]
@@ -81,8 +85,10 @@ public sealed class GivenWorkflowTelemetry : IDisposable
     [Fact]
     public void when_a_finished_workflow_is_recorded_then_it_is_counted_without_a_span()
     {
+        using var testRoot = new System.Diagnostics.Activity(nameof(when_a_finished_workflow_is_recorded_then_it_is_counted_without_a_span)).Start();
+
         telemetry.Record(TelemetryWorkflowFactory.CreateStartup(), TelemetryOutcomeFactory.CreateSucceeded());
 
-        (measurements.Single(entry => entry.Instrument == "cloudsync.workflow.runs").Tags, finished.Count).ShouldBe(("outcome=succeeded,workflow=startup", 0));
+        (measurements.Single(entry => entry.Instrument == "cloudsync.workflow.runs").Tags, finished.Count(stopped => stopped.Parent == testRoot)).ShouldBe(("outcome=succeeded,workflow=startup", 0));
     }
 }
