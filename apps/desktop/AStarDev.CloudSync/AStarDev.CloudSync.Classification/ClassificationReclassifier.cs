@@ -93,12 +93,10 @@ public sealed class ClassificationReclassifier(IClassifiableFileSource fileSourc
         var links = new FileTermLinks[batch.Count];
         var parallel = new ParallelOptions { MaxDegreeOfParallelism = options.DegreeOfParallelism, CancellationToken = cancellationToken };
         await Parallel.ForEachAsync(Enumerable.Range(0, batch.Count), parallel, async (index, token) => links[index] = await ClassifyAsync(batch[index], token).ConfigureAwait(false)).ConfigureAwait(false);
-        var committed = state.Batches;
         if (!await WriteUnderLeasesAsync(links, state, cancellationToken).ConfigureAwait(false))
             return false;
 
-        if (state.Batches > committed)
-            progress.Report(ReclassifyProgressFactory.Create(state.FilesWritten, state.Batches));
+        progress.Report(ReclassifyProgressFactory.Create(state.FilesWritten, state.Batches, state.SkippedForAccount));
 
         await Task.Yield();
         if (options.DelayBetweenBatches > TimeSpan.Zero)

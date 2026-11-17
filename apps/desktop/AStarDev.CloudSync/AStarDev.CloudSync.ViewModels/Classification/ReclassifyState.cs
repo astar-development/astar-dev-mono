@@ -20,10 +20,17 @@ public abstract record ReclassifyState
     /// <summary>A run is in progress.</summary>
     public sealed record Running : ReclassifyState
     {
-        internal Running(int filesDone) => FilesDone = filesDone;
+        internal Running(int filesDone, int filesSkipped)
+        {
+            FilesDone = filesDone;
+            FilesSkipped = filesSkipped;
+        }
 
         /// <summary>The files written so far.</summary>
         public int FilesDone { get; }
+
+        /// <summary>The files skipped so far because their account was busy or removed.</summary>
+        public int FilesSkipped { get; }
     }
 
     /// <summary>The last run wrote every file.</summary>
