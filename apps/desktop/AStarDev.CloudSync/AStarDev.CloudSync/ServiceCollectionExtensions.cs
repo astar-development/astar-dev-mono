@@ -130,6 +130,8 @@ public static class ServiceCollectionExtensions
             .AddSyncPersistence(provider => provider.GetRequiredService<IFileSystem>().FileInfo.New(DatabaseFilePath))
             .AddClassificationPersistence(provider => provider.GetRequiredService<IFileSystem>().FileInfo.New(DatabaseFilePath))
             .AddClassification()
+            .AddSerialMigrations()
+            .AddSingleton<SyncStartup>()
             .AddDisplayPreferences(provider => provider.GetRequiredService<IFileSystem>().FileInfo.New(SettingsFilePath))
             .AddSingleton<IThemeApplier, AvaloniaThemeApplier>()
             .AddSingleton<IHomeFolder, UserProfileHomeFolder>()
@@ -159,6 +161,18 @@ public static class ServiceCollectionExtensions
             .AddSingleton<MainWindowDialogs>()
             .AddSingleton(_ => AppVersionFactory.Create(typeof(ServiceCollectionExtensions).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion))
             .AddSingleton<MainWindowViewModel>();
+
+    private static IServiceCollection AddSerialMigrations(this IServiceCollection services)
+    {
+        var migrations = services.Last(descriptor => descriptor.ServiceType == typeof(ICloudSyncDatabase));
+
+        return services.AddSingleton<ICloudSyncDatabase>(provider => new SerialCloudSyncDatabase(MigrationsFrom(provider, migrations)));
+    }
+
+    private static ICloudSyncDatabase MigrationsFrom(IServiceProvider provider, ServiceDescriptor descriptor) =>
+        descriptor.ImplementationInstance as ICloudSyncDatabase
+        ?? descriptor.ImplementationFactory?.Invoke(provider) as ICloudSyncDatabase
+        ?? (ICloudSyncDatabase)ActivatorUtilities.CreateInstance(provider, descriptor.ImplementationType!);
 
     private static IAutostartRegistration AutostartRegistrationFor(IServiceProvider provider)
     {
