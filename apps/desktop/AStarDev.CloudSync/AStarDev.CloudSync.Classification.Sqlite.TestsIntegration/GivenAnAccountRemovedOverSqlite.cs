@@ -58,7 +58,7 @@ public sealed class GivenAnAccountRemovedOverSqlite : MigratedDatabaseTests
 
         _ = await Database.LinksParticipant.RemoveAccountDataAsync(removedAccount, CancellationToken);
 
-        ((await TermsOfAsync(keptAccount, "auto.jpg")).ToList(), (await TermsOfAsync(keptAccount, "user.jpg")).ToList()).ShouldBe((new List<TermId> { red }, new List<TermId> { car }));
+        (await TermsOfAsync(keptAccount, "auto.jpg")).Concat(await TermsOfAsync(keptAccount, "user.jpg")).ShouldBe([red, car]);
     }
 
     [Fact]

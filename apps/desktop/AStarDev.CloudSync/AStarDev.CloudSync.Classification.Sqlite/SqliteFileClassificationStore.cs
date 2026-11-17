@@ -7,10 +7,10 @@ using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync.Classification.Sqlite;
 
-/// <summary>Keeps the links between files and terms in SQLite. Paths match ignoring case through an upper-case key. Every write runs in one serializable transaction, so a failed batch changes nothing and concurrent writes to one file leave one consistent set of links.</summary>
+/// <summary>Keeps the links between files and terms in SQLite. Paths match ignoring case through an upper-case key. Every write runs in one serializable transaction, so a failed batch changes nothing and concurrent writes to one file leave one consistent set of links. Removing an account deletes its links; terms and categories stay.</summary>
 /// <param name="dbContextFactory">Creates a context per operation.</param>
 /// <param name="logger">Reports reads and writes that fail, by exception type only.</param>
-internal sealed class SqliteFileClassificationStore(IDbContextFactory<ClassificationDbContext> dbContextFactory, ILogger<SqliteFileClassificationStore> logger) : IFileClassificationStore
+internal sealed class SqliteFileClassificationStore(IDbContextFactory<ClassificationDbContext> dbContextFactory, ILogger<SqliteFileClassificationStore> logger) : IFileClassificationStore, IAccountRemovalParticipant
 {
     private const string Location = nameof(SqliteFileClassificationStore);
 
@@ -41,6 +41,17 @@ internal sealed class SqliteFileClassificationStore(IDbContextFactory<Classifica
     /// <inheritdoc />
     public Task<Result<IReadOnlyDictionary<TermId, int>, ClassificationFailure>> GetFileCountsAsync(CancellationToken cancellationToken) =>
         GuardedStore.RunAsync(logger, Location, () => CountAsync(cancellationToken), cancellationToken);
+
+    /// <inheritdoc />
+    public Task<Result<Unit, ErrorResponse>> RemoveAccountDataAsync(AccountId accountId, CancellationToken cancellationToken) =>
+        RemoveAccountLinksAsync(accountId, cancellationToken).MatchAsync(Result.Success<Unit, ErrorResponse>, _ => Result.Failure<Unit, ErrorResponse>(new ErrorResponse("The account's classification links could not be removed.")));
+
+    /// <summary>Deletes every link of the account, automatic and user-assigned. Terms and categories stay. Deleting an account with no links succeeds.</summary>
+    /// <param name="accountId">The account whose links are deleted.</param>
+    /// <param name="cancellationToken">Cancels the delete.</param>
+    /// <returns><see cref="Unit"/> once the links are gone, or <see cref="ClassificationFailure.Unavailable"/> when the database fails.</returns>
+    internal Task<Result<Unit, ClassificationFailure>> RemoveAccountLinksAsync(AccountId accountId, CancellationToken cancellationToken) =>
+        GuardedStore.RunAsync(logger, Location, () => DeleteAccountAsync(accountId, cancellationToken), cancellationToken);
 
     private static string Key(RelativeSyncPath path) => (path.Value ?? string.Empty).ToUpperInvariant();
 
@@ -116,6 +127,15 @@ internal sealed class SqliteFileClassificationStore(IDbContextFactory<Classifica
         var account = accountId.Value;
         var key = Key(path);
         _ = await dbContext.FileLinks.Where(link => link.AccountId == account && link.PathKey == key).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+
+        return Result.Success<Unit, ClassificationFailure>(Unit.Instance);
+    }
+
+    private async Task<Result<Unit, ClassificationFailure>> DeleteAccountAsync(AccountId accountId, CancellationToken cancellationToken)
+    {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        var account = accountId.Value;
+        _ = await dbContext.FileLinks.Where(link => link.AccountId == account).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
 
         return Result.Success<Unit, ClassificationFailure>(Unit.Instance);
     }
