@@ -85,6 +85,8 @@
     </Folder>
     <Folder Name="/packages/core/utilities/">
         <Project Path="packages/core/utilities/AStarDev.GuardClauses.TestsUnit/AStarDev.GuardClauses.TestsUnit.csproj" />
+        <Project Path="packages/core/utilities/AStarDev.DependencyInjection.TestsUnit/AStarDev.DependencyInjection.TestsUnit.csproj" />
+        <Project Path="packages/core/utilities/AStarDev.DependencyInjection/AStarDev.DependencyInjection.csproj" />
         <Project Path="packages/core/utilities/AStarDev.GuardClauses/AStarDev.GuardClauses.csproj" />
         <Project Path="packages/core/utilities/AStarDev.Localization.TestsUnit/AStarDev.Localization.TestsUnit.csproj" />
         <Project Path="packages/core/utilities/AStarDev.Localization/AStarDev.Localization.csproj" />

@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>AStarDev.DependencyInjection</name>
+    </assembly>
+    <members>
+        <member name="T:AStarDev.DependencyInjection.ServiceDescriptorExtensions">
+            <summary>Creates the service a removed <see cref="T:Microsoft.Extensions.DependencyInjection.ServiceDescriptor"/> describes, so a decorator can wrap a registration it replaced.</summary>
+        </member>
+        <member name="M:AStarDev.DependencyInjection.ServiceDescriptorExtensions.CreateInstance``1(Microsoft.Extensions.DependencyInjection.ServiceDescriptor,System.IServiceProvider)">
+            <summary>Returns the descriptor's instance, the result of its factory, or a new instance of its implementation type built by <see cref="T:Microsoft.Extensions.DependencyInjection.ActivatorUtilities"/>, for keyed and unkeyed descriptors alike.</summary>
+            <typeparam name="TService">The service the descriptor registers.</typeparam>
+            <param name="descriptor">The descriptor taken out of the service collection.</param>
+            <param name="provider">The provider that supplies the factory's or the implementation type's dependencies.</param>
+            <returns>The service the descriptor describes.</returns>
+        </member>
+    </members>
+</doc>

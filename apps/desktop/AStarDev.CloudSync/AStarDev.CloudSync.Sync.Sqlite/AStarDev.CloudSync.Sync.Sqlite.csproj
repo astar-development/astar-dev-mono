@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../AStarDev.CloudSync.Sync/AStarDev.CloudSync.Sync.csproj" />
+    <ProjectReference Include="../../../../packages/core/utilities/AStarDev.DependencyInjection/AStarDev.DependencyInjection.csproj" />
     <ProjectReference Include="../../../../packages/core/logging/AStarDev.LoggingExtensions/AStarDev.LoggingExtensions.csproj" />
     <ProjectReference Include="../../../../packages/EFCore/AStarDev.EFCoreSqlite/AStarDev.EFCoreSqlite.csproj" />
   </ItemGroup>

@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AStarDev.CloudSync.Sync;
+namespace AStarDev.DependencyInjection;
 
 /// <summary>Creates the service a removed <see cref="ServiceDescriptor"/> describes, so a decorator can wrap a registration it replaced.</summary>
 public static class ServiceDescriptorExtensions
