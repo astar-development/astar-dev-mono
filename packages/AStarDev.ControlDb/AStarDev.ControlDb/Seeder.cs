@@ -50,7 +50,7 @@ public static class Seeder
             UserConfiguration = new UserConfigurationEntity(Guid.Empty, Guid.Empty, "user@example.com", "user", "n/a"),
             SearchConfiguration = searchConfiguration,
             ScrapeDirectories = new ScrapeDirectoriesEntity(Guid.Empty, Guid.Empty, DefaultRootDirectory(), Path.Combine(DefaultRootDirectory(), "Famous"), "subdirectory"),
-            BaseUrl = new Uri("https://wallhaven.cc/"),
+            BaseUrl = new Uri(DefaultBaseUrl),
             ApiKey = "your-api-key",
             SearchString = "search string",
             TopWallpapers = "top wallpapers",
@@ -64,6 +64,8 @@ public static class Seeder
     }
 
     /// <summary>A neutral default the user is expected to change: a WallHaven folder under their pictures folder (their profile's Pictures folder where the platform reports none).</summary>
+    private const string DefaultBaseUrl = "https://wallhaven.cc/";
+
     private static string DefaultRootDirectory()
     {
         string pictures = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);

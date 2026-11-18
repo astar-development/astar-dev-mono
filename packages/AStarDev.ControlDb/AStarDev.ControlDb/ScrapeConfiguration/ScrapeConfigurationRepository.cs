@@ -10,11 +10,11 @@ internal sealed class ScrapeConfigurationRepository(ControlDbContext context, IQ
 {
     /// <inheritdoc/>
     public Task<Exceptional<Option<ScrapeConfigurationEntity>>> TryFindAsync(ScrapeConfigurationId key, CancellationToken cancellationToken = default) =>
-        Try.RunAsync(async () => (Option<ScrapeConfigurationEntity>)await query.Apply(context.ScrapeConfigurations).FirstOrDefaultAsync(scrapeConfiguration => scrapeConfiguration.Id == key, cancellationToken).ConfigureAwait(false));
+        Try.RunAsync(async () => (Option<ScrapeConfigurationEntity>)await query.Apply(context.ScrapeConfigurations).FirstOrDefaultAsync(scrapeConfiguration => scrapeConfiguration.Id == key, cancellationToken).ConfigureAwait(false), cancellationToken);
 
     /// <inheritdoc/>
     public Task<Exceptional<Option<ScrapeConfigurationEntity>>> TryGetFirstAsync(CancellationToken cancellationToken = default)
-    => Try.RunAsync(async () => (Option<ScrapeConfigurationEntity>)await query.Apply(context.ScrapeConfigurations).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false));
+    => Try.RunAsync(async () => (Option<ScrapeConfigurationEntity>)await query.Apply(context.ScrapeConfigurations).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false), cancellationToken);
 
     /// <inheritdoc/>
     public Exceptional<ScrapeConfigurationEntity> Add(ScrapeConfigurationEntity aggregate) =>

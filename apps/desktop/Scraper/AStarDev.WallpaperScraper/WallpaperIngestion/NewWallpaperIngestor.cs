@@ -35,7 +35,7 @@ public sealed class NewWallpaperIngestor(ITagFetcher tagFetcher, WallpaperFiler 
             return IngestOutcome.Complete;
         }
 
-        return (await Try.RunAsync(() => wallpaperFiler.FileAsync(candidate, tags, run)))
+        return (await Try.RunAsync(() => wallpaperFiler.FileAsync(candidate, tags, run), run.CancellationToken))
             .Match(
                 outcome => outcome,
                 exception =>

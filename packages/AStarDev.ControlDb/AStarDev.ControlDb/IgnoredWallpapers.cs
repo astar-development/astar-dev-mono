@@ -22,5 +22,5 @@ public class IgnoredWallpapers(ControlDbContext context) : IIgnoredWallpapers
 
     /// <inheritdoc/>
     public Task<Exceptional<int>> ForgetAllAsync(CancellationToken cancellationToken = default)
-        => Try.RunAsync(() => context.IgnoredWallpapers.ExecuteDeleteAsync(cancellationToken));
+        => Try.RunAsync(() => context.IgnoredWallpapers.ExecuteDeleteAsync(cancellationToken), cancellationToken);
 }

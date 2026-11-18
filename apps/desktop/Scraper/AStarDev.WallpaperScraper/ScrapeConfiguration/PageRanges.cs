@@ -14,8 +14,9 @@ public readonly record struct PageRange(int Start, int Total)
     /// <param name="errors">The collection the errors are added to.</param>
     internal void Validate(string startProperty, string totalProperty, List<ValidationError> errors)
     {
-        bool isValid = RootSettingsInput.RequireNotNegative(startProperty, Start, errors) & RootSettingsInput.RequireNotNegative(totalProperty, Total, errors);
-        if (isValid && Start > Total) errors.Add(ValidationErrorFactory.Create(startProperty, "Must not exceed the total pages."));
+        bool startIsValid = RootSettingsInput.RequireNotNegative(startProperty, Start, errors);
+        bool totalIsValid = RootSettingsInput.RequireNotNegative(totalProperty, Total, errors);
+        if (startIsValid && totalIsValid && Start > Total) errors.Add(ValidationErrorFactory.Create(startProperty, "Must not exceed the total pages."));
     }
 }
 

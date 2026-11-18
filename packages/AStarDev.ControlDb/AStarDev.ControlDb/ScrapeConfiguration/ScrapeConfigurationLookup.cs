@@ -19,7 +19,7 @@ public sealed class ScrapeConfigurationLookup(ControlDbContext context) : IScrap
                 .ConfigureAwait(false);
 
             return [.. rows.Select(row => new ScrapeConfigurationHeader(row.Id, row.BaseUrl, row.SearchTerm))];
-        });
+        }, cancellationToken);
 
     /// <inheritdoc/>
     public Task<Exceptional<Option<string>>> TryGetRootDirectoryAsync(CancellationToken cancellationToken = default)
@@ -34,7 +34,7 @@ public sealed class ScrapeConfigurationLookup(ControlDbContext context) : IScrap
                 .ConfigureAwait(false);
 
             return rootDirectories.Count == 0 ? Option.None<string>() : Option.Some(rootDirectories[0]);
-        });
+        }, cancellationToken);
 
     /// <inheritdoc/>
     public Task<Exceptional<Option<RootDirectories>>> TryGetRootDirectoriesAsync(CancellationToken cancellationToken = default)
@@ -49,5 +49,5 @@ public sealed class ScrapeConfigurationLookup(ControlDbContext context) : IScrap
                 .ConfigureAwait(false);
 
             return rows.Count == 0 ? Option.None<RootDirectories>() : Option.Some(new RootDirectories(rows[0].RootDirectory, rows[0].RootDirectoryFamous));
-        });
+        }, cancellationToken);
 }

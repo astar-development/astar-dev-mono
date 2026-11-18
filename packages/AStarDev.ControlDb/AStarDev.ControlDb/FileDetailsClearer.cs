@@ -15,5 +15,5 @@ public class FileDetailsClearer(ControlDbContext context) : IFileDetailsClearer
             _ = await context.IgnoredWallpapers.ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
 
             return removed;
-        }, cancellationToken));
+        }, cancellationToken), cancellationToken);
 }

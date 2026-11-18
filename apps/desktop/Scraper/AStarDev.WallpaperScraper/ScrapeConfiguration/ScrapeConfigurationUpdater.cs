@@ -20,5 +20,5 @@ public sealed class ScrapeConfigurationUpdater(IScopedRunner scopedRunner, TimeP
                                                                                                                                                                                             _ = await unitOfWork.SaveChangesAsync(cancellationToken);
 
                                                                                                                                                                                             return Option.Some(Unit.Instance);
-                                                                                                                                                                                        }));
+                                                                                                                                                                                        }, cancellationToken));
 }

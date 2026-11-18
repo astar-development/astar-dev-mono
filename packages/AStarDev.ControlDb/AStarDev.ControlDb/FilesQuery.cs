@@ -26,5 +26,5 @@ public class FilesQuery(ControlDbContext context) : IFilesQuery
                                            .ConfigureAwait(false);
 
                 return [.. stored, .. ignored];
-            });
+            }, cancellationToken);
 }

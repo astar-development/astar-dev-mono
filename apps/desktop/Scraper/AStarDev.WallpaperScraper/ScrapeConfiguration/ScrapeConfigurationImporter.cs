@@ -24,7 +24,7 @@ public sealed class ScrapeConfigurationImporter(IScopedRunner scopedRunner, Time
                                                                                                                                                                                _ = current.Match(existing => KeepStoredApiKeysWhereFileHasNone(replacement, existing), () => Unit.Instance);
 
                                                                                                                                                                                return await ReplaceAsync(new ImportTransaction(unitOfWork, dbContext, cancellationToken), current, replacement);
-                                                                                                                                                                           }));
+                                                                                                                                                                           }, cancellationToken));
 
     // Delete and add commit together, so a failure while saving the replacement leaves the current configuration in place.
     private static Task<Unit> ReplaceAsync(ImportTransaction transaction, Option<ScrapeConfigurationEntity> current, ScrapeConfigurationEntity replacement)

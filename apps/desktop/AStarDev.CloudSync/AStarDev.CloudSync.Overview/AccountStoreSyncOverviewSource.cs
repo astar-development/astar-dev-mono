@@ -52,8 +52,8 @@ internal sealed class AccountStoreSyncOverviewSource(ICloudSyncDatabase database
             lastSyncs[accountId] = await LastSyncAsync(accountId, cancellationToken).ConfigureAwait(false);
 
         List<SyncPair> pairs = [];
-        foreach (var account in accounts.Where(_ => failure.Match(_ => false, () => true)))
-            pairs.AddRange(await pairStates.StateAsync(pairsByAccount[account.Id], StatusOf(account.Id, paused.Contains(account.Id), conflictCounts.GetValueOrDefault(account.Id)), lastSyncs[account.Id], [.. conflicts.OfType<SyncAttentionItem.Conflict>().Where(conflict => conflict.AccountId == account.Id)], cancellationToken).ConfigureAwait(false));
+        foreach (var accountId in accounts.Where(_ => failure.Match(_ => false, () => true)).Select(account => account.Id))
+            pairs.AddRange(await pairStates.StateAsync(pairsByAccount[accountId], StatusOf(accountId, paused.Contains(accountId), conflictCounts.GetValueOrDefault(accountId)), lastSyncs[accountId], [.. conflicts.OfType<SyncAttentionItem.Conflict>().Where(conflict => conflict.AccountId == accountId)], cancellationToken).ConfigureAwait(false));
 
         return failure.Match(
             error => Result.Failure<SyncOverview, ErrorResponse>(error),

@@ -23,7 +23,7 @@ public sealed class TagFetcher(IJsonResponseProcessor jsonResponseProcessor, ITa
             var flagCache = flagStore.Cache;
 
             return [.. detailResponse.Data.Tags.Select(tag => tag with { IgnoreImage = flagCache.IsIgnored(tag.Id), IsName = flagCache.IsName(tag.Id), IsFamous = IsFamous(flagCache, tag, run.Context.PersonCategories) })];
-        });
+        }, run.CancellationToken);
 
     private async Task LoadTagFlagsAsync(CancellationToken cancellationToken)
     {
