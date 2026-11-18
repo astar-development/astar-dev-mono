@@ -8,7 +8,7 @@ internal static class LoggedText
     {
         foreach (var logs in providers.Select(provider => provider.Logger))
         {
-            foreach (var message in logs.Messages)
+            foreach (string message in logs.Messages)
                 yield return message;
 
             foreach (var exception in logs.Entries.Select(entry => entry.Exception).OfType<Exception>())

@@ -32,7 +32,7 @@ internal sealed class SqliteCategoryStore(IDbContextFactory<ClassificationDbCont
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using var transaction = await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken).ConfigureAwait(false);
-        var key = category.Name.ToUpperInvariant();
+        string key = category.Name.ToUpperInvariant();
         var stored = await dbContext.Categories.FirstOrDefaultAsync(item => item.NameKey == key, cancellationToken).ConfigureAwait(false);
         if (stored is null)
         {

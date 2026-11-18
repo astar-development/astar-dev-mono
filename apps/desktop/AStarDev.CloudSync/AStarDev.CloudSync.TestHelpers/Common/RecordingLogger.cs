@@ -36,7 +36,7 @@ public sealed class RecordingLogger<T> : ILogger<T>
 
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
-        var message = formatter(state, exception);
+        string message = formatter(state, exception);
         var values = ToValues(state);
         lock(gate)
         {

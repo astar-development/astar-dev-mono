@@ -28,7 +28,7 @@ internal sealed class LocalTreeWalker(ISyncSelectionEvaluator evaluator, ILocalF
 
     private IEnumerable<LocalWalkItem> WalkFolder(IDirectoryInfo folder, string path, IReadOnlyList<SelectionRule> rules, CancellationToken cancellationToken)
     {
-        var includesFiles = TryPaths(path, out var folderPath, out _) && evaluator.IsIncluded(folderPath, rules);
+        bool includesFiles = TryPaths(path, out var folderPath, out _) && evaluator.IsIncluded(folderPath, rules);
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var listing = Try.Run(() => folder.EnumerateFileSystemInfos().OrderBy(info => info.Name, StringComparer.Ordinal).ToList());
         var children = listing.Match(found => found, _ => (List<IFileSystemInfo>?)null);

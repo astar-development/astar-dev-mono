@@ -217,7 +217,7 @@ public sealed class GivenAScrapeConfigurationUpdater : IDisposable
     {
         var seededId = await SeedAsync();
         var settings = RootSettings.From(await ReadAsync(seededId));
-        var countBefore = (await ListIdsAsync()).Count;
+        int countBefore = (await ListIdsAsync()).Count;
 
         var result = await updater.SaveAsync(new ScrapeConfigurationId(Guid.CreateVersion7()), [settings], TestContext.Current.CancellationToken);
 
@@ -251,7 +251,7 @@ public sealed class GivenAScrapeConfigurationUpdater : IDisposable
             LoginUrl = "https://example.com/scrape/login",
             SlowMotionDelay = 250f
         };
-        foreach (var name in personCategoryNames) entity.SearchConfiguration.PersonCategories.Add(new PersonCategoryEntity { Name = name });
+        foreach (string name in personCategoryNames) entity.SearchConfiguration.PersonCategories.Add(new PersonCategoryEntity { Name = name });
         var added = context.GetRepository<ScrapeConfigurationEntity, ScrapeConfigurationId>().Add(entity).Match(value => value, exception => throw exception);
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 

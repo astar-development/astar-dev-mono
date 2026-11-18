@@ -16,8 +16,8 @@ public static class LocalRelativePathFactory
     /// <returns>The path, or <see cref="LocalFolderError.InvalidPath"/> when it is absolute or has a <c>.</c> or <c>..</c> segment.</returns>
     public static Result<LocalRelativePath, LocalFolderError> Create(string? value)
     {
-        var text = (value ?? string.Empty).Trim();
-        var segments = UnicodeText.Compose(text.Replace(Backslash, Separator)).Split(Separator, StringSplitOptions.RemoveEmptyEntries);
+        string text = (value ?? string.Empty).Trim();
+        string[] segments = UnicodeText.Compose(text.Replace(Backslash, Separator)).Split(Separator, StringSplitOptions.RemoveEmptyEntries);
 
         return IsAbsolute(text) || segments.Any(segment => segment is "." or "..")
             ? Result.Failure<LocalRelativePath, LocalFolderError>(LocalFolderErrorFactory.CreateInvalidPath())

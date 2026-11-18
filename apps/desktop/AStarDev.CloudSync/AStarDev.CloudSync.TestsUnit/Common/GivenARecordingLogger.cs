@@ -17,7 +17,7 @@ public sealed class GivenARecordingLogger
         await Task.WhenAll(Enumerable.Range(0, Tasks).Select(task => Task.Run(() =>
         {
             var state = new List<KeyValuePair<string, object?>> { new("Key", task) };
-            for(var index = 0; index < LogsPerTask; index++)
+            for(int index = 0; index < LogsPerTask; index++)
             {
                 logger.Log(LogLevel.Information, new EventId(1, "Event"), state, null, (_, _) => "message");
                 _ = logger.Messages.Count;
@@ -37,7 +37,7 @@ public sealed class GivenARecordingLogger
 
         await Task.WhenAll(Enumerable.Range(0, Tasks).Select(task => Task.Run(() =>
         {
-            for(var index = 0; index < LogsPerTask; index++)
+            for(int index = 0; index < LogsPerTask; index++)
             {
                 logger.BeginScope(new List<KeyValuePair<string, object?>> { new("Key", index) });
             }

@@ -37,9 +37,9 @@ internal static class GraphErrorMapper
 
     private static Option<TimeSpan> RetryAfter(ApiException exception, TimeProvider timeProvider)
     {
-        var value = exception.ResponseHeaders.TryGetValue(RetryAfterHeader, out var values) ? values.FirstOrDefault() : null;
+        string? value = exception.ResponseHeaders.TryGetValue(RetryAfterHeader, out var values) ? values.FirstOrDefault() : null;
 
-        if (int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var seconds))
+        if (int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out int seconds))
             return Option.Some(TimeSpan.FromSeconds(seconds));
 
         return DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var date)

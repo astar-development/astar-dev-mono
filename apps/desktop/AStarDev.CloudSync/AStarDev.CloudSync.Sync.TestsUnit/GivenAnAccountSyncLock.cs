@@ -102,7 +102,7 @@ public sealed class GivenAnAccountSyncLock : IDisposable
 
         var draining = SyncLock.DrainAsync(CancellationToken);
         personal.Dispose();
-        var stillWaiting = !draining.IsCompleted;
+        bool stillWaiting = !draining.IsCompleted;
         work.Dispose();
         using var drain = await draining.WaitAsync(TimeSpan.FromSeconds(5), CancellationToken);
 

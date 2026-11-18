@@ -9,9 +9,7 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
     public partial class AddSelectionRules : Migration
     {
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.CreateTable(
+        protected override void Up(MigrationBuilder migrationBuilder) => migrationBuilder.CreateTable(
                 name: "SelectionRules",
                 columns: table => new
                 {
@@ -26,13 +24,9 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
                     table.PrimaryKey("PK_SelectionRules", x => new { x.AccountId, x.Path });
                     table.CheckConstraint("CK_SelectionRules_Direction_Known", "\"Direction\" IN ('TwoWay', 'UploadOnly', 'DownloadOnly')");
                 });
-        }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
+        protected override void Down(MigrationBuilder migrationBuilder) => migrationBuilder.DropTable(
                 name: "SelectionRules");
-        }
     }
 }

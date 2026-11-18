@@ -81,7 +81,7 @@ public sealed class GivenAccountActionsRemovingAnAccount : IDisposable
         var background = services.SyncLock.TryAcquireBackground(accountId).ShouldBeOfType<SyncLockAttempt.Acquired>().Lease;
 
         var removing = services.Actions.RemoveAsync(accountId, CancellationToken);
-        var waitedForTheWrite = !removing.IsCompleted;
+        bool waitedForTheWrite = !removing.IsCompleted;
         background.Dispose();
         var result = await removing.WaitAsync(TimeSpan.FromSeconds(30), CancellationToken);
 
@@ -215,7 +215,7 @@ public sealed class GivenAccountActionsRemovingAnAccount : IDisposable
         var accountId = await services.AddAsync(Personal, CancellationToken);
 
         var results = await services.AdvanceUntilAsync(Task.WhenAll(Enumerable.Range(0, 20).Select(_ => Task.Run(() => services.Actions.RemoveAsync(accountId, CancellationToken), CancellationToken))));
-        var settled = results.Count(result => result.Match(_ => true, _ => false));
+        int settled = results.Count(result => result.Match(_ => true, _ => false));
 
         settled.ShouldBe(1);
         services.Steps.Count(step => step == "sign-out").ShouldBe(1);

@@ -9,8 +9,8 @@ public static class SyncProgressFactory
     /// <param name="bytesTotal">The bytes the phase has to move.</param>
     public static SyncProgress Create(SyncPhase phase, long bytesDone, long bytesTotal)
     {
-        var total = Math.Max(bytesTotal, 0);
-        var done = Math.Max(bytesDone, 0);
+        long total = Math.Max(bytesTotal, 0);
+        long done = Math.Max(bytesDone, 0);
 
         return new SyncProgress(phase, total > 0 ? Math.Min(done, total) : done, total);
     }

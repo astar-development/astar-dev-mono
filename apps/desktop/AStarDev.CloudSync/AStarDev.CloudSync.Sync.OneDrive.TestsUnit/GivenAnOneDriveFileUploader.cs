@@ -138,7 +138,7 @@ public sealed class GivenAnOneDriveFileUploader : IDisposable
     {
         _ = await BuiltAsync();
         ScriptSimpleUpload(ItemJson(size: 3000));
-        var content = Bytes(3000);
+        byte[] content = Bytes(3000);
 
         var result = await UploadAsync(Into("folder-1"), fixture.File("a.bin", content), MustNotExist);
 
@@ -149,13 +149,13 @@ public sealed class GivenAnOneDriveFileUploader : IDisposable
     public async Task when_a_large_file_is_uploaded_then_fragments_are_ten_mebibytes_and_the_last_one_is_the_remainder()
     {
         _ = await BuiltAsync();
-        var puts = 0;
+        int puts = 0;
         fixture.Graph.Respond = request => request.Method.Method switch
         {
             "POST" => RecordingGraphHandler.Json(HttpStatusCode.OK, SessionJson),
             _ => ++puts < 3 ? RecordingGraphHandler.Json(HttpStatusCode.Accepted, "{\"nextExpectedRanges\":[\"" + (puts * Fragment) + "-\"]}") : RecordingGraphHandler.Json(HttpStatusCode.Created, ItemJson(size: 21_000_000)),
         };
-        var content = Bytes(21_000_000);
+        byte[] content = Bytes(21_000_000);
 
         var result = await UploadAsync(Into("folder-1"), fixture.File("big.bin", content), MustNotExist);
 
@@ -181,7 +181,7 @@ public sealed class GivenAnOneDriveFileUploader : IDisposable
     public async Task when_a_fragment_fails_with_a_server_error_then_the_status_is_read_and_the_upload_continues_from_the_next_expected_range()
     {
         _ = await BuiltAsync();
-        var puts = 0;
+        int puts = 0;
         fixture.Graph.Respond = request => request.Method.Method switch
         {
             "POST" => RecordingGraphHandler.Json(HttpStatusCode.OK, SessionJson),
@@ -204,7 +204,7 @@ public sealed class GivenAnOneDriveFileUploader : IDisposable
     public async Task when_a_fragment_is_refused_with_range_not_satisfiable_then_the_status_is_read_again_and_the_upload_continues()
     {
         _ = await BuiltAsync();
-        var puts = 0;
+        int puts = 0;
         fixture.Graph.Respond = request => request.Method.Method switch
         {
             "POST" => RecordingGraphHandler.Json(HttpStatusCode.OK, SessionJson),
@@ -222,7 +222,7 @@ public sealed class GivenAnOneDriveFileUploader : IDisposable
     public async Task when_the_session_is_gone_then_a_new_session_is_created_and_the_upload_starts_again()
     {
         _ = await BuiltAsync();
-        var puts = 0;
+        int puts = 0;
         fixture.Graph.Respond = request => request.Method.Method switch
         {
             "POST" => RecordingGraphHandler.Json(HttpStatusCode.OK, SessionJson),
@@ -380,7 +380,7 @@ public sealed class GivenAnOneDriveFileUploader : IDisposable
 
         _ = await UploadAsync(Into("folder-1"), fixture.File("secret-name.txt", Bytes(5)), MustNotExist);
 
-        var messages = string.Join('\n', fixture.Logs.Logger.Messages);
+        string messages = string.Join('\n', fixture.Logs.Logger.Messages);
         messages.ShouldNotContain("secret-session-id");
         messages.ShouldNotContain(OneDriveTransferFixture.Token);
         messages.ShouldNotContain("secret-name");
@@ -395,7 +395,7 @@ public sealed class GivenAnOneDriveFileUploader : IDisposable
 
         _ = await UploadAsync(Into("folder-1"), fixture.File("secret-name.txt", Bytes(5)), MustNotExist);
 
-        var messages = string.Join('\n', fixture.Logs.Logger.Messages);
+        string messages = string.Join('\n', fixture.Logs.Logger.Messages);
         messages.ShouldContain("507");
         messages.ShouldNotContain("secret-name");
     }

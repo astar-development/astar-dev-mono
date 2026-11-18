@@ -129,8 +129,8 @@ public sealed class GivenASyncPassRunnerThatJournals : IDisposable
     public async Task when_a_run_ends_then_the_journal_is_written_after_the_activity_log_while_the_lease_is_still_held()
     {
         services.Steps.Downloaded = Result.Success<DownloadPassSummary, DownloadPassFailure>(DownloadPassSummaryFactory.Create([DownloadItemOutcomeFactory.CreateDownloaded(10)], []));
-        var activityLoggedBeforeFinish = false;
-        var leaseFreeAtFinish = true;
+        bool activityLoggedBeforeFinish = false;
+        bool leaseFreeAtFinish = true;
         services.Journal.OnFinish = () =>
         {
             activityLoggedBeforeFinish = services.ActivityLog.Appended.Count > 0;

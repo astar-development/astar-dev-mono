@@ -24,15 +24,15 @@ internal sealed class LocalTrash(TimeProvider timeProvider, ITrashRetentionSetti
             return;
 
         var path = root.FileSystem.Path;
-        var relative = path.GetRelativePath(root.FullName, item.FullName);
-        var first = FirstSegment(relative, path);
+        string relative = path.GetRelativePath(root.FullName, item.FullName);
+        string first = FirstSegment(relative, path);
         if (first is "." or ParentSegment || path.IsPathRooted(relative))
             throw new InvalidOperationException("The item is not inside the sync root.");
 
         if (first.Equals(FolderName, StringComparison.OrdinalIgnoreCase))
             return;
 
-        var entry = $"{timeProvider.GetUtcNow().UtcDateTime.ToString(StampFormat, CultureInfo.InvariantCulture)}{StampSeparator}{Guid.NewGuid():N}";
+        string entry = $"{timeProvider.GetUtcNow().UtcDateTime.ToString(StampFormat, CultureInfo.InvariantCulture)}{StampSeparator}{Guid.NewGuid():N}";
         LocalFileOperations.MoveItem(item, path.Join(root.FullName, FolderName, entry, relative));
     }
 

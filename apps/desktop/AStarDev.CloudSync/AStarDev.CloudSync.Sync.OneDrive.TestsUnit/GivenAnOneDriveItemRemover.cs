@@ -28,7 +28,7 @@ public sealed class GivenAnOneDriveItemRemover : IDisposable
         _ = await fixture.BuildAsync(CancellationToken);
         fixture.Graph.Respond = _ => new HttpResponseMessage(HttpStatusCode.NoContent);
 
-        var outcome = await RemoveAsync(ByContent);
+        string outcome = await RemoveAsync(ByContent);
 
         outcome.ShouldBe("ok");
         var delete = fixture.Graph.Requests.ShouldHaveSingleItem();

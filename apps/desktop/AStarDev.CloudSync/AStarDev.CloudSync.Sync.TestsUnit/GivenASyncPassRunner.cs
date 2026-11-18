@@ -183,7 +183,7 @@ public sealed class GivenASyncPassRunner : IDisposable
 
         Outcome(result).ShouldBe(SyncPassFailureFactory.CreateUnexpected());
         services.SyncLock.TryAcquire(Personal).ShouldBeOfType<SyncLockAttempt.Acquired>();
-        var logged = string.Join("\n", services.Logs.Logger.Messages);
+        string logged = string.Join("\n", services.Logs.Logger.Messages);
         logged.ShouldContain(nameof(InvalidOperationException));
         logged.ShouldNotContain("jane@example.com");
         logged.ShouldNotContain("secret-token");
@@ -195,7 +195,7 @@ public sealed class GivenASyncPassRunner : IDisposable
     {
         _ = await RunAsync(Personal, SyncTriggerFactory.CreateTray());
 
-        var logged = string.Join("\n", services.Logs.Logger.Messages);
+        string logged = string.Join("\n", services.Logs.Logger.Messages);
         logged.ShouldContain("Tray");
         logged.ShouldNotContain(Personal.Value.ToString());
     }
@@ -245,7 +245,7 @@ public sealed class GivenASyncPassRunner : IDisposable
         var background = services.SyncLock.TryAcquireBackground(Personal).ShouldBeOfType<SyncLockAttempt.Acquired>().Lease;
 
         var manual = RunAsync(Personal, Manual);
-        var waitedForTheWrite = !manual.IsCompleted;
+        bool waitedForTheWrite = !manual.IsCompleted;
         background.Dispose();
         var result = await manual.WaitAsync(Limit, CancellationToken);
 
@@ -420,7 +420,7 @@ public sealed class GivenASyncPassRunner : IDisposable
     [Fact]
     public async Task when_a_trigger_is_skipped_then_no_event_is_raised_for_it()
     {
-        var started = 0;
+        int started = 0;
         using var held = ((SyncLockAttempt.Acquired)services.SyncLock.TryAcquire(Personal)).Lease;
         services.Activity.PassStarted += (_, _) => started++;
 

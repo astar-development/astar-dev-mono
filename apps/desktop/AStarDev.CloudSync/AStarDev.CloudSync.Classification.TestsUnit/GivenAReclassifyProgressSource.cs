@@ -18,7 +18,7 @@ public sealed class GivenAReclassifyProgressSource
     [Fact]
     public void when_a_run_reports_then_the_latest_report_is_kept_downstream_gets_it_and_a_change_is_raised()
     {
-        var changes = 0;
+        int changes = 0;
         source.Changed += (_, _) => changes++;
         using var scope = source.Begin(downstream);
 
@@ -31,7 +31,7 @@ public sealed class GivenAReclassifyProgressSource
     [Fact]
     public void when_a_run_that_reported_ends_then_the_progress_clears_and_a_change_is_raised()
     {
-        var changes = 0;
+        int changes = 0;
         var scope = source.Begin(downstream);
         scope.Report(Report(10));
         source.Changed += (_, _) => changes++;
@@ -81,7 +81,7 @@ public sealed class GivenAReclassifyProgressSource
     [Fact]
     public async Task when_many_threads_report_at_once_then_every_report_is_forwarded_and_the_snapshot_is_one_of_them()
     {
-        var changes = 0;
+        int changes = 0;
         source.Changed += (_, _) => Interlocked.Increment(ref changes);
         var counted = new CountingProgress();
         using var counting = source.Begin(counted);
@@ -89,7 +89,7 @@ public sealed class GivenAReclassifyProgressSource
 
         await Task.WhenAll(reports);
 
-        var last = source.Current.Match(report => report.FilesDone, () => 0);
+        int last = source.Current.Match(report => report.FilesDone, () => 0);
         (counted.Count, changes, last is >= 1 and <= 50).ShouldBe((50, 50, true));
     }
 

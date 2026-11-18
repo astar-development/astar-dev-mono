@@ -57,7 +57,7 @@ public sealed class GivenABackgroundLease : IDisposable
     {
         var acquiring = SyncLock.AcquireAsync(Personal, CancellationToken);
 
-        var completedAtOnce = acquiring.IsCompleted;
+        bool completedAtOnce = acquiring.IsCompleted;
         using var lease = (await acquiring).ShouldBeOfType<SyncLockAttempt.Acquired>().Lease;
         (completedAtOnce, lease.AccountId).ShouldBe((true, Personal));
     }
@@ -78,7 +78,7 @@ public sealed class GivenABackgroundLease : IDisposable
         var background = Background(Personal);
 
         var acquiring = SyncLock.AcquireAsync(Personal, CancellationToken);
-        var waitedForTheWrite = !acquiring.IsCompleted;
+        bool waitedForTheWrite = !acquiring.IsCompleted;
         background.Dispose();
 
         using var lease = (await acquiring).ShouldBeOfType<SyncLockAttempt.Acquired>().Lease;
@@ -116,7 +116,7 @@ public sealed class GivenABackgroundLease : IDisposable
         var acquiring = SyncLock.AcquireAsync(Personal, CancellationToken);
 
         time.Advance(AccountLeasePolicy.WaitForRunningWork - TimeSpan.FromMilliseconds(1));
-        var waitingJustBeforeTheLimit = !acquiring.IsCompleted;
+        bool waitingJustBeforeTheLimit = !acquiring.IsCompleted;
         time.Advance(TimeSpan.FromMilliseconds(1));
 
         (waitingJustBeforeTheLimit, await acquiring).ShouldBe((true, SyncLockAttemptFactory.CreateBusy(background.PassId)));
@@ -142,7 +142,7 @@ public sealed class GivenABackgroundLease : IDisposable
     {
         var background = Background(Personal);
         var callers = Enumerable.Range(0, 20).Select(_ => SyncLock.AcquireAsync(Personal, CancellationToken)).ToList();
-        var allWaiting = callers.All(caller => !caller.IsCompleted);
+        bool allWaiting = callers.All(caller => !caller.IsCompleted);
 
         background.Dispose();
         var attempts = await Task.WhenAll(callers);

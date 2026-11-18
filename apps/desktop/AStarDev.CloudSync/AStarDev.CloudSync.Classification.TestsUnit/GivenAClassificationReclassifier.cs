@@ -139,7 +139,7 @@ public sealed class GivenAClassificationReclassifier
         var store = new ReclassifyFakeStore();
         var reclassifier = Build(ReclassifyFakeFileSource.Numbered(Account, 700), new ReclassifyFakeClassifier(Holiday), store);
         _ = await reclassifier.StartAsync(new ReclassifyRecordingProgress(), TestContext.Current.CancellationToken);
-        var first = Snapshot(store);
+        string[] first = Snapshot(store);
 
         var second = await reclassifier.StartAsync(new ReclassifyRecordingProgress(), TestContext.Current.CancellationToken);
 
@@ -232,7 +232,7 @@ public sealed class GivenAClassificationReclassifier
         await source.Started.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
         var waiting = reclassifier.WaitUntilIdleAsync(TestContext.Current.CancellationToken);
         await Task.Delay(50, TestContext.Current.CancellationToken);
-        var completedWhileRunning = waiting.IsCompleted;
+        bool completedWhileRunning = waiting.IsCompleted;
 
         release.SetResult();
         await waiting.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
@@ -355,7 +355,7 @@ public sealed class GivenAClassificationReclassifier
         await store.WriteEntered.Task.WaitAsync(TestContext.Current.CancellationToken);
 
         var userAction = syncLock.AcquireAsync(Account, TestContext.Current.CancellationToken);
-        var waitedForTheWrite = !userAction.IsCompleted;
+        bool waitedForTheWrite = !userAction.IsCompleted;
         release.SetResult();
         var attempt = await userAction;
 
@@ -375,7 +375,7 @@ public sealed class GivenAClassificationReclassifier
         var run = reclassifier.StartAsync(new ReclassifyRecordingProgress(), TestContext.Current.CancellationToken);
         var delays = new List<TimeSpan>();
 
-        for (var batch = 0; batch < 3; batch++)
+        for (int batch = 0; batch < 3; batch++)
         {
             var delay = await time.NextDelayAsync(TestContext.Current.CancellationToken).WaitAsync(TimeSpan.FromSeconds(30), TestContext.Current.CancellationToken);
             delays.Add(delay);
@@ -495,7 +495,7 @@ public sealed class GivenAClassificationReclassifier
         var syncLock = AccountSyncLocks.Create();
         var accounts = new InMemoryAccountStore();
         var accountIds = new List<AccountId>();
-        foreach (var index in Enumerable.Range(0, 20))
+        foreach (int index in Enumerable.Range(0, 20))
             accountIds.Add((await accounts.AddAsync(Registration($"account-{index}"), cancellationToken)).ShouldBeOfType<AccountAddOutcome.Added>().AccountId);
 
         var files = accountIds.SelectMany(accountId => Enumerable.Range(0, 25).Select(index => ClassifiableFileFactory.Create(accountId, PathOf($"Holiday/file-{index:D3}.jpg")))).ToList();

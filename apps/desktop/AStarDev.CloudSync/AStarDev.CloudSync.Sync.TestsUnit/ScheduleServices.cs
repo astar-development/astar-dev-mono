@@ -70,7 +70,7 @@ public sealed class ScheduleServices : IDisposable
 
     public async Task<AccountId> AddAccountAsync()
     {
-        var number = ++added;
+        int number = ++added;
         var outcome = await Store.AddAsync(AccountFixtures.Registration($"account-{number}"), TestContext.Current.CancellationToken);
         var accountId = outcome is AccountAddOutcome.Added addedAccount ? addedAccount.AccountId : throw new InvalidOperationException("The test account must be added.");
         var directory = fileSystem.DirectoryInfo.New($"/sync/account-{number}");

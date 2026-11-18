@@ -38,7 +38,7 @@ public sealed class GivenAnAccountThrottleGate : IDisposable
     [Fact]
     public void when_parallel_requests_report_the_same_pause_then_it_counts_as_one_throttle()
     {
-        for (var report = 0; report < 12; report++)
+        for (int report = 0; report < 12; report++)
             Gate.ReportThrottled(Personal, Option.Some(TimeSpan.FromMinutes(1)));
 
         Hints.HintFor(Personal).ShouldBeOfType<ThrottleHint.Quiet>();
@@ -58,7 +58,7 @@ public sealed class GivenAnAccountThrottleGate : IDisposable
     public void when_enough_throttles_age_out_then_the_suggestion_goes_away()
     {
         ThrottleSeparately(Personal, 10);
-        var suggestedAtFirst = Hints.HintFor(Personal) is ThrottleHint.SuggestLowerConcurrency;
+        bool suggestedAtFirst = Hints.HintFor(Personal) is ThrottleHint.SuggestLowerConcurrency;
         time.Advance(ThrottlePolicy.HintWindow);
 
         (suggestedAtFirst, Hints.HintFor(Personal)).ShouldBe((true, ThrottleHintFactory.CreateQuiet()));
@@ -76,7 +76,7 @@ public sealed class GivenAnAccountThrottleGate : IDisposable
 
     private void ThrottleSeparately(AccountId accountId, int times)
     {
-        for (var throttle = 0; throttle < times; throttle++)
+        for (int throttle = 0; throttle < times; throttle++)
         {
             Gate.ReportThrottled(accountId, Option.Some(TimeSpan.FromSeconds(1)));
             time.Advance(TimeSpan.FromSeconds(2));
@@ -100,7 +100,7 @@ public sealed class GivenAnAccountThrottleGate : IDisposable
 
         var waiting = Gate.WaitAsync(Personal, CancellationToken);
         time.Advance(TimeSpan.FromSeconds(2.9));
-        var pendingBefore = !waiting.IsCompleted;
+        bool pendingBefore = !waiting.IsCompleted;
         time.Advance(TimeSpan.FromSeconds(0.1));
         await waiting.WaitAsync(TimeSpan.FromSeconds(5), CancellationToken);
 
@@ -140,10 +140,10 @@ public sealed class GivenAnAccountThrottleGate : IDisposable
     [Fact]
     public void when_parallel_requests_are_throttled_at_the_same_moment_then_the_pause_does_not_double()
     {
-        foreach (var _ in Enumerable.Range(0, 7))
+        foreach (int _ in Enumerable.Range(0, 7))
             Gate.ReportThrottled(Personal, Option.None<TimeSpan>());
 
-        var pause = PauseAfterThrottle(Option.None<TimeSpan>());
+        int pause = PauseAfterThrottle(Option.None<TimeSpan>());
 
         pause.ShouldBe(5);
     }
@@ -174,7 +174,7 @@ public sealed class GivenAnAccountThrottleGate : IDisposable
     [Fact]
     public void when_retry_after_is_longer_than_ten_minutes_then_the_pause_is_capped_at_ten_minutes()
     {
-        var pause = PauseAfterThrottle(Option.Some(TimeSpan.FromHours(1)));
+        int pause = PauseAfterThrottle(Option.Some(TimeSpan.FromHours(1)));
 
         pause.ShouldBe(600);
     }
@@ -182,7 +182,7 @@ public sealed class GivenAnAccountThrottleGate : IDisposable
     [Fact]
     public void when_retry_after_is_zero_or_negative_then_the_account_is_not_paused()
     {
-        var pauses = new[] { PauseAfterThrottle(Option.Some(TimeSpan.Zero)), PauseAfterThrottle(Option.Some(TimeSpan.FromSeconds(-30))) };
+        int[] pauses = new[] { PauseAfterThrottle(Option.Some(TimeSpan.Zero)), PauseAfterThrottle(Option.Some(TimeSpan.FromSeconds(-30))) };
 
         pauses.ShouldBe([0, 0]);
     }
@@ -192,7 +192,7 @@ public sealed class GivenAnAccountThrottleGate : IDisposable
     {
         Gate.ReportThrottled(Personal, Option.Some(TimeSpan.FromSeconds(60)));
 
-        var pause = PauseAfterThrottle(Option.Some(TimeSpan.FromSeconds(2)));
+        int pause = PauseAfterThrottle(Option.Some(TimeSpan.FromSeconds(2)));
 
         pause.ShouldBe(60);
     }
@@ -202,7 +202,7 @@ public sealed class GivenAnAccountThrottleGate : IDisposable
     {
         Gate.ReportThrottled(Personal, Option.Some(TimeSpan.FromSeconds(5)));
 
-        var pause = PauseAfterThrottle(Option.Some(TimeSpan.FromSeconds(30)));
+        int pause = PauseAfterThrottle(Option.Some(TimeSpan.FromSeconds(30)));
 
         pause.ShouldBe(30);
     }
@@ -226,7 +226,7 @@ public sealed class GivenAnAccountThrottleGate : IDisposable
 
         var waits = Enumerable.Range(0, 20).Select(_ => Task.Run(() => Gate.WaitAsync(Personal, CancellationToken), CancellationToken)).ToList();
         await Task.Delay(100, CancellationToken);
-        var nonePassed = waits.All(wait => !wait.IsCompleted);
+        bool nonePassed = waits.All(wait => !wait.IsCompleted);
         time.Advance(TimeSpan.FromSeconds(10));
         await Task.WhenAll(waits).WaitAsync(TimeSpan.FromSeconds(5), CancellationToken);
 
@@ -244,7 +244,7 @@ public sealed class GivenAnAccountThrottleGate : IDisposable
 
     private int PausedSeconds()
     {
-        var seconds = 0;
+        int seconds = 0;
         while (!Gate.WaitAsync(Personal, CancellationToken).IsCompleted && seconds < 1000)
         {
             time.Advance(TimeSpan.FromSeconds(1));

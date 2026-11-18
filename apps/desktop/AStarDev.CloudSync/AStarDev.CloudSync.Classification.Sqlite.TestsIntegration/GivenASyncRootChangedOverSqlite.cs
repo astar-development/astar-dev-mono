@@ -56,7 +56,7 @@ public sealed class GivenASyncRootChangedOverSqlite : MigratedDatabaseTests
     {
         _ = await LinkBothAccountsAsync();
 
-        var saved = await SetRootAsync(changedAccount, SecondRoot);
+        string saved = await SetRootAsync(changedAccount, SecondRoot);
 
         (saved, (await TermsOfAsync(changedAccount, "auto.jpg")).Count, (await TermsOfAsync(changedAccount, "user.jpg")).Count).ShouldBe((SecondRoot, 0, 0));
     }
@@ -100,7 +100,7 @@ public sealed class GivenASyncRootChangedOverSqlite : MigratedDatabaseTests
         _ = await SetRootAsync(changedAccount, FirstRoot);
         await DropFileLinksAsync();
 
-        var saved = await SetRootAsync(changedAccount, SecondRoot);
+        string saved = await SetRootAsync(changedAccount, SecondRoot);
 
         saved.ShouldBe(SecondRoot);
     }

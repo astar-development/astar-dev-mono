@@ -16,8 +16,8 @@ public sealed class ScriptedRemoteIndex : IRemoteIndexReader
     public void Folder(string path, string? id = null)
     {
         var parent = Option.None<RemoteItemId>();
-        var built = string.Empty;
-        foreach (var name in path.Split('/'))
+        string built = string.Empty;
+        foreach (string name in path.Split('/'))
         {
             built = built.Length == 0 ? name : $"{built}/{name}";
             var existing = items.FirstOrDefault(item => item.ParentId.Equals(parent) && string.Equals(item.Name, name, StringComparison.OrdinalIgnoreCase));
@@ -33,7 +33,7 @@ public sealed class ScriptedRemoteIndex : IRemoteIndexReader
 
     public void File(string path, string id, string cTag, long size, string? hash = null)
     {
-        var slash = path.LastIndexOf('/');
+        int slash = path.LastIndexOf('/');
         if (slash > 0)
             Folder(path[..slash]);
 

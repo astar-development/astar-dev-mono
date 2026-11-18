@@ -70,11 +70,11 @@ public class GivenALayoutCView
         var tile = window.GetVisualDescendants().OfType<Border>().First(border => border.Classes.Contains("pair-tile"));
         var pair = tile.DataContext.ShouldBeOfType<AStarDev.CloudSync.ViewModels.SyncPairs.SyncPairViewModel>();
         var question = tile.GetVisualDescendants().OfType<Border>().Single(border => border.Classes.Contains("remove-question"));
-        var before = question.IsEffectivelyVisible;
+        bool before = question.IsEffectivelyVisible;
 
         tile.GetVisualDescendants().OfType<Button>().Single(button => Equals(button.Content, "Remove")).Command!.Execute(null);
         Dispatcher.UIThread.RunJobs();
-        var asked = question.IsEffectivelyVisible;
+        bool asked = question.IsEffectivelyVisible;
         pair.CancelRemoveCommand.Execute(null);
         Dispatcher.UIThread.RunJobs();
 
@@ -146,7 +146,7 @@ public class GivenALayoutCView
     {
         var window = await CreateShownWindowAsync();
         var first = window.GetVisualDescendants().OfType<Button>().First(button => button.Classes.Contains("account-select"));
-        var before = VisibleCardActions(window).Count;
+        int before = VisibleCardActions(window).Count;
 
         first.Command!.Execute(null);
         Dispatcher.UIThread.RunJobs();

@@ -17,7 +17,7 @@ public sealed class GivenADownloadPassWithStaleHolds
     {
         _ = fixture.SyncedFolder(folder, $"remote-{folder.ToUpperInvariant()}");
         fixture.Remote.Folder(folder);
-        for (var index = 0; index < Items; index++)
+        for (int index = 0; index < Items; index++)
         {
             _ = fixture.Synced(File(folder, index), "x", $"{folder}-{index}");
             if (index >= Items - stillRemote)

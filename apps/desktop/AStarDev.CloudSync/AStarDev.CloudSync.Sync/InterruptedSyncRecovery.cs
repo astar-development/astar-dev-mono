@@ -61,7 +61,7 @@ internal sealed class InterruptedSyncRecovery(ISyncRunJournal journal, IActivity
             return [];
 
         var accounts = runs.Select(run => run.AccountId).Distinct().ToList();
-        var message = $"Found {runs.Count} interrupted sync runs on {accounts.Count} accounts.";
+        string message = $"Found {runs.Count} interrupted sync runs on {accounts.Count} accounts.";
         LogMessage.Information(logger, Location, message);
         foreach (var run in runs)
             _ = await journal.FinishAsync(run.Id, SyncRunOutcomeFactory.CreateInterrupted(), cancellationToken).MatchAsync(done => done, _ => Warn("An interrupted run could not be marked.")).ConfigureAwait(false);
@@ -107,7 +107,7 @@ internal sealed class InterruptedSyncRecovery(ISyncRunJournal journal, IActivity
         if (waiting.IsCanceled)
             return RecoveryOutcomeFactory.CreateNotResumed(accountId, SyncPassFailureFactory.CreateCancelled());
 
-        var stillPaused = await checks.Paused.GetPausedAsync(cancellationToken).MatchAsync(found => found.Contains(accountId), _ => true).ConfigureAwait(false);
+        bool stillPaused = await checks.Paused.GetPausedAsync(cancellationToken).MatchAsync(found => found.Contains(accountId), _ => true).ConfigureAwait(false);
         if (stillPaused)
             return RecoveryOutcomeFactory.CreateHeld(accountId);
 

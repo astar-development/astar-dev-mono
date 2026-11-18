@@ -8,10 +8,7 @@ public sealed class FakeSyncRunStatusSource : ISyncRunStatusSource
 {
     private readonly Dictionary<AccountId, SyncStatus> statuses = [];
 
-    public void Set(AccountId accountId, SyncStatus status)
-    {
-        statuses[accountId] = status;
-    }
+    public void Set(AccountId accountId, SyncStatus status) => statuses[accountId] = status;
 
     public SyncStatus StatusOf(AccountId accountId) => statuses.GetValueOrDefault(accountId, SyncStatusFactory.CreateUpToDate());
 }

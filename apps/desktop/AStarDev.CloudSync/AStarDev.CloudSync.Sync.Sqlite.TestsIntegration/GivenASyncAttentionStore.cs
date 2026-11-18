@@ -270,7 +270,7 @@ public sealed class GivenASyncAttentionStore : IAsyncLifetime
     {
         _ = await Writer.RecordAsync([Conflict(FirstAccount, "Secret/Plan.docx", ConflictKindFactory.CreateBothAdded()), Held(FirstAccount, DeletionDirectionFactory.CreateDeleteLocal(), "Secret/Other.docx")], CancellationToken);
 
-        var everything = string.Join('\n', Database.Logs.Logger.Messages.Concat(Database.Logs.Logger.Scopes.SelectMany(scope => scope.Values.Select(value => value?.ToString() ?? string.Empty))));
+        string everything = string.Join('\n', Database.Logs.Logger.Messages.Concat(Database.Logs.Logger.Scopes.SelectMany(scope => scope.Values.Select(value => value?.ToString() ?? string.Empty))));
 
         (everything.Contains("Secret"), everything.Contains(FirstAccount.Value.ToString()), everything.Contains("BothAdded")).ShouldBe((false, false, true));
     }

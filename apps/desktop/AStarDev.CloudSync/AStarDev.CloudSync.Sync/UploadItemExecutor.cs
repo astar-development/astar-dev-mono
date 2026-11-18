@@ -17,7 +17,7 @@ internal sealed class UploadItemExecutor(IUploadRecorder recorder, ISyncBaseline
 
     internal async Task<Result<IReadOnlyList<UploadItemOutcome>, UploadPassFailure>> ExecuteAsync(AccountId accountId, UploadPlan plan, UploadPassInput input, UploadProviders providers, CancellationToken cancellationToken)
     {
-        var concurrency = await limits.ForAsync(accountId, cancellationToken).ConfigureAwait(false);
+        int concurrency = await limits.ForAsync(accountId, cancellationToken).ConfigureAwait(false);
         var tally = new PhaseTally(accountId, SyncPhaseFactory.CreateUploading(), plan.Items.Sum(SizeOf), sink);
         var run = new PassRun(accountId, input, providers, SeedFolders(input), tally);
         foreach (var item in plan.Items.Where(IsFolderStep))
@@ -65,15 +65,15 @@ internal sealed class UploadItemExecutor(IUploadRecorder recorder, ISyncBaseline
 
     private static string NameOf(RelativeSyncPath path)
     {
-        var value = path.Value ?? string.Empty;
+        string value = path.Value ?? string.Empty;
 
         return value[(value.LastIndexOf(Separator) + 1)..];
     }
 
     private static Option<RelativeSyncPath> ParentOf(RelativeSyncPath path)
     {
-        var value = path.Value ?? string.Empty;
-        var cut = value.LastIndexOf(Separator);
+        string value = path.Value ?? string.Empty;
+        int cut = value.LastIndexOf(Separator);
 
         return cut < 0 ? Option.None<RelativeSyncPath>() : Option.Some(new RelativeSyncPath(value[..cut]));
     }
@@ -103,7 +103,7 @@ internal sealed class UploadItemExecutor(IUploadRecorder recorder, ISyncBaseline
     private UploadItemOutcome UploadFailed(PassRun run, UploadPlanItem item, ProviderError error)
     {
         run.Observe(error);
-        var isReplace = item is UploadPlanItem.UploadReplace;
+        bool isReplace = item is UploadPlanItem.UploadReplace;
 
         return error switch
         {

@@ -98,7 +98,7 @@ public sealed class GivenTheDatabaseMigrator : IDisposable
         await DatabaseMigrator.MigrateAsync(factory, NullLogger.Instance);
 
         await using var context = await factory.CreateDbContextAsync(TestContext.Current.CancellationToken);
-        var passwordColumns = await context.Database.SqlQueryRaw<int>("SELECT COUNT(*) AS Value FROM pragma_table_info('UserConfigurations') WHERE name = 'Password'").SingleAsync(TestContext.Current.CancellationToken);
+        int passwordColumns = await context.Database.SqlQueryRaw<int>("SELECT COUNT(*) AS Value FROM pragma_table_info('UserConfigurations') WHERE name = 'Password'").SingleAsync(TestContext.Current.CancellationToken);
         var user = (await context.ScrapeConfigurations.Include(configuration => configuration.UserConfiguration).SingleAsync(TestContext.Current.CancellationToken)).UserConfiguration;
         (passwordColumns, user.EmailAddress, user.Username).ShouldBe((0, "user@example.com", "user"));
     }
@@ -157,7 +157,7 @@ public sealed class GivenTheDatabaseMigrator : IDisposable
     private static async Task MigrateWithoutSeedingAsync(ControlDbContext context, string targetMigration, CancellationToken cancellationToken)
     {
         // IMigrator.MigrateAsync also runs the (current-model) seeder, which cannot insert into an older schema; apply the generated script instead.
-        var script = context.GetService<IMigrator>().GenerateScript(toMigration: targetMigration);
+        string script = context.GetService<IMigrator>().GenerateScript(toMigration: targetMigration);
         var connection = context.Database.GetDbConnection();
         await connection.OpenAsync(cancellationToken);
         await using var command = connection.CreateCommand();

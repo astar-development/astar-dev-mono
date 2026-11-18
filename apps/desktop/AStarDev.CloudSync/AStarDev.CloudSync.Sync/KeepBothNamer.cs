@@ -12,13 +12,13 @@ public sealed class KeepBothNamer : IKeepBothNamer
     /// <inheritdoc />
     public string Name(string original, DateTimeOffset utc, IReadOnlyCollection<string> existingNames)
     {
-        var name = original ?? string.Empty;
-        var dot = name.LastIndexOf(ExtensionSeparator);
-        var stem = dot > 0 ? name[..dot] : name;
-        var extension = dot > 0 ? name[dot..] : string.Empty;
-        var stamp = utc.UtcDateTime.ToString(StampFormat, CultureInfo.InvariantCulture);
+        string name = original ?? string.Empty;
+        int dot = name.LastIndexOf(ExtensionSeparator);
+        string stem = dot > 0 ? name[..dot] : name;
+        string extension = dot > 0 ? name[dot..] : string.Empty;
+        string stamp = utc.UtcDateTime.ToString(StampFormat, CultureInfo.InvariantCulture);
         var taken = new HashSet<string>(existingNames ?? [], StringComparer.OrdinalIgnoreCase);
-        var plain = $"{stem}-({stamp}){extension}";
+        string plain = $"{stem}-({stamp}){extension}";
 
         return taken.Contains(plain) ? Enumerable.Range(FirstCounter, int.MaxValue - FirstCounter).Select(counter => $"{stem}-({stamp})-{counter}{extension}").First(candidate => !taken.Contains(candidate)) : plain;
     }

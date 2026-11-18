@@ -57,7 +57,7 @@ public sealed class FakeUploader : IRemoteFileUploader
         if (Gate is { } waiting)
             await waiting.PassAsync().WaitAsync(cancellationToken);
 
-        foreach (var done in Reports)
+        foreach (long done in Reports)
         {
             BeforeEachReport();
             progress.Report(TransferProgressFactory.Create(done, 10));

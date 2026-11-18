@@ -30,9 +30,9 @@ public sealed class ClassifyingUploadRecorder(IUploadRecorder inner, IFileClassi
 
     private async Task<Unit> ClassifyAsync(AccountId accountId, RelativeSyncPath path, CancellationToken cancellationToken)
     {
-        for (var attempt = 1; attempt < MaxAttempts; attempt++)
+        for (int attempt = 1; attempt < MaxAttempts; attempt++)
         {
-            var generation = vocabulary.Generation;
+            long generation = vocabulary.Generation;
             _ = await ClassifyOnceAsync(accountId, path, cancellationToken).ConfigureAwait(false);
             if (vocabulary.Generation == generation)
                 return Unit.Instance;

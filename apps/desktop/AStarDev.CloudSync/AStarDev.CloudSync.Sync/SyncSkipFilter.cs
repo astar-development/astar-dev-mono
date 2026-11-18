@@ -11,7 +11,7 @@ public static class SyncSkipFilter
     /// <param name="path">The path relative to the sync root.</param>
     public static bool IsSkipped(RelativeSyncPath path)
     {
-        var segments = (path.Value ?? string.Empty).Split(Separator);
+        string[] segments = (path.Value ?? string.Empty).Split(Separator);
 
         return segments[..^1].Any(folder => folder.StartsWith(DotPrefix)) || IsAppTempFile(segments[^1]);
     }
@@ -21,8 +21,8 @@ public static class SyncSkipFilter
         if (!name.EndsWith(AppTempSuffix, StringComparison.OrdinalIgnoreCase))
             return false;
 
-        var withoutSuffix = name[..^AppTempSuffix.Length];
-        var candidate = withoutSuffix[(withoutSuffix.LastIndexOf(DotPrefix) + 1)..];
+        string withoutSuffix = name[..^AppTempSuffix.Length];
+        string candidate = withoutSuffix[(withoutSuffix.LastIndexOf(DotPrefix) + 1)..];
 
         return Guid.TryParseExact(candidate, "D", out _) || Guid.TryParseExact(candidate, "N", out _);
     }

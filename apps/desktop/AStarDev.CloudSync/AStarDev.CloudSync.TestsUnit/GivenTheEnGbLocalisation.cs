@@ -21,7 +21,7 @@ public sealed partial class GivenTheEnGbLocalisation
     private static IReadOnlyDictionary<string, string> Load()
     {
         var assembly = typeof(ServiceCollectionExtensions).Assembly;
-        var name = assembly.GetManifestResourceNames().Single(resource => resource.EndsWith("en-GB.json", StringComparison.Ordinal));
+        string name = assembly.GetManifestResourceNames().Single(resource => resource.EndsWith("en-GB.json", StringComparison.Ordinal));
         using var stream = assembly.GetManifestResourceStream(name) ?? throw new InvalidOperationException("The en-GB texts are an embedded resource.");
 
         return JsonSerializer.Deserialize<Dictionary<string, string>>(stream) ?? [];

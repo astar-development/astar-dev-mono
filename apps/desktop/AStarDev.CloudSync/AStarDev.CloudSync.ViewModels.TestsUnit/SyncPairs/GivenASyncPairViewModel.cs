@@ -75,7 +75,7 @@ public class GivenASyncPairViewModel
     public async Task when_the_direction_is_changed_then_the_next_direction_is_saved_and_the_overview_reloaded(string current, string expected)
     {
         var writer = new FakeSelectionRuleWriter();
-        var reloads = 0;
+        int reloads = 0;
         var pair = CreateChangeable(ParseDirection(current), writer, _ => { reloads++; return Task.CompletedTask; });
 
         await pair.ChangeDirectionCommand.ExecuteAsync(null);
@@ -94,7 +94,7 @@ public class GivenASyncPairViewModel
     public async Task when_saving_the_direction_fails_then_the_error_is_shown_and_the_overview_is_not_reloaded()
     {
         var writer = new FakeSelectionRuleWriter { Outcome = Result.Failure<Unit, ErrorResponse>(new ErrorResponse("database is locked")) };
-        var reloads = 0;
+        int reloads = 0;
         var pair = CreateChangeable(SyncDirectionFactory.CreateTwoWay(), writer, _ => { reloads++; return Task.CompletedTask; });
 
         await pair.ChangeDirectionCommand.ExecuteAsync(null);
@@ -139,7 +139,7 @@ public class GivenASyncPairViewModel
     public async Task when_the_removal_is_confirmed_then_the_folder_stops_syncing_and_the_overview_is_reloaded()
     {
         var writer = new FakeSelectionRuleWriter();
-        var reloads = 0;
+        int reloads = 0;
         var pair = CreateChangeable(SyncDirectionFactory.CreateTwoWay(), writer, _ => { reloads++; return Task.CompletedTask; });
         await pair.RemoveCommand.ExecuteAsync(null);
 
@@ -165,7 +165,7 @@ public class GivenASyncPairViewModel
     public async Task when_saving_the_removal_fails_then_the_error_is_shown_the_question_closes_and_the_overview_is_not_reloaded()
     {
         var writer = new FakeSelectionRuleWriter { Outcome = Result.Failure<Unit, ErrorResponse>(new ErrorResponse("database is locked")) };
-        var reloads = 0;
+        int reloads = 0;
         var pair = CreateChangeable(SyncDirectionFactory.CreateTwoWay(), writer, _ => { reloads++; return Task.CompletedTask; });
         await pair.RemoveCommand.ExecuteAsync(null);
 

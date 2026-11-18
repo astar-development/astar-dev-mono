@@ -88,17 +88,17 @@ public sealed class GivenAClassificationSeederOverSqlite : MigratedDatabaseTests
     public async Task when_the_embedded_seed_is_applied_then_the_sqlite_stores_hold_it_and_the_second_run_is_a_no_op()
     {
         var seeder = SeederFor(EmbeddedClassificationSeedSourceFactory.CreateDefault());
-        var allocatedBefore = GC.GetTotalAllocatedBytes(precise: true);
+        long allocatedBefore = GC.GetTotalAllocatedBytes(precise: true);
         var clock = System.Diagnostics.Stopwatch.StartNew();
 
         var first = await seeder.SeedAsync(CancellationToken);
         var firstElapsed = clock.Elapsed;
-        var allocated = GC.GetTotalAllocatedBytes(precise: true) - allocatedBefore;
+        long allocated = GC.GetTotalAllocatedBytes(precise: true) - allocatedBefore;
         var second = await seeder.SeedAsync(CancellationToken);
 
         first.ShouldBeOfType<ClassificationSeedOutcome.Applied>();
         second.ShouldBeOfType<ClassificationSeedOutcome.AlreadyCurrent>();
-        var termCount = Ok(await Database.Terms.GetAllAsync(CancellationToken)).Count;
+        int termCount = Ok(await Database.Terms.GetAllAsync(CancellationToken)).Count;
         termCount.ShouldBeGreaterThan(0);
         TestContext.Current.SendDiagnosticMessage($"Seeded {termCount} terms in {firstElapsed.TotalSeconds:F2}s, {allocated / 1024 / 1024} MB allocated");
     }

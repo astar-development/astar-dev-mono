@@ -9,9 +9,7 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
     public partial class AddAccountLogLevels : Migration
     {
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.CreateTable(
+        protected override void Up(MigrationBuilder migrationBuilder) => migrationBuilder.CreateTable(
                 name: "AccountLogLevels",
                 columns: table => new
                 {
@@ -22,13 +20,9 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
                 {
                     table.PrimaryKey("PK_AccountLogLevels", x => x.AccountId);
                 });
-        }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
+        protected override void Down(MigrationBuilder migrationBuilder) => migrationBuilder.DropTable(
                 name: "AccountLogLevels");
-        }
     }
 }

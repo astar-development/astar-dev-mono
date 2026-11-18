@@ -26,7 +26,7 @@ public sealed class StronglyTypedIdConverter_should
         var converter = new StronglyTypedIdConverter<GuidId, Guid>();
         var id = new GuidId(Guid.NewGuid());
 
-        var stored = converter.ConvertToProvider(id);
+        object? stored = converter.ConvertToProvider(id);
 
         stored.ShouldBe(id.Value);
         converter.ConvertFromProvider(stored).ShouldBe(id);

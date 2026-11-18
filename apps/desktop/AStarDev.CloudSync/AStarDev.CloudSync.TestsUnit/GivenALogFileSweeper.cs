@@ -16,7 +16,7 @@ public sealed class GivenALogFileSweeper
     private void Write(string name, int daysOld)
     {
         _ = fileSystem.Directory.CreateDirectory(Folder);
-        var path = $"{Folder}/{name}";
+        string path = $"{Folder}/{name}";
         fileSystem.File.WriteAllText(path, "entry");
         fileSystem.File.SetLastWriteTimeUtc(path, time.GetUtcNow().UtcDateTime.AddDays(-daysOld));
     }
@@ -30,7 +30,7 @@ public sealed class GivenALogFileSweeper
         Write("cloudsync-20261105.log", 9);
         Write("cloudsync-20261113.log", 1);
 
-        var deleted = Create().DeleteOlderThan(fileSystem.DirectoryInfo.New(Folder), "cloudsync", TimeSpan.FromDays(10));
+        int deleted = Create().DeleteOlderThan(fileSystem.DirectoryInfo.New(Folder), "cloudsync", TimeSpan.FromDays(10));
 
         (deleted, Remaining()).ShouldBe((1, "cloudsync-20261105.log,cloudsync-20261113.log"));
     }
@@ -42,7 +42,7 @@ public sealed class GivenALogFileSweeper
         Write("notes.txt", 40);
         Write("other-20261001.log", 40);
 
-        var deleted = Create().DeleteOlderThan(fileSystem.DirectoryInfo.New(Folder), "cloudsync", TimeSpan.FromDays(10));
+        int deleted = Create().DeleteOlderThan(fileSystem.DirectoryInfo.New(Folder), "cloudsync", TimeSpan.FromDays(10));
 
         (deleted, Remaining()).ShouldBe((1, "notes.txt,other-20261001.log"));
     }
@@ -50,7 +50,7 @@ public sealed class GivenALogFileSweeper
     private void WriteSized(string name, int bytes, int daysOld)
     {
         _ = fileSystem.Directory.CreateDirectory(Folder);
-        var path = $"{Folder}/{name}";
+        string path = $"{Folder}/{name}";
         fileSystem.File.WriteAllBytes(path, new byte[bytes]);
         fileSystem.File.SetLastWriteTimeUtc(path, time.GetUtcNow().UtcDateTime.AddDays(-daysOld));
     }
@@ -63,7 +63,7 @@ public sealed class GivenALogFileSweeper
         WriteSized("cloudsync-20261112.log", 40, 2);
         WriteSized("cloudsync-20261113.log", 40, 1);
 
-        var deleted = LogFileSweeper.DeleteBeyondTotalSize(fileSystem.DirectoryInfo.New(Folder), "cloudsync", 100);
+        int deleted = LogFileSweeper.DeleteBeyondTotalSize(fileSystem.DirectoryInfo.New(Folder), "cloudsync", 100);
 
         (deleted, Remaining()).ShouldBe((2, "cloudsync-20261112.log,cloudsync-20261113.log"));
     }
@@ -74,7 +74,7 @@ public sealed class GivenALogFileSweeper
         WriteSized("cloudsync-20261112.log", 50, 2);
         WriteSized("cloudsync-20261113.log", 50, 1);
 
-        var deleted = LogFileSweeper.DeleteBeyondTotalSize(fileSystem.DirectoryInfo.New(Folder), "cloudsync", 100);
+        int deleted = LogFileSweeper.DeleteBeyondTotalSize(fileSystem.DirectoryInfo.New(Folder), "cloudsync", 100);
 
         (deleted, Remaining()).ShouldBe((0, "cloudsync-20261112.log,cloudsync-20261113.log"));
     }
@@ -85,7 +85,7 @@ public sealed class GivenALogFileSweeper
         WriteSized("cloudsync-20261113.log", 50, 1);
         WriteSized("notes.txt", 500, 9);
 
-        var deleted = LogFileSweeper.DeleteBeyondTotalSize(fileSystem.DirectoryInfo.New(Folder), "cloudsync", 100);
+        int deleted = LogFileSweeper.DeleteBeyondTotalSize(fileSystem.DirectoryInfo.New(Folder), "cloudsync", 100);
 
         (deleted, Remaining()).ShouldBe((0, "cloudsync-20261113.log,notes.txt"));
     }
@@ -107,7 +107,7 @@ public sealed class GivenALogFileSweeper
     {
         Write("cloudsync-20261104.log", 10);
 
-        var deleted = Create().DeleteOlderThan(fileSystem.DirectoryInfo.New(Folder), "cloudsync", TimeSpan.FromDays(10));
+        int deleted = Create().DeleteOlderThan(fileSystem.DirectoryInfo.New(Folder), "cloudsync", TimeSpan.FromDays(10));
 
         (deleted, Remaining()).ShouldBe((0, "cloudsync-20261104.log"));
     }

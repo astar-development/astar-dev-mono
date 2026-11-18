@@ -9,9 +9,7 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
     public partial class AddSyncBaseline : Migration
     {
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.CreateTable(
+        protected override void Up(MigrationBuilder migrationBuilder) => migrationBuilder.CreateTable(
                 name: "SyncBaseline",
                 columns: table => new
                 {
@@ -29,13 +27,9 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
                 {
                     table.PrimaryKey("PK_SyncBaseline", x => new { x.AccountId, x.Path });
                 });
-        }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
+        protected override void Down(MigrationBuilder migrationBuilder) => migrationBuilder.DropTable(
                 name: "SyncBaseline");
-        }
     }
 }

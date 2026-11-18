@@ -23,7 +23,7 @@ public sealed class GivenAScrapeConfigurationExport
         var writer = new FakeWriter();
         var service = new ScrapeConfigurationExportService(exporter, writer);
 
-        var exported = await service.ExportAsync("configuration.json", ApiKeyExport.Exclude, TestContext.Current.CancellationToken);
+        bool exported = await service.ExportAsync("configuration.json", ApiKeyExport.Exclude, TestContext.Current.CancellationToken);
 
         exported.ShouldBeTrue();
         writer.Written.ShouldBe([(document, "configuration.json")]);
@@ -36,7 +36,7 @@ public sealed class GivenAScrapeConfigurationExport
         var writer = new FakeWriter();
         var service = new ScrapeConfigurationExportService(exporter, writer);
 
-        var exported = await service.ExportAsync("configuration.json", ApiKeyExport.Exclude, TestContext.Current.CancellationToken);
+        bool exported = await service.ExportAsync("configuration.json", ApiKeyExport.Exclude, TestContext.Current.CancellationToken);
 
         exported.ShouldBeFalse();
         writer.Written.ShouldBeEmpty();
@@ -124,7 +124,7 @@ public sealed class GivenAScrapeConfigurationExport
     {
         const string path = "/configuration.json";
         await new ScrapeConfigurationFileWriter(fileSystem).WriteAsync(EntityWithApiKeys().ToImportDocument(ApiKeyExport.Exclude), path, TestContext.Current.CancellationToken);
-        var text = await fileSystem.File.ReadAllTextAsync(path, TestContext.Current.CancellationToken);
+        string text = await fileSystem.File.ReadAllTextAsync(path, TestContext.Current.CancellationToken);
 
         (text.Contains("scrape-key", StringComparison.Ordinal), text.Contains("user-key", StringComparison.Ordinal)).ShouldBe((false, false));
     }

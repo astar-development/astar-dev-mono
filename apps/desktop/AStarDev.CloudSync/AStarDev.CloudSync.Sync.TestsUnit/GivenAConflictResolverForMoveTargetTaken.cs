@@ -107,9 +107,9 @@ public sealed class GivenAConflictResolverForMoveTargetTaken : IDisposable
     public async Task when_local_wins_then_the_moved_items_baseline_row_is_found_by_its_id_without_paging_the_baseline()
     {
         var (run, id) = await StartAsync();
-        for (var index = 0; index < 1200; index++)
+        for (int index = 0; index < 1200; index++)
             _ = run.Synced($"Docs/filler-{index:D4}.txt", "x", $"filler-{index}");
-        var pagesBefore = run.Baseline.Pages;
+        int pagesBefore = run.Baseline.Pages;
 
         _ = await Summary(run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateLocalWins(), CancellationToken));
 

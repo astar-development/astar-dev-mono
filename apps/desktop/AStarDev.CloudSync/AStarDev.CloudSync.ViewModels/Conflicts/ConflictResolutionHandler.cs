@@ -13,7 +13,7 @@ internal sealed class ConflictResolutionHandler(IConflictResolver resolver, ILog
     private readonly ConcurrentDictionary<ConflictId, string> errorKeys = new();
     private readonly ConcurrentDictionary<ConflictId, byte> skipped = new();
 
-    internal Option<string> ErrorKeyOf(ConflictId id) => errorKeys.TryGetValue(id, out var key) ? Option.Some(key) : Option.None<string>();
+    internal Option<string> ErrorKeyOf(ConflictId id) => errorKeys.TryGetValue(id, out string? key) ? Option.Some(key) : Option.None<string>();
 
     internal bool IsSkipped(ConflictId id) => skipped.ContainsKey(id);
 

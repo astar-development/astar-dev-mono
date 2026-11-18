@@ -51,7 +51,7 @@ internal sealed class HeldDeletionDecider(IAccountSyncLock syncLock, ISyncAttent
 
     private Result<Unit, HeldDeletionRefusal> NotDone(ResolutionFailure failure)
     {
-        var message = $"A held deletion set was not settled ({failure.GetType().Name}).";
+        string message = $"A held deletion set was not settled ({failure.GetType().Name}).";
         LogMessage.Warning(logger, Location, message);
 
         return Refused(HeldDeletionRefusalFactory.CreateNotSettled());
@@ -68,7 +68,7 @@ internal sealed class HeldDeletionDecider(IAccountSyncLock syncLock, ISyncAttent
         closer.CloseAsync(held.Id, resolution, cancellationToken).MatchAsync(
             _ =>
             {
-                var message = $"A held deletion set of {held.Paths.Count} items was settled.";
+                string message = $"A held deletion set of {held.Paths.Count} items was settled.";
                 LogMessage.Information(logger, Location, message);
 
                 return Result.Success<Unit, HeldDeletionRefusal>(Unit.Instance);

@@ -10,7 +10,7 @@ public sealed class ScrapeActions(UserOperationRunner operations, ClearDownloads
     public async Task ClearDownloadsAsync(IDialogHost dialogs)
         => await operations.ReportFailuresAsync("Unable to clear downloads.", async () =>
         {
-            var confirmed = await dialogs.ConfirmAsync(
+            bool confirmed = await dialogs.ConfirmAsync(
                 "Clear Downloads",
                 "This permanently deletes every file record and everything inside the base save and famous directories. Nothing else is affected. This cannot be undone. Continue?",
                 "Clear Downloads");

@@ -152,7 +152,7 @@ public sealed class GivenASyncNotifier : IDisposable
 
         activity.RaiseFinished(account);
         await AdvancePastTheWindowAsync();
-        var whileListening = host.Sent.Count;
+        int whileListening = host.Sent.Count;
         notifier.Dispose();
         activity.RaiseFinished(account);
         await AdvancePastTheWindowAsync();
@@ -182,7 +182,7 @@ public sealed class GivenASyncNotifier : IDisposable
         var notifier = Create();
         host.Decision = Option.Some(SyncNotificationFactory.CreateSynced(2));
         var passes = new List<Task>();
-        foreach (var name in new[] { "Photos", "Work", "Family" })
+        foreach (string? name in new[] { "Photos", "Work", "Family" })
             passes.Add(notifier.HandleAsync(Finished(await AddAsync(name)), CancellationToken));
 
         await AdvancePastTheWindowAsync();
@@ -198,7 +198,7 @@ public sealed class GivenASyncNotifier : IDisposable
         host.Decision = Option.Some(SyncNotificationFactory.CreateSynced(3));
         var handling = Create().HandleAsync(Finished(photos), CancellationToken);
         await Task.Delay(100, CancellationToken);
-        var before = host.Sent.Count;
+        int before = host.Sent.Count;
 
         await AdvancePastTheWindowAsync();
         await handling;
@@ -288,7 +288,7 @@ public sealed class GivenASyncNotifier : IDisposable
     public async Task when_accounts_finish_at_once_from_many_threads_then_every_one_is_counted_in_one_notification()
     {
         var accountIds = new List<AccountId>();
-        foreach (var name in Enumerable.Range(0, 20).Select(index => $"Account{index}"))
+        foreach (string? name in Enumerable.Range(0, 20).Select(index => $"Account{index}"))
             accountIds.Add(await AddAsync(name));
 
         host.Decision = Option.Some(SyncNotificationFactory.CreateSynced(1));

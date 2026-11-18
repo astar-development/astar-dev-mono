@@ -31,7 +31,7 @@ public sealed class GivenASingleInstanceGuard : IDisposable
     public async Task when_an_instance_is_running_then_a_second_launch_hands_off_and_the_running_instance_is_asked_to_show_itself()
     {
         await using var primary = (await Guard.ClaimAsync(data.Options(), CancellationToken)).ShouldBeOfType<InstanceClaim.Primary>().Instance;
-        var activations = 0;
+        int activations = 0;
         primary.ActivationRequested += (_, _) => Interlocked.Increment(ref activations);
 
         var second = await Guard.ClaimAsync(data.Options(), CancellationToken);
@@ -162,7 +162,7 @@ public sealed class GivenASingleInstanceGuard : IDisposable
     public async Task when_a_client_sends_something_other_than_show_then_the_running_instance_is_not_activated_and_keeps_answering()
     {
         await using var primary = (await Guard.ClaimAsync(data.Options(), CancellationToken)).ShouldBeOfType<InstanceClaim.Primary>().Instance;
-        var activations = 0;
+        int activations = 0;
         primary.ActivationRequested += (_, _) => Interlocked.Increment(ref activations);
         using (var stranger = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified))
         {

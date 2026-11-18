@@ -15,7 +15,7 @@ public static class ConfigurationSwitch
     public static async Task<ConfigurationSwitchResult> ResolveAsync(ScrapeConfigurationSummary requested, Func<Task<bool>> canDiscardEdits, ConfigurationEditorSession session)
     {
         var discard = await ConfirmDiscardAsync(canDiscardEdits);
-        if (discard.Failure.TryGetValue(out var failure)) return ConfigurationSwitchResult.Failed($"Unable to confirm discarding the unsaved edits. {failure}");
+        if (discard.Failure.TryGetValue(out string? failure)) return ConfigurationSwitchResult.Failed($"Unable to confirm discarding the unsaved edits. {failure}");
 
         return discard.Confirmed ? await LoadAsync(requested, session) : ConfigurationSwitchResult.Stay;
     }

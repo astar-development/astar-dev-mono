@@ -18,7 +18,7 @@ public sealed record ScrapeConfigurationSummary(ScrapeConfigurationId Id, string
     /// <returns>The summary, labelled with the site host and, when set, the search term.</returns>
     public static ScrapeConfigurationSummary From(ScrapeConfigurationHeader header)
     {
-        var site = header.BaseUrl.IsAbsoluteUri ? header.BaseUrl.Host : header.BaseUrl.OriginalString;
+        string site = header.BaseUrl.IsAbsoluteUri ? header.BaseUrl.Host : header.BaseUrl.OriginalString;
 
         return new ScrapeConfigurationSummary(header.Id, string.IsNullOrWhiteSpace(header.SearchTerm) ? site : $"{site} - {header.SearchTerm}");
     }

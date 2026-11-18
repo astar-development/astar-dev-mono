@@ -30,7 +30,7 @@ public sealed partial class GivenTheEnGbLocale
 
     private static IReadOnlyDictionary<string, string> LoadEntries()
     {
-        var path = Path.Combine(CloudSyncFolder(), "AStarDev.CloudSync", "Assets", "Localization", "en-GB.json");
+        string path = Path.Combine(CloudSyncFolder(), "AStarDev.CloudSync", "Assets", "Localization", "en-GB.json");
         using var document = JsonDocument.Parse(File.ReadAllText(path));
 
         return document.RootElement.EnumerateObject().Where(property => property.Name != LocaleKey).ToDictionary(property => property.Name, property => property.Value.GetString() ?? string.Empty);
@@ -55,7 +55,7 @@ public sealed partial class GivenTheEnGbLocale
     [Fact]
     public void when_the_locale_is_read_then_it_declares_en_gb()
     {
-        var path = Path.Combine(CloudSyncFolder(), "AStarDev.CloudSync", "Assets", "Localization", "en-GB.json");
+        string path = Path.Combine(CloudSyncFolder(), "AStarDev.CloudSync", "Assets", "Localization", "en-GB.json");
         using var document = JsonDocument.Parse(File.ReadAllText(path));
 
         document.RootElement.GetProperty(LocaleKey).GetString().ShouldBe("en-GB");
@@ -94,7 +94,7 @@ public sealed partial class GivenTheEnGbLocale
     [Fact]
     public void when_a_plural_pair_is_read_then_the_singular_uses_no_placeholder_the_plural_lacks()
     {
-        var mismatched = Entries.Value.Keys.Where(key => key.EndsWith(".One", StringComparison.Ordinal)).Select(key => key[..^4]).Where(stem => Entries.Value.TryGetValue(stem + ".Many", out var many) && !Placeholders(Entries.Value[stem + ".One"]).IsSubsetOf(Placeholders(many))).Order(StringComparer.Ordinal).ToList();
+        var mismatched = Entries.Value.Keys.Where(key => key.EndsWith(".One", StringComparison.Ordinal)).Select(key => key[..^4]).Where(stem => Entries.Value.TryGetValue(stem + ".Many", out string? many) && !Placeholders(Entries.Value[stem + ".One"]).IsSubsetOf(Placeholders(many))).Order(StringComparer.Ordinal).ToList();
 
         mismatched.ShouldBeEmpty();
     }

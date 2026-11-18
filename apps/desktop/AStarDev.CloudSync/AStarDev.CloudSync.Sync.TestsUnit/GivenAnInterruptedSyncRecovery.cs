@@ -54,7 +54,7 @@ public sealed class GivenAnInterruptedSyncRecovery : IDisposable
     [InlineData(4, "upload")]
     public async Task when_a_pass_is_killed_at_a_step_then_the_next_start_finds_it_interrupted_and_runs_a_recovery_pass(int killedAtStepNumber, string step)
     {
-        var reached = 0;
+        int reached = 0;
         services.Steps.OnStep = () =>
         {
             if (++reached == killedAtStepNumber)
@@ -115,7 +115,7 @@ public sealed class GivenAnInterruptedSyncRecovery : IDisposable
 
         var recovering = Task.Run(() => next.Recovery.RecoverAsync(CancellationToken), CancellationToken);
         await UntilRecoveryRunsAsync(1).WaitAsync(Limit, CancellationToken);
-        var startedBeforeTheWindowPassed = RecoveryRuns();
+        int startedBeforeTheWindowPassed = RecoveryRuns();
         await AdvanceUntilDoneAsync(next.Time, recovering).WaitAsync(Limit, CancellationToken);
         var outcomes = await recovering.WaitAsync(Limit, CancellationToken);
 

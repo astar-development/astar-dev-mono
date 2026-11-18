@@ -48,7 +48,7 @@ internal sealed class NewFolderRules(ISelectionRuleReader ruleReader, ISelection
             return rules;
 
         IReadOnlyList<SelectionChange> changes = [.. localOnly.Select(path => SelectionChangeFactory.CreateIncludeFolder(path, Option.None<RemoteItemId>(), SyncDirectionFactory.CreateTwoWay()))];
-        var saved = await ruleWriter.ApplyAsync(accountId, changes, cancellationToken)
+        bool saved = await ruleWriter.ApplyAsync(accountId, changes, cancellationToken)
             .MatchAsync(_ => true, _ => Warn("The default rules of new local folders could not be saved; the next scan will try again.", false)).ConfigureAwait(false);
 
         return saved ? await ReadAgainAsync(accountId, localOnly.Count, cancellationToken).ConfigureAwait(false) : rules;
@@ -56,7 +56,7 @@ internal sealed class NewFolderRules(ISelectionRuleReader ruleReader, ISelection
 
     private async Task<IReadOnlyList<SelectionRule>> ReadAgainAsync(AccountId accountId, int added, CancellationToken cancellationToken)
     {
-        var message = $"{added} new local folders were included by default.";
+        string message = $"{added} new local folders were included by default.";
         LogMessage.Information(logger, Location, message);
 
         return (await ruleReader.GetAsync(accountId, cancellationToken).ConfigureAwait(false)).OrThrow();
@@ -83,7 +83,7 @@ internal sealed class NewFolderRules(ISelectionRuleReader ruleReader, ISelection
     private IEnumerable<LocalRelativePath> Visit(IDirectoryInfo child, LocalRelativePath childPath, IReadOnlyList<SelectionRule> rules, CancellationToken cancellationToken)
     {
         var state = evaluator.Evaluate(childPath, rules);
-        var hasRulesBelow = rules.Any(rule => SelectionPaths.IsStrictlyBelow(rule.Path, childPath));
+        bool hasRulesBelow = rules.Any(rule => SelectionPaths.IsStrictlyBelow(rule.Path, childPath));
         if (state is SelectionState.Uncovered && !hasRulesBelow)
             return [childPath];
 
@@ -111,7 +111,7 @@ internal sealed class NewFolderRules(ISelectionRuleReader ruleReader, ISelection
     private async Task<bool> ExistsRemotelyAsync(AccountId accountId, LocalRelativePath candidate, Dictionary<Option<RemoteItemId>, IReadOnlyList<RemoteItemSnapshot>> cache, CancellationToken cancellationToken)
     {
         var parent = Option.None<RemoteItemId>();
-        foreach (var name in SelectionPaths.Segments(candidate))
+        foreach (string name in SelectionPaths.Segments(candidate))
         {
             if (!cache.TryGetValue(parent, out var children))
             {

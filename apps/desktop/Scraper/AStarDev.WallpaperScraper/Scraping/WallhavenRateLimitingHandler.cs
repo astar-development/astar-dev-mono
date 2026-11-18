@@ -25,7 +25,7 @@ public sealed class WallhavenRateLimitingHandler(RateLimiter limiter, IRateLimit
         if (!WallhavenApiRequests.IsApiRequest(request)) return await base.SendAsync(request, cancellationToken);
 
         var response = await SendWithPermitAsync(request, cancellationToken);
-        for (var retry = 0; retry < MaximumRetries && response.StatusCode == HttpStatusCode.TooManyRequests; retry++)
+        for (int retry = 0; retry < MaximumRetries && response.StatusCode == HttpStatusCode.TooManyRequests; retry++)
         {
             var delay = RetryDelayFor(response);
             response.Dispose();

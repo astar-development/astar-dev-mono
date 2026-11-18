@@ -298,7 +298,7 @@ public sealed class ClassificationSuggestionsViewModel : LocalizedObservableObje
 
     private void ApplyView()
     {
-        var needle = filterText.Trim();
+        string needle = filterText.Trim();
         Rows = [.. allRows.Where(row => needle.Length == 0 || row.Word.Contains(needle, StringComparison.OrdinalIgnoreCase))];
         OnPropertyChanged(nameof(Rows));
         OnPropertyChanged(nameof(IsEmpty));
@@ -307,7 +307,7 @@ public sealed class ClassificationSuggestionsViewModel : LocalizedObservableObje
 
     private void ApplyCategoryView()
     {
-        var needle = categoryFilterText.Trim();
+        string needle = categoryFilterText.Trim();
         Categories = [.. allCategories.Where(category => needle.Length == 0 || category.Name.Contains(needle, StringComparison.OrdinalIgnoreCase))];
         OnPropertyChanged(nameof(Categories));
         NotifyPicker();

@@ -8,7 +8,7 @@ internal sealed class SuggestionFileSource(IReadOnlyList<string> paths, bool fai
 
     public async IAsyncEnumerable<ClassifiableFile> StreamAsync([System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        foreach (var path in paths)
+        foreach (string path in paths)
         {
             cancellationToken.ThrowIfCancellationRequested();
             await Task.Yield();

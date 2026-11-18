@@ -69,15 +69,15 @@ internal sealed class OneDriveTransferHttp(OneDriveGraphAccess graphAccess, IHtt
 
     internal async Task<(ProviderError Error, int Status, string Code)> ErrorOfAsync(HttpResponseMessage response, CancellationToken cancellationToken)
     {
-        var status = (int)response.StatusCode;
-        var code = await CodeOfAsync(response, cancellationToken).ConfigureAwait(false);
+        int status = (int)response.StatusCode;
+        string code = await CodeOfAsync(response, cancellationToken).ConfigureAwait(false);
 
         return (GraphErrorMapper.FromStatus(status, RetryAfter(response)), status, code);
     }
 
     private static async Task<string> CodeOfAsync(HttpResponseMessage response, CancellationToken cancellationToken)
     {
-        var body = await Try.RunAsync(() => response.Content.ReadAsStringAsync(cancellationToken), cancellationToken).MatchAsync(text => text, _ => string.Empty).ConfigureAwait(false);
+        string body = await Try.RunAsync(() => response.Content.ReadAsStringAsync(cancellationToken), cancellationToken).MatchAsync(text => text, _ => string.Empty).ConfigureAwait(false);
         using var document = Try.Run(() => JsonDocument.Parse(body)).Match(parsed => parsed, _ => JsonDocument.Parse("{}"));
 
         return document.RootElement.ValueKind is JsonValueKind.Object && document.RootElement.TryGetProperty("error", out var error) && error.ValueKind is JsonValueKind.Object && error.TryGetProperty("code", out var code) && code.ValueKind is JsonValueKind.String ? code.GetString() ?? NoCode : NoCode;

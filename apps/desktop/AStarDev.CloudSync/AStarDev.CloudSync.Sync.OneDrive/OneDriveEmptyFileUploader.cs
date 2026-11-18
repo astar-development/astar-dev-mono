@@ -36,7 +36,7 @@ internal sealed class OneDriveEmptyFileUploader(OneDriveTransferHttp http, ILogg
         if (!response.IsSuccessStatusCode)
             return await FailedAsync(response, cancellationToken).ConfigureAwait(false);
 
-        var created = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        string created = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         var id = Try.Run(() => JsonDocument.Parse(created)).Match(document => StringOf(document.RootElement, "id"), _ => Option.None<string>());
 
         return await id.Match(found => PatchAsync(transfer, credentials, found, cancellationToken), () => Task.FromResult(Result.Failure<UploadedFile, ProviderError>(ProviderErrorFactory.CreateUnexpected()))).ConfigureAwait(false);

@@ -57,7 +57,7 @@ public sealed class ClassificationSeeder(IClassificationSeedSource seedSource, I
     private async Task<Result<IReadOnlyDictionary<string, CategoryId>, ClassificationFailure>> UpsertCategoriesAsync(ClassificationSeed seed, CancellationToken cancellationToken)
     {
         var ids = new Dictionary<string, CategoryId>(StringComparer.OrdinalIgnoreCase);
-        foreach (var categoryName in seed.Categories.Select(category => category.Name))
+        foreach (string? categoryName in seed.Categories.Select(category => category.Name))
         {
             cancellationToken.ThrowIfCancellationRequested();
             var category = ClassificationCategoryFactory.Create(CategoryIdFactory.Create(Guid.NewGuid()), categoryName);

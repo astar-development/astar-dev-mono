@@ -315,7 +315,7 @@ public class GivenAMainWindow
     {
         var viewModel = await CreateViewModelAsync();
         var window = new MainWindow { DataContext = viewModel };
-        var opened = 0;
+        int opened = 0;
         LogViewerHotkey.Attach(window, () => opened++);
         window.Show();
         viewModel.DisplaySettings.SelectLayout(MainLayoutFactory.FromKey(key));
@@ -334,7 +334,7 @@ public class GivenAMainWindow
     {
         var viewModel = await CreateViewModelAsync();
         var window = new MainWindow { DataContext = viewModel };
-        var opened = 0;
+        int opened = 0;
         LogViewerHotkey.Attach(window, () => opened++);
         window.Show();
         viewModel.DisplaySettings.SelectLayout(MainLayoutFactory.FromKey(key));

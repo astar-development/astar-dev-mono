@@ -41,7 +41,7 @@ internal sealed class SyncProgressFeed(TimeProvider timeProvider) : ISyncProgres
     {
         lock (gate)
         {
-            var now = timeProvider.GetTimestamp();
+            long now = timeProvider.GetTimestamp();
             if (published.TryGetValue(accountId, out var last) && !IsMilestone(last.Progress, progress) && timeProvider.GetElapsedTime(last.Stamp, now) < MinimumInterval)
                 return false;
 

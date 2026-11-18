@@ -88,7 +88,7 @@ public sealed class GivenAnOneDriveQuotaRefresher : IDisposable
     [Fact]
     public async Task when_graph_returns_a_very_long_error_code_then_the_logged_code_is_capped()
     {
-        var longCode = new string('x', 500) + "jane.doe@example.com";
+        string longCode = new string('x', 500) + "jane.doe@example.com";
         graph.Respond = _ => GraphScript.Json(HttpStatusCode.InternalServerError, "{\"error\":{\"code\":\"" + longCode + "\",\"message\":\"m\"}}");
         var account = await AddAccountAsync();
 

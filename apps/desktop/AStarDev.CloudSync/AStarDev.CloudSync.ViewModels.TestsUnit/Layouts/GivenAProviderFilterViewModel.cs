@@ -56,7 +56,7 @@ public class GivenAProviderFilterViewModel
         var overview = await TestData.CreateLoadedOverviewViewModelAsync();
         var filter = new ProviderFilterViewModel(new ProviderViewModel(CloudProviderFactory.CreateOneDrive(), localization), 7, _ => { }, localization);
 
-        var matches = filter.Matches(overview.SyncPairs[0]);
+        bool matches = filter.Matches(overview.SyncPairs[0]);
 
         matches.ShouldBeTrue();
     }

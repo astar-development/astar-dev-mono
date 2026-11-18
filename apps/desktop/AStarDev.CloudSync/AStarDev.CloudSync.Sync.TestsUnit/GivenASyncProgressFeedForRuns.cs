@@ -53,7 +53,7 @@ public sealed class GivenASyncProgressFeedForRuns : IDisposable
     [Fact]
     public async Task when_a_second_run_starts_within_a_quarter_second_of_the_first_then_its_phases_are_published_again()
     {
-        var published = 0;
+        int published = 0;
         services.Feed.ProgressChanged += (_, _) => published++;
 
         _ = await services.Runner.RunAsync(services.Personal, Manual, CancellationToken);
@@ -65,7 +65,7 @@ public sealed class GivenASyncProgressFeedForRuns : IDisposable
     [Fact]
     public async Task when_two_accounts_run_then_each_is_throttled_on_its_own()
     {
-        var published = 0;
+        int published = 0;
         services.Feed.ProgressChanged += (_, _) => published++;
 
         _ = await services.Runner.RunAsync(services.Personal, Manual, CancellationToken);

@@ -37,7 +37,7 @@ internal sealed class DownloadExecutor(DownloadFileStep fileStep, ILocalFileOper
 
         List<DownloadPlanItem.DownloadFile> downloads = [.. plan.Items.OfType<DownloadPlanItem.DownloadFile>()];
         var tally = new PhaseTally(accountId, SyncPhaseFactory.CreateDownloading(), downloads.Sum(SizeOf) + plan.Items.OfType<DownloadPlanItem.SendToConflicts>().Sum(conflict => FirstSyncLinker.BytesToHash(conflict.Finding, conflict.RemoteItem)), sink);
-        var concurrency = await limits.ForAsync(accountId, cancellationToken).ConfigureAwait(false);
+        int concurrency = await limits.ForAsync(accountId, cancellationToken).ConfigureAwait(false);
         var run = new DownloadRun(accountId, root, byPath, batch, tally, concurrency);
         var downloaded = await DownloadAllAsync(downloads, run, cancellationToken).ConfigureAwait(false);
 

@@ -42,7 +42,7 @@ internal sealed class FileAuditor(ISyncRootReader roots, ISelectionRuleReader ru
 
     private Result<FileAuditCounts, FileAuditFailure> Report(long localFiles, long cloudFiles)
     {
-        var message = $"The audit counted {localFiles} local files and {cloudFiles} cloud files.";
+        string message = $"The audit counted {localFiles} local files and {cloudFiles} cloud files.";
         LogMessage.Information(logger, Location, message);
 
         return Result.Success<FileAuditCounts, FileAuditFailure>(FileAuditCountsFactory.Create(localFiles, cloudFiles));

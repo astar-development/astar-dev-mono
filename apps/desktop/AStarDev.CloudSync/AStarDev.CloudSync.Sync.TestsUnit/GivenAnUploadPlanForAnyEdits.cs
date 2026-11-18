@@ -11,7 +11,7 @@ public sealed class GivenAnUploadPlanForAnyEdits
     private static UploadPlan PlanOf((int Remote, int Baseline, int Local)[] edits)
     {
         using var fixture = new UploadPlanFixture();
-        for (var index = 0; index < Names.Length; index++)
+        for (int index = 0; index < Names.Length; index++)
             Apply(fixture, Names[index], $"id{index}", edits[index]);
 
         return fixture.Plan();

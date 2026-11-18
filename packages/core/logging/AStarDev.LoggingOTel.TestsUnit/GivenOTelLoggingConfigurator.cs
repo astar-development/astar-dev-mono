@@ -95,7 +95,7 @@ public sealed class GivenOTelLoggingConfigurator
         var services = new ServiceCollection();
         _ = services.AddLogging(builder => builder.ConfigureOTelLogging(configuration, TestServiceName));
         using var serviceProvider = services.BuildServiceProvider();
-        var expectedVersion = Assembly.GetEntryAssembly()!.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion.Split('+')[0];
+        string expectedVersion = Assembly.GetEntryAssembly()!.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion.Split('+')[0];
 
         ResourceAttribute(serviceProvider, "service.version").ShouldBe(expectedVersion);
     }
@@ -127,7 +127,7 @@ public sealed class GivenOTelLoggingConfigurator
     {
         using var otlpListener = new TcpListener(IPAddress.Loopback, 0);
         otlpListener.Start();
-        var otlpPort = ((IPEndPoint)otlpListener.LocalEndpoint).Port;
+        int otlpPort = ((IPEndPoint)otlpListener.LocalEndpoint).Port;
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { ["OpenTelemetry:OtlpEndpoint"] = $"http://127.0.0.1:{otlpPort}" }).Build();
         var services = new ServiceCollection();
         _ = services.AddLogging(builder => builder.ConfigureOTelLogging(configuration, TestServiceName));

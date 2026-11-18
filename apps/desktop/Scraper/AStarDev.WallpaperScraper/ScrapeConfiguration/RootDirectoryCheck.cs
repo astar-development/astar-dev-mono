@@ -11,7 +11,7 @@ public sealed class RootDirectoryCheck(IScopedRunner scopedRunner, IFileSystem f
     /// <inheritdoc/>
     public async Task<bool> ExistsAsync(CancellationToken cancellationToken = default)
     {
-        var rootDirectory = (await scopedRunner.RunAsync<IScrapeConfigurationLookup, Exceptional<Option<string>>>(lookup => lookup.TryGetRootDirectoryAsync(cancellationToken)))
+        string rootDirectory = (await scopedRunner.RunAsync<IScrapeConfigurationLookup, Exceptional<Option<string>>>(lookup => lookup.TryGetRootDirectoryAsync(cancellationToken)))
             .Map(option => option.Match(directory => directory, () => throw new InvalidOperationException("Scrape configuration not found")))
             .GetOrThrow();
 

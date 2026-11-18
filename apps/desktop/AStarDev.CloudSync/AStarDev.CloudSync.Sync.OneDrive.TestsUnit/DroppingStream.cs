@@ -23,7 +23,7 @@ public sealed class DroppingStream(byte[] content, int dropAfter) : Stream
         if (position >= dropAfter)
             throw new IOException("The connection dropped.");
 
-        var take = Math.Min(Math.Min(count, dropAfter - position), content.Length - position);
+        int take = Math.Min(Math.Min(count, dropAfter - position), content.Length - position);
         Array.Copy(content, position, buffer, offset, take);
         position += take;
 

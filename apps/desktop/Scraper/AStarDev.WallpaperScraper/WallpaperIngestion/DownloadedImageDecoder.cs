@@ -32,7 +32,7 @@ public sealed class DownloadedImageDecoder(IFileSystem fileSystem) : IDownloaded
 
     private static SKSizeI FitWithin(int width, int height, int maxDimension)
     {
-        var scale = Math.Min(1d, (double)maxDimension / Math.Max(width, height));
+        double scale = Math.Min(1d, (double)maxDimension / Math.Max(width, height));
 
         return new SKSizeI(Math.Max(1, (int)Math.Round(width * scale)), Math.Max(1, (int)Math.Round(height * scale)));
     }

@@ -66,7 +66,7 @@ public sealed class TrashRetentionSettingsViewModel : LocalizedObservableObject
 
     private void RefreshSelection()
     {
-        for (var index = 0; index < Options.Count; index++)
+        for (int index = 0; index < Options.Count; index++)
             Options[index].IsSelected = choices[index] == current;
     }
 }

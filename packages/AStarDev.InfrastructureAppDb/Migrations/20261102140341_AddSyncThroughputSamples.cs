@@ -44,10 +44,7 @@ namespace AStar.Dev.Infrastructure.AppDb.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
+        protected override void Down(MigrationBuilder migrationBuilder) => migrationBuilder.DropTable(
                 name: "SyncThroughputSamples");
-        }
     }
 }

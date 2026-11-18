@@ -200,7 +200,7 @@ public sealed class GivenAnActivityLogStore : IAsyncLifetime
     {
         var writers = Enumerable.Range(0, 20).Select(writer => Task.Run(() => AppendAsync([.. Many(FirstAccount, writer * 60 + 1, writer * 60 + 60)]), CancellationToken));
 
-        var results = await Task.WhenAll(writers);
+        object[] results = await Task.WhenAll(writers);
 
         results.ShouldAllBe(result => result.Equals("stored"));
         (await RecentOfAsync(FirstAccount)).Count.ShouldBe(1000);

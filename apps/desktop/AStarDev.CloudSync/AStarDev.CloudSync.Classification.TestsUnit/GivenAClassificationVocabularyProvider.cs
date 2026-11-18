@@ -12,7 +12,7 @@ public sealed class GivenAClassificationVocabularyProvider
         var categories = new CountingCategoryStore();
         var provider = new ClassificationVocabularyProvider(terms, categories);
 
-        for (var call = 0; call < 5; call++)
+        for (int call = 0; call < 5; call++)
         {
             await provider.GetAsync(TestContext.Current.CancellationToken);
         }
@@ -36,7 +36,7 @@ public sealed class GivenAClassificationVocabularyProvider
     public void when_invalidated_then_the_generation_increases_each_time()
     {
         var provider = new ClassificationVocabularyProvider(new CountingTermStore(), new CountingCategoryStore());
-        var before = provider.Generation;
+        long before = provider.Generation;
 
         provider.Invalidate();
         provider.Invalidate();
@@ -48,7 +48,7 @@ public sealed class GivenAClassificationVocabularyProvider
     public async Task when_loaded_without_invalidation_then_the_generation_is_unchanged()
     {
         var provider = new ClassificationVocabularyProvider(new CountingTermStore(), new CountingCategoryStore());
-        var before = provider.Generation;
+        long before = provider.Generation;
 
         await provider.GetAsync(TestContext.Current.CancellationToken);
 

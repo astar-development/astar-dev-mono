@@ -7,7 +7,7 @@ public sealed class GivenRequestTimeouts
     [Fact]
     public async Task when_the_request_succeeds_then_its_result_is_returned()
     {
-        var result = await RequestTimeouts.RunAsync(() => Task.FromResult(42), CancellationToken.None);
+        int result = await RequestTimeouts.RunAsync(() => Task.FromResult(42), CancellationToken.None);
 
         result.ShouldBe(42);
     }

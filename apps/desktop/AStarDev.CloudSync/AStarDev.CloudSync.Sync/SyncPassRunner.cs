@@ -42,7 +42,7 @@ internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps st
 
     private Result<SyncPassSummary, SyncPassFailure> Refused(SyncTrigger trigger)
     {
-        var message = $"The {trigger.GetType().Name} sync run was refused: the database failed its integrity check.";
+        string message = $"The {trigger.GetType().Name} sync run was refused: the database failed its integrity check.";
         LogMessage.Information(logger, Location, message);
 
         return Stopped<SyncPassSummary>(SyncPassFailureFactory.CreateDatabaseUnavailable());
@@ -52,7 +52,7 @@ internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps st
 
     private Result<SyncPassSummary, SyncPassFailure> Skipped(SyncTrigger trigger)
     {
-        var message = $"The {trigger.GetType().Name} sync run was skipped: a run is already in progress, or the lock is draining.";
+        string message = $"The {trigger.GetType().Name} sync run was skipped: a run is already in progress, or the lock is draining.";
         LogMessage.Information(logger, Location, message);
 
         return Stopped<SyncPassSummary>(SyncPassFailureFactory.CreateAlreadyRunning());
@@ -60,7 +60,7 @@ internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps st
 
     private async Task<Result<SyncPassSummary, SyncPassFailure>> RunHoldingAsync(SyncLease lease, AccountId accountId, SyncTrigger trigger, CancellationToken cancellationToken)
     {
-        var started = timeProvider.GetTimestamp();
+        long started = timeProvider.GetTimestamp();
         var tally = new SyncPassTally();
         Result<SyncPassSummary, SyncPassFailure> outcome;
         using (lease)
@@ -130,7 +130,7 @@ internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps st
         if (running.IsCanceled)
             return Stopped<SyncPassSummary>(SyncPassFailureFactory.CreateCancelled());
 
-        var message = $"A sync step threw {running.Exception?.GetBaseException().GetType().Name}.";
+        string message = $"A sync step threw {running.Exception?.GetBaseException().GetType().Name}.";
         LogMessage.Warning(logger, Location, message);
 
         return Stopped<SyncPassSummary>(SyncPassFailureFactory.CreateUnexpected());
@@ -138,8 +138,8 @@ internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps st
 
     private void LogEnd(SyncTrigger trigger, Result<SyncPassSummary, SyncPassFailure> outcome, TimeSpan elapsed)
     {
-        var milliseconds = (long)elapsed.TotalMilliseconds;
-        var message = outcome.Match(
+        long milliseconds = (long)elapsed.TotalMilliseconds;
+        string message = outcome.Match(
             done => $"The {trigger.GetType().Name} sync run finished in {milliseconds} ms: {done.LocalChanges} local changes, {done.Download.Downloaded} downloaded, {done.Download.DeletedLocally} deleted locally, {done.Upload.Uploaded} uploaded, {done.Upload.Removed} removed remotely, {done.Conflicts} conflicts, {done.HeldDeletions} held deletions.",
             failure => $"The {trigger.GetType().Name} sync run stopped after {milliseconds} ms ({failure.GetType().Name}).");
         LogMessage.Information(logger, Location, message);
@@ -178,9 +178,9 @@ internal sealed class SyncPassRunner(IAccountSyncLock syncLock, SyncPassSteps st
     private async Task<Result<T, SyncPassFailure>> TimedAsync<T>(AccountId accountId, string step, SyncPhase phase, Func<Task<Result<T, SyncPassFailure>>> run)
     {
         progress.Report(accountId, SyncProgressFactory.Create(phase, 0, 0));
-        var started = timeProvider.GetTimestamp();
+        long started = timeProvider.GetTimestamp();
         var outcome = await run().ConfigureAwait(false);
-        var message = $"The {step} step took {(long)timeProvider.GetElapsedTime(started).TotalMilliseconds} ms.";
+        string message = $"The {step} step took {(long)timeProvider.GetElapsedTime(started).TotalMilliseconds} ms.";
         LogMessage.Information(logger, Location, message);
 
         return outcome;

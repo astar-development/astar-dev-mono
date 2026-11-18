@@ -80,14 +80,14 @@ public sealed class GivenAFileLoggerProvider : IDisposable
         logger.LogDebug("quiet detail");
         logger.LogError("loud failure");
 
-        var written = File.ReadAllText(Directory.GetFiles(directory, "filtered-*").Single());
+        string written = File.ReadAllText(Directory.GetFiles(directory, "filtered-*").Single());
         (written.Contains("loud failure", StringComparison.Ordinal), written.Contains("quiet detail", StringComparison.Ordinal)).ShouldBe((true, false));
     }
 
     public void Dispose()
     {
         provider.Dispose();
-        var root = Path.GetDirectoryName(directory)!;
+        string root = Path.GetDirectoryName(directory)!;
         if (Directory.Exists(root)) Directory.Delete(root, recursive: true);
     }
 
@@ -107,7 +107,7 @@ public sealed class GivenAFileLoggerProvider : IDisposable
         var seen = new List<string?>();
         using var reading = new FileLoggerProvider(directory, "scoped", clock, (_, scope) =>
         {
-            seen.Add(scope.TryGetValue("AccountIdHash", out var value) ? value?.ToString() : null);
+            seen.Add(scope.TryGetValue("AccountIdHash", out object? value) ? value?.ToString() : null);
 
             return true;
         });
@@ -140,7 +140,7 @@ public sealed class GivenAFileLoggerProvider : IDisposable
         using var limited = new FileLoggerProvider(directory, "sized", clock, null, 200);
         var logger = limited.CreateLogger("Some.Category");
 
-        for (var count = 0; count < 6; count++)
+        for (int count = 0; count < 6; count++)
             logger.LogInformation("an entry that is a fair bit longer than ten characters");
 
         var names = Directory.GetFiles(directory, "sized-*").Select(Path.GetFileName).Order(StringComparer.Ordinal).ToList();
@@ -153,7 +153,7 @@ public sealed class GivenAFileLoggerProvider : IDisposable
         using var limited = new FileLoggerProvider(directory, "whole", clock, null, 200);
         var logger = limited.CreateLogger("Some.Category");
 
-        for (var count = 0; count < 6; count++)
+        for (int count = 0; count < 6; count++)
             logger.LogInformation("entry that is long enough to split the file");
 
         var lines = Directory.GetFiles(directory, "whole-*").SelectMany(File.ReadAllLines).ToList();
@@ -166,7 +166,7 @@ public sealed class GivenAFileLoggerProvider : IDisposable
     {
         var logger = provider.CreateLogger("Some.Category");
 
-        for (var count = 0; count < 50; count++)
+        for (int count = 0; count < 50; count++)
             logger.LogInformation("an entry that is a fair bit longer than ten characters");
 
         Directory.GetFiles(directory).Length.ShouldBe(1);
@@ -176,7 +176,7 @@ public sealed class GivenAFileLoggerProvider : IDisposable
     public void when_the_app_restarts_on_a_full_file_then_the_next_entry_goes_to_the_next_file()
     {
         using (var first = new FileLoggerProvider(directory, "again", clock, null, 200))
-            for (var count = 0; count < 4; count++)
+            for (int count = 0; count < 4; count++)
                 first.CreateLogger("Some.Category").LogInformation("an entry that is a fair bit longer than ten characters");
 
         using var second = new FileLoggerProvider(directory, "again", clock, null, 200);
@@ -195,7 +195,7 @@ public sealed class GivenAFileLoggerProvider : IDisposable
         logger.LogDebug("debug");
         logger.LogWarning("warning");
 
-        var written = File.ReadAllText(warningsOnly.FilePathFor(clock.GetLocalNow()));
+        string written = File.ReadAllText(warningsOnly.FilePathFor(clock.GetLocalNow()));
         (written.Contains("warning", StringComparison.Ordinal), written.Contains("debug", StringComparison.Ordinal)).ShouldBe((true, false));
     }
 

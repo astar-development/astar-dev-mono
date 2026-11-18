@@ -44,7 +44,7 @@ public sealed class GivenANewWallpaperIngestorOverARealDatabase : IDisposable
     {
         await Ingest("new-wallpaper", HttpStatusCode.OK, [WallhavenTag(1, "landscape"), WallhavenTag(2, "mountain")], TestContext.Current.CancellationToken);
 
-        var savedPath = fileSystem.Path.Combine("save-directory", "new-wallpaper.jpg");
+        string savedPath = fileSystem.Path.Combine("save-directory", "new-wallpaper.jpg");
         (await fileSystem.File.ReadAllBytesAsync(savedPath, TestContext.Current.CancellationToken)).ShouldBe(ImageBytes);
         var stored = await ReadStoredAsync();
         stored.Files.ShouldBe(["new-wallpaper.jpg"]);
@@ -138,7 +138,7 @@ public sealed class GivenANewWallpaperIngestorOverARealDatabase : IDisposable
         object[] tags = [WallhavenTag(1, "landscape"), WallhavenTag(2, "unwanted")];
 
         await IngestPage("ignored-wallpaper", tags, TestContext.Current.CancellationToken);
-        var detailRequestsAfterFirstScrape = detailRequests;
+        int detailRequestsAfterFirstScrape = detailRequests;
         await IngestPage("ignored-wallpaper", tags, TestContext.Current.CancellationToken);
 
         (detailRequestsAfterFirstScrape, detailRequests).ShouldBe((1, 1));

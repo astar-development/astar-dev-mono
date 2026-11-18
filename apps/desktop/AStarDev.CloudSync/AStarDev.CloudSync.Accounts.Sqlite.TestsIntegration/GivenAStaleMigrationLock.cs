@@ -35,7 +35,7 @@ public sealed class GivenAStaleMigrationLock
         await LeaveLockBehindAsync(database);
 
         var cleared = await database.LockClearer.ClearAsync(CancellationToken);
-        var migrated = await MigratesWithinBudgetAsync(database);
+        bool migrated = await MigratesWithinBudgetAsync(database);
 
         (cleared.Match(_ => true, _ => false), migrated).ShouldBe((true, true));
     }
@@ -46,7 +46,7 @@ public sealed class GivenAStaleMigrationLock
         await using var database = await TemporaryCloudSyncDatabase.CreateMigratedAsync(CancellationToken);
 
         var cleared = await database.LockClearer.ClearAsync(CancellationToken);
-        var migrated = await MigratesWithinBudgetAsync(database);
+        bool migrated = await MigratesWithinBudgetAsync(database);
 
         (cleared.Match(_ => true, _ => false), migrated).ShouldBe((true, true));
     }

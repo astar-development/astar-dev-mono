@@ -115,7 +115,7 @@ public sealed class GivenTheMicrosoftAccountActions : IDisposable
     public async Task when_the_token_cache_cannot_be_connected_then_reauthentication_fails_without_a_sign_in_window()
     {
         var accountId = await AddAsync(TestSignIns.AccountKey);
-        var opened = 0;
+        int opened = 0;
         var msal = new FakeMsalClient { Reauthenticate = (_, _, _) => { opened++; return Task.FromResult(TestSignIns.NewAccount); } };
         var storage = new FakeMsalTokenCacheStorage { SecureStoreFails = true, PlaintextFileFails = true };
 

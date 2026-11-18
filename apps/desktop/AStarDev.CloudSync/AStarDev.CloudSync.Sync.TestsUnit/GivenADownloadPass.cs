@@ -115,7 +115,7 @@ public sealed class GivenADownloadPass
     {
         using var fixture = await CreateAsync(CancellationToken);
         fixture.Docs();
-        for (var index = 0; index < 100; index++)
+        for (int index = 0; index < 100; index++)
         {
             _ = fixture.Synced($"Docs/f{index:000}.txt", "x", $"id-{index}");
             if (index >= 60)
@@ -174,7 +174,7 @@ public sealed class GivenADownloadPass
         };
         _ = Summary(await fixture.RunAsync(CancellationToken));
         fixture.Quarantine.Snapshot = QuarantineSnapshotFactory.Create([new KeyValuePair<RelativeSyncPath, PathQuarantineState>(new RelativeSyncPath("Docs/a.txt"), PathQuarantineStateFactory.CreateConflicted())]);
-        var callsAfterFirstPass = fixture.Downloader.Calls.Count;
+        int callsAfterFirstPass = fixture.Downloader.Calls.Count;
 
         var second = Summary(await fixture.RunAsync(CancellationToken));
 
@@ -377,7 +377,7 @@ public sealed class GivenADownloadPass
         using var fixture = await CreateAsync(CancellationToken);
         fixture.Docs();
         fixture.Downloader.Delay = TimeSpan.FromMilliseconds(20);
-        for (var index = 0; index < 24; index++)
+        for (int index = 0; index < 24; index++)
         {
             fixture.Remote.File($"Docs/f{index}.txt", $"id-{index}", "c2", 5);
             fixture.Downloader.Content[$"id-{index}"] = Hello;

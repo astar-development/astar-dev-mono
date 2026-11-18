@@ -340,7 +340,7 @@ public sealed class GivenAConflictResolver : IDisposable
 
         var summary = await Summary(run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateSkip(), CancellationToken));
 
-        var open = (await run.Attention.GetOpenAsync(run.Account, CancellationToken)).Match(items => items.Count, _ => -1);
+        int open = (await run.Attention.GetOpenAsync(run.Account, CancellationToken)).Match(items => items.Count, _ => -1);
         (summary.Skipped, summary.Resolved, open, run.Uploader.Calls.Count, run.Downloader.Calls.Count).ShouldBe((1, 0, 1, 0, 0));
     }
 
@@ -470,7 +470,7 @@ public sealed class GivenAConflictResolver : IDisposable
         var background = run.SyncLock.TryAcquireBackground(run.Account).ShouldBeOfType<SyncLockAttempt.Acquired>().Lease;
 
         var resolving = run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateLocalWins(), CancellationToken);
-        var waitedForTheWrite = !resolving.IsCompleted;
+        bool waitedForTheWrite = !resolving.IsCompleted;
         background.Dispose();
         _ = await resolving;
 
@@ -549,7 +549,7 @@ public sealed class GivenAConflictResolver : IDisposable
         var gate = new WriteGate();
         run.Uploader.Gate = gate;
         var id = run.Conflict("Docs/a.txt", ConflictKindFactory.CreateBothModified());
-        var passesStarted = 0;
+        int passesStarted = 0;
         var resolutions = Enumerable.Range(0, 20).Select(_ => Task.Run(() => run.Resolver.ResolveAsync(run.Account, [id], ConflictStrategyFactory.CreateLocalWins(), CancellationToken), CancellationToken)).ToList();
         await gate.Entered.WaitAsync(CancellationToken);
         var passes = Enumerable.Range(0, 20).Select(_ => Task.Run(() => run.SyncLock.TryAcquire(run.Account) is SyncLockAttempt.Acquired acquired ? Interlocked.Increment(ref passesStarted) + Release(acquired) : 0, CancellationToken)).ToList();

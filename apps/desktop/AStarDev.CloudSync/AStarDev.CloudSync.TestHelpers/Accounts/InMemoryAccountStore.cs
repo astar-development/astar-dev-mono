@@ -35,7 +35,7 @@ public sealed class InMemoryAccountStore : IAccountStore
         lock (gate)
         {
             _ = accounts.RemoveAll(account => account.Id == accountId);
-            
+
         }
 
         return Task.FromResult(Result.Success<Unit, ErrorResponse>(Unit.Instance));
@@ -46,7 +46,7 @@ public sealed class InMemoryAccountStore : IAccountStore
         cancellationToken.ThrowIfCancellationRequested();
         lock (gate)
         {
-            var index = accounts.FindIndex(account => account.Id == accountId);
+            int index = accounts.FindIndex(account => account.Id == accountId);
             if (index >= 0)
             {
                 var registration = accounts[index].Registration;

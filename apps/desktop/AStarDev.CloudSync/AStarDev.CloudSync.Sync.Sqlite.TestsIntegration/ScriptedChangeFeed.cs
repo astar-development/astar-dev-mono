@@ -34,7 +34,7 @@ public sealed class ScriptedChangeFeed : IRemoteChangeFeed
 
     public async Task<Result<RemoteChangePage, ProviderError>> GetChangesAsync(AccountId accountId, Option<ChangeCursor> cursor, CancellationToken cancellationToken)
     {
-        var now = Interlocked.Increment(ref running);
+        int now = Interlocked.Increment(ref running);
         InterlockedMax(now);
         await Task.Delay(10, cancellationToken);
 

@@ -122,7 +122,7 @@ public sealed class GivenAJsonResponseProcessor
 
         var result = await processor.GetFromJsonAsync<TestPayload>(new Uri("https://example.test/search"), client, CancellationToken.None);
 
-        var message = result.Match(_ => string.Empty, ex => ex.Message);
+        string message = result.Match(_ => string.Empty, ex => ex.Message);
         message.ShouldContain(new string('a', 500));
         message.ShouldNotContain(new string('a', 501));
         message.ShouldEndWith("…");

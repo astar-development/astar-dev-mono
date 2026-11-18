@@ -25,7 +25,7 @@ public sealed class ScrapeService(OperationCoordinator operationCoordinator, ISc
             return;
         }
 
-        var startTime = Stopwatch.GetTimestamp();
+        long startTime = Stopwatch.GetTimestamp();
         try
         {
             progress.Report("Starting scrape operation.");
@@ -51,9 +51,9 @@ public sealed class ScrapeService(OperationCoordinator operationCoordinator, ISc
 
     private void ReportCompleted(IProgress<string> progress, long startTime)
     {
-        var duration = Stopwatch.GetElapsedTime(startTime).ToDurationString();
+        string duration = Stopwatch.GetElapsedTime(startTime).ToDurationString();
         progress.Report($"Search completed in: {duration}.");
-        var completedMessage = $"Scrape completed in {duration}";
+        string completedMessage = $"Scrape completed in {duration}";
         LogMessage.Information(logger, completedMessage);
     }
 

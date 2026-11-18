@@ -184,10 +184,10 @@ public sealed class FolderSelectionViewModel : LocalizedObservableObject, IFolde
         if (!node.CanToggle)
             return;
 
-        var wasTicked = evaluator.Evaluate(node.Path, Planned()) is SelectionState.Included;
+        bool wasTicked = evaluator.Evaluate(node.Path, Planned()) is SelectionState.Included;
         _ = staged.RemoveAll(change => IsInclusionAt(change, node.Path));
         var planned = Planned();
-        var isTicked = evaluator.Evaluate(node.Path, planned) is SelectionState.Included;
+        bool isTicked = evaluator.Evaluate(node.Path, planned) is SelectionState.Included;
 
         if (wasTicked && isTicked)
             staged.Add(SelectionChangeFactory.CreateExcludeFolder(node.Path, node.RemoteId));
@@ -220,8 +220,8 @@ public sealed class FolderSelectionViewModel : LocalizedObservableObject, IFolde
 
     private static bool IsInside(LocalRelativePath path, LocalRelativePath folder)
     {
-        var inner = path.Value ?? string.Empty;
-        var outer = folder.Value ?? string.Empty;
+        string inner = path.Value ?? string.Empty;
+        string outer = folder.Value ?? string.Empty;
 
         return outer.Length == 0 || string.Equals(inner, outer, StringComparison.OrdinalIgnoreCase) || inner.StartsWith(outer + "/", StringComparison.OrdinalIgnoreCase);
     }
@@ -411,7 +411,7 @@ public sealed class FolderSelectionViewModel : LocalizedObservableObject, IFolde
         if (Step is not FolderSelectionStep.Tree)
             return;
 
-        var count = SyncedUnticks();
+        int count = SyncedUnticks();
         if (count > 0)
         {
             SetStep(FolderSelectionStepFactory.CreateConfirmingUntick(count));

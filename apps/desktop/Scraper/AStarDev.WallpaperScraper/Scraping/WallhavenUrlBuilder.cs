@@ -27,7 +27,7 @@ public static class WallhavenUrlBuilder
     /// <param name="page">The page number to append, omitted for page 1.</param>
     public static Uri BuildCategoryPageUrl(string searchCategoriesTemplate, string searchCategoriesSuffix, SearchCategoryEntity category, int page)
     {
-        var url = searchCategoriesTemplate + category.Id + searchCategoriesSuffix;
+        string url = searchCategoriesTemplate + category.Id + searchCategoriesSuffix;
 
         return ToUri(page == 1 ? url : url + page);
     }

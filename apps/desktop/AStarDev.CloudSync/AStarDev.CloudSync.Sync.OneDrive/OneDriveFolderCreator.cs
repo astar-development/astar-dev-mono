@@ -31,7 +31,7 @@ internal sealed class OneDriveFolderCreator(OneDriveTransferHttp http, ILogger<O
         if (!item.TryGetProperty("folder", out _))
             return Result.Failure<RemoteFolder, ProviderError>(ProviderErrorFactory.CreateNameConflict());
 
-        var parent = item.TryGetProperty("parentReference", out var reference) && reference.TryGetProperty("id", out var parentId) ? parentId.GetString() : requestedParent;
+        string? parent = item.TryGetProperty("parentReference", out var reference) && reference.TryGetProperty("id", out var parentId) ? parentId.GetString() : requestedParent;
         var children = item.GetProperty("folder").TryGetProperty("childCount", out var count) && count.GetInt32() > 0 ? RemoteFolderChildrenFactory.CreateMayHaveChildFolders() : RemoteFolderChildrenFactory.CreateNoChildFolders();
 
         return VersionOf(item).Bind(version => RemoteItemIdFactory.Create(item.TryGetProperty("id", out var id) ? id.GetString() : null).Match(
@@ -44,7 +44,7 @@ internal sealed class OneDriveFolderCreator(OneDriveTransferHttp http, ILogger<O
         if (!item.TryGetProperty("lastModifiedDateTime", out var modified) || modified.ValueKind is not JsonValueKind.String || !modified.TryGetDateTimeOffset(out var lastModified))
             return Result.Failure<RemoteFolderVersion, ProviderError>(ProviderErrorFactory.CreateUnexpected());
 
-        var tag = item.TryGetProperty("eTag", out var eTag) && eTag.ValueKind is JsonValueKind.String ? eTag.GetString() : null;
+        string? tag = item.TryGetProperty("eTag", out var eTag) && eTag.ValueKind is JsonValueKind.String ? eTag.GetString() : null;
 
         return EntityTagFactory.Create(tag).Match(
             entityTag => Result.Success<RemoteFolderVersion, ProviderError>(RemoteFolderVersionFactory.Create(entityTag, lastModified)),
@@ -53,7 +53,7 @@ internal sealed class OneDriveFolderCreator(OneDriveTransferHttp http, ILogger<O
 
     private async Task<Result<RemoteFolder, ProviderError>> CreateAsync(AccountId accountId, TransferCredentials credentials, Option<RemoteItemId> parent, string name, CancellationToken cancellationToken)
     {
-        var segment = OneDriveTransferHttp.ParentSegment(parent);
+        string segment = OneDriveTransferHttp.ParentSegment(parent);
         using var request = OneDriveTransferHttp.Authorized(HttpMethod.Post, OneDriveTransferHttp.ItemUri(credentials, segment, "/children"), credentials);
         request.Content = OneDriveTransferHttp.JsonBody(writer =>
         {

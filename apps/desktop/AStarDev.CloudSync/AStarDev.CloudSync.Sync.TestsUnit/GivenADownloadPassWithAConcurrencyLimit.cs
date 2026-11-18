@@ -13,7 +13,7 @@ public sealed class GivenADownloadPassWithAConcurrencyLimit
         var fixture = await CreateAsync(CancellationToken);
         fixture.Docs();
         fixture.Downloader.Delay = TimeSpan.FromMilliseconds(60);
-        foreach (var index in Enumerable.Range(0, files))
+        foreach (int index in Enumerable.Range(0, files))
         {
             fixture.Remote.File($"Docs/f{index}.txt", $"id{index}", "c2", 5);
             fixture.Downloader.Content[$"id{index}"] = Hello;

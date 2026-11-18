@@ -90,7 +90,7 @@ public sealed class FolderTreeSource(IProviderCapability<IRemoteFolderBrowser> r
 
     private FolderTreeNode ToNode(LocalRelativePath parentPath, List<LocalFolder> localMatches, Option<RemoteFolder> remoteMatch, string name, IReadOnlyList<SelectionRule> stored)
     {
-        var displayName = localMatches.Count > 0 ? localMatches[0].Name : name;
+        string displayName = localMatches.Count > 0 ? localMatches[0].Name : name;
         var path = localMatches.Count > 0 ? localMatches[0].Path : ChildPath(parentPath, displayName);
 
         return FolderTreeNodeFactory.Create(

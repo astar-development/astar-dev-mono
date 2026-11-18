@@ -45,8 +45,8 @@ public sealed class GivenAStatusMessageLog
         _ = log.Append("first message");
         _ = log.Append("second message");
 
-        var first = log.Text;
-        var second = log.Text;
+        string first = log.Text;
+        string second = log.Text;
 
         second.ShouldBeSameAs(first);
     }
@@ -68,7 +68,7 @@ public sealed class GivenAStatusMessageLog
     {
         var log = new StatusMessageLog(maximumMessages: 100);
 
-        var refreshRequired = log.Append("first message");
+        bool refreshRequired = log.Append("first message");
 
         refreshRequired.ShouldBeTrue();
     }
@@ -78,7 +78,7 @@ public sealed class GivenAStatusMessageLog
     {
         var log = new StatusMessageLog(maximumMessages: 100);
 
-        var required = new[] { log.Append("first message"), log.Append("second message"), log.Append("third message") };
+        bool[] required = new[] { log.Append("first message"), log.Append("second message"), log.Append("third message") };
 
         required.ShouldBe([true, false, false]);
     }
@@ -90,7 +90,7 @@ public sealed class GivenAStatusMessageLog
         _ = log.Append("first message");
         _ = log.Text;
 
-        var refreshRequired = log.Append("second message");
+        bool refreshRequired = log.Append("second message");
 
         refreshRequired.ShouldBeTrue();
     }
@@ -102,7 +102,7 @@ public sealed class GivenAStatusMessageLog
 
         await Task.WhenAll(Enumerable.Range(0, 8).Select(thread => Task.Run(() =>
         {
-            for (var message = 0; message < 500; message++)
+            for (int message = 0; message < 500; message++)
             {
                 _ = log.Append($"thread {thread} message {message}");
             }

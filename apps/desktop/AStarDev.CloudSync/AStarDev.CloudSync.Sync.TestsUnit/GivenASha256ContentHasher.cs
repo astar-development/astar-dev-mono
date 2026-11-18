@@ -17,7 +17,7 @@ public class GivenASha256ContentHasher
     [Fact]
     public async Task when_the_file_is_empty_then_the_hash_is_the_known_empty_vector()
     {
-        var hash = await Hash(Write("/root/empty.bin", []));
+        string hash = await Hash(Write("/root/empty.bin", []));
 
         hash.ShouldBe(EmptyFileHash);
     }
@@ -25,7 +25,7 @@ public class GivenASha256ContentHasher
     [Fact]
     public async Task when_the_file_holds_abc_then_the_hash_is_the_known_vector()
     {
-        var hash = await Hash(Write("/root/abc.txt", "abc"u8.ToArray()));
+        string hash = await Hash(Write("/root/abc.txt", "abc"u8.ToArray()));
 
         hash.ShouldBe(AbcHash);
     }
@@ -33,7 +33,7 @@ public class GivenASha256ContentHasher
     [Fact]
     public async Task when_the_file_is_larger_than_one_megabyte_then_the_hash_is_the_known_vector()
     {
-        var hash = await Hash(Write("/root/large.bin", Enumerable.Repeat((byte)'a', (1024 * 1024) + 1).ToArray()));
+        string hash = await Hash(Write("/root/large.bin", Enumerable.Repeat((byte)'a', (1024 * 1024) + 1).ToArray()));
 
         hash.ShouldBe(LargeFileHash);
     }
@@ -41,7 +41,7 @@ public class GivenASha256ContentHasher
     [Fact]
     public async Task when_the_file_does_not_exist_then_the_hash_fails_as_unreadable()
     {
-        var hash = await Hash(fileSystem.FileInfo.New("/root/vanished.txt"));
+        string hash = await Hash(fileSystem.FileInfo.New("/root/vanished.txt"));
 
         hash.ShouldBe("Unreadable");
     }
@@ -52,7 +52,7 @@ public class GivenASha256ContentHasher
         var file = Write("/root/locked.txt", "abc"u8.ToArray());
         await using var holder = fileSystem.File.Open("/root/locked.txt", FileMode.Open, FileAccess.ReadWrite, FileShare.None);
 
-        var hash = await Hash(file);
+        string hash = await Hash(file);
 
         hash.ShouldBe("Unreadable");
     }
@@ -74,7 +74,7 @@ public class GivenASha256ContentHasher
     {
         var files = Enumerable.Range(0, 20).Select(index => Write($"/root/file{index}.txt", "abc"u8.ToArray())).ToList();
 
-        var hashes = await Task.WhenAll(files.Select(file => Task.Run(() => Hash(file), CancellationToken)));
+        string[] hashes = await Task.WhenAll(files.Select(file => Task.Run(() => Hash(file), CancellationToken)));
 
         hashes.ShouldAllBe(hash => hash == AbcHash);
     }

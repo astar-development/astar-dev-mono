@@ -28,14 +28,14 @@ public static class PhraseMatcher
         if (tokens.Count == 0 || index.LongestPhrase == 0)
             return;
 
-        var text = string.Join(' ', tokens);
+        string text = string.Join(' ', tokens);
         var starts = tokens.Count < StackTokenCount ? stackalloc int[StackTokenCount] : new int[tokens.Count + 1];
-        for (var token = 0; token < tokens.Count; token++)
+        for (int token = 0; token < tokens.Count; token++)
         {
             starts[token + 1] = starts[token] + (tokens[token]?.Length ?? 0) + 1;
         }
 
-        var position = 0;
+        int position = 0;
         while (position < tokens.Count)
         {
             position += MatchAt(matches, text, starts, position, Math.Min(index.LongestPhrase, tokens.Count - position), index);
@@ -44,7 +44,7 @@ public static class PhraseMatcher
 
     private static int MatchAt(List<ClassificationTerm> matches, string text, ReadOnlySpan<int> starts, int position, int longest, PhraseIndex index)
     {
-        for (var size = longest; size > 0; size--)
+        for (int size = longest; size > 0; size--)
         {
             if (index.Phrases.TryGetValue(text.AsSpan(starts[position], starts[position + size] - starts[position] - 1), out var terms))
             {

@@ -8,9 +8,7 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
     public partial class AddSyncSchedule : Migration
     {
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.CreateTable(
+        protected override void Up(MigrationBuilder migrationBuilder) => migrationBuilder.CreateTable(
                 name: "SyncSchedule",
                 columns: table => new
                 {
@@ -21,13 +19,9 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
                 {
                     table.PrimaryKey("PK_SyncSchedule", x => x.Id);
                 });
-        }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
+        protected override void Down(MigrationBuilder migrationBuilder) => migrationBuilder.DropTable(
                 name: "SyncSchedule");
-        }
     }
 }

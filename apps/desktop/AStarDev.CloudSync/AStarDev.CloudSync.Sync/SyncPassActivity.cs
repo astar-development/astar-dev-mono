@@ -42,7 +42,7 @@ internal sealed class SyncPassActivity(IActivityLogWriter writer, TimeProvider t
     private static List<ActivityKind> KindsOf(DownloadPassSummary download, UploadPassSummary upload)
     {
         var kinds = new List<ActivityKind>();
-        var deleted = download.DeletedLocally + upload.Removed;
+        int deleted = download.DeletedLocally + upload.Removed;
 
         if (download.Downloaded > 0)
             kinds.Add(ActivityKindFactory.CreateDownloaded(download.Downloaded));

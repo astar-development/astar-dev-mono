@@ -29,9 +29,9 @@ public sealed class GivenCloudSyncLogging : IDisposable
     private static void LogEverythingFor(ILogger logger, AccountId account, string tag)
     {
         using var scope = SyncLogScope.Begin(logger, account);
-        var debug = $"{tag} debug";
-        var information = $"{tag} information";
-        var warning = $"{tag} warning";
+        string debug = $"{tag} debug";
+        string information = $"{tag} information";
+        string warning = $"{tag} warning";
         LogMessage.Debug(logger, nameof(GivenCloudSyncLogging), debug);
         LogMessage.Information(logger, nameof(GivenCloudSyncLogging), information);
         LogMessage.Warning(logger, nameof(GivenCloudSyncLogging), warning);
@@ -59,7 +59,7 @@ public sealed class GivenCloudSyncLogging : IDisposable
         LogEverythingFor(logger, Photos, "photos");
         LogEverythingFor(logger, Work, "work");
 
-        var written = Written();
+        string written = Written();
         (written.Contains("photos debug", StringComparison.Ordinal), written.Contains("photos information", StringComparison.Ordinal), written.Contains("work debug", StringComparison.Ordinal), written.Contains("work information", StringComparison.Ordinal), written.Contains("work warning", StringComparison.Ordinal)).ShouldBe((true, true, false, false, true));
     }
 
@@ -73,7 +73,7 @@ public sealed class GivenCloudSyncLogging : IDisposable
         levels.Apply(Photos, AccountLogLevelFactory.CreateVerbose());
         LogEverythingFor(logger, Photos, "during");
 
-        var written = Written();
+        string written = Written();
         (written.Contains("before debug", StringComparison.Ordinal), written.Contains("during debug", StringComparison.Ordinal)).ShouldBe((false, true));
     }
 
@@ -86,7 +86,7 @@ public sealed class GivenCloudSyncLogging : IDisposable
         LogMessage.Debug(logger, nameof(GivenCloudSyncLogging), "app debug");
         LogMessage.Information(logger, nameof(GivenCloudSyncLogging), "app information");
 
-        var written = Written();
+        string written = Written();
         (written.Contains("app debug", StringComparison.Ordinal), written.Contains("app information", StringComparison.Ordinal)).ShouldBe((false, true));
     }
 

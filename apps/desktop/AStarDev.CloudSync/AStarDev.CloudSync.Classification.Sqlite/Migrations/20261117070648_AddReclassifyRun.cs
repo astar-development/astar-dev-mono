@@ -9,9 +9,7 @@ namespace AStarDev.CloudSync.Classification.Sqlite.Migrations
     public partial class AddReclassifyRun : Migration
     {
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.CreateTable(
+        protected override void Up(MigrationBuilder migrationBuilder) => migrationBuilder.CreateTable(
                 name: "ReclassifyRun",
                 columns: table => new
                 {
@@ -25,13 +23,9 @@ namespace AStarDev.CloudSync.Classification.Sqlite.Migrations
                     table.PrimaryKey("PK_ReclassifyRun", x => x.Id);
                     table.CheckConstraint("CK_ReclassifyRun_SingleRow", "\"Id\" = 1");
                 });
-        }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
+        protected override void Down(MigrationBuilder migrationBuilder) => migrationBuilder.DropTable(
                 name: "ReclassifyRun");
-        }
     }
 }

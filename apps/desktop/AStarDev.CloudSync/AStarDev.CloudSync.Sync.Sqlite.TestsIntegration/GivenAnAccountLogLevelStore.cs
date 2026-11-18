@@ -97,7 +97,7 @@ public sealed class GivenAnAccountLogLevelStore : IAsyncLifetime
 
         await Task.WhenAll(accounts.Select((account, index) => Task.Run(() => SetAsync(account, index % 2 == 0 ? AccountLogLevelFactory.CreateVerbose() : AccountLogLevelFactory.CreateStandard()), CancellationToken)));
 
-        var verbose = (await Database.LogLevels.ListVerboseAsync(CancellationToken)).Match(listed => listed.Count, _ => -1);
+        int verbose = (await Database.LogLevels.ListVerboseAsync(CancellationToken)).Match(listed => listed.Count, _ => -1);
         verbose.ShouldBe(10);
     }
 }

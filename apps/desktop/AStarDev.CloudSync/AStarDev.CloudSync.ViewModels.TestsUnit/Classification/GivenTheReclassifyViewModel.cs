@@ -282,7 +282,7 @@ public class GivenTheReclassifyViewModel
     public void when_created_then_it_listens_for_recorded_runs_and_when_disposed_then_it_stops()
     {
         var viewModel = Create();
-        var whileAlive = reclassifier.RunRecordedSubscribers;
+        int whileAlive = reclassifier.RunRecordedSubscribers;
 
         viewModel.Dispose();
 

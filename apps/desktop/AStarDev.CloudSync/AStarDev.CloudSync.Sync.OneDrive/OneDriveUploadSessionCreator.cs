@@ -47,8 +47,8 @@ internal sealed class OneDriveUploadSessionCreator(OneDriveTransferHttp http, On
             return Result.Failure<Unit, ProviderError>(error);
         }
 
-        var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-        var address = Try.Run(() => JsonDocument.Parse(json)).Match(document => StringOf(document.RootElement, "uploadUrl"), _ => Option.None<string>()).Match(text => text, () => string.Empty);
+        string json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        string address = Try.Run(() => JsonDocument.Parse(json)).Match(document => StringOf(document.RootElement, "uploadUrl"), _ => Option.None<string>()).Match(text => text, () => string.Empty);
         if (!Uri.TryCreate(address, UriKind.Absolute, out var session) || session.Scheme != Uri.UriSchemeHttps)
             return Result.Failure<Unit, ProviderError>(ProviderErrorFactory.CreateUnexpected());
 

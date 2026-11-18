@@ -25,7 +25,7 @@ public sealed class GivenALargeLinkBatchOverSqlite : MigratedDatabaseTests
     {
         var red = await AddTermAsync("red");
         var paths = Enumerable.Range(0, MoreFilesThanSqliteParameters).Select(index => $"Photos/file{index}.jpg").ToList();
-        foreach (var chunk in paths.Chunk(1_000))
+        foreach (string[] chunk in paths.Chunk(1_000))
             await InBaselineAsync(account, chunk);
 
         _ = Ok(await Database.Links.ReplaceAutoLinksAsync([.. paths.Select(path => FileTermLinksFactory.Create(account, Path(path), [red]))], CancellationToken));

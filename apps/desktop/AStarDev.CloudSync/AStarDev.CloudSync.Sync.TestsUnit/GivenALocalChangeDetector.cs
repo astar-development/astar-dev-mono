@@ -358,7 +358,7 @@ public sealed class GivenALocalChangeDetector : IDisposable
     public async Task when_the_baseline_is_large_then_it_is_read_in_pages_of_at_most_5000()
     {
         fixture.Include("Docs");
-        foreach (var index in Enumerable.Range(0, 12000))
+        foreach (int index in Enumerable.Range(0, 12000))
             fixture.Baseline.Add(SyncBaselineEntryFactory.Create(LocalScanFixture.Account, LocalScanFixture.Path($"Docs/file{index:00000}.txt"), RemoteIds.Of($"item-{index}"), SyncBaselineKindFactory.CreateFolder()));
 
         var set = await fixture.ScanAsync(CancellationToken);

@@ -70,7 +70,7 @@ public sealed class SyncOverviewViewModel(ISyncOverviewSource source, IAccountCo
     /// <param name="cancellationToken">Cancels the read.</param>
     public async Task LoadAsync(CancellationToken cancellationToken)
     {
-        var load = Interlocked.Increment(ref loadsStarted);
+        int load = Interlocked.Increment(ref loadsStarted);
         _ = await UiResumingTry.RunAsync(() => source.GetOverviewAsync(cancellationToken), result => IsLatest(load) ? result.Match(Show, NotRead) : Unit.Instance, exception => IsLatest(load) ? Threw(exception) : Unit.Instance, cancellationToken);
     }
 
@@ -96,7 +96,7 @@ public sealed class SyncOverviewViewModel(ISyncOverviewSource source, IAccountCo
     {
         overview = loaded;
         var accountsById = overview.Accounts.ToDictionary(account => account.Id);
-        
+
         Accounts = [.. overview.Accounts.Select(account => new AccountViewModel(account, overview.Activity, accountCommands, Localization, timeProvider))];
         SyncPairs = [.. overview.SyncPairs.Where(pair => accountsById.ContainsKey(pair.AccountId)).Select(pair => new SyncPairViewModel(pair, accountsById[pair.AccountId], ruleWriter, LoadAsync, Localization, timeProvider))];
         Activity = [.. overview.Activity.Where(entry => accountsById.ContainsKey(entry.AccountId)).OrderByDescending(entry => entry.OccurredAt).Select(entry => new ActivityItemViewModel(entry, accountsById[entry.AccountId].DisplayName, new ProviderViewModel(accountsById[entry.AccountId].Provider, Localization), Localization, timeProvider))];

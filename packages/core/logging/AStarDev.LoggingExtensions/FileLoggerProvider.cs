@@ -52,7 +52,7 @@ public sealed class FileLoggerProvider(string directory, string fileNamePrefix, 
 
     private bool Admits(LogLevel logLevel, IReadOnlyDictionary<string, object?> values) => logLevel != LogLevel.None && (admission is null || admission(logLevel, values));
 
-    private static string AccountTag(IReadOnlyDictionary<string, object?> values) => values.TryGetValue(AccountIdHashKey, out var hash) && hash is string text && text.Length > 0 ? $" [{AccountIdHashKey}={text}]" : string.Empty;
+    private static string AccountTag(IReadOnlyDictionary<string, object?> values) => values.TryGetValue(AccountIdHashKey, out object? hash) && hash is string text && text.Length > 0 ? $" [{AccountIdHashKey}={text}]" : string.Empty;
 
     private static void CollectScope(object? scope, Dictionary<string, object?> values)
     {
@@ -96,7 +96,7 @@ public sealed class FileLoggerProvider(string directory, string fileNamePrefix, 
             currentIndex = 1;
         }
 
-        var path = NumberedPath(moment, currentIndex);
+        string path = NumberedPath(moment, currentIndex);
         while (File.Exists(path) && new FileInfo(path).Length >= fileLimit)
             path = NumberedPath(moment, ++currentIndex);
 

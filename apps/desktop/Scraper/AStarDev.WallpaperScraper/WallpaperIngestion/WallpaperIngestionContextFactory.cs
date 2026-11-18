@@ -13,7 +13,7 @@ public sealed class WallpaperIngestionContextFactory(IWallhavenClientFactory cli
     {
         var client = clientFactory.Create(request.Target.Connection);
         var directories = await saveDirectoryResolver.ResolveSaveDirectoriesAsync(request.Label.CategoryName, cancellationToken);
-        var categoryLabel = request.Label.CategoryName.Match(name => name, () => "Top Wallpapers");
+        string categoryLabel = request.Label.CategoryName.Match(name => name, () => "Top Wallpapers");
 
         return new WallpaperIngestionContext(new SearchOutput(directories, categoryLabel), client, unitOfWork.GetRepository<FileEntity, FileId>(), request.Target.PersonCategories);
     }

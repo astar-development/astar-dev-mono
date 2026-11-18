@@ -7,7 +7,7 @@ public class GivenADownloadPlannerGuardAndOrder
 {
     private static DownloadScenario Pair(DownloadScenario scenario, string folder, int baselineItems, int deletedRemotely)
     {
-        for (var index = 0; index < baselineItems; index++)
+        for (int index = 0; index < baselineItems; index++)
         {
             scenario.BaselineFile($"{folder}/f{index}.txt", $"{folder}-{index}", "c1");
             if (index >= deletedRemotely)

@@ -64,7 +64,7 @@ internal sealed class SqliteSyncRootStore(IDbContextFactory<SyncDbContext> dbCon
         return await checkedRoot.MatchAsync(
                 async accepted =>
                 {
-                    var changed = entities.Any(entity => entity.AccountId == accountId.Value && !string.Equals(entity.Path, accepted.Directory.FullName, caseRule.Comparison));
+                    bool changed = entities.Any(entity => entity.AccountId == accountId.Value && !string.Equals(entity.Path, accepted.Directory.FullName, caseRule.Comparison));
                     if (changed)
                         _ = await dbContext.SyncBaseline.Where(entry => entry.AccountId == accountId.Value).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
 

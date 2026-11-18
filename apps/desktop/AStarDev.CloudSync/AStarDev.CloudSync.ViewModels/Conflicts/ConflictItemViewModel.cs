@@ -91,7 +91,7 @@ public sealed class ConflictItemViewModel : LocalizedObservableObject
     private ConflictStrategyOptionViewModel CreateOption(IConflictResolutionPlanner planner, ConflictStrategy strategy)
     {
         var notAllowed = planner.Plan(conflict, strategy).Match(_ => Option.None<ResolutionNotAllowed>(), reason => Option.Some(reason));
-        var allowed = notAllowed.Match(_ => false, () => true);
+        bool allowed = notAllowed.Match(_ => false, () => true);
         var command = new AsyncRelayCommand(cancellationToken => RunAsync(strategy, cancellationToken), () => allowed && !IsBusy);
 
         return new ConflictStrategyOptionViewModel(strategy, notAllowed, PathText, command, Localization);

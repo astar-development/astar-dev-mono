@@ -18,7 +18,7 @@ public sealed class GivenAUserOperationRunner : IDisposable
     [Fact]
     public async Task when_the_operation_succeeds_then_it_runs_with_the_operation_marked_as_running_and_completes_afterwards()
     {
-        var wasRunning = false;
+        bool wasRunning = false;
 
         await runner.RunAsync("cancelled", "failed", _ =>
         {
@@ -34,7 +34,7 @@ public sealed class GivenAUserOperationRunner : IDisposable
     public async Task when_another_operation_is_already_running_then_the_operation_is_not_run()
     {
         _ = coordinator.TryStart(out _);
-        var ran = false;
+        bool ran = false;
 
         await runner.RunAsync("cancelled", "failed", _ =>
         {
@@ -86,7 +86,7 @@ public sealed class GivenAUserOperationRunner : IDisposable
     [Fact]
     public async Task when_a_guarded_operation_succeeds_then_nothing_is_reported()
     {
-        var ran = false;
+        bool ran = false;
 
         await runner.ReportFailuresAsync("Unable to edit.", () =>
         {
@@ -110,7 +110,7 @@ public sealed class GivenAUserOperationRunner : IDisposable
     public async Task when_a_guarded_operation_runs_while_another_operation_is_running_then_it_still_runs()
     {
         _ = coordinator.TryStart(out _);
-        var ran = false;
+        bool ran = false;
 
         await runner.ReportFailuresAsync("Unable to edit.", () =>
         {

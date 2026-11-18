@@ -19,7 +19,7 @@ public sealed class GivenAStatusReporter
     [Fact]
     public void when_the_text_has_not_been_read_then_a_burst_of_messages_raises_refresh_required_once()
     {
-        var raised = 0;
+        int raised = 0;
         reporter.RefreshRequired += (_, _) => raised++;
 
         reporter.Append("first");
@@ -32,7 +32,7 @@ public sealed class GivenAStatusReporter
     [Fact]
     public void when_the_text_is_read_then_the_next_message_raises_refresh_required_again()
     {
-        var raised = 0;
+        int raised = 0;
         reporter.RefreshRequired += (_, _) => raised++;
         reporter.Append("first");
         _ = reporter.Text;

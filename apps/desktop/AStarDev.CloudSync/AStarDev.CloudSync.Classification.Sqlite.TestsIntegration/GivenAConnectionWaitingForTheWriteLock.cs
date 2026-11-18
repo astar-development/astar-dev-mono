@@ -14,7 +14,7 @@ public sealed class GivenAConnectionWaitingForTheWriteLock : MigratedDatabaseTes
         await pooled.OpenAsync(CancellationToken);
         await using var command = pooled.CreateCommand();
         command.CommandText = "PRAGMA busy_timeout;";
-        var busyTimeout = await command.ExecuteScalarAsync(CancellationToken);
+        object? busyTimeout = await command.ExecuteScalarAsync(CancellationToken);
 
         busyTimeout.ShouldBe(5000L);
     }

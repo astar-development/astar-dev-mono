@@ -71,7 +71,7 @@ public class GivenTheClassificationTabs
         await tabs.Suggestions.PromoteCommand.ExecuteAsync(tabs.Suggestions.Rows[0]);
         await tabs.Suggestions.ChooseCategoryCommand.ExecuteAsync(tabs.Suggestions.Categories[0]);
         terms.Terms.Add(ClassificationTestData.Term("sunset", colours));
-        var reloadedBeforeShowing = terms.GetAllCount;
+        int reloadedBeforeShowing = terms.GetAllCount;
 
         await tabs.ShowTermsCommand.ExecuteAsync(null);
         await tabs.ShowTermsCommand.ExecuteAsync(null);

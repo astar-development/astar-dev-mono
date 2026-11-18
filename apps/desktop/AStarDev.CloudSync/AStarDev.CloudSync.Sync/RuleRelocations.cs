@@ -8,7 +8,7 @@ internal static class RuleRelocations
         var staying = rules.Where(rule => !targets.ContainsKey(rule.Path)).ToList();
         var taken = new HashSet<LocalRelativePath>(staying.Select(rule => rule.Path));
         var moved = new List<SelectionRule>();
-        var dropped = 0;
+        int dropped = 0;
 
         foreach (var rule in rules.Where(rule => targets.ContainsKey(rule.Path)).OrderBy(rule => rule.Path.Value ?? string.Empty, StringComparer.OrdinalIgnoreCase))
         {

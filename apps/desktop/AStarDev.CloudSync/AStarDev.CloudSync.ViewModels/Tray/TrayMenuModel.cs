@@ -53,7 +53,7 @@ public sealed class TrayMenuModel : LocalizedObservableObject
         if (overview.Accounts.Any(account => account.NeedsSignIn))
             return overview.OverallStatusText();
 
-        var syncing = overview.Accounts.Count(account => account.Status.IsSyncing);
+        int syncing = overview.Accounts.Count(account => account.Status.IsSyncing);
         if (syncing > 0)
             return Localization.GetLocal(CountKey.For("Tray.Status.Syncing", syncing), syncing.ToString("N0", Localization.CurrentCulture));
 

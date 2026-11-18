@@ -39,7 +39,7 @@ internal sealed class SyncPassAttention(ISyncAttentionReader reader, ISyncAttent
 
     private async Task<Result<Unit, ErrorResponse>> CloseSettledAsync(AccountId accountId, IReadOnlyList<SyncAttentionItem.Conflict> conflicts, HashSet<RelativeSyncPath> changed, CancellationToken cancellationToken)
     {
-        var closedCount = 0;
+        int closedCount = 0;
         foreach (var conflict in conflicts)
         {
             var settled = await HasSettledAsync(accountId, conflict, changed, cancellationToken).ConfigureAwait(false);
@@ -61,8 +61,8 @@ internal sealed class SyncPassAttention(ISyncAttentionReader reader, ISyncAttent
         if (count == 0)
             return;
 
-        var noun = count == 1 ? "conflict" : "conflicts";
-        var message = $"Auto-cleared {count} {noun} because one side returned to the baseline.";
+        string noun = count == 1 ? "conflict" : "conflicts";
+        string message = $"Auto-cleared {count} {noun} because one side returned to the baseline.";
         LogMessage.Information(logger, Location, message);
     }
 

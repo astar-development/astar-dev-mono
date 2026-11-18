@@ -134,7 +134,7 @@ public sealed class GivenAnOneDriveFolderCreator : IDisposable
     public async Task when_the_same_folder_is_ensured_twice_at_once_then_one_creates_it_and_the_other_finds_it_and_both_get_the_same_folder()
     {
         _ = await fixture.BuildAsync(CancellationToken);
-        var posts = 0;
+        int posts = 0;
         fixture.Graph.Respond = request => request.Method == HttpMethod.Post
             ? (Interlocked.Increment(ref posts) == 1 ? RecordingGraphHandler.Json(HttpStatusCode.Created, FolderJson("same", "New", "p1")) : RecordingGraphHandler.Json(HttpStatusCode.Conflict, "{}"))
             : RecordingGraphHandler.Json(HttpStatusCode.OK, FolderJson("same", "New", "p1"));

@@ -42,7 +42,7 @@ public sealed class GivenAVerboseSyncPassThroughTheFileSink : IDisposable
 
         _ = await upload.RunAsync(CancellationToken);
 
-        var written = Written();
+        string written = Written();
         written.ShouldContain("[Information]");
         LoggedText.Personal([written], PersonalData.All).ShouldBeEmpty();
     }

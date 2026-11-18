@@ -246,7 +246,7 @@ public sealed class GivenAnOneDriveFolderBrowser : IDisposable
         graph.Respond = _ => GraphScript.Json(HttpStatusCode.Forbidden, "{\"error\":{\"code\":\"accessDenied\",\"message\":\"Taxes 2026\"}}");
         _ = await Browser().GetChildFoldersAsync(account, Option.Some(ItemId("folder-42")), CancellationToken);
 
-        var everything = string.Join('\n', logs.Logger.Messages.Concat(logs.Logger.Scopes.SelectMany(scope => scope.Values.Select(value => value?.ToString() ?? string.Empty))));
+        string everything = string.Join('\n', logs.Logger.Messages.Concat(logs.Logger.Scopes.SelectMany(scope => scope.Values.Select(value => value?.ToString() ?? string.Empty))));
 
         (everything.Contains(Token, StringComparison.Ordinal), everything.Contains("Taxes", StringComparison.Ordinal), everything.Contains("graph.microsoft.com", StringComparison.Ordinal), everything.Contains("folder-42", StringComparison.Ordinal), everything.Contains(account.Value.ToString(), StringComparison.OrdinalIgnoreCase)).ShouldBe((false, false, false, false, false));
     }

@@ -13,7 +13,7 @@ public sealed class GivenAScopedRunner : IDisposable
     [Fact]
     public async Task when_run_then_the_result_of_the_delegate_is_returned()
     {
-        var result = await runner.RunAsync<ScopedMarker, int>(_ => Task.FromResult(42));
+        int result = await runner.RunAsync<ScopedMarker, int>(_ => Task.FromResult(42));
 
         result.ShouldBe(42);
     }
@@ -53,7 +53,7 @@ public sealed class GivenAScopedRunner : IDisposable
     [Fact]
     public async Task when_two_services_are_requested_then_both_come_from_the_same_scope()
     {
-        var sameScope = await runner.RunAsync<ScopedMarker, OtherMarker, bool>((marker, other) => Task.FromResult(marker.Id == other.ScopeMarkerId));
+        bool sameScope = await runner.RunAsync<ScopedMarker, OtherMarker, bool>((marker, other) => Task.FromResult(marker.Id == other.ScopeMarkerId));
 
         sameScope.ShouldBeTrue();
     }
@@ -61,7 +61,7 @@ public sealed class GivenAScopedRunner : IDisposable
     [Fact]
     public async Task when_three_services_are_requested_then_all_come_from_the_same_scope()
     {
-        var sameScope = await runner.RunAsync<ScopedMarker, OtherMarker, ThirdMarker, bool>((marker, other, third) => Task.FromResult(marker.Id == other.ScopeMarkerId && marker.Id == third.ScopeMarkerId));
+        bool sameScope = await runner.RunAsync<ScopedMarker, OtherMarker, ThirdMarker, bool>((marker, other, third) => Task.FromResult(marker.Id == other.ScopeMarkerId && marker.Id == third.ScopeMarkerId));
 
         sameScope.ShouldBeTrue();
     }

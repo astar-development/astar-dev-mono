@@ -50,7 +50,7 @@ internal static class FirstSyncLinker
         using var sha = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         long read = 0;
         await using var stream = target.OpenRead();
-        var quickXor = await QuickXorHash.ComputeAsync(stream, chunk => AppendAndReport(sha, chunk, ref read, size, progress), cancellationToken).ConfigureAwait(false);
+        string quickXor = await QuickXorHash.ComputeAsync(stream, chunk => AppendAndReport(sha, chunk, ref read, size, progress), cancellationToken).ConfigureAwait(false);
         if (read != size || !IsUnchanged(target, size, lastWriteUtc))
             return Result.Failure<FileHashes, LocalOperationFailure>(LocalOperationFailureFactory.CreateTargetChanged());
 

@@ -62,7 +62,7 @@ public sealed class GivenAnAccountThrottleHandler : IDisposable
 
         var sending = SendAsync(Option.Some(Personal));
         await Task.Delay(100, CancellationToken);
-        var sentEarly = graph.Requests;
+        int sentEarly = graph.Requests;
         time.Advance(TimeSpan.FromSeconds(4));
         using var response = await sending.WaitAsync(TimeSpan.FromSeconds(5), CancellationToken);
 
@@ -169,7 +169,7 @@ public sealed class GivenAnAccountThrottleHandler : IDisposable
 
     private int PausedSeconds()
     {
-        var seconds = 0;
+        int seconds = 0;
         while (!Gate.WaitAsync(Personal, CancellationToken).IsCompleted && seconds < 1000)
         {
             time.Advance(TimeSpan.FromSeconds(1));

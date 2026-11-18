@@ -176,7 +176,7 @@ public sealed class GivenAnUploadSessionStore : IAsyncLifetime
             return save.Match(_ => true, _ => false) && read.Match(_ => true, _ => false) && remove.Match(_ => true, _ => false);
         }, CancellationToken));
 
-        var outcomes = await Task.WhenAll(calls);
+        bool[] outcomes = await Task.WhenAll(calls);
         await SaveAsync(FirstAccount, "/sync/big.bin", Session(500));
 
         outcomes.ShouldAllBe(succeeded => succeeded);

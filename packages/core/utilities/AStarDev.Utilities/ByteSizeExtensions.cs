@@ -13,8 +13,8 @@ public static class ByteSizeExtensions
         {
             if (bytes <= 0) return "0 B";
 
-            var unitIndex = 0;
-            var size = (double)bytes;
+            int unitIndex = 0;
+            double size = (double)bytes;
             while (size >= 1024 && unitIndex < units.Length - 1)
             {
                 size /= 1024;

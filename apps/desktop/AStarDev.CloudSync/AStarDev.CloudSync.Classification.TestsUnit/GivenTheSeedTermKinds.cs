@@ -65,7 +65,7 @@ public sealed class GivenTheSeedTermKinds
         var assembly = typeof(EmbeddedClassificationSeedSourceFactory).Assembly;
         var names = assembly.GetManifestResourceNames().Where(name => name.StartsWith(DefaultPrefix, StringComparison.Ordinal) && name.EndsWith(".json", StringComparison.OrdinalIgnoreCase)).Order(StringComparer.Ordinal);
         var terms = new List<SeedTerm>();
-        foreach (var name in names)
+        foreach (string? name in names)
         {
             var seed = await LoadFileAsync(assembly, name);
             terms.AddRange(seed.Terms);

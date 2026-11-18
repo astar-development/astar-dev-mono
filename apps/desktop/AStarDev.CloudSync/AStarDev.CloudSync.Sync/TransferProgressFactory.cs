@@ -8,8 +8,8 @@ public static class TransferProgressFactory
 
     private static TransferProgress Normalise(long bytesDone, long bytesTotal)
     {
-        var total = Math.Max(bytesTotal, 0);
-        var done = Math.Max(bytesDone, 0);
+        long total = Math.Max(bytesTotal, 0);
+        long done = Math.Max(bytesDone, 0);
 
         return new TransferProgress(total > 0 ? Math.Min(done, total) : done, total);
     }

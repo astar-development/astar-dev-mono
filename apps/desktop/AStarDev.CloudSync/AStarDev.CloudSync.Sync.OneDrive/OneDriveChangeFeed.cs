@@ -46,7 +46,7 @@ internal sealed class OneDriveChangeFeed(OneDriveGraphAccess graphAccess, TimePr
 
     private async Task<Result<RemoteChangePage, ProviderError>> ReadAsync(AccountId accountId, string driveId, string accessToken, Option<ChangeCursor> cursor, CancellationToken cancellationToken)
     {
-        var link = cursor.Match(stored => stored.Value, () => RootDeltaOf(driveId));
+        string link = cursor.Match(stored => stored.Value, () => RootDeltaOf(driveId));
 
         if (!ODataNextLinkGuard.IsAllowed(link))
         {
@@ -112,9 +112,9 @@ internal sealed class OneDriveChangeFeed(OneDriveGraphAccess graphAccess, TimePr
 
     private Result<RemoteChangePage, ProviderError> Expired(ApiException gone, string driveId)
     {
-        var errorCode = ErrorCodeOf(gone);
+        string errorCode = ErrorCodeOf(gone);
         OneDriveChangeLog.CursorExpired(logger, errorCode);
-        var location = gone.ResponseHeaders.TryGetValue(LocationHeader, out var values) ? values.FirstOrDefault() : null;
+        string? location = gone.ResponseHeaders.TryGetValue(LocationHeader, out var values) ? values.FirstOrDefault() : null;
 
         return AllowedCursor(location).Match(cursor => ExpiredFrom(cursor, errorCode), () => AllowedCursor(RootDeltaOf(driveId)).Match(cursor => ExpiredFrom(cursor, errorCode), () => Failed(ProviderErrorFactory.CreateUnexpected())));
     }

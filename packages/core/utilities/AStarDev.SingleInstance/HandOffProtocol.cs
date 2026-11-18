@@ -39,8 +39,8 @@ internal static class HandOffProtocol
     /// <param name="cancellationToken">Cancels the receive.</param>
     public static async Task<string> ReceiveAsync(Socket socket, CancellationToken cancellationToken)
     {
-        var buffer = new byte[MaxMessageBytes];
-        var received = await socket.ReceiveAsync(buffer, SocketFlags.None, cancellationToken).ConfigureAwait(false);
+        byte[] buffer = new byte[MaxMessageBytes];
+        int received = await socket.ReceiveAsync(buffer, SocketFlags.None, cancellationToken).ConfigureAwait(false);
 
         return Encoding.ASCII.GetString(buffer, 0, received).Trim();
     }

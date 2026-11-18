@@ -162,10 +162,25 @@ trim_trailing_whitespace = true
 # Trailing whitespace is meaningful in Markdown (two spaces = line break)
 trim_trailing_whitespace = false
 
+[*{Tests,tests}/**.cs]
+
+# 1. Define a rule targeting methods and give it a high priority
+dotnet_naming_rule.test_methods_snake_case.severity = suggestion
+dotnet_naming_rule.test_methods_snake_case.symbols = test_methods
+dotnet_naming_rule.test_methods_snake_case.style = snake_case_style
+
+# 2. Target only methods
+dotnet_naming_symbols.test_methods.applicable_kinds = method
+dotnet_naming_symbols.test_methods.applicable_accessibilities = public, internal, private, protected
+
+# 3. Allow lowercase letters with underscore separators (snake_case)
+dotnet_naming_style.snake_case_style.capitalization = all_lower
+dotnet_naming_style.snake_case_style.word_separator = _
+
 [**/*.Tests*/**]
 dotnet_diagnostic.CS1591.severity = none
 dotnet_style_require_accessibility_modifiers = never : none
-dotnet_diagnostic.IDE1006.severity = suggestion
+dotnet_diagnostic.IDE1006.severity = none
 dotnet_naming_rule.async_methods_end_with_async.severity = none
 dotnet_diagnostic.IDE0060.severity = none
 csharp_style_expression_bodied_methods = false : none

@@ -163,7 +163,7 @@ public sealed class AccountDialogViewModel(IAccountActions actions, ISyncRootRea
 
         closed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         SetStep(AccountDialogStepFactory.CreateSyncFolder(account, string.Empty, string.Empty));
-        var currentText = await CurrentFolderTextAsync(account.Id, cancellationToken);
+        string currentText = await CurrentFolderTextAsync(account.Id, cancellationToken);
         transferConcurrency = await concurrencyReader.GetAsync(account.Id, cancellationToken).MatchAsync(found => found.Value, _ => TransferConcurrencyFactory.Default);
         transferConcurrencyMessage = string.Empty;
         NotifyTransferConcurrency();

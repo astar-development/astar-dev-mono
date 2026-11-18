@@ -89,7 +89,7 @@ public class GivenAMainWindowViewModel
         viewModel.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
 
         _ = viewModel.FolderSelection.ShowAsync(Option.None<AStarDev.CloudSync.Accounts.AccountId>(), TestContext.Current.CancellationToken);
-        var whileOpen = viewModel.IsDialogOpen;
+        bool whileOpen = viewModel.IsDialogOpen;
         viewModel.FolderSelection.CancelCommand.Execute(null);
 
         (whileOpen, viewModel.IsDialogOpen, raised.Count(name => name == nameof(MainWindowViewModel.IsDialogOpen))).ShouldBe((true, false, 2));
@@ -103,7 +103,7 @@ public class GivenAMainWindowViewModel
         viewModel.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
 
         await viewModel.ConflictList.OpenCommand.ExecuteAsync(null);
-        var whileOpen = viewModel.IsDialogOpen;
+        bool whileOpen = viewModel.IsDialogOpen;
         viewModel.ConflictList.CloseCommand.Execute(null);
 
         (whileOpen, viewModel.IsDialogOpen, raised.Count(name => name == nameof(MainWindowViewModel.IsDialogOpen))).ShouldBe((true, false, 2));
@@ -117,7 +117,7 @@ public class GivenAMainWindowViewModel
         viewModel.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
 
         _ = viewModel.SyncRestart.AskAsync(AStarDev.CloudSync.Accounts.AccountIdFactory.Create(Guid.NewGuid()), TestContext.Current.CancellationToken);
-        var whileOpen = viewModel.IsDialogOpen;
+        bool whileOpen = viewModel.IsDialogOpen;
         viewModel.SyncRestart.KeepCommand.Execute(null);
 
         (whileOpen, viewModel.IsDialogOpen, raised.Count(name => name == nameof(MainWindowViewModel.IsDialogOpen))).ShouldBe((true, false, 2));

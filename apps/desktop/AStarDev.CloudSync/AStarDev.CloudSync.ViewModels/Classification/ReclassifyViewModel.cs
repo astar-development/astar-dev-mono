@@ -115,7 +115,7 @@ public sealed class ReclassifyViewModel : LocalizedObservableObject, IDisposable
         if (disposed)
             return Unit.Instance;
 
-        var wasObserving = state is ReclassifyState.Observing;
+        bool wasObserving = state is ReclassifyState.Observing;
         ShowObserved();
         if (wasObserving && state is ReclassifyState.Idle)
         {

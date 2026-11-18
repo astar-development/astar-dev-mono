@@ -23,7 +23,7 @@ public sealed class GivenADownloadedImageDecoder
 
         using var result = decoder.DecodeToPng("/images/wallpaper-1.png", 1280);
 
-        var signature = new byte[8];
+        byte[] signature = new byte[8];
         result.ReadExactly(signature);
         signature.ShouldBe(PngSignature);
     }

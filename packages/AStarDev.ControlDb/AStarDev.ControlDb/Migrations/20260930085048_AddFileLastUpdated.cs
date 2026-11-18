@@ -23,11 +23,8 @@ namespace AStarDev.ControlDb.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropColumn(
+        protected override void Down(MigrationBuilder migrationBuilder) => migrationBuilder.DropColumn(
                 name: "LastUpdated_Ticks",
                 table: "FileDetail");
-        }
     }
 }

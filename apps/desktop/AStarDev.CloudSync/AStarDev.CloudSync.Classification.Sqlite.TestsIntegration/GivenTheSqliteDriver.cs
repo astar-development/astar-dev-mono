@@ -10,7 +10,7 @@ public sealed class GivenTheSqliteDriver
     [Fact]
     public void when_the_driver_is_loaded_then_it_has_the_connection_pool_fix_for_parallel_opens()
     {
-        var informationalVersion = typeof(SqliteConnection).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "0.0.0";
+        string informationalVersion = typeof(SqliteConnection).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "0.0.0";
 
         var loadedVersion = Version.Parse(informationalVersion.Split('+', '-')[0]);
 

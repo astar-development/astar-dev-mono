@@ -112,7 +112,7 @@ internal sealed class SqliteActivityLogStore(IDbContextFactory<SyncDbContext> db
 
     private static async Task TrimAsync(SyncDbContext dbContext, Guid accountId, CancellationToken cancellationToken)
     {
-        var oldestKept = await dbContext.ActivityLog
+        long? oldestKept = await dbContext.ActivityLog
             .Where(row => row.AccountId == accountId)
             .OrderByDescending(row => row.Id)
             .Skip(ActivityLogLimits.EntriesPerAccount - 1)

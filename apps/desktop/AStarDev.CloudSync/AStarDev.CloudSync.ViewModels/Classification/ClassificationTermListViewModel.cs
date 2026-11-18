@@ -121,7 +121,7 @@ public sealed class ClassificationTermListViewModel : LocalizedObservableObject
     private Unit Show(IReadOnlyList<ClassificationTerm> terms, IReadOnlyList<ClassificationCategory> categories, IReadOnlyDictionary<TermId, int> counts)
     {
         var names = categories.ToDictionary(category => category.Id, category => category.Name);
-        var unknown = Localization.GetLocal("Classification.Terms.UnknownCategory");
+        string unknown = Localization.GetLocal("Classification.Terms.UnknownCategory");
         allRows = [.. terms.Select(term => new TermRowViewModel(term, names.GetValueOrDefault(term.CategoryId, unknown), counts.GetValueOrDefault(term.Id), Localization))];
         SetState(TermListLoadStateFactory.CreateLoaded());
         ApplyView();
@@ -176,7 +176,7 @@ public sealed class ClassificationTermListViewModel : LocalizedObservableObject
 
     private void ApplyView()
     {
-        var needle = filterText.Trim();
+        string needle = filterText.Trim();
         var matching = allRows.Where(row => needle.Length == 0 || row.Text.Contains(needle, StringComparison.OrdinalIgnoreCase) || row.CategoryName.Contains(needle, StringComparison.OrdinalIgnoreCase));
         Rows = [.. Ordered(matching)];
         OnPropertyChanged(nameof(Rows));

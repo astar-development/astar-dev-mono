@@ -11,7 +11,7 @@ public sealed class WallhavenPageFetcher(IJsonResponseProcessor jsonResponseProc
     /// <inheritdoc/>
     public async Task<SearchResponse> FetchPageAsync(PageFetchRequest request, HttpClient client, IProgress<string> progress, CancellationToken cancellationToken)
     {
-        var pageName = $"{request.LogLabel} page {request.Page}";
+        string pageName = $"{request.LogLabel} page {request.Page}";
         progress.Report($"Fetching {pageName}.");
         LogMessage.PageView(logger, pageName);
 

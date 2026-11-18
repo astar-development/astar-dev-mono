@@ -53,7 +53,7 @@ public static partial class ClassificationTokeniser
         if (seen.Contains(key))
             return;
 
-        var token = new string(key);
+        string token = new string(key);
         seen.Add(token);
         tokens.Add(token);
     }

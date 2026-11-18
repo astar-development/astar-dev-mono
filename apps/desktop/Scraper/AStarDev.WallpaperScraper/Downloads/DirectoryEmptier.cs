@@ -13,7 +13,7 @@ public static class DirectoryEmptier
         {
             if (string.IsNullOrWhiteSpace(path)) return;
 
-            var fullPath = fileSystem.Path.GetFullPath(path);
+            string fullPath = fileSystem.Path.GetFullPath(path);
             if (fullPath == fileSystem.Path.GetPathRoot(fullPath) || !fileSystem.Directory.Exists(fullPath)) return;
 
             var directory = fileSystem.DirectoryInfo.New(fullPath);

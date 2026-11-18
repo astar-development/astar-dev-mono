@@ -119,7 +119,7 @@ public class GivenALayoutAView
     public async Task when_the_rail_buttons_are_disabled_then_the_active_one_keeps_its_highlight_and_the_rest_stay_clear()
     {
         var window = await CreateShownWindowAsync();
-        window.TryFindResource("CloudSyncAccentSoftBrush", window.ActualThemeVariant, out var accentSoft).ShouldBeTrue();
+        window.TryFindResource("CloudSyncAccentSoftBrush", window.ActualThemeVariant, out object? accentSoft).ShouldBeTrue();
 
         var railButtons = window.GetVisualDescendants().OfType<Button>().Where(button => button.Classes.Contains("rail")).ToList();
         var backgrounds = railButtons.Select(button => button.GetVisualDescendants().OfType<ContentPresenter>().First(presenter => presenter.Name == "PART_ContentPresenter").Background).ToList();

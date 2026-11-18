@@ -37,7 +37,7 @@ public sealed class GivenASyncRootStoreWithChangeParticipants : IAsyncLifetime
     {
         _ = await SetRootAsync(FirstAccount, OneDrive);
 
-        var saved = await SetRootAsync(FirstAccount, Elsewhere);
+        string saved = await SetRootAsync(FirstAccount, Elsewhere);
 
         saved.ShouldBe(Elsewhere);
         recording.Calls.ShouldBe([FirstAccount]);
@@ -67,7 +67,7 @@ public sealed class GivenASyncRootStoreWithChangeParticipants : IAsyncLifetime
         _ = await SetRootAsync(FirstAccount, OneDrive);
         _ = await SetRootAsync(SecondAccount, Elsewhere);
 
-        var saved = await SetRootAsync(SecondAccount, OneDrive + "/Work");
+        string saved = await SetRootAsync(SecondAccount, OneDrive + "/Work");
 
         (saved == Elsewhere, recording.Calls.Count).ShouldBe((false, 0));
     }

@@ -163,7 +163,7 @@ public sealed partial class UpdateAvailableViewModel : ObservableObject, IDispos
     private async Task ApplyWhenSafeAsync()
     {
         var permit = await applyGate.WaitUntilSafeAsync(CancellationToken.None);
-        var applied = false;
+        bool applied = false;
 
         try
         {

@@ -50,7 +50,7 @@ public sealed class GivenAScrapeService : IDisposable
     public async Task when_the_search_is_running_then_the_operation_is_marked_as_running()
     {
         repository.First = (Option<ScrapeConfigurationEntity>)ScrapeConfigurationTestData.CreateConfiguration();
-        var wasRunning = false;
+        bool wasRunning = false;
         searchOrchestrator.OnSearch = () => wasRunning = operationCoordinator.IsOperationRunning;
 
         await Run();

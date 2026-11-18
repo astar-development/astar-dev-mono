@@ -184,7 +184,7 @@ public sealed class GivenASyncPassRunnerThatWritesAttentionItems : IDisposable
         Baselined("Docs/a.txt", "a", "c1");
         services.Remote.File("Docs/a.txt", "a", "c1", 10);
         ScanFinds(Modified("Docs/a.txt"));
-        var closedWhenDownloadStarted = -1;
+        int closedWhenDownloadStarted = -1;
         Steps.OnDownload = () => closedWhenDownloadStarted = services.Attention.ClosedConflicts.Count;
 
         _ = await RunAsync();

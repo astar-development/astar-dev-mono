@@ -16,7 +16,7 @@ public sealed class SaveDirectoryResolver(IScrapeConfigurationLookup lookup) : I
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var directorySegment = categoryName.Match(name => name.ToDirectorySlug(), () => TopWallpapersDirectorySegment);
+        string directorySegment = categoryName.Match(name => name.ToDirectorySlug(), () => TopWallpapersDirectorySegment);
         var roots = await LoadRootDirectoriesAsync(cancellationToken);
 
         return new SaveDirectories(roots.Root, roots.FamousRoot, directorySegment);

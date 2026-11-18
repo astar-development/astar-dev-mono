@@ -62,7 +62,7 @@ public sealed class GivenANewWallpaperIngestor
 
         await Ingest(CreateWallpaper("new-wallpaper"), ".jpg", directory: "resolved-directory");
 
-        var savedPath = fileSystem.Path.Combine("resolved-directory", "new-wallpaper.jpg");
+        string savedPath = fileSystem.Path.Combine("resolved-directory", "new-wallpaper.jpg");
         (await fileSystem.File.ReadAllBytesAsync(savedPath, TestContext.Current.CancellationToken)).ShouldBe(ImageBytes);
         var recorded = fileRepository.Added.Single();
         (recorded.FileName, recorded.DirectoryName, recorded.FileHandle).ShouldBe((new FileName("new-wallpaper.jpg"), DirectoryName.Create("resolved-directory"), FileHandle.Create("new-wallpaper")));
@@ -217,7 +217,7 @@ public sealed class GivenANewWallpaperIngestor
     public async Task when_a_wallpaper_is_ingested_then_its_tags_are_already_linked_when_the_download_is_announced()
     {
         wallhaven.Tags = [WallhavenTag(1, "landscape")];
-        var linksWhenAnnounced = -1;
+        int linksWhenAnnounced = -1;
         notifier.ImageDownloaded += (_, _) => linksWhenAnnounced = fileTagRepository.Added.Count;
 
         await Ingest(CreateWallpaper("announced-after-link"), ".jpg");

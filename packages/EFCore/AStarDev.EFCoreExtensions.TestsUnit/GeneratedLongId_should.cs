@@ -36,7 +36,7 @@ public sealed class GeneratedLongId_should : IDisposable
     [Fact]
     public void round_trip_values_beyond_the_int_range()
     {
-        var big = (long)int.MaxValue + 10;
+        long big = (long)int.MaxValue + 10;
         using (var context = fixture.CreateContext())
         {
             context.Longs.Add(new LongEntity { Id = new LongId(big), Name = "big" });

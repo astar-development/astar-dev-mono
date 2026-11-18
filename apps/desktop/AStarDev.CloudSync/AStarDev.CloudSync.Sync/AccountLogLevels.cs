@@ -15,7 +15,7 @@ public sealed class AccountLogLevels
     /// <param name="level">The level.</param>
     public void Apply(AccountId accountId, AccountLogLevel level)
     {
-        var hash = HashOf(accountId);
+        string hash = HashOf(accountId);
         if (level is AccountLogLevel.Verbose)
             verbose[hash] = 0;
         else

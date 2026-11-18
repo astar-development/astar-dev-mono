@@ -11,7 +11,7 @@ public class FileDetailsClearer(ControlDbContext context) : IFileDetailsClearer
     public Task<Exceptional<int>> ClearAsync(CancellationToken cancellationToken = default)
         => Try.RunAsync(() => context.InTransactionAsync(async () =>
         {
-            var removed = await context.Files.ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+            int removed = await context.Files.ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
             _ = await context.IgnoredWallpapers.ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
 
             return removed;

@@ -8,9 +8,7 @@ namespace AStarDev.ControlDb.Migrations
     public partial class AddIgnoredWallpapers : Migration
     {
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.CreateTable(
+        protected override void Up(MigrationBuilder migrationBuilder) => migrationBuilder.CreateTable(
                 name: "IgnoredWallpaper",
                 columns: table => new
                 {
@@ -20,13 +18,9 @@ namespace AStarDev.ControlDb.Migrations
                 {
                     table.PrimaryKey("PK_IgnoredWallpaper", x => x.FileHandle);
                 });
-        }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
+        protected override void Down(MigrationBuilder migrationBuilder) => migrationBuilder.DropTable(
                 name: "IgnoredWallpaper");
-        }
     }
 }

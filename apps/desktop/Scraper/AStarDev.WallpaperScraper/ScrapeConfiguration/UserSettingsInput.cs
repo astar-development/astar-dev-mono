@@ -23,7 +23,7 @@ public sealed record UserSettingsInput(string EmailAddress, string Username, str
     /// <returns>The validated <see cref="UserSettings"/>, or every validation error found.</returns>
     public Validation<UserSettings> Validate()
     {
-        var emailAddress = EmailAddress.Trim();
+        string emailAddress = EmailAddress.Trim();
 
         return emailAddress.Length == 0 || IsWellFormed(emailAddress)
             ? Validation.Valid(new UserSettings(emailAddress, Username, ApiKey))

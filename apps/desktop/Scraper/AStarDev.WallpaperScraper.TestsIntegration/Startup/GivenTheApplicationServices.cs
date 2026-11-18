@@ -85,7 +85,7 @@ public sealed class GivenTheApplicationServices : IDisposable
     [Fact]
     public void when_the_main_window_collaborators_are_resolved_then_each_is_a_single_shared_instance()
     {
-        var resolved = new object[]
+        object[] resolved = new object[]
         {
             serviceProvider.GetRequiredService<StatusReporter>(),
             serviceProvider.GetRequiredService<ApplicationReadiness>(),

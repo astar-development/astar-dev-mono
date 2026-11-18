@@ -67,7 +67,7 @@ public sealed class WallpaperIngestionService(IFilesQuery filesQuery, INewWallpa
         var prefetch = newWallpaperIngestor.FetchTagsAsync(newWallpapers[0].Wallpaper, run);
         try
         {
-            for (var i = 0; i < newWallpapers.Count; i++)
+            for (int i = 0; i < newWallpapers.Count; i++)
             {
                 var tags = await prefetch;
                 prefetch = i + 1 < newWallpapers.Count ? newWallpaperIngestor.FetchTagsAsync(newWallpapers[i + 1].Wallpaper, run) : Task.FromResult(Option.None<IReadOnlyList<Tag>>());

@@ -25,7 +25,7 @@ public sealed class GivenAnOneDriveItemRenamer : IDisposable
         _ = await fixture.BuildAsync(CancellationToken);
         fixture.Graph.Respond = _ => RecordingGraphHandler.Json(HttpStatusCode.OK, "{}");
 
-        var outcome = await RenameAsync("a-(2026-11-14T090507Z).txt");
+        string outcome = await RenameAsync("a-(2026-11-14T090507Z).txt");
 
         outcome.ShouldBe("ok");
         var patch = fixture.Graph.Requests.ShouldHaveSingleItem();

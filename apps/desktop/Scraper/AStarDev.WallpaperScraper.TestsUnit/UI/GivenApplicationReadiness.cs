@@ -25,7 +25,7 @@ public sealed class GivenApplicationReadiness : IDisposable
     [Fact]
     public async Task when_the_database_is_ready_and_the_root_directory_exists_then_operations_and_the_scraper_are_enabled()
     {
-        var ready = await readiness.InitialiseAsync();
+        bool ready = await readiness.InitialiseAsync();
 
         (ready, readiness.CanOperate, readiness.CanRunScraper, status.Text).ShouldBe((true, true, true, $"{TestStatusReporter.Timestamp} Preparing the database.{Environment.NewLine}{TestStatusReporter.Timestamp} Database ready."));
     }
@@ -45,7 +45,7 @@ public sealed class GivenApplicationReadiness : IDisposable
     {
         database.Ready = Task.FromException(new IOException("disk full"));
 
-        var ready = await readiness.InitialiseAsync();
+        bool ready = await readiness.InitialiseAsync();
 
         (ready, readiness.CanOperate, readiness.CanRunScraper, status.Text.Contains("Unable to prepare the database. disk full", StringComparison.Ordinal)).ShouldBe((false, false, false, true));
     }
@@ -64,7 +64,7 @@ public sealed class GivenApplicationReadiness : IDisposable
     public async Task when_an_operation_is_running_then_operations_and_the_scraper_are_disabled_and_changed_is_raised()
     {
         await readiness.InitialiseAsync();
-        var changes = 0;
+        int changes = 0;
         readiness.Changed += (_, _) => changes++;
 
         _ = coordinator.TryStart(out _);
@@ -75,7 +75,7 @@ public sealed class GivenApplicationReadiness : IDisposable
     [Fact]
     public async Task when_initialisation_completes_then_changed_is_raised()
     {
-        var changes = 0;
+        int changes = 0;
         readiness.Changed += (_, _) => changes++;
 
         await readiness.InitialiseAsync();

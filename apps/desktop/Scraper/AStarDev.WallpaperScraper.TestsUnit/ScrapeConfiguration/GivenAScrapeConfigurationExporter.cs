@@ -85,7 +85,7 @@ public sealed class GivenAScrapeConfigurationExporter : IDisposable
 
         var result = await exporter.ExportScrapeConfigurationAsync(ApiKeyExport.Include, TestContext.Current.CancellationToken);
 
-        var hasDocument = result.Match(option => option, exception => throw exception).Match(_ => true, () => false);
+        bool hasDocument = result.Match(option => option, exception => throw exception).Match(_ => true, () => false);
         hasDocument.ShouldBeFalse();
     }
 

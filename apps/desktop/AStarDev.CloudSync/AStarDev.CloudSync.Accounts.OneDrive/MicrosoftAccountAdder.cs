@@ -24,7 +24,7 @@ internal sealed class MicrosoftAccountAdder(TokenCacheInitialiser tokenCache, IM
     /// <inheritdoc />
     public async Task<AccountAddOutcome> AddAsync(CancellationToken cancellationToken)
     {
-        var started = timeProvider.GetTimestamp();
+        long started = timeProvider.GetTimestamp();
         using var scope = logger.BeginScope(new Dictionary<string, object?> { ["AccountAddAttemptId"] = AccountAddAttemptIdFactory.Create(Guid.NewGuid()).Value, ["Provider"] = ProviderName });
         AccountAddLog.AttemptStarted(logger);
 
@@ -32,8 +32,8 @@ internal sealed class MicrosoftAccountAdder(TokenCacheInitialiser tokenCache, IM
             .MatchAsync(finished => finished, Faulted)
             .ConfigureAwait(false);
 
-        var outcomeName = Describe(outcome);
-        var durationMs = ElapsedMilliseconds(started);
+        string outcomeName = Describe(outcome);
+        double durationMs = ElapsedMilliseconds(started);
         AccountAddLog.AttemptCompleted(logger, outcomeName, durationMs);
 
         return outcome;
@@ -88,7 +88,7 @@ internal sealed class MicrosoftAccountAdder(TokenCacheInitialiser tokenCache, IM
     {
         var cachedAccountKeys = await msal.GetAccountKeysAsync().ConfigureAwait(false);
         AccountAddLog.BrowserLaunched(logger);
-        var started = timeProvider.GetTimestamp();
+        long started = timeProvider.GetTimestamp();
         var signIn = await msal.SignInAsync(cancellationToken).ConfigureAwait(false);
 
         return (cachedAccountKeys, signIn, ElapsedMilliseconds(started));
@@ -101,8 +101,8 @@ internal sealed class MicrosoftAccountAdder(TokenCacheInitialiser tokenCache, IM
 
     private Result<SignInAttempt, AccountAddOutcome> SignedIn(SignInAttempt attempt, double durationMs)
     {
-        var scopes = string.Join(' ', attempt.SignIn.GrantedScopes);
-        var accountKeyHash = HashOf(attempt.Key);
+        string scopes = string.Join(' ', attempt.SignIn.GrantedScopes);
+        string accountKeyHash = HashOf(attempt.Key);
         AccountAddLog.AuthSucceeded(logger, durationMs, scopes, accountKeyHash);
 
         return Result.Success<SignInAttempt, AccountAddOutcome>(attempt);
@@ -141,7 +141,7 @@ internal sealed class MicrosoftAccountAdder(TokenCacheInitialiser tokenCache, IM
 
     private async Task<Result<MicrosoftDrive, AccountAddOutcome>> ReadDriveAsync(SignInAttempt attempt, CancellationToken cancellationToken)
     {
-        var started = timeProvider.GetTimestamp();
+        long started = timeProvider.GetTimestamp();
 
         return await driveLookup.GetDriveAsync(attempt.SignIn.AccessToken, cancellationToken)
             .MatchAsync(drive => DriveRead(drive, started), failure => Result.Failure<MicrosoftDrive, AccountAddOutcome>(AccountAddOutcomeFactory.CreateFailed(failure)))
@@ -150,7 +150,7 @@ internal sealed class MicrosoftAccountAdder(TokenCacheInitialiser tokenCache, IM
 
     private Result<MicrosoftDrive, AccountAddOutcome> DriveRead(MicrosoftDrive drive, long started)
     {
-        var durationMs = ElapsedMilliseconds(started);
+        double durationMs = ElapsedMilliseconds(started);
         AccountAddLog.DriveFetched(logger, durationMs);
 
         return Result.Success<MicrosoftDrive, AccountAddOutcome>(drive);
@@ -159,7 +159,7 @@ internal sealed class MicrosoftAccountAdder(TokenCacheInitialiser tokenCache, IM
     private async Task<Result<AccountAddOutcome, AccountAddOutcome>> SaveAsync(SignInAttempt attempt, MicrosoftDrive drive, CancellationToken cancellationToken)
     {
         var registration = AccountRegistrationFactory.Create(attempt.Key, CloudProviderFactory.CreateOneDrive(), attempt.SignIn.DisplayName, attempt.SignIn.Email, drive.DriveId, drive.Storage);
-        var started = timeProvider.GetTimestamp();
+        long started = timeProvider.GetTimestamp();
         var outcome = await accountStore.AddAsync(registration, cancellationToken).ConfigureAwait(false);
 
         if (outcome is AccountAddOutcome.ReAuthenticated)
@@ -168,7 +168,7 @@ internal sealed class MicrosoftAccountAdder(TokenCacheInitialiser tokenCache, IM
         if (outcome is not (AccountAddOutcome.Added or AccountAddOutcome.ReAuthenticated))
             return Result.Failure<AccountAddOutcome, AccountAddOutcome>(outcome);
 
-        var durationMs = ElapsedMilliseconds(started);
+        double durationMs = ElapsedMilliseconds(started);
         AccountAddLog.Persisted(logger, durationMs);
 
         return outcome is AccountAddOutcome.Added added

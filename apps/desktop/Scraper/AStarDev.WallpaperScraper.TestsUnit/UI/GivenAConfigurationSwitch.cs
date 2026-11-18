@@ -25,7 +25,7 @@ public sealed class GivenAConfigurationSwitch
     [Fact]
     public async Task when_the_edits_are_not_discarded_then_nothing_is_loaded_and_no_error_is_shown()
     {
-        var loadCalled = false;
+        bool loadCalled = false;
 
         var result = await ConfigurationSwitch.ResolveAsync(Requested, () => Task.FromResult(false), Session(_ =>
         {

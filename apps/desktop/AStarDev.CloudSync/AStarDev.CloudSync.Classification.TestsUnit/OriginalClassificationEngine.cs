@@ -9,11 +9,11 @@ internal sealed class OriginalClassificationEngine(IReadOnlyList<ClassificationT
     internal IReadOnlyList<ClassificationTerm> Match(IReadOnlyList<string> tokens)
     {
         var matches = new List<ClassificationTerm>();
-        var position = 0;
+        int position = 0;
 
         while (position < tokens.Count)
         {
-            var length = Enumerable.Range(1, Math.Min(longestPhrase, tokens.Count - position)).Reverse().FirstOrDefault(size => phrases.Contains(string.Join(' ', tokens.Skip(position).Take(size))));
+            int length = Enumerable.Range(1, Math.Min(longestPhrase, tokens.Count - position)).Reverse().FirstOrDefault(size => phrases.Contains(string.Join(' ', tokens.Skip(position).Take(size))));
             matches.AddRange(length == 0 ? [] : phrases[string.Join(' ', tokens.Skip(position).Take(length))]);
             position += Math.Max(length, 1);
         }

@@ -18,7 +18,7 @@ public class GivenATagFactory
     [InlineData("   ")]
     public void when_a_tag_or_hash_is_blank_then_it_is_rejected(string? value)
     {
-        var results = new[] { ContentTagFactory.Create(value).Match(_ => "created", _ => "rejected"), EntityTagFactory.Create(value).Match(_ => "created", _ => "rejected"), ContentHashFactory.Create(value).Match(_ => "created", _ => "rejected") };
+        string[] results = new[] { ContentTagFactory.Create(value).Match(_ => "created", _ => "rejected"), EntityTagFactory.Create(value).Match(_ => "created", _ => "rejected"), ContentHashFactory.Create(value).Match(_ => "created", _ => "rejected") };
 
         results.ShouldAllBe(result => result == "rejected");
     }

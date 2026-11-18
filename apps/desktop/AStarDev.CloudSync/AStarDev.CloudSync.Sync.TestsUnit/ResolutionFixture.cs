@@ -124,7 +124,7 @@ public sealed class ResolutionFixture : IDisposable
 
     public IFileInfo Local(string relative, string content)
     {
-        var full = FullPath(relative);
+        string full = FullPath(relative);
         _ = FileSystem.Directory.CreateDirectory(FileSystem.Path.GetDirectoryName(full)!);
         FileSystem.File.WriteAllText(full, content);
         FileSystem.File.SetLastWriteTimeUtc(full, Start.AddMinutes(-10).UtcDateTime);

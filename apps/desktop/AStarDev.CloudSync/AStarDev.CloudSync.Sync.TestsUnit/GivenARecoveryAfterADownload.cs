@@ -14,7 +14,7 @@ public sealed class GivenARecoveryAfterADownload
         fixture.Docs();
         fixture.Remote.File("Docs/a.txt", "a", "c-downloaded", 10);
         fixture.Downloader.Content["a"] = new byte[10];
-        var reached = 0;
+        int reached = 0;
         fixture.Steps.OnStep = () =>
         {
             if (++reached == 3)

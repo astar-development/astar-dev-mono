@@ -33,7 +33,7 @@ public sealed class GivenTheEmbeddedWordLists
     [MemberData(nameof(ListResources))]
     public void when_a_list_is_read_then_the_header_names_a_source_and_a_licence(string resource)
     {
-        var header = string.Join('\n', ReadLines(resource).Where(line => line.StartsWith('#')));
+        string header = string.Join('\n', ReadLines(resource).Where(line => line.StartsWith('#')));
 
         header.ShouldContain("Source:");
         header.ShouldContain("Licence:");
@@ -42,7 +42,7 @@ public sealed class GivenTheEmbeddedWordLists
     [Fact]
     public void when_the_common_word_list_is_read_then_its_size_is_in_range()
     {
-        var count = ReadEntries(WordsResource).Count;
+        int count = ReadEntries(WordsResource).Count;
 
         count.ShouldBeInRange(10_000, 50_000);
     }
@@ -50,7 +50,7 @@ public sealed class GivenTheEmbeddedWordLists
     [Fact]
     public void when_the_first_name_list_is_read_then_its_size_is_in_range()
     {
-        var count = ReadEntries(NamesResource).Count;
+        int count = ReadEntries(NamesResource).Count;
 
         count.ShouldBeInRange(1_000, 50_000);
     }

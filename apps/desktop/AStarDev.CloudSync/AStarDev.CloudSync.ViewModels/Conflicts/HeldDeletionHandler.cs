@@ -30,9 +30,9 @@ internal sealed class HeldDeletionHandler
 
     internal HeldDeletionItemViewModel CreateItem(string accountName, IReadOnlyDictionary<SyncPairId, string> pairNames, SyncAttentionItem.HeldDeletions held)
     {
-        var pairName = pairNames.TryGetValue(held.PairId, out var name) ? name : localization.GetLocal("Held.PairUnknown");
+        string pairName = pairNames.TryGetValue(held.PairId, out string? name) ? name : localization.GetLocal("Held.PairUnknown");
 
-        return new HeldDeletionItemViewModel(held, accountName, pairName, actions, errorKeys.TryGetValue(held.Id, out var key) ? Option.Some(key) : Option.None<string>(), deferred.ContainsKey(held.Id), localization);
+        return new HeldDeletionItemViewModel(held, accountName, pairName, actions, errorKeys.TryGetValue(held.Id, out string? key) ? Option.Some(key) : Option.None<string>(), deferred.ContainsKey(held.Id), localization);
     }
 
     internal void Prune(IReadOnlySet<HeldDeletionId> open)

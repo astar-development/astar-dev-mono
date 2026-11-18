@@ -48,7 +48,7 @@ public sealed class GivenAnOperationCoordinator
     public void when_an_operation_starts_and_completes_then_state_changes_are_reported()
     {
         using var coordinator = new OperationCoordinator();
-        var stateChangeCount = 0;
+        int stateChangeCount = 0;
         coordinator.StateChanged += (_, _) => stateChangeCount++;
 
         coordinator.TryStart(out _);

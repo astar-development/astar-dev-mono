@@ -15,8 +15,8 @@ public sealed record SaveDirectories(string Root, string FamousRoot, string Cate
     /// <param name="tags">The wallpaper's tags.</param>
     public string For(IReadOnlyList<Tag> tags)
     {
-        var root = tags.Any(tag => tag.IsFamous) ? FamousRoot : Root;
-        var names = string.Join('_', tags.Where(tag => tag.IsName || tag.IsFamous).Select(tag => NameSegment(tag.Name)).Where(name => name.Length > 0));
+        string root = tags.Any(tag => tag.IsFamous) ? FamousRoot : Root;
+        string names = string.Join('_', tags.Where(tag => tag.IsName || tag.IsFamous).Select(tag => NameSegment(tag.Name)).Where(name => name.Length > 0));
 
         return Path.Combine(root, TrimToLimit(names), CategorySegment);
     }

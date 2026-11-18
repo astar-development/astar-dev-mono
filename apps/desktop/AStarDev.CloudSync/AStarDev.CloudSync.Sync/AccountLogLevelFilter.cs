@@ -12,7 +12,7 @@ public static class AccountLogLevelFilter
     public static bool Admits(AccountLogLevels levels, LogLevel level, IReadOnlyDictionary<string, object?> scope) => level >= LogLevel.Warning || Admitted(levels, level, scope);
 
     private static bool Admitted(AccountLogLevels levels, LogLevel level, IReadOnlyDictionary<string, object?> scope) =>
-        scope.TryGetValue(SyncLogScope.AccountIdHashKey, out var value) && value is string hash
+        scope.TryGetValue(SyncLogScope.AccountIdHashKey, out object? value) && value is string hash
             ? levels.LevelOf(hash) is AccountLogLevel.Verbose
             : level >= LogLevel.Information;
 }

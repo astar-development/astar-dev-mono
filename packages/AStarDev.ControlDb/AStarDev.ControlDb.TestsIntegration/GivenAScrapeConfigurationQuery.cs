@@ -45,8 +45,8 @@ public sealed class GivenAScrapeConfigurationQuery : IDisposable
 
         _ = await LoadFirstAsync();
 
-        var searchTable = context.Model.FindEntityType(typeof(SearchCategoryEntity))!.GetTableName()!;
-        var personTable = context.Model.FindEntityType(typeof(PersonCategoryEntity))!.GetTableName()!;
+        string searchTable = context.Model.FindEntityType(typeof(SearchCategoryEntity))!.GetTableName()!;
+        string personTable = context.Model.FindEntityType(typeof(PersonCategoryEntity))!.GetTableName()!;
         recorder.Commands.ShouldContain(command => command.Contains(searchTable, StringComparison.Ordinal));
         recorder.Commands.ShouldContain(command => command.Contains(personTable, StringComparison.Ordinal));
         recorder.Commands.ShouldNotContain(command => command.Contains(searchTable, StringComparison.Ordinal) && command.Contains(personTable, StringComparison.Ordinal));
@@ -76,8 +76,8 @@ public sealed class GivenAScrapeConfigurationQuery : IDisposable
     private async Task AddConfigurationWithCategoriesAsync(Guid id, int searchCategories, int personCategories)
     {
         var entity = ScrapeConfigurationEntityFactory.CreateScrapeConfigurationEntity(id);
-        for (var i = 0; i < searchCategories; i++) entity.SearchConfiguration.SearchCategories.Add(new SearchCategoryEntity { Id = $"{id:N}-{i}", Name = $"search-{i}" });
-        for (var i = 0; i < personCategories; i++) entity.SearchConfiguration.PersonCategories.Add(new PersonCategoryEntity { Name = $"person-{i}" });
+        for (int i = 0; i < searchCategories; i++) entity.SearchConfiguration.SearchCategories.Add(new SearchCategoryEntity { Id = $"{id:N}-{i}", Name = $"search-{i}" });
+        for (int i = 0; i < personCategories; i++) entity.SearchConfiguration.PersonCategories.Add(new PersonCategoryEntity { Name = $"person-{i}" });
 
         _ = await context.ScrapeConfigurations.AddAsync(entity, TestContext.Current.CancellationToken);
         _ = await context.SaveChangesAsync(TestContext.Current.CancellationToken);

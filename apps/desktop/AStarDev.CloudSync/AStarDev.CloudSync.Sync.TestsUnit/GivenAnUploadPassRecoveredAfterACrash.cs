@@ -34,7 +34,7 @@ public sealed class GivenAnUploadPassRecoveredAfterACrash : IDisposable
         };
         var firstChanges = await Changes(run);
         _ = await Record.ExceptionAsync(() => run.Uploads.RunAsync(run.Account, firstChanges, crash.Token));
-        var uploadedBeforeTheCrash = run.Uploader.Calls.Count(call => call.Name == "a.txt");
+        int uploadedBeforeTheCrash = run.Uploader.Calls.Count(call => call.Name == "a.txt");
         run.Uploader.Respond = defaultResponse;
 
         var recoveryChanges = await Changes(run);

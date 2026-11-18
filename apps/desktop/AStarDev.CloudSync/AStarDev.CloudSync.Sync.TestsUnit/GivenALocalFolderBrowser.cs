@@ -162,7 +162,7 @@ public sealed class GivenALocalFolderBrowser
     public async Task when_a_folder_has_ten_thousand_child_folders_then_all_are_listed_and_sorted()
     {
         SetRoot();
-        foreach (var number in Enumerable.Range(0, 10_000))
+        foreach (int number in Enumerable.Range(0, 10_000))
             _ = fileSystem.Directory.CreateDirectory($"{Root}/folder-{number:00000}");
 
         var result = await List(LocalRelativePathFactory.Root);
@@ -179,7 +179,7 @@ public sealed class GivenALocalFolderBrowser
         var filter = new BlockingFilter(gate);
 
         var listing = Browser(filter).GetChildFoldersAsync(Account, LocalRelativePathFactory.Root, CancellationToken);
-        var returnedBeforeTheListingFinished = !listing.IsCompleted;
+        bool returnedBeforeTheListingFinished = !listing.IsCompleted;
         gate.Set();
         var result = await listing;
 
@@ -250,7 +250,7 @@ public sealed class GivenALocalFolderBrowser
     private void Prepare(params string[] folders)
     {
         _ = fileSystem.Directory.CreateDirectory(Root);
-        foreach (var folder in folders)
+        foreach (string folder in folders)
             _ = fileSystem.Directory.CreateDirectory($"{Root}/{folder}");
 
         SetRoot();
@@ -263,7 +263,7 @@ public sealed class GivenALocalFolderBrowser
     private MockFileSystem WindowsWithRootOf(params string[] folders)
     {
         var windows = new MockFileSystem(options => options.SimulatingOperatingSystem(SimulationMode.Windows));
-        foreach (var folder in folders)
+        foreach (string folder in folders)
             _ = windows.Directory.CreateDirectory(WindowsRoot + "\\" + folder);
 
         syncRoots.Roots = [AccountSyncRootFactory.Create(Account, SyncRootFactory.Create(windows.DirectoryInfo.New(WindowsRoot)).Match(root => root, _ => throw new InvalidOperationException("The test root must be valid.")))];

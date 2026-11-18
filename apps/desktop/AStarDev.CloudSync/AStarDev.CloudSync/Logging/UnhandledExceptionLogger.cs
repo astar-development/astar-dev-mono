@@ -15,7 +15,7 @@ public sealed class UnhandledExceptionLogger(ILogger<UnhandledExceptionLogger> l
     /// <param name="exception">What was thrown.</param>
     public void Log(string source, Exception exception)
     {
-        var thrownIn = FirstOwnMethod(exception);
+        string thrownIn = FirstOwnMethod(exception);
         LogMessage.ExceptionCaught(logger, thrownIn.Length == 0 ? source : $"{source} at {thrownIn}", exception.ErrorType());
     }
 

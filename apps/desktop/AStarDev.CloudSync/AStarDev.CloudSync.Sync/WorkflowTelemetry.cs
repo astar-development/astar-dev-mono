@@ -28,7 +28,7 @@ public sealed class WorkflowTelemetry : IWorkflowTelemetry, IDisposable
     /// <inheritdoc />
     public async Task<TResult> TrackAsync<TResult>(TelemetryWorkflow workflow, Func<Task<TResult>> operation, Func<TResult, TelemetryOutcome> outcomeOf)
     {
-        var started = timeProvider.GetTimestamp();
+        long started = timeProvider.GetTimestamp();
         using var activity = source.StartActivity(workflow.TagValue());
         var result = await operation().ConfigureAwait(false);
         var outcome = outcomeOf(result);

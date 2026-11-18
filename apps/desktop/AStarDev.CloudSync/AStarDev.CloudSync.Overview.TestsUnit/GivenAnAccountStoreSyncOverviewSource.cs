@@ -123,7 +123,7 @@ public class GivenAnAccountStoreSyncOverviewSource
         var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]) };
         var counter = new FakeSyncBaselineCounter { Counts = _ => { cancel.Cancel(); return Result.Failure<BaselineCounts, ErrorResponse>(new ErrorResponse("The baseline could not be counted.")); } };
 
-        var outcome = await CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), new FakeSyncPairReader(), new FakeSyncRunStatusSource(), new FakeAccountPauseReader(), counter).GetOverviewAsync(cancel.Token).MatchAsync(_ => "loaded", failure => failure.Message);
+        string outcome = await CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), new FakeSyncPairReader(), new FakeSyncRunStatusSource(), new FakeAccountPauseReader(), counter).GetOverviewAsync(cancel.Token).MatchAsync(_ => "loaded", failure => failure.Message);
 
         outcome.ShouldBe("The baseline could not be counted.");
     }
@@ -134,7 +134,7 @@ public class GivenAnAccountStoreSyncOverviewSource
         var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]) };
         var reader = new FakeSyncPairReader { Pairs = _ => Result.Failure<IReadOnlyList<SyncPair>, ErrorResponse>(new ErrorResponse("The selection rules could not be read.")) };
 
-        var error = await CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), reader).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(_ => "loaded", failure => failure.Message);
+        string error = await CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), reader).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(_ => "loaded", failure => failure.Message);
 
         error.ShouldBe("The selection rules could not be read.");
     }
@@ -184,7 +184,7 @@ public class GivenAnAccountStoreSyncOverviewSource
     {
         var store = new FakeAccountStore { All = () => Result.Failure<IReadOnlyList<StoredAccount>, ErrorResponse>(new ErrorResponse("The accounts could not be read.")) };
 
-        var error = await CreateSource(new FakeCloudSyncDatabase(), store).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(_ => "loaded", failure => failure.Message);
+        string error = await CreateSource(new FakeCloudSyncDatabase(), store).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(_ => "loaded", failure => failure.Message);
 
         error.ShouldBe("The accounts could not be read.");
     }
@@ -192,11 +192,11 @@ public class GivenAnAccountStoreSyncOverviewSource
     [Fact]
     public async Task when_the_database_cannot_be_migrated_then_the_overview_fails_and_the_accounts_are_not_read()
     {
-        var reads = 0;
+        int reads = 0;
         var store = new FakeAccountStore { All = () => { reads++; return Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]); } };
         var database = new FakeCloudSyncDatabase { Outcome = Result.Failure<Unit, ErrorResponse>(new ErrorResponse("The CloudSync database could not be created or migrated.")) };
 
-        var error = await CreateSource(database, store).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(_ => "loaded", failure => failure.Message);
+        string error = await CreateSource(database, store).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(_ => "loaded", failure => failure.Message);
 
         (error, reads).ShouldBe(("The CloudSync database could not be created or migrated.", 0));
     }
@@ -330,7 +330,7 @@ public class GivenAnAccountStoreSyncOverviewSource
         var store = new FakeAccountStore { All = () => Result.Success<IReadOnlyList<StoredAccount>, ErrorResponse>([StoredFlint()]) };
         var pauses = new FakeAccountPauseReader { Paused = Result.Failure<IReadOnlyList<AccountId>, ErrorResponse>(new ErrorResponse("The paused accounts could not be read.")) };
 
-        var error = await CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), new FakeSyncPairReader(), new FakeSyncRunStatusSource(), pauses).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(_ => "loaded", failure => failure.Message);
+        string error = await CreateSource(new FakeCloudSyncDatabase(), store, new FakeAccountSignInStates(), new FakeSyncPairReader(), new FakeSyncRunStatusSource(), pauses).GetOverviewAsync(TestContext.Current.CancellationToken).MatchAsync(_ => "loaded", failure => failure.Message);
 
         error.ShouldBe("The paused accounts could not be read.");
     }

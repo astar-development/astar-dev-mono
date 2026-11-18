@@ -119,7 +119,7 @@ public sealed class GivenAPagesProcessor
         var fetch = pacedProcessor.FetchAndProcessPagesAsync(CreateRequest("wallpapers", Option.None<string>(), Option.None<SearchCategoryProgress>(), _ => { }), progress, TestContext.Current.CancellationToken);
         await Task.Yield();
         clock.Advance(TimeSpan.FromSeconds(1.9));
-        var fetchedBeforeTheDelay = progress.Messages.Count(message => message.StartsWith("Fetched ", StringComparison.Ordinal) || message.Contains("page 2", StringComparison.Ordinal));
+        int fetchedBeforeTheDelay = progress.Messages.Count(message => message.StartsWith("Fetched ", StringComparison.Ordinal) || message.Contains("page 2", StringComparison.Ordinal));
         clock.Advance(TimeSpan.FromSeconds(0.2));
         await fetch;
 

@@ -326,7 +326,7 @@ public sealed class GivenATagFetcherAndLinker
         {
             if (Failure is Option<Exception>.Some failure) return Task.FromResult<Exceptional<Option<T>>>(failure.Value);
 
-            var wallpaperId = url.OriginalString[ApplicationConstants.WallhavenDetailPathTemplate.Length..];
+            string wallpaperId = url.OriginalString[ApplicationConstants.WallhavenDetailPathTemplate.Length..];
             Option<T> response = Responses.TryGetValue(wallpaperId, out var detail) ? (Option<T>)(T)(object)detail : Option<T>.None.Instance;
 
             return Task.FromResult<Exceptional<Option<T>>>(response);

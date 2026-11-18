@@ -40,7 +40,7 @@ public static class Seeder
                     new(){SearchConfigurationId = new SearchConfigurationId(Guid.Empty), CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow, Name = "category3", IsFamous = false, IncludeInSearch = true, IsInternet = false, Id = "3"}
                 };
         var searchConfiguration = new SearchConfigurationEntity(Guid.Empty, Guid.Empty, "search term", 500, searchCategories);
-        foreach (var name in PersonCategoryEntity.DefaultNames)
+        foreach (string name in PersonCategoryEntity.DefaultNames)
         {
             searchConfiguration.PersonCategories.Add(new PersonCategoryEntity { SearchConfigurationId = new SearchConfigurationId(Guid.Empty), Name = name });
         }
@@ -66,7 +66,7 @@ public static class Seeder
     /// <summary>A neutral default the user is expected to change: a WallHaven folder under their pictures folder (their profile's Pictures folder where the platform reports none).</summary>
     private static string DefaultRootDirectory()
     {
-        var pictures = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+        string pictures = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
         if (string.IsNullOrWhiteSpace(pictures)) pictures = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Pictures");
 
         return Path.Combine(pictures, "WallHaven");

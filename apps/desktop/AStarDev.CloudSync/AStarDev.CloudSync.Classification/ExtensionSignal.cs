@@ -11,7 +11,7 @@ public sealed class ExtensionSignal : IClassificationSignal
     /// <inheritdoc />
     public IReadOnlyList<ClassificationCandidate> Evaluate(RelativeSyncPath path, ClassificationVocabulary vocabulary)
     {
-        var extension = Path.GetExtension(path.Value ?? string.Empty).TrimStart('.');
+        string extension = Path.GetExtension(path.Value ?? string.Empty).TrimStart('.');
 
         return extension.Length == 0 || !Indexes.GetValue(vocabulary, Index).TryGetValue(extension, out var terms)
             ? []
