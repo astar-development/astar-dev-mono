@@ -95,7 +95,7 @@ public sealed class GivenASyncBaselineStore : IAsyncLifetime
 
         var seen = new List<string>();
         var after = Option.None<RelativeSyncPath>();
-        var pages = 0;
+        int pages = 0;
         while (true)
         {
             var page = await Page(FirstAccount, "", after, 10);

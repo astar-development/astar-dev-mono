@@ -27,20 +27,20 @@ internal sealed class ThroughputRecorder(IThroughputWriter writer, TimeProvider 
     {
         lock (gate)
         {
-            var last = bytesDone.GetValueOrDefault(accountId);
+            long last = bytesDone.GetValueOrDefault(accountId);
             bytesDone[accountId] = progress.BytesDone;
-            var added = progress.BytesDone >= last ? progress.BytesDone - last : progress.BytesDone;
+            long added = progress.BytesDone >= last ? progress.BytesDone - last : progress.BytesDone;
 
             if (added == 0)
                 return Option.None<TransferSample>();
 
-            var now = timeProvider.GetTimestamp();
+            long now = timeProvider.GetTimestamp();
             if (pendingBytes == 0)
                 windowStart = now;
 
             pendingBytes += added;
             var elapsed = timeProvider.GetElapsedTime(windowStart, now);
-            var phaseFinished = progress.BytesTotal > 0 && progress.BytesDone >= progress.BytesTotal;
+            bool phaseFinished = progress.BytesTotal > 0 && progress.BytesDone >= progress.BytesTotal;
 
             if (elapsed < ThroughputLimits.Window && !phaseFinished)
                 return Option.None<TransferSample>();

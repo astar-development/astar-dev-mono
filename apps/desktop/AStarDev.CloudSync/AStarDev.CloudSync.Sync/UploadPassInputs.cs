@@ -39,8 +39,8 @@ internal sealed class UploadPassInputs(ISyncRootReader roots, ISelectionRuleRead
 
     private static IEnumerable<RelativeSyncPath> SelfAndAncestors(RelativeSyncPath path)
     {
-        var value = path.Value ?? string.Empty;
-        for (var end = value.Length; end > 0; end = value.LastIndexOf(Separator, end - 1))
+        string value = path.Value ?? string.Empty;
+        for (int end = value.Length; end > 0; end = value.LastIndexOf(Separator, end - 1))
             yield return new RelativeSyncPath(value[..end]);
     }
 
@@ -104,8 +104,8 @@ internal sealed class UploadPassInputs(ISyncRootReader roots, ISelectionRuleRead
     private async Task WalkAsync(AccountId accountId, RelativeSyncPath path, Dictionary<RelativeSyncPath, RemoteItemSnapshot> found, Dictionary<string, IReadOnlyList<RemoteItemSnapshot>> listings, CancellationToken cancellationToken)
     {
         var parent = Option.None<RemoteItemId>();
-        var prefix = string.Empty;
-        foreach (var segment in (path.Value ?? string.Empty).Split(Separator))
+        string prefix = string.Empty;
+        foreach (string segment in (path.Value ?? string.Empty).Split(Separator))
         {
             prefix = prefix.Length == 0 ? segment : prefix + Separator + segment;
             var children = await ChildrenAsync(accountId, parent, listings, cancellationToken).ConfigureAwait(false);
@@ -128,7 +128,7 @@ internal sealed class UploadPassInputs(ISyncRootReader roots, ISelectionRuleRead
 
     private async Task<IReadOnlyList<RemoteItemSnapshot>> ChildrenAsync(AccountId accountId, Option<RemoteItemId> parent, Dictionary<string, IReadOnlyList<RemoteItemSnapshot>> listings, CancellationToken cancellationToken)
     {
-        var key = parent.Match(id => id.Value, () => string.Empty);
+        string key = parent.Match(id => id.Value, () => string.Empty);
         if (listings.TryGetValue(key, out var cached))
             return cached;
 

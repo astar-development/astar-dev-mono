@@ -265,7 +265,7 @@ public sealed class GivenADownloadPassForFirstSyncLinks
         fixture.Concurrency.Value = 4;
         fixture.Docs();
         List<LocalChange> added = [];
-        foreach (var index in Enumerable.Range(0, 20))
+        foreach (int index in Enumerable.Range(0, 20))
         {
             _ = fixture.Write($"Docs/f{index}.txt", "hello");
             fixture.Remote.File($"Docs/f{index}.txt", $"id{index}", "c1", 5, HelloQuickXorHash);

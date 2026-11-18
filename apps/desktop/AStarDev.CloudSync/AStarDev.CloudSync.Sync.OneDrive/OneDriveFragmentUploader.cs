@@ -33,7 +33,7 @@ internal sealed class OneDriveFragmentUploader(OneDriveTransferHttp http, OneDri
         Option<Result<UploadedFile, ProviderError>> outcome;
         do
         {
-            var length = Math.Min(FragmentBytes, transfer.Length - transfer.Offset);
+            long length = Math.Min(FragmentBytes, transfer.Length - transfer.Offset);
             if (transfer.Offset + length == transfer.Length && Changed(transfer.Source, transfer.Length, transfer.LastWriteUtc))
                 return await AbandonAsync(transfer, OneDriveTransferLog.SourceChanged, cancellationToken).ConfigureAwait(false);
 
@@ -56,7 +56,7 @@ internal sealed class OneDriveFragmentUploader(OneDriveTransferHttp http, OneDri
     {
         await using var stream = source.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         _ = stream.Seek(offset, SeekOrigin.Begin);
-        var buffer = new byte[length];
+        byte[] buffer = new byte[length];
         await stream.ReadExactlyAsync(buffer, cancellationToken).ConfigureAwait(false);
 
         return buffer;
@@ -65,7 +65,7 @@ internal sealed class OneDriveFragmentUploader(OneDriveTransferHttp http, OneDri
     private async Task<Option<Result<UploadedFile, ProviderError>>> PutFragmentAsync(UploadTransfer transfer, TransferCredentials credentials, byte[] buffer, CancellationToken cancellationToken)
     {
         var session = transfer.Session.Match(found => found, () => throw new InvalidOperationException("The session is created before fragments are sent."));
-        var start = transfer.Offset;
+        long start = transfer.Offset;
         if (start <= transfer.HashedUpTo && start + buffer.Length > transfer.HashedUpTo)
         {
             transfer.Hash.AppendData(buffer.AsSpan((int)(transfer.HashedUpTo - start)));
@@ -104,7 +104,7 @@ internal sealed class OneDriveFragmentUploader(OneDriveTransferHttp http, OneDri
     private async Task<Result<UploadedFile, ProviderError>> CompleteAsync(UploadTransfer transfer, HttpResponseMessage response, CancellationToken cancellationToken)
     {
         await keeper.ForgetAsync(transfer, cancellationToken).ConfigureAwait(false);
-        var hash = transfer.HashedUpTo == transfer.Length ? HexOf(transfer.Hash) : await HashAgainAsync(transfer, cancellationToken).ConfigureAwait(false);
+        string hash = transfer.HashedUpTo == transfer.Length ? HexOf(transfer.Hash) : await HashAgainAsync(transfer, cancellationToken).ConfigureAwait(false);
         OneDriveTransferLog.UploadCompleted(logger, transfer.Length, transfer.Fragments + 1);
 
         return ToUploaded(await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false), transfer.Length, hash);

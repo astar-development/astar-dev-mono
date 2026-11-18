@@ -243,7 +243,7 @@ public sealed class GivenATermStore : MigratedDatabaseTests
         using var cancellation = new CancellationTokenSource();
         await cancellation.CancelAsync();
 
-        var outcome = await Database.Terms.UpsertManyAsync([Term("red", category.Id)], cancellation.Token).ContinueWith(task => task.IsCompletedSuccessfully, TaskScheduler.Default);
+        bool outcome = await Database.Terms.UpsertManyAsync([Term("red", category.Id)], cancellation.Token).ContinueWith(task => task.IsCompletedSuccessfully, TaskScheduler.Default);
 
         outcome.ShouldBeFalse();
         Ok(await Database.Terms.GetAllAsync(CancellationToken)).ShouldBeEmpty();
@@ -253,7 +253,7 @@ public sealed class GivenATermStore : MigratedDatabaseTests
     public async Task when_overlapping_batches_and_single_upserts_run_in_twenty_parallel_calls_then_no_term_is_duplicated()
     {
         var category = await AddCategoryAsync("Colours");
-        var texts = Enumerable.Range(0, 50).Select(index => $"term{index}").ToArray();
+        string[] texts = Enumerable.Range(0, 50).Select(index => $"term{index}").ToArray();
 
         var results = await InParallelAsync(20, async index => index % 2 == 0
             ? Ok(await Database.Terms.UpsertManyAsync([.. texts.Select(text => Term(text, category.Id))], CancellationToken))

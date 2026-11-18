@@ -29,7 +29,7 @@ public sealed class GivenARootDirectoryCheck : IDisposable
         fileSystem.Directory.CreateDirectory("/scrapes/root");
         lookup.RootDirectory = Exceptional.Success(Option.Some("/scrapes/root"));
 
-        var exists = await check.ExistsAsync(TestContext.Current.CancellationToken);
+        bool exists = await check.ExistsAsync(TestContext.Current.CancellationToken);
 
         exists.ShouldBeTrue();
     }
@@ -39,7 +39,7 @@ public sealed class GivenARootDirectoryCheck : IDisposable
     {
         lookup.RootDirectory = Exceptional.Success(Option.Some("/scrapes/missing"));
 
-        var exists = await check.ExistsAsync(TestContext.Current.CancellationToken);
+        bool exists = await check.ExistsAsync(TestContext.Current.CancellationToken);
 
         exists.ShouldBeFalse();
     }

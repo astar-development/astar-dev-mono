@@ -9,7 +9,7 @@ public sealed class GivenAccountSignInStateChanges : IDisposable
     [Fact]
     public void when_a_state_is_recorded_or_an_account_forgotten_then_listeners_are_told()
     {
-        var changes = 0;
+        int changes = 0;
         services.States.Changed += (_, _) => changes++;
         var accountId = AccountIdFactory.Create(Guid.NewGuid());
 

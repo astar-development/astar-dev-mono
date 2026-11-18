@@ -10,7 +10,7 @@ public static class ScrapeConfigurationQueries
         => configurations
             .Include(e => e.ConnectionStrings)
             .Include(e => e.UserConfiguration)
-            .Include(e => e.SearchConfiguration).ThenInclude(s => s.SearchCategories)
+            .Include(e => e.SearchConfiguration.SearchCategories)
             .Include(e => e.ScrapeDirectories)
             .OrderByDescending(e => e.Id)
             .First();

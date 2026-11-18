@@ -45,7 +45,7 @@ public sealed class FileAuditFixture : IDisposable
 
     public void Write(string relative)
     {
-        var full = $"{Root}/{relative}";
+        string full = $"{Root}/{relative}";
         _ = FileSystem.Directory.CreateDirectory(FileSystem.Path.GetDirectoryName(full)!);
         FileSystem.File.WriteAllText(full, "content");
     }

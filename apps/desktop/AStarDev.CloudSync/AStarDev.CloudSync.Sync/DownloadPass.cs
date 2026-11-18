@@ -48,8 +48,8 @@ internal sealed partial class DownloadPass(ISyncRootReader roots, DownloadPlanLo
         if (!root.Exists)
             return RootUnavailable();
 
-        var orphans = DeleteOrphans(root);
-        var purged = await trash.PurgeAsync(root, cancellationToken).ConfigureAwait(false);
+        int orphans = DeleteOrphans(root);
+        int purged = await trash.PurgeAsync(root, cancellationToken).ConfigureAwait(false);
         var summary = await loader.LoadAsync(accountId, root, localChanges, cancellationToken)
             .BindAsync(request => PlanAndRunAsync(accountId, root, request, cancellationToken))
             .ConfigureAwait(false);
@@ -76,17 +76,17 @@ internal sealed partial class DownloadPass(ISyncRootReader roots, DownloadPlanLo
 
     private void LogTrashSkipped(DownloadPlanRequest request)
     {
-        var skipped = request.Remote.Count(entry => LocalTrash.Contains(entry.Path));
+        int skipped = request.Remote.Count(entry => LocalTrash.Contains(entry.Path));
         if (skipped == 0)
             return;
 
-        var message = $"The download pass skipped {skipped} remote items under the sync trash.";
+        string message = $"The download pass skipped {skipped} remote items under the sync trash.";
         LogMessage.Information(logger, Location, message);
     }
 
     private void LogPass(int orphans, int purged, Result<DownloadPassSummary, DownloadPassFailure> summary)
     {
-        var message = summary.Match(
+        string message = summary.Match(
             done => $"The download pass finished: {done.Downloaded} downloaded ({done.Bytes} bytes), {done.FoldersCreated} folders created, {done.Moved} moved, {done.DeletedLocally} deleted, {done.HeldByGuard} held, {done.SentToConflicts} sent to conflicts, {done.Skipped} skipped, {done.Failed} failed, {orphans} orphan temp files removed, {purged} expired trash entries removed.",
             failure => $"The download pass stopped ({failure.GetType().Name}), {orphans} orphan temp files removed, {purged} expired trash entries removed.");
         LogMessage.Information(logger, Location, message);

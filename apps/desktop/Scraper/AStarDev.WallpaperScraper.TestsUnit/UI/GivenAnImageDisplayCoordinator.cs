@@ -64,7 +64,7 @@ public sealed class GivenAnImageDisplayCoordinator
     public void when_display_is_disabled_then_a_notified_image_is_not_decoded()
     {
         var coordinator = new ImageDisplayCoordinator(notifier, decoder) { IsEnabled = false };
-        var raised = false;
+        bool raised = false;
         coordinator.ImageReady += (_, _) => raised = true;
 
         notifier.NotifyImageDownloaded(Details("wallpaper-1"));
@@ -88,7 +88,7 @@ public sealed class GivenAnImageDisplayCoordinator
     public async Task when_display_is_enabled_then_details_are_not_raised_separately_from_the_image()
     {
         var coordinator = new ImageDisplayCoordinator(notifier, decoder);
-        var raised = false;
+        bool raised = false;
         coordinator.DetailsReady += (_, _) => raised = true;
         var received = ExpectImages(coordinator, 1);
 
@@ -169,7 +169,7 @@ public sealed class GivenAnImageDisplayCoordinator
 
     private async Task WaitForDecodesAsync(int count)
     {
-        for (var attempt = 0; attempt < 1000 && decoder.DecodedPaths.Count < count; attempt++)
+        for (int attempt = 0; attempt < 1000 && decoder.DecodedPaths.Count < count; attempt++)
         {
             await Task.Delay(1, TestContext.Current.CancellationToken);
         }

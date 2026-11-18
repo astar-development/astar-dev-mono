@@ -17,7 +17,7 @@ internal sealed class ReclassifyFakeFileSource(IReadOnlyList<ClassifiableFile> f
         if (BlockUntil is not null)
             await BlockUntil.WaitAsync(cancellationToken);
 
-        var index = 0;
+        int index = 0;
         foreach (var file in files)
         {
             cancellationToken.ThrowIfCancellationRequested();

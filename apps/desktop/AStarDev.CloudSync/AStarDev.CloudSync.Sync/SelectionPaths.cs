@@ -8,8 +8,8 @@ internal static class SelectionPaths
 
     internal static bool IsAncestorOrSelf(LocalRelativePath ancestor, LocalRelativePath descendant)
     {
-        var ancestorSegments = Segments(ancestor);
-        var descendantSegments = Segments(descendant);
+        string[] ancestorSegments = Segments(ancestor);
+        string[] descendantSegments = Segments(descendant);
 
         return ancestorSegments.Length <= descendantSegments.Length && ancestorSegments.Zip(descendantSegments).All(pair => string.Equals(pair.First, pair.Second, StringComparison.OrdinalIgnoreCase));
     }

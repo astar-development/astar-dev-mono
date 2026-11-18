@@ -20,7 +20,7 @@ public static class QuarantineSnapshotExtensions
 
     private static IEnumerable<string> SelfAndAncestors(string path)
     {
-        for (var end = path.Length; end > 0; end = path.LastIndexOf(Separator, end - 1))
+        for (int end = path.Length; end > 0; end = path.LastIndexOf(Separator, end - 1))
             yield return path[..end];
     }
 }

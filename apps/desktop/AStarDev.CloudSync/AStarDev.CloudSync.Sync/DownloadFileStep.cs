@@ -18,7 +18,7 @@ internal sealed class DownloadFileStep(IProviderCapability<IRemoteFileDownloader
         var fileSystem = root.FileSystem;
         var target = fileSystem.FileInfo.New(fileSystem.Path.Join(root.FullName, plan.Path.Value));
         var folder = target.Directory ?? root;
-        var size = plan.Item.Kind is RemoteItemKind.File file ? file.Size : 0;
+        long size = plan.Item.Kind is RemoteItemKind.File file ? file.Size : 0;
 
         if (disk.GetAvailableBytes(folder).Match(free => free < size + options.FreeSpaceMarginBytes, () => false))
             return Failed(DownloadFailureFactory.CreateLocal(LocalOperationFailureFactory.CreateInsufficientDiskSpace()));

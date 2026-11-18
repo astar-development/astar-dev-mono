@@ -164,9 +164,9 @@ internal sealed class SqliteSyncAttentionStore(IDbContextFactory<SyncDbContext> 
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         var mine = dbContext.SyncAttention.AsNoTracking().Where(item => item.AccountId == accountId.Value);
-        var conflicts = await mine.CountAsync(item => item.IsConflict, cancellationToken).ConfigureAwait(false);
-        var sets = await mine.CountAsync(item => !item.IsConflict, cancellationToken).ConfigureAwait(false);
-        var paths = await mine.Where(item => !item.IsConflict).SelectMany(item => item.HeldPaths).CountAsync(cancellationToken).ConfigureAwait(false);
+        int conflicts = await mine.CountAsync(item => item.IsConflict, cancellationToken).ConfigureAwait(false);
+        int sets = await mine.CountAsync(item => !item.IsConflict, cancellationToken).ConfigureAwait(false);
+        int paths = await mine.Where(item => !item.IsConflict).SelectMany(item => item.HeldPaths).CountAsync(cancellationToken).ConfigureAwait(false);
 
         return AttentionCountsFactory.Create(conflicts, sets, paths);
     }
@@ -187,7 +187,7 @@ internal sealed class SqliteSyncAttentionStore(IDbContextFactory<SyncDbContext> 
 
     private static async Task UpsertAsync(SyncDbContext dbContext, SyncAttentionItem item, CancellationToken cancellationToken)
     {
-        var key = KeyOf(item);
+        string key = KeyOf(item);
         var accountId = AccountOf(item);
         var existing = await dbContext.SyncAttention.Include(entity => entity.HeldPaths).FirstOrDefaultAsync(entity => entity.AccountId == accountId && entity.ItemKey == key, cancellationToken).ConfigureAwait(false);
         if (existing is null)
@@ -211,13 +211,13 @@ internal sealed class SqliteSyncAttentionStore(IDbContextFactory<SyncDbContext> 
         if (item is SyncAttentionItem.Conflict conflict)
         {
             using var scope = SyncLogScope.Begin(logger, conflict.AccountId);
-            var message = $"Recorded a {NameOf(conflict.Kind)} conflict at path {LogHash.Of(conflict.Path.Value ?? string.Empty)}.";
+            string message = $"Recorded a {NameOf(conflict.Kind)} conflict at path {LogHash.Of(conflict.Path.Value ?? string.Empty)}.";
             LogMessage.Information(logger, Location, message);
         }
         else if (item is SyncAttentionItem.HeldDeletions held)
         {
             using var scope = SyncLogScope.Begin(logger, held.AccountId);
-            var message = $"Recorded {held.Paths.Count} held deletions, {NameOf(held.Direction)}.";
+            string message = $"Recorded {held.Paths.Count} held deletions, {NameOf(held.Direction)}.";
             LogMessage.Information(logger, Location, message);
         }
     }
@@ -225,8 +225,8 @@ internal sealed class SqliteSyncAttentionStore(IDbContextFactory<SyncDbContext> 
     private async Task<Unit> DeleteByIdAsync(Guid id, string what, AttentionResolution resolution, CancellationToken cancellationToken)
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        var removed = await dbContext.SyncAttention.Where(item => item.Id == id).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
-        var message = $"Closed {removed} {what} item as {resolution.GetType().Name}.";
+        int removed = await dbContext.SyncAttention.Where(item => item.Id == id).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
+        string message = $"Closed {removed} {what} item as {resolution.GetType().Name}.";
         LogMessage.Information(logger, Location, message);
 
         return Unit.Instance;

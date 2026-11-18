@@ -24,7 +24,7 @@ internal sealed class LocalChangeDetector(ISyncRootReader roots, ISyncBaselineWr
     public async Task<Result<LocalChangeSet, LocalScanFailure>> DetectAsync(AccountId accountId, CancellationToken cancellationToken)
     {
         using var scope = SyncLogScope.Begin(logger, accountId);
-        var started = Stopwatch.GetTimestamp();
+        long started = Stopwatch.GetTimestamp();
 
         return await roots.GetAsync(accountId, cancellationToken).MatchAsync(
             option => option.Match(root => ScanRootAsync(accountId, root, started, cancellationToken), () => Task.FromResult(Result.Failure<LocalChangeSet, LocalScanFailure>(LocalScanFailureFactory.CreateRootUnavailable()))),
@@ -70,7 +70,7 @@ internal sealed class LocalChangeDetector(ISyncRootReader roots, ISyncBaselineWr
         var changes = new List<LocalChange>();
         var touched = new List<SyncBaselineEntry>();
         var blocked = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var hashed = 0;
+        int hashed = 0;
         foreach (var item in walker.Walk(root.Directory, rules, cancellationToken))
         {
             _ = item.Info.Match(_ => false, () => blocked.Add(item.Path.Value ?? string.Empty));
@@ -86,7 +86,7 @@ internal sealed class LocalChangeDetector(ISyncRootReader roots, ISyncBaselineWr
             await RefreshAsync(accountId, chunk, cancellationToken).ConfigureAwait(false);
 
         var set = LocalChangeSetFactory.Create(changes, guarded.Holds, touched.Count, hashed);
-        var message = $"The local scan found {set.Summary.Added} added, {set.Summary.Modified} modified, {set.Summary.Deleted} deleted, {set.Summary.Deferred} deferred and {set.Summary.Unreadable} unreadable items, held the deletions of {set.Holds.Count} pairs and hashed {set.Summary.Hashed} files in {Stopwatch.GetElapsedTime(started).TotalMilliseconds:0} ms.";
+        string message = $"The local scan found {set.Summary.Added} added, {set.Summary.Modified} modified, {set.Summary.Deleted} deleted, {set.Summary.Deferred} deferred and {set.Summary.Unreadable} unreadable items, held the deletions of {set.Holds.Count} pairs and hashed {set.Summary.Hashed} files in {Stopwatch.GetElapsedTime(started).TotalMilliseconds:0} ms.";
         LogMessage.Information(logger, Location, message);
 
         return set;

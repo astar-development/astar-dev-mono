@@ -10,13 +10,12 @@ namespace AStarDev.WallpaperScraper.ScrapeConfiguration;
 public sealed class ScrapeConfigurationExporter(IScopedRunner scopedRunner) : IScrapeConfigurationExporter
 {
     /// <inheritdoc/>
-    public async Task<Exceptional<Option<ScrapeConfigurationImportDocument>>> ExportScrapeConfigurationAsync(ApiKeyExport apiKeys, CancellationToken cancellationToken = default)
-        =>
+    public async Task<Exceptional<Option<ScrapeConfigurationImportDocument>>> ExportScrapeConfigurationAsync(ApiKeyExport apiKeys, CancellationToken cancellationToken = default) =>
         await scopedRunner.RunAsync<IUnitOfWork, Exceptional<Option<ScrapeConfigurationImportDocument>>>(unitOfWork => Try.RunAsync(async () =>
         {
             var dbContext = unitOfWork.GetRepository<ScrapeConfigurationEntity, ScrapeConfigurationId>();
             var current = (await dbContext.TryGetFirstAsync(cancellationToken)).GetOrThrow();
 
             return current.Match(entity => (Option<ScrapeConfigurationImportDocument>)entity.ToImportDocument(apiKeys), () => Option<ScrapeConfigurationImportDocument>.None.Instance);
-        }));
+        }, cancellationToken));
 }

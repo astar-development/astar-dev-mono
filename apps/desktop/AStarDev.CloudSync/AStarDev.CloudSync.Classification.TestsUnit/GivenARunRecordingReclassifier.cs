@@ -169,7 +169,7 @@ public sealed class GivenARunRecordingReclassifier
     public async Task when_a_run_does_not_complete_then_the_run_recorded_event_is_not_raised(string unfinished)
     {
         inner.Outcome = Unfinished(unfinished);
-        var raised = 0;
+        int raised = 0;
         var reclassifier = Create(new InMemoryReclassifyRunStore());
         reclassifier.RunRecorded += (_, _) => raised++;
 
@@ -181,7 +181,7 @@ public sealed class GivenARunRecordingReclassifier
     [Fact]
     public async Task when_the_record_cannot_be_written_then_the_run_recorded_event_is_not_raised()
     {
-        var raised = 0;
+        int raised = 0;
         var reclassifier = Create(new InMemoryReclassifyRunStore { FailWrites = true });
         reclassifier.RunRecorded += (_, _) => raised++;
 

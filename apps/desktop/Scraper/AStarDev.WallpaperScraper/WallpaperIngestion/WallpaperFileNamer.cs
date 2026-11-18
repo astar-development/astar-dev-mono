@@ -16,15 +16,15 @@ public static class WallpaperFileNamer
     /// <returns>The file name.</returns>
     public static FileName Create(string wallpaperId, string extension, IReadOnlyList<Tag> tags)
     {
-        var prefix = CreatePrefix(tags);
-        var baseName = prefix.Length == 0 ? wallpaperId : $"{prefix}_{wallpaperId}";
+        string prefix = CreatePrefix(tags);
+        string baseName = prefix.Length == 0 ? wallpaperId : $"{prefix}_{wallpaperId}";
 
         return new FileName($"{baseName}{extension}");
     }
 
     private static string CreatePrefix(IReadOnlyList<Tag> tags)
     {
-        var joined = string.Join('_', tags.Where(tag => tag.IsFamous).Select(tag => Sanitise(tag.Name)).Where(name => name.Length > 0));
+        string joined = string.Join('_', tags.Where(tag => tag.IsFamous).Select(tag => Sanitise(tag.Name)).Where(name => name.Length > 0));
 
         return joined.TruncateIfRequired(MaxPrefixLength);
     }

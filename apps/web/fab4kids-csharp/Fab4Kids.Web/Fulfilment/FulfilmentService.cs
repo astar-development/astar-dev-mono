@@ -146,7 +146,7 @@ public sealed class FulfilmentService(
         foreach (var lineItemPrice in lineItems.Select(lineItem => lineItem.Price))
         {
             string? blobPath = lineItemPrice?.Product?.Metadata?.GetValueOrDefault("blobPath");
-            if (string.IsNullOrWhiteSpace(blobPath))
+            if (lineItemPrice is null || string.IsNullOrWhiteSpace(blobPath))
                 continue;
 
             var urlResult = await linkGenerator.GenerateSignedUrlAsync(blobPath, cancellationToken);
@@ -154,7 +154,7 @@ public sealed class FulfilmentService(
             if (string.IsNullOrWhiteSpace(url))
                 continue;
 
-            links.Add(DeliveryLinkFactory.Create(lineItemPrice?.Product?.Name, url, expiresAt));
+            links.Add(DeliveryLinkFactory.Create(lineItemPrice.Product?.Name, url, expiresAt));
         }
 
         return links;

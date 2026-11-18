@@ -25,7 +25,7 @@ internal sealed class SqliteThroughputStore(IDbContextFactory<SyncDbContext> dbC
     private async Task<Unit> StoreAsync(TransferSample sample, CancellationToken cancellationToken)
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        var oldestKept = sample.At.Subtract(ThroughputLimits.Retention).UtcTicks;
+        long oldestKept = sample.At.Subtract(ThroughputLimits.Retention).UtcTicks;
         _ = dbContext.ThroughputSamples.Add(new ThroughputSampleEntity { AtUtcTicks = sample.At.UtcTicks, Bytes = sample.Bytes, ElapsedTicks = sample.Elapsed.Ticks });
         _ = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         _ = await dbContext.ThroughputSamples.Where(row => row.AtUtcTicks < oldestKept).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
@@ -36,7 +36,7 @@ internal sealed class SqliteThroughputStore(IDbContextFactory<SyncDbContext> dbC
     private async Task<IReadOnlyList<TransferSample>> ReadAsync(DateTimeOffset since, CancellationToken cancellationToken)
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        var earliest = since.UtcTicks;
+        long earliest = since.UtcTicks;
         var rows = await dbContext.ThroughputSamples.AsNoTracking().Where(row => row.AtUtcTicks >= earliest).OrderBy(row => row.AtUtcTicks).ThenBy(row => row.Id).ToListAsync(cancellationToken).ConfigureAwait(false);
 
         return [.. rows.Select(row => TransferSampleFactory.Create(new DateTimeOffset(row.AtUtcTicks, TimeSpan.Zero), row.Bytes, TimeSpan.FromTicks(row.ElapsedTicks)))];

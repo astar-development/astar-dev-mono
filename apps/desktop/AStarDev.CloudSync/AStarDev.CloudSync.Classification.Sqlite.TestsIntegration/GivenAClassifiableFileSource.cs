@@ -68,7 +68,7 @@ public sealed class GivenAClassifiableFileSource : MigratedDatabaseTests
     public async Task when_the_baseline_has_more_files_than_one_page_then_every_file_is_streamed_once()
     {
         var account = await AddAccountAsync("one");
-        for (var chunk = 0; chunk < 13; chunk++)
+        for (int chunk = 0; chunk < 13; chunk++)
             await SaveAsync(account, [.. Enumerable.Range(chunk * 500, 500).Select(index => FileEntry(account, $"Folder/file-{index:D5}.txt", $"item-{index}"))]);
 
         var files = await StreamAsync();

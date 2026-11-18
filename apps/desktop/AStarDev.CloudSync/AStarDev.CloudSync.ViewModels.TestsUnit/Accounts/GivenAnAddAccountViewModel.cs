@@ -188,7 +188,7 @@ public class GivenAnAddAccountViewModel
 
         var shown = dialog.ShowAsync(TestContext.Current.CancellationToken);
         await dialog.TryAgainCommand.ExecuteAsync(null);
-        var offered = dialog.IsOfferingFolders;
+        bool offered = dialog.IsOfferingFolders;
         dialog.LaterCommand.Execute(null);
         await shown;
 

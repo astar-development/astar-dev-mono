@@ -29,7 +29,7 @@ public static class ScrapeConfigurationImportMapper
             search.MaxResults,
             categories);
 
-        foreach (var name in search.PersonCategories)
+        foreach (string name in search.PersonCategories)
         {
             searchEntity.PersonCategories.Add(new PersonCategoryEntity { SearchConfigurationId = searchEntity.Id, Name = name, CreatedAt = now, UpdatedAt = now });
         }

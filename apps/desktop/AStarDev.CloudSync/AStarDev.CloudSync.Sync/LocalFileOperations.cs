@@ -73,7 +73,7 @@ internal sealed class LocalFileOperations(TimeProvider timeProvider, LocalTrash 
 
     private async Task<Result<Unit, LocalOperationFailure>> WithRetryAsync(Func<Exceptional<Unit>> operation, CancellationToken cancellationToken)
     {
-        var attempt = 0;
+        int attempt = 0;
         while (true)
         {
             attempt++;

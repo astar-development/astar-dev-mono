@@ -102,7 +102,7 @@ public sealed class GivenASyncProgressFeedForDownloads
     {
         using var fixture = await CreateAsync(CancellationToken);
         fixture.Docs();
-        foreach (var index in Enumerable.Range(0, 20))
+        foreach (int index in Enumerable.Range(0, 20))
         {
             fixture.Remote.File($"Docs/f{index}.txt", $"f{index}", "c2", 10);
             fixture.Downloader.Content[$"f{index}"] = Bytes(10);

@@ -22,7 +22,7 @@ public sealed class TagCatalogue(IScopedRunner scopedRunner) : ITagCatalogue
         return await scopedRunner.RunAsync<ITagsQuery, IUnitOfWork, IIgnoredWallpapers, Exceptional<Unit>>((query, unitOfWork, ignoredWallpapers) => Try.RunAsync(() => unitOfWork.InTransactionAsync(async () =>
         {
             var tags = (await query.FindByWallhavenIdsAsync([.. flagsByWallhavenId.Keys], cancellationToken)).GetOrThrow();
-            var ignoreFlagRemoved = false;
+            bool ignoreFlagRemoved = false;
             foreach (var tag in tags)
             {
                 var flags = flagsByWallhavenId[tag.WallhavenTagId];

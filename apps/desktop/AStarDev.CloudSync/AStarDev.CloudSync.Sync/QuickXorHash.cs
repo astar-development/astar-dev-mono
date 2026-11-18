@@ -13,13 +13,13 @@ internal static class QuickXorHash
         UInt128 low = 0;
         uint high = 0;
         long length = 0;
-        var position = 0;
-        var buffer = new byte[BufferSize];
+        int position = 0;
+        byte[] buffer = new byte[BufferSize];
         int read;
         while ((read = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) > 0)
         {
             observe(buffer.AsMemory(0, read));
-            for (var index = 0; index < read; index++)
+            for (int index = 0; index < read; index++)
             {
                 XorAt(buffer[index], position, ref low, ref high);
                 position = (position + Shift) % Width;
@@ -49,11 +49,11 @@ internal static class QuickXorHash
 
     private static string Finish(UInt128 low, uint high, long length)
     {
-        var bytes = new byte[Width / 8];
+        byte[] bytes = new byte[Width / 8];
         System.Buffers.Binary.BinaryPrimitives.WriteUInt128LittleEndian(bytes, low);
         System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(bytes.AsSpan(16), high);
-        var lengthBytes = BitConverter.GetBytes(length);
-        for (var index = 0; index < lengthBytes.Length; index++)
+        byte[] lengthBytes = BitConverter.GetBytes(length);
+        for (int index = 0; index < lengthBytes.Length; index++)
             bytes[LengthOffset + index] ^= lengthBytes[index];
 
         return Convert.ToBase64String(bytes);

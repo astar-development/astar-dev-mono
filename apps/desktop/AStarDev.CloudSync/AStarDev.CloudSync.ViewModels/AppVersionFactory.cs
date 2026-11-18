@@ -9,7 +9,7 @@ public static class AppVersionFactory
     /// <param name="informationalVersion">The raw version text, for example "v1.71.1+abc123".</param>
     public static AppVersion Create(string? informationalVersion)
     {
-        var withoutMetadata = (informationalVersion ?? string.Empty).Split('+')[0].Trim().TrimStart('v', 'V');
+        string withoutMetadata = (informationalVersion ?? string.Empty).Split('+')[0].Trim().TrimStart('v', 'V');
 
         return new AppVersion(withoutMetadata.Length == 0 ? LocalFallback : withoutMetadata);
     }

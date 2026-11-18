@@ -193,7 +193,7 @@ public sealed class GivenAnUploadPassForFirstSyncLinks : IDisposable
         fixture.MaxConcurrentUploads = 4;
         fixture.Remote.Folder("Docs", "remote-docs");
         _ = fixture.FileSystem.Directory.CreateDirectory("/sync/Docs");
-        foreach (var index in Enumerable.Range(0, 20))
+        foreach (int index in Enumerable.Range(0, 20))
         {
             fixture.FileSystem.File.WriteAllText($"/sync/Docs/f{index}.txt", "hello");
             fixture.Remote.File($"Docs/f{index}.txt", $"r{index}", "c1", 5, HelloQuickXorHash);

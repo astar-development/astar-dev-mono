@@ -141,7 +141,7 @@ public sealed class GivenASyncRunJournal : IAsyncLifetime
     [Fact]
     public async Task when_more_than_the_history_limit_finish_then_only_the_newest_runs_of_that_account_are_kept()
     {
-        foreach (var _ in Enumerable.Range(0, SyncRunJournalLimits.RunsPerAccount + 5))
+        foreach (int _ in Enumerable.Range(0, SyncRunJournalLimits.RunsPerAccount + 5))
         {
             var run = await StartAsync(FirstAccount);
             time.Advance(TimeSpan.FromSeconds(1));
@@ -160,7 +160,7 @@ public sealed class GivenASyncRunJournal : IAsyncLifetime
     {
         _ = await StartAsync(FirstAccount);
         time.Advance(TimeSpan.FromSeconds(1));
-        foreach (var _ in Enumerable.Range(0, SyncRunJournalLimits.RunsPerAccount + 2))
+        foreach (int _ in Enumerable.Range(0, SyncRunJournalLimits.RunsPerAccount + 2))
         {
             var run = await StartAsync(FirstAccount);
             time.Advance(TimeSpan.FromSeconds(1));
@@ -177,7 +177,7 @@ public sealed class GivenASyncRunJournal : IAsyncLifetime
     {
         await FinishAsync(await StartAsync(FirstAccount), SyncRunOutcomeFactory.CreateCompleted());
         var completedAt = time.GetUtcNow();
-        foreach (var _ in Enumerable.Range(0, SyncRunJournalLimits.RunsPerAccount + 5))
+        foreach (int _ in Enumerable.Range(0, SyncRunJournalLimits.RunsPerAccount + 5))
         {
             time.Advance(TimeSpan.FromSeconds(1));
             await FinishAsync(await StartAsync(FirstAccount), SyncRunOutcomeFactory.CreateFailed(SyncFailureReasonFactory.CreateQuotaExceeded()));

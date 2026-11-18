@@ -21,7 +21,7 @@ public class GivenAFolderNodeViewModel
     public async Task when_a_folder_is_closed_then_the_expander_points_right_and_when_open_it_points_down()
     {
         var folder = await FirstRootAsync();
-        var closed = folder.ExpanderGlyph;
+        string closed = folder.ExpanderGlyph;
 
         await folder.ToggleExpandedCommand.ExecuteAsync(null);
 
@@ -33,7 +33,7 @@ public class GivenAFolderNodeViewModel
     {
         var folder = await FirstRootAsync();
         await folder.ToggleExpandedCommand.ExecuteAsync(null);
-        var requestedAfterOpening = tree.Requested.Count;
+        int requestedAfterOpening = tree.Requested.Count;
 
         await folder.ToggleExpandedCommand.ExecuteAsync(null);
 
@@ -46,7 +46,7 @@ public class GivenAFolderNodeViewModel
         var folder = await FirstRootAsync();
         await folder.ToggleExpandedCommand.ExecuteAsync(null);
         await folder.ToggleExpandedCommand.ExecuteAsync(null);
-        var requested = tree.Requested.Count;
+        int requested = tree.Requested.Count;
 
         await folder.ToggleExpandedCommand.ExecuteAsync(null);
 
@@ -57,7 +57,7 @@ public class GivenAFolderNodeViewModel
     public async Task when_the_check_state_changes_then_the_checkbox_symbol_follows()
     {
         var folder = await FirstRootAsync();
-        var unticked = folder.CheckGlyph;
+        string unticked = folder.CheckGlyph;
 
         folder.ToggleCommand.Execute(null);
 

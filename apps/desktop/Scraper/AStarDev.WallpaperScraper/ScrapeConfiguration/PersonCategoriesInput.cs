@@ -23,9 +23,9 @@ public sealed record PersonCategoriesInput(IReadOnlyList<PersonCategoryInput> Ca
     {
         List<ValidationError> errors = [];
         HashSet<string> seenNames = new(StringComparer.OrdinalIgnoreCase);
-        for (var i = 0; i < Categories.Count; i++)
+        for (int i = 0; i < Categories.Count; i++)
         {
-            var name = Categories[i].Name.Trim();
+            string name = Categories[i].Name.Trim();
             if (name.Length == 0) errors.Add(ValidationErrorFactory.Create($"PersonCategories[{i}].Name", "Must not be blank."));
             else if (!seenNames.Add(name)) errors.Add(ValidationErrorFactory.Create($"PersonCategories[{i}].Name", $"Duplicate name '{name}'."));
         }

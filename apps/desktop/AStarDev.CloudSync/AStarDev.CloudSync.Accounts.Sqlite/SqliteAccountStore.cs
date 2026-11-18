@@ -72,7 +72,7 @@ internal sealed class SqliteAccountStore(IDbContextFactory<CloudSyncDbContext> d
     private async Task<AccountAddOutcome> AddOrRefreshAsync(AccountRegistration registration, CancellationToken cancellationToken)
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        var providerKey = ToProviderKey(registration.Provider);
+        string providerKey = ToProviderKey(registration.Provider);
         var existing = await dbContext.Accounts.Where(account => account.Provider == providerKey && account.ProviderAccountKey == registration.Key.Value).AsAsyncEnumerable().FirstOrNoneAsync(cancellationToken).ConfigureAwait(false);
         var outcome = existing.Match(entity => Refresh(entity, registration), () => Add(dbContext, providerKey, registration));
         await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -83,7 +83,7 @@ internal sealed class SqliteAccountStore(IDbContextFactory<CloudSyncDbContext> d
     private async Task<Option<AccountEntity>> FindAsync(CloudProvider provider, ProviderAccountKey key, CancellationToken cancellationToken)
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        var providerKey = ToProviderKey(provider);
+        string providerKey = ToProviderKey(provider);
 
         return await dbContext.Accounts.AsNoTracking().Where(account => account.Provider == providerKey && account.ProviderAccountKey == key.Value).AsAsyncEnumerable().FirstOrNoneAsync(cancellationToken).ConfigureAwait(false);
     }

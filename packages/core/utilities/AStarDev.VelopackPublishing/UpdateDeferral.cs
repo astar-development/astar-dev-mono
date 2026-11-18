@@ -3,7 +3,7 @@ namespace AStar.Dev.Velopack.Publishing;
 /// <summary>Whether the user deferred the update that is waiting (#1412). It is what the update policy needs to know about the user's earlier choices.</summary>
 public abstract record UpdateDeferral
 {
-    internal UpdateDeferral()
+    private protected UpdateDeferral()
     {
     }
 }

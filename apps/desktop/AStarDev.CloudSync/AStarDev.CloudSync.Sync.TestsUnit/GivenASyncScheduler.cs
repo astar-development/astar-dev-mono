@@ -23,7 +23,7 @@ public sealed class GivenASyncScheduler : IDisposable
 
         await services.TickAtAsync(Minutes(1));
         await ScheduleServices.NothingElseHappensAsync();
-        var runsBefore = services.Runner.Runs.Count;
+        int runsBefore = services.Runner.Runs.Count;
         await services.TickAtAsync(Minutes(2));
         await services.WaitForRunsAsync(1);
 
@@ -37,7 +37,7 @@ public sealed class GivenASyncScheduler : IDisposable
     public async Task when_four_accounts_share_the_default_hour_then_they_start_fifteen_minutes_apart()
     {
         var accounts = new List<AccountId>();
-        for (var index = 0; index < 4; index++)
+        for (int index = 0; index < 4; index++)
             accounts.Add(await services.AddAccountAsync());
 
         await StartAsync();
@@ -60,7 +60,7 @@ public sealed class GivenASyncScheduler : IDisposable
 
         await services.TickAtAsync(Minutes(61));
         await ScheduleServices.NothingElseHappensAsync();
-        var beforeTheInterval = services.Runner.Runs.Count;
+        int beforeTheInterval = services.Runner.Runs.Count;
         await services.TickAtAsync(Minutes(62));
         await services.WaitForRunsAsync(2);
 
@@ -253,7 +253,7 @@ public sealed class GivenASyncScheduler : IDisposable
 
         await services.TickAtAsync(TimeSpan.FromHours(3) + Minutes(1));
         await ScheduleServices.NothingElseHappensAsync();
-        var beforeTheFirstOffset = services.Runner.Runs.Count;
+        int beforeTheFirstOffset = services.Runner.Runs.Count;
         await services.TickAtAsync(TimeSpan.FromHours(3) + Minutes(2));
         await services.WaitForRunsAsync(3);
         await services.TickAtAsync(TimeSpan.FromHours(3) + Minutes(32));

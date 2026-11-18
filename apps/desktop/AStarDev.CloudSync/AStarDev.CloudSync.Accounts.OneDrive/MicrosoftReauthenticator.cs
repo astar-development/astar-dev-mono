@@ -27,7 +27,7 @@ internal sealed class MicrosoftReauthenticator(TokenCacheInitialiser tokenCache,
 
     private async Task<Result<Unit, ReauthFailure>> SignInAgainAsync(StoredAccount account, IReadOnlyList<StoredAccount> storedAccounts, CancellationToken cancellationToken)
     {
-        var cacheConnected = await tokenCache.EnsureAsync(ConsentPromptFactory.CreateAllowed(), cancellationToken).MatchAsync(_ => true, _ => false).ConfigureAwait(false);
+        bool cacheConnected = await tokenCache.EnsureAsync(ConsentPromptFactory.CreateAllowed(), cancellationToken).MatchAsync(_ => true, _ => false).ConfigureAwait(false);
         if (!cacheConnected)
             return Failure(ReauthFailureFactory.CreateProvider(ProviderErrorFactory.CreateUnexpected()));
 
@@ -42,7 +42,7 @@ internal sealed class MicrosoftReauthenticator(TokenCacheInitialiser tokenCache,
         if (string.Equals(signIn.AccountKey, account.Registration.Key.Value, StringComparison.OrdinalIgnoreCase))
             return Result.Success<Unit, ReauthFailure>(Unit.Instance);
 
-        var ownedByAnotherStoredAccount = storedAccounts.Any(stored => string.Equals(stored.Registration.Key.Value, signIn.AccountKey, StringComparison.OrdinalIgnoreCase));
+        bool ownedByAnotherStoredAccount = storedAccounts.Any(stored => string.Equals(stored.Registration.Key.Value, signIn.AccountKey, StringComparison.OrdinalIgnoreCase));
         if (!ownedByAnotherStoredAccount)
             _ = await ProviderAccountKeyFactory.Create(signIn.AccountKey).MatchAsync(RemoveStrayTokensAsync, _ => Task.FromResult(Unit.Instance)).ConfigureAwait(false);
 

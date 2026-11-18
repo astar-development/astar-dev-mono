@@ -44,7 +44,7 @@ public sealed class TagLinker(ITagsQuery tagsQuery, IUnitOfWork unitOfWork, IFil
             }
 
             return Unit.Instance;
-        });
+        }, cancellationToken);
 
     private TagEntity ResolveOrAdd(Tag tag, AddedRows added)
     {

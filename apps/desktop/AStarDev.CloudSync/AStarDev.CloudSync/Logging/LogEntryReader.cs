@@ -29,7 +29,7 @@ public sealed class LogEntryReader(ILogFileLocator locator) : ILogEntryReader
 
     private static string DayOf(string name) => Segments(name).ElementAtOrDefault(1) ?? string.Empty;
 
-    private static int IndexOf(string name) => int.TryParse(Segments(name).ElementAtOrDefault(2), out var index) ? index : 1;
+    private static int IndexOf(string name) => int.TryParse(Segments(name).ElementAtOrDefault(2), out int index) ? index : 1;
 
     private static string[] Segments(string name) => Path.GetFileNameWithoutExtension(name).Split('-');
 

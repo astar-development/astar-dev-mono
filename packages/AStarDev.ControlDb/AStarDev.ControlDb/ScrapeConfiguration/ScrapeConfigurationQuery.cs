@@ -15,10 +15,8 @@ public sealed class ScrapeConfigurationQuery : IQuery<ScrapeConfigurationEntity>
         query
             .InFirstOrder()
             .Include(scrapeConfiguration => scrapeConfiguration.UserConfiguration)
-            .Include(scrapeConfiguration => scrapeConfiguration.SearchConfiguration)
-                .ThenInclude(searchConfiguration => searchConfiguration.SearchCategories)
-            .Include(scrapeConfiguration => scrapeConfiguration.SearchConfiguration)
-                .ThenInclude(searchConfiguration => searchConfiguration.PersonCategories)
+            .Include(scrapeConfiguration => scrapeConfiguration.SearchConfiguration.SearchCategories)
+            .Include(scrapeConfiguration => scrapeConfiguration.SearchConfiguration.PersonCategories)
             .Include(scrapeConfiguration => scrapeConfiguration.ScrapeDirectories)
             .AsSplitQuery();
 }

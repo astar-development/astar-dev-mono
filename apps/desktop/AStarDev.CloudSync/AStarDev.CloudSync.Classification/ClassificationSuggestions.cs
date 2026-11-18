@@ -58,7 +58,7 @@ public sealed class ClassificationSuggestions(IClassifiableFileSource fileSource
     {
         await foreach (var file in fileSource.StreamAsync(cancellationToken).WithCancellation(cancellationToken).ConfigureAwait(false))
         {
-            foreach (var word in SuggestionWords.Split(file.Path.Value).Where(word => !IsKnown(word, knownTokens)))
+            foreach (string? word in SuggestionWords.Split(file.Path.Value).Where(word => !IsKnown(word, knownTokens)))
             {
                 counts[word] = counts.GetValueOrDefault(word) + 1;
             }

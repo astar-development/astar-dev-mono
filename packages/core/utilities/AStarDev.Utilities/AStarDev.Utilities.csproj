@@ -22,6 +22,7 @@
     <PackageProjectUrl>https://github.com/astar-development/astar-dev-mono/tree/main/packages/core</PackageProjectUrl>
     <DocumentationFile>$(AssemblyName).xml</DocumentationFile>
     <PackageReleaseNotes>
+        v0.2.2 fix(sonar): pass CancellationToken and fix new-code issues (#1938)
     v0.2.0 **Possible breaking change**: The FromJson extension method now defaults to using the Constants.WebDeserialisationSettings when no options are supplied. This ensures consistent deserialisation across the application, but may affect behaviour if you were previously relying on the default JsonSerializerOptions.
     v0.1.0 No functional changes. Just a new 'home' on GitHub.
     </PackageReleaseNotes>

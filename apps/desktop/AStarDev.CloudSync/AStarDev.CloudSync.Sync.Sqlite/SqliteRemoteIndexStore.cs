@@ -137,7 +137,7 @@ internal sealed class SqliteRemoteIndexStore(IDbContextFactory<SyncDbContext> db
     private async Task<Option<ChangeCursor>> ReadCursorAsync(AccountId accountId, CancellationToken cancellationToken)
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        var cursor = await dbContext.RemoteCursors.AsNoTracking().Where(row => row.AccountId == accountId.Value).Select(row => row.Cursor).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+        string? cursor = await dbContext.RemoteCursors.AsNoTracking().Where(row => row.AccountId == accountId.Value).Select(row => row.Cursor).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
 
         return ChangeCursorFactory.Create(cursor).Match(found => Option.Some(found), _ => Option.None<ChangeCursor>());
     }
@@ -182,14 +182,14 @@ internal sealed class SqliteRemoteIndexStore(IDbContextFactory<SyncDbContext> db
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         var names = new List<string>();
         var visited = new HashSet<string>(StringComparer.Ordinal);
-        var current = itemId.Value;
+        string? current = itemId.Value;
 
         while (current is not null)
         {
             if (!visited.Add(current))
                 return Option.None<LocalRelativePath>();
 
-            var key = current;
+            string key = current;
             var step = await dbContext.RemoteItems.AsNoTracking().Where(item => item.AccountId == accountId.Value && item.RemoteItemId == key).Select(item => new { item.Name, item.ParentId }).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
 
             if (step is null)
@@ -233,7 +233,7 @@ internal sealed class SqliteRemoteIndexStore(IDbContextFactory<SyncDbContext> db
     {
         var stored = new Dictionary<string, RemoteItemEntity>(StringComparer.Ordinal);
 
-        foreach (var chunk in ids.Chunk(LookupChunkSize))
+        foreach (string[] chunk in ids.Chunk(LookupChunkSize))
         {
             var found = await dbContext.RemoteItems.Where(item => item.AccountId == accountId.Value && chunk.Contains(item.RemoteItemId)).ToListAsync(cancellationToken).ConfigureAwait(false);
 
@@ -255,11 +255,11 @@ internal sealed class SqliteRemoteIndexStore(IDbContextFactory<SyncDbContext> db
             return [RemoteChangeFactory.CreateAdded(snapshot)];
         }
 
-        var wasDeleted = entity.IsDeleted;
+        bool wasDeleted = entity.IsDeleted;
         var oldParent = ParentOf(entity);
-        var oldName = entity.Name;
-        var moved = PlaceChanged(entity, snapshot);
-        var modified = ContentChanged(entity, snapshot);
+        string oldName = entity.Name;
+        bool moved = PlaceChanged(entity, snapshot);
+        bool modified = ContentChanged(entity, snapshot);
         Fill(entity, snapshot, pass);
 
         if (wasDeleted)
@@ -286,7 +286,7 @@ internal sealed class SqliteRemoteIndexStore(IDbContextFactory<SyncDbContext> db
         {
             var next = new List<string>();
 
-            foreach (var chunk in level.Chunk(LookupChunkSize))
+            foreach (string[] chunk in level.Chunk(LookupChunkSize))
             {
                 var children = await dbContext.RemoteItems.Where(item => item.AccountId == accountId.Value && item.ParentId != null && chunk.Contains(item.ParentId) && !item.IsDeleted).ToListAsync(cancellationToken).ConfigureAwait(false);
 
@@ -314,7 +314,7 @@ internal sealed class SqliteRemoteIndexStore(IDbContextFactory<SyncDbContext> db
 
     private static void SaveCursor(SyncDbContext dbContext, AccountId accountId, RemoteCursorEntity? row, PageContinuation next, DateTimeOffset now)
     {
-        var cursor = next switch
+        string? cursor = next switch
         {
             PageContinuation.MorePages more => more.Next.Value,
             PageContinuation.CaughtUp caughtUp => caughtUp.Delta.Value,

@@ -100,7 +100,7 @@ public sealed class GivenARemoteIndexStore : IAsyncLifetime
     public async Task when_a_folder_is_renamed_then_one_moved_change_is_reported_and_its_descendants_get_the_new_path_without_being_rewritten()
     {
         _ = await Apply(FirstAccount, More("c1", Folder("a", "root-id", "Docs"), Folder("b", "a", "Work"), File("f", "b", "one.txt")));
-        var before = await PathOf(FirstAccount, "f");
+        string before = await PathOf(FirstAccount, "f");
 
         var applied = await Apply(FirstAccount, More("c2", Folder("a", "root-id", "Papers")));
 
@@ -263,7 +263,7 @@ public sealed class GivenARemoteIndexStore : IAsyncLifetime
 
         _ = await Apply(FirstAccount, More("secret-cursor", File("f", "root-id", "Taxes 2026.txt")));
 
-        var everything = string.Join('\n', Database.Logs.Logger.Messages);
+        string everything = string.Join('\n', Database.Logs.Logger.Messages);
         (everything.Contains("Taxes", StringComparison.Ordinal), everything.Contains("secret-cursor", StringComparison.Ordinal), everything.Contains(FirstAccount.Value.ToString(), StringComparison.OrdinalIgnoreCase)).ShouldBe((false, false, false));
     }
 
@@ -322,7 +322,7 @@ public sealed class GivenARemoteIndexStore : IAsyncLifetime
         const int pages = 60;
         const int pageSize = 5000;
 
-        foreach (var number in Enumerable.Range(0, pages))
+        foreach (int number in Enumerable.Range(0, pages))
             _ = await Apply(FirstAccount, number == pages - 1 ? Caught($"c{number}", Items(number, pageSize)) : More($"c{number}", Items(number, pageSize)));
 
         (await CursorOf(FirstAccount), CountRows("RemoteItems")).ShouldBe(($"c{pages - 1}", pages * pageSize));
@@ -394,7 +394,7 @@ public sealed class GivenARemoteIndexStore : IAsyncLifetime
 
         _ = await Database.IndexWriter.RenameItemAsync(FirstAccount, Id("f"), "other.txt", CancellationToken);
 
-        var other = (await Database.IndexReader.GetAsync(SecondAccount, Id("f"), CancellationToken)).Match(found => found.Match(snapshot => snapshot.Name, () => string.Empty), _ => string.Empty);
+        string other = (await Database.IndexReader.GetAsync(SecondAccount, Id("f"), CancellationToken)).Match(found => found.Match(snapshot => snapshot.Name, () => string.Empty), _ => string.Empty);
         other.ShouldBe("new.txt");
     }
 
@@ -405,7 +405,7 @@ public sealed class GivenARemoteIndexStore : IAsyncLifetime
 
         var renamed = await Database.IndexWriter.RenameItemAsync(FirstAccount, Id("missing"), "x.txt", CancellationToken);
 
-        var item = (await Database.IndexReader.GetAsync(FirstAccount, Id("missing"), CancellationToken)).Match(found => found.Match(_ => true, () => false), _ => true);
+        bool item = (await Database.IndexReader.GetAsync(FirstAccount, Id("missing"), CancellationToken)).Match(found => found.Match(_ => true, () => false), _ => true);
         (renamed.Match(_ => "ok", error => error.Message), item).ShouldBe(("ok", false));
     }
 }

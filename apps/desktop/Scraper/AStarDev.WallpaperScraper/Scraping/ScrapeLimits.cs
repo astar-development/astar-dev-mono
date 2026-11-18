@@ -26,5 +26,5 @@ public sealed record ScrapeLimits(int MaximumSearchCategories, int MaximumPagesP
     }
 
     private static int PositiveOrDefault(string? configuredValue, int defaultValue)
-        => int.TryParse(configuredValue, out var parsed) && parsed > 0 ? parsed : defaultValue;
+        => int.TryParse(configuredValue, out int parsed) && parsed > 0 ? parsed : defaultValue;
 }

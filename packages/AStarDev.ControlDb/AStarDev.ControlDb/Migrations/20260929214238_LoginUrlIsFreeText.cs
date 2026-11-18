@@ -8,9 +8,7 @@ namespace AStarDev.ControlDb.Migrations
     public partial class LoginUrlIsFreeText : Migration
     {
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AlterColumn<string>(
+        protected override void Up(MigrationBuilder migrationBuilder) => migrationBuilder.AlterColumn<string>(
                 name: "LoginUrl",
                 table: "ScrapeConfigurations",
                 type: "TEXT",
@@ -18,12 +16,9 @@ namespace AStarDev.ControlDb.Migrations
                 collation: "NOCASE",
                 oldClrType: typeof(string),
                 oldType: "TEXT");
-        }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AlterColumn<string>(
+        protected override void Down(MigrationBuilder migrationBuilder) => migrationBuilder.AlterColumn<string>(
                 name: "LoginUrl",
                 table: "ScrapeConfigurations",
                 type: "TEXT",
@@ -31,6 +26,5 @@ namespace AStarDev.ControlDb.Migrations
                 oldClrType: typeof(string),
                 oldType: "TEXT",
                 oldCollation: "NOCASE");
-        }
     }
 }

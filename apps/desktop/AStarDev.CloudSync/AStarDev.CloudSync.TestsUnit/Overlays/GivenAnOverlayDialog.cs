@@ -218,7 +218,7 @@ public class GivenAnOverlayDialog
 
         await overlay.Open(vm);
         Dispatcher.UIThread.RunJobs();
-        var focusedWhileOpen = InsideOf(window, view);
+        bool focusedWhileOpen = InsideOf(window, view);
         overlay.Close(vm);
         Dispatcher.UIThread.RunJobs();
 

@@ -26,7 +26,7 @@ public sealed class GivenAResumableOneDriveUpload : IDisposable
 
     private static byte[] Filled(long length)
     {
-        var buffer = new byte[length];
+        byte[] buffer = new byte[length];
         for (long index = 0; index < length; index++)
             buffer[index] = (byte)(index % 251);
 
@@ -41,7 +41,7 @@ public sealed class GivenAResumableOneDriveUpload : IDisposable
 
     private static HttpResponseMessage FragmentResponse(RecordedRequest request, long length)
     {
-        var end = long.Parse(request.ContentRange!.Split('-')[1].Split('/')[0]);
+        long end = long.Parse(request.ContentRange!.Split('-')[1].Split('/')[0]);
 
         return end + 1 == length
             ? RecordingGraphHandler.Json(HttpStatusCode.Created, ItemJson(length))
@@ -87,7 +87,7 @@ public sealed class GivenAResumableOneDriveUpload : IDisposable
         _ = await fixture.BuildAsync(CancellationToken);
         var source = LargeFile();
         ScriptFreshSession(source.Length);
-        var savedWhileUploading = 0;
+        int savedWhileUploading = 0;
         var original = fixture.Graph.Respond;
         fixture.Graph.Respond = request =>
         {
@@ -110,7 +110,7 @@ public sealed class GivenAResumableOneDriveUpload : IDisposable
         _ = await fixture.BuildAsync(CancellationToken);
         var source = LargeFile();
         UploadSession? seen = null;
-        var puts = 0;
+        int puts = 0;
         fixture.Graph.Respond = request =>
         {
             if (request.Method == HttpMethod.Put && ++puts == 2)
@@ -179,7 +179,7 @@ public sealed class GivenAResumableOneDriveUpload : IDisposable
         _ = await fixture.BuildAsync(CancellationToken);
         var source = LargeFile();
         fixture.UploadSessions.Seed(fixture.Account, source, Saved(source));
-        var providerOffset = Threshold - (10L * 1024 * 1024);
+        long providerOffset = Threshold - (10L * 1024 * 1024);
         ScriptResumeFrom(providerOffset, source.Length);
 
         _ = await UploadAsync(source);
@@ -443,7 +443,7 @@ public sealed class GivenAResumableOneDriveUpload : IDisposable
         _ = await fixture.BuildAsync(CancellationToken);
         var source = LargeFile();
         fixture.UploadSessions.Seed(fixture.Account, source, Saved(source));
-        var puts = 0;
+        int puts = 0;
         fixture.Graph.Respond = request => request.Method.Method switch
         {
             "GET" => RecordingGraphHandler.Json(HttpStatusCode.OK, "{\"nextExpectedRanges\":[\"" + ConfirmedByRestart + "-\"]}"),
@@ -494,7 +494,7 @@ public sealed class GivenAResumableOneDriveUpload : IDisposable
 
         _ = await UploadAsync(source);
 
-        var messages = string.Join('\n', fixture.Logs.Logger.Messages);
+        string messages = string.Join('\n', fixture.Logs.Logger.Messages);
         messages.ShouldContain(ConfirmedByRestart.ToString(System.Globalization.CultureInfo.InvariantCulture));
         messages.ShouldNotContain("secret-session-id");
         messages.ShouldNotContain("upload.example.test");

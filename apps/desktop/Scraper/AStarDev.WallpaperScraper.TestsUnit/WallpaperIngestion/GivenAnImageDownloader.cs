@@ -19,14 +19,14 @@ public sealed class GivenAnImageDownloader
     [Fact]
     public async Task when_downloading_an_image_succeeds_then_it_is_written_to_the_directory_and_the_saved_path_and_progress_are_reported()
     {
-        var imageBytes = new byte[] { 1, 2, 3, 4, 5 };
+        byte[] imageBytes = new byte[] { 1, 2, 3, 4, 5 };
         using var client = CreateClient(_ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(imageBytes) });
         var progress = new CapturingProgress();
-        var directory = fileSystem.Path.Combine("root-directory", "top-wallpapers");
-        var expectedPath = fileSystem.Path.Combine(directory, "wallpaper-3.jpg");
+        string directory = fileSystem.Path.Combine("root-directory", "top-wallpapers");
+        string expectedPath = fileSystem.Path.Combine(directory, "wallpaper-3.jpg");
         var wallpaper = CreateWallpaper(id: "wallpaper-3", path: "https://example.test/image.jpg");
 
-        var savedPath = await downloader.DownloadAsync(new WallpaperFileRequest(wallpaper, directory, NameFor(wallpaper, ".jpg"), "Cars"), progress, client, CancellationToken.None);
+        string savedPath = await downloader.DownloadAsync(new WallpaperFileRequest(wallpaper, directory, NameFor(wallpaper, ".jpg"), "Cars"), progress, client, CancellationToken.None);
 
         savedPath.ShouldBe(expectedPath);
         (await fileSystem.File.ReadAllBytesAsync(expectedPath, TestContext.Current.CancellationToken)).ShouldBe(imageBytes);
@@ -37,7 +37,7 @@ public sealed class GivenAnImageDownloader
     public async Task when_downloading_a_non_jpg_image_then_it_is_written_with_the_supplied_extension()
     {
         using var client = CreateClient(_ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent([9, 9, 9]) });
-        var directory = fileSystem.Path.Combine("root-directory", "top-wallpapers");
+        string directory = fileSystem.Path.Combine("root-directory", "top-wallpapers");
         var wallpaper = CreateWallpaper(id: "wallpaper-8", path: "https://example.test/image.png");
 
         _ = await downloader.DownloadAsync(new WallpaperFileRequest(wallpaper, directory, NameFor(wallpaper, ".png"), "Top Wallpapers"), new CapturingProgress(), client, CancellationToken.None);
@@ -61,7 +61,7 @@ public sealed class GivenAnImageDownloader
     public async Task when_the_target_directory_does_not_exist_yet_then_it_is_created_before_writing_the_file()
     {
         using var client = CreateClient(_ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent([1, 2, 3]) });
-        var directory = fileSystem.Path.Combine("root-directory", "my-category");
+        string directory = fileSystem.Path.Combine("root-directory", "my-category");
         fileSystem.Directory.Exists(directory).ShouldBeFalse();
         var wallpaper = CreateWallpaper(id: "wallpaper-6", path: "https://example.test/image.jpg");
 
@@ -74,7 +74,7 @@ public sealed class GivenAnImageDownloader
     public async Task when_downloading_an_image_receives_a_non_success_status_then_it_throws_and_writes_no_file()
     {
         using var client = CreateClient(_ => new HttpResponseMessage(HttpStatusCode.NotFound));
-        var directory = fileSystem.Path.Combine("root-directory", "top-wallpapers");
+        string directory = fileSystem.Path.Combine("root-directory", "top-wallpapers");
         var wallpaper = CreateWallpaper(id: "wallpaper-4", path: "https://example.test/image.jpg");
 
         await Should.ThrowAsync<HttpRequestException>(
@@ -87,7 +87,7 @@ public sealed class GivenAnImageDownloader
     public async Task when_reading_the_image_fails_part_way_then_no_partial_file_is_left_behind()
     {
         using var client = CreateClient(_ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(new FailingStream()) });
-        var directory = fileSystem.Path.Combine("root-directory", "top-wallpapers");
+        string directory = fileSystem.Path.Combine("root-directory", "top-wallpapers");
         var wallpaper = CreateWallpaper(id: "wallpaper-9", path: "https://example.test/image.jpg");
 
         await Should.ThrowAsync<IOException>(
@@ -99,8 +99,8 @@ public sealed class GivenAnImageDownloader
     [Fact]
     public async Task when_reading_the_image_fails_part_way_then_an_existing_file_of_the_same_name_is_left_untouched()
     {
-        var directory = fileSystem.Path.Combine("root-directory", "top-wallpapers");
-        var existingPath = fileSystem.Path.Combine(directory, "wallpaper-10.jpg");
+        string directory = fileSystem.Path.Combine("root-directory", "top-wallpapers");
+        string existingPath = fileSystem.Path.Combine(directory, "wallpaper-10.jpg");
         fileSystem.Directory.CreateDirectory(directory);
         await fileSystem.File.WriteAllBytesAsync(existingPath, [7, 7, 7], TestContext.Current.CancellationToken);
         using var client = CreateClient(_ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(new FailingStream()) });
@@ -115,8 +115,8 @@ public sealed class GivenAnImageDownloader
     [Fact]
     public async Task when_the_download_succeeds_then_only_the_final_file_is_left_and_it_replaces_an_existing_one()
     {
-        var directory = fileSystem.Path.Combine("root-directory", "top-wallpapers");
-        var finalPath = fileSystem.Path.Combine(directory, "wallpaper-11.jpg");
+        string directory = fileSystem.Path.Combine("root-directory", "top-wallpapers");
+        string finalPath = fileSystem.Path.Combine(directory, "wallpaper-11.jpg");
         fileSystem.Directory.CreateDirectory(directory);
         await fileSystem.File.WriteAllBytesAsync(finalPath, [7, 7, 7], TestContext.Current.CancellationToken);
         using var client = CreateClient(_ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent([1, 2]) });
@@ -133,7 +133,7 @@ public sealed class GivenAnImageDownloader
     {
         var clock = new FakeTimeProvider();
         var pacedDownloader = new ImageDownloader(fileSystem, clock, new DownloadPacing(TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(3)), ScrapeTimeouts.Default);
-        var requestCount = 0;
+        int requestCount = 0;
         using var client = CreateClient(_ =>
         {
             requestCount++;
@@ -141,11 +141,11 @@ public sealed class GivenAnImageDownloader
             return new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent([1, 2]) };
         });
         var wallpaper = CreateWallpaper(id: "paced-1", path: "https://example.test/image.jpg");
-        var directory = fileSystem.Path.Combine("root-directory", "top-wallpapers");
+        string directory = fileSystem.Path.Combine("root-directory", "top-wallpapers");
 
         var download = pacedDownloader.DownloadAsync(new WallpaperFileRequest(wallpaper, directory, NameFor(wallpaper, ".jpg"), "Top Wallpapers"), new CapturingProgress(), client, TestContext.Current.CancellationToken);
         clock.Advance(TimeSpan.FromSeconds(1.9));
-        var requestsBeforeTheDelay = requestCount;
+        int requestsBeforeTheDelay = requestCount;
         clock.Advance(TimeSpan.FromSeconds(1.1));
         _ = await download;
 
@@ -154,7 +154,7 @@ public sealed class GivenAnImageDownloader
 
     private static async Task WaitForMessageCountAsync(CapturingProgress progress, int count)
     {
-        for (var attempt = 0; attempt < 5000 && progress.Messages.Count < count; attempt++)
+        for (int attempt = 0; attempt < 5000 && progress.Messages.Count < count; attempt++)
         {
             await Task.Delay(1, TestContext.Current.CancellationToken);
         }
@@ -171,7 +171,7 @@ public sealed class GivenAnImageDownloader
     public async Task when_downloading_an_image_times_out_without_a_cancellation_then_a_timeout_is_thrown_and_writes_no_file()
     {
         using var client = CreateClient(_ => throw new TaskCanceledException("The request was canceled due to the configured HttpClient.Timeout."));
-        var directory = fileSystem.Path.Combine("root-directory", "top-wallpapers");
+        string directory = fileSystem.Path.Combine("root-directory", "top-wallpapers");
         var wallpaper = CreateWallpaper(id: "wallpaper-timeout", path: "https://example.test/image.jpg");
 
         await Should.ThrowAsync<TimeoutException>(
@@ -207,7 +207,7 @@ public sealed class GivenAnImageDownloader
         var stalledDownloader = new ImageDownloader(fileSystem, clock, DownloadPacing.None, timeouts);
         var stalledStream = new StalledStream();
         using var client = CreateClient(_ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StreamContent(stalledStream) });
-        var directory = fileSystem.Path.Combine("root-directory", "top-wallpapers");
+        string directory = fileSystem.Path.Combine("root-directory", "top-wallpapers");
         var wallpaper = CreateWallpaper(id: "stalled-1", path: "https://example.test/image.jpg");
 
         var download = stalledDownloader.DownloadAsync(new WallpaperFileRequest(wallpaper, directory, NameFor(wallpaper, ".jpg"), "Top Wallpapers"), new CapturingProgress(), client, CancellationToken.None);

@@ -15,7 +15,7 @@ public sealed class GivenDownloadPacing
     [Fact]
     public void when_using_the_default_then_the_delay_varies()
     {
-        var distinctDelays = Enumerable.Range(0, 200).Select(_ => DownloadPacing.Default.NextDelay()).Distinct().Count();
+        int distinctDelays = Enumerable.Range(0, 200).Select(_ => DownloadPacing.Default.NextDelay()).Distinct().Count();
 
         distinctDelays.ShouldBeGreaterThan(1);
     }

@@ -341,7 +341,7 @@ public class GivenABulkConflictList
         var other = (SyncAttentionItem.Conflict)AttentionItems.CreateConflict(Photos.Id, "b.jpg");
         fixture.Reader.Add(Photos.Id, busy, other);
         var release = new TaskCompletionSource();
-        var calls = 0;
+        int calls = 0;
         fixture.Resolver.Outcome = async (_, ids, _, _) =>
         {
             if (Interlocked.Increment(ref calls) == 1)

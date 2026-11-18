@@ -38,7 +38,7 @@ internal sealed class UploadPlanner(ISyncSelectionEvaluator evaluator) : IUpload
 
     private static string NameOf(RelativeSyncPath path)
     {
-        var value = path.Value ?? string.Empty;
+        string value = path.Value ?? string.Empty;
 
         return value[(value.LastIndexOf(Separator) + 1)..];
     }
@@ -58,16 +58,16 @@ internal sealed class UploadPlanner(ISyncSelectionEvaluator evaluator) : IUpload
         if (change is LocalChange.Deferred or LocalChange.Unreadable)
             return false;
 
-        var isFolder = change is LocalChange.Added { Kind: LocalItemKind.Folder } || (change is LocalChange.Deleted && BaselineAt(baseline, change.Path).Match(entry => entry.Kind is SyncBaselineKind.Folder, () => false));
-        var folder = isFolder ? change.Path.Value : ParentOf(change.Path);
+        bool isFolder = change is LocalChange.Added { Kind: LocalItemKind.Folder } || (change is LocalChange.Deleted && BaselineAt(baseline, change.Path).Match(entry => entry.Kind is SyncBaselineKind.Folder, () => false));
+        string folder = isFolder ? change.Path.Value : ParentOf(change.Path);
 
         return LocalRelativePathFactory.Create(folder).Match(path => evaluator.IsIncluded(path, rules) && evaluator.EnclosingDirection(path, rules).Match(direction => direction is not SyncDirection.DownloadOnly, () => false), _ => false);
     }
 
     private static string ParentOf(RelativeSyncPath path)
     {
-        var value = path.Value ?? string.Empty;
-        var cut = value.LastIndexOf(Separator);
+        string value = path.Value ?? string.Empty;
+        int cut = value.LastIndexOf(Separator);
 
         return cut < 0 ? string.Empty : value[..cut];
     }

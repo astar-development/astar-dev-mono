@@ -88,7 +88,7 @@ public sealed class GivenPersonCategoriesSettings
     private static ScrapeConfigurationEntity CreateEntity(params string[] names)
     {
         var entity = GivenAUserSettingsInput.CreateEntity();
-        foreach (var name in names) entity.SearchConfiguration.PersonCategories.Add(new PersonCategoryEntity { SearchConfigurationId = entity.SearchConfiguration.Id, Name = name });
+        foreach (string name in names) entity.SearchConfiguration.PersonCategories.Add(new PersonCategoryEntity { SearchConfigurationId = entity.SearchConfiguration.Id, Name = name });
 
         return entity;
     }

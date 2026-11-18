@@ -83,7 +83,7 @@ public sealed class LocalScanFixture : IDisposable
 
     public IFileInfo Write(string relative, string content, TimeSpan? age = null)
     {
-        var full = $"{Root}/{relative}";
+        string full = $"{Root}/{relative}";
         _ = FileSystem.Directory.CreateDirectory(FileSystem.Path.GetDirectoryName(full)!);
         FileSystem.File.WriteAllText(full, content);
         FileSystem.File.SetLastWriteTimeUtc(full, (Start - (age ?? TimeSpan.FromMinutes(10))).UtcDateTime);
@@ -114,13 +114,13 @@ public sealed class LocalScanFixture : IDisposable
 
     public void SyncedFiles(string folder, int count)
     {
-        for (var index = 0; index < count; index++)
+        for (int index = 0; index < count; index++)
             _ = Synced($"{folder}/file{index:000}.txt", $"content {index}", $"item-{folder}-{index}");
     }
 
     public void Lose(string folder, int count)
     {
-        for (var index = 0; index < count; index++)
+        for (int index = 0; index < count; index++)
             FileSystem.File.Delete($"{Root}/{folder}/file{index:000}.txt");
     }
 

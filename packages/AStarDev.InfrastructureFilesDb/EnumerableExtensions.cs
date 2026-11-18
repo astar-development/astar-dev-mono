@@ -56,7 +56,7 @@ public static class EnumerableExtensions
         if (cancellationToken.IsCancellationRequested) return 0;
 
         IGrouping<FileSize, FileDetail>[] duplicatesBySize = [.. files.AsEnumerable()
-                                                                  .GroupBy(file => FileSize.Create(file.FileSize, file?.ImageDetail?.Height, file?.ImageDetail?.Width),
+                                                                  .GroupBy(file => FileSize.Create(file.FileSize, file.ImageDetail?.Height, file.ImageDetail?.Width),
                                                                            new FileSizeEqualityComparer()).Where(fileGroups => fileGroups.Count() > 1)];
 
         return duplicatesBySize.Length;
@@ -72,7 +72,7 @@ public static class EnumerableExtensions
     /// </returns>
     public static IEnumerable<IGrouping<FileSize, FileDetail>> GetDuplicates(this IEnumerable<FileDetail> files)
         => files
-          .GroupBy(file => FileSize.Create(file.FileSize, file?.ImageDetail?.Height, file?.ImageDetail?.Width),
+          .GroupBy(file => FileSize.Create(file.FileSize, file.ImageDetail?.Height, file.ImageDetail?.Width),
                    new FileSizeEqualityComparer()).Where(fileGroups => fileGroups.Count() > 1);
 
     private static IEnumerable<FileDetail> FilterImagesOnlyIfRequested(IEnumerable<FileDetail> files, string searchType)

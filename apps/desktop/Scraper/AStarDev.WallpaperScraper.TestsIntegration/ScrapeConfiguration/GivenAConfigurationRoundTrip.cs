@@ -102,7 +102,7 @@ public sealed class GivenAConfigurationRoundTrip : IDisposable
         await source.Updater.SaveAsync(id, [new RootSettings(new WallhavenUrls(new Uri("https://example.test/"), "login", "top", "hot", "subs"), "scrape-key-123", "term", "prefix", "suffix", 1, new PageRanges(new PageRange(1, 2), new PageRange(1, 2), new PageRange(1, 2), new PageRange(1, 2)), new BrowserOptions(false, Option.None<float>())), new UserSettings("user@example.test", "user", "user-key-456")], TestContext.Current.CancellationToken);
 
         (await source.ExportAsync(exportPath, ApiKeyExport.Exclude)).ShouldBeTrue();
-        var text = await File.ReadAllTextAsync(exportPath, TestContext.Current.CancellationToken);
+        string text = await File.ReadAllTextAsync(exportPath, TestContext.Current.CancellationToken);
         await source.ImportAsync(exportPath);
 
         var afterImport = await source.ReadFirstAsync();

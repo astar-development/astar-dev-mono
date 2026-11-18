@@ -41,7 +41,7 @@ public sealed class GivenATrashRetentionStore : IAsyncLifetime
     [Fact]
     public async Task when_a_retention_is_saved_then_it_is_returned_and_read_back()
     {
-        var saved = await SetAsync(90);
+        object saved = await SetAsync(90);
 
         saved.ShouldBe(LocalTrashOptionsFactory.CreateFromDays(90));
         (await GetAsync()).ShouldBe(LocalTrashOptionsFactory.CreateFromDays(90));
@@ -85,7 +85,7 @@ public sealed class GivenATrashRetentionStore : IAsyncLifetime
     {
         var racing = Enumerable.Range(0, 20).Select(index => Task.Run(() => SetAsync(LocalTrashOptionsFactory.Choices[index % LocalTrashOptionsFactory.Choices.Count]), CancellationToken));
 
-        var outcomes = await Task.WhenAll(racing);
+        object[] outcomes = await Task.WhenAll(racing);
 
         outcomes.ShouldAllBe(outcome => outcome is LocalTrashOptions);
         LocalTrashOptionsFactory.Choices.Select(LocalTrashOptionsFactory.CreateFromDays).ShouldContain((LocalTrashOptions)await GetAsync());

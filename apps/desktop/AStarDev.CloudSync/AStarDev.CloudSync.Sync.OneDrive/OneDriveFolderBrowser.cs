@@ -68,7 +68,7 @@ internal sealed class OneDriveFolderBrowser(OneDriveGraphAccess graphAccess, Tim
     private async Task<Result<IReadOnlyList<RemoteFolder>, ProviderError>> ReadAllPagesAsync(AccountId accountId, string driveId, string accessToken, Option<RemoteItemId> parent, PageProgress progress, CancellationToken cancellationToken)
     {
         using var graph = graphAccess.CreateClient(accountId, accessToken);
-        var parentSegment = parent.Match(id => id.Value, () => RootSegment);
+        string parentSegment = parent.Match(id => id.Value, () => RootSegment);
         var children = graph.Drives[driveId].Items[parentSegment].Children;
         var folders = new List<RemoteFolder>();
         var seenLinks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -78,7 +78,7 @@ internal sealed class OneDriveFolderBrowser(OneDriveGraphAccess graphAccess, Tim
         {
             progress.Pages++;
             folders.AddRange(ToFolders(page, parentSegment));
-            var next = page?.OdataNextLink;
+            string? next = page?.OdataNextLink;
             if (string.IsNullOrEmpty(next))
                 break;
 

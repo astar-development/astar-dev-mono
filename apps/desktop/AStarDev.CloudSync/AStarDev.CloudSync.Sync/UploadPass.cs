@@ -30,7 +30,7 @@ internal sealed class UploadPass(UploadPassProviders providers, UploadPassInputs
     private Result<UploadPassSummary, UploadPassFailure> Completed(IReadOnlyList<UploadItemOutcome> outcomes)
     {
         var summary = UploadPassSummaryFactory.Create(outcomes);
-        var message = $"The upload pass finished: {summary.Uploaded} uploaded ({summary.BytesUploaded} bytes), {summary.FoldersCreated} folders, {summary.Removed} removed, {summary.SentToConflicts} to conflicts, {summary.Deferred} deferred, {summary.Failed} failed, {summary.Rejected.Count} rejected.";
+        string message = $"The upload pass finished: {summary.Uploaded} uploaded ({summary.BytesUploaded} bytes), {summary.FoldersCreated} folders, {summary.Removed} removed, {summary.SentToConflicts} to conflicts, {summary.Deferred} deferred, {summary.Failed} failed, {summary.Rejected.Count} rejected.";
         LogMessage.Information(logger, Location, message);
 
         return Result.Success<UploadPassSummary, UploadPassFailure>(summary);
@@ -38,7 +38,7 @@ internal sealed class UploadPass(UploadPassProviders providers, UploadPassInputs
 
     private Result<UploadPassSummary, UploadPassFailure> Stopped(UploadPassFailure failure)
     {
-        var message = $"The upload pass stopped ({failure.GetType().Name}).";
+        string message = $"The upload pass stopped ({failure.GetType().Name}).";
         LogMessage.Warning(logger, Location, message);
 
         return Result.Failure<UploadPassSummary, UploadPassFailure>(failure);

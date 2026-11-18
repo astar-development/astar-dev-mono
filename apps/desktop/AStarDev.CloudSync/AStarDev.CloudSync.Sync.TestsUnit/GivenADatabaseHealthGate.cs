@@ -108,7 +108,7 @@ public sealed class GivenADatabaseHealthGate
     public async Task when_the_check_finishes_then_changed_is_raised_once()
     {
         var gate = CreateGate();
-        var raised = 0;
+        int raised = 0;
         gate.Changed += (_, _) => raised++;
 
         _ = await gate.CheckAsync(CancellationToken);
@@ -198,7 +198,7 @@ public sealed class GivenADatabaseHealthGate
         while (check.Calls < 1)
             await Task.Delay(5, CancellationToken);
         await Task.Delay(50, CancellationToken);
-        var callsBeforeThePause = check.Calls;
+        int callsBeforeThePause = check.Calls;
         var status = await FinishedAsync(checking);
 
         (callsBeforeThePause, check.Calls, status).ShouldBe((1, 2, DatabaseHealthStatusFactory.CreateHealthy()));

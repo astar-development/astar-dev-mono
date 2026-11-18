@@ -120,7 +120,7 @@ public sealed class GivenAnUploadPassForRemovals : IDisposable
     {
         fixture.Remote.Folder("Docs", "remote-docs");
         fixture.Remote.File("Docs/old.txt", "r1", "c1");
-        var uploadsWhenRemoving = -1;
+        int uploadsWhenRemoving = -1;
         fixture.Remover.OnRemove = () => uploadsWhenRemoving = fixture.Uploader.Calls.Count;
         _ = await fixture.BaselineFile("Docs/old.txt", "r1", "c1").DeletedItem("Docs/old.txt", "r1").AddedFile("Docs/new.txt").BuildAsync(CancellationToken);
 

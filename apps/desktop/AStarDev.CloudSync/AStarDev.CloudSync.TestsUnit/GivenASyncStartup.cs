@@ -19,7 +19,7 @@ public sealed class GivenASyncStartup
         var startup = Create(classification, scheduler);
 
         var run = startup.RunAsync(CancellationToken);
-        var startedBeforeSeedFinished = scheduler.Starts == 1 && !classification.Finished;
+        bool startedBeforeSeedFinished = scheduler.Starts == 1 && !classification.Finished;
         classification.Release();
         await run;
 

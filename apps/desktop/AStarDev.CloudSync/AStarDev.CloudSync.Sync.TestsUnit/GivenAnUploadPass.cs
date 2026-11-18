@@ -316,7 +316,7 @@ public sealed class GivenAnUploadPass : IDisposable
         fixture.Concurrency.Fails = true;
         var gate = new WriteGate();
         fixture.Uploader.Gate = gate;
-        foreach (var index in Enumerable.Range(0, 12))
+        foreach (int index in Enumerable.Range(0, 12))
             _ = fixture.AddedFile($"Docs/f{index}.txt");
 
         _ = await fixture.BuildAsync(CancellationToken);
@@ -333,7 +333,7 @@ public sealed class GivenAnUploadPass : IDisposable
     public async Task when_a_pass_runs_then_the_accounts_concurrency_is_read_once_at_its_start()
     {
         fixture.Remote.Folder("Docs", "remote-docs");
-        foreach (var index in Enumerable.Range(0, 6))
+        foreach (int index in Enumerable.Range(0, 6))
             _ = fixture.AddedFile($"Docs/f{index}.txt");
         _ = await fixture.BuildAsync(CancellationToken);
 
@@ -349,7 +349,7 @@ public sealed class GivenAnUploadPass : IDisposable
         fixture.MaxConcurrentUploads = 3;
         var gate = new WriteGate();
         fixture.Uploader.Gate = gate;
-        foreach (var index in Enumerable.Range(0, 12))
+        foreach (int index in Enumerable.Range(0, 12))
             _ = fixture.AddedFile($"Docs/f{index}.txt");
 
         _ = await fixture.BuildAsync(CancellationToken);
@@ -393,7 +393,7 @@ public sealed class GivenAnUploadPass : IDisposable
 
         _ = await fixture.RunAsync(CancellationToken);
 
-        var messages = string.Join('\n', fixture.Logs.Logger.Messages);
+        string messages = string.Join('\n', fixture.Logs.Logger.Messages);
         messages.ShouldContain("1 uploaded");
         messages.ShouldNotContain("secret-name");
     }

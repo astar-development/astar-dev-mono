@@ -62,7 +62,7 @@ public sealed class PrimaryInstance : IAsyncDisposable
 
     private async Task ListenAsync(Socket socket, CancellationToken cancellationToken)
     {
-        var keepListening = true;
+        bool keepListening = true;
         while (keepListening && !cancellationToken.IsCancellationRequested)
         {
             keepListening = await Attempt.RunAsync(() => socket.AcceptAsync(cancellationToken).AsTask(), cancellationToken)

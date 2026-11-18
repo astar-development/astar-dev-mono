@@ -17,7 +17,7 @@ public sealed class GivenAWindowsAutostartRegistration
 
         public bool Fails { get; set; }
 
-        public Option<string> Read(string name) => Fails ? throw new UnauthorizedAccessException("denied") : Values.TryGetValue(name, out var command) ? Option.Some(command) : Option.None<string>();
+        public Option<string> Read(string name) => Fails ? throw new UnauthorizedAccessException("denied") : Values.TryGetValue(name, out string? command) ? Option.Some(command) : Option.None<string>();
 
         public void Write(string name, string command)
         {

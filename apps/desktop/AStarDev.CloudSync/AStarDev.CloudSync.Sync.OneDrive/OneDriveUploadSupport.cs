@@ -16,7 +16,7 @@ internal static class OneDriveUploadSupport
 
     internal static Option<long> NextOffset(string json) =>
         Try.Run(() => JsonDocument.Parse(json)).Match(
-            document => document.RootElement.TryGetProperty("nextExpectedRanges", out var ranges) && ranges.GetArrayLength() > 0 && long.TryParse(ranges[0].GetString()?.Split('-')[0], NumberStyles.None, CultureInfo.InvariantCulture, out var next) ? Option.Some(next) : Option.None<long>(),
+            document => document.RootElement.TryGetProperty("nextExpectedRanges", out var ranges) && ranges.GetArrayLength() > 0 && long.TryParse(ranges[0].GetString()?.Split('-')[0], NumberStyles.None, CultureInfo.InvariantCulture, out long next) ? Option.Some(next) : Option.None<long>(),
             _ => Option.None<long>());
 
     internal static void WriteFileSystemInfo(Utf8JsonWriter writer, DateTime lastWriteUtc)
@@ -33,7 +33,7 @@ internal static class OneDriveUploadSupport
 
     internal static Result<UploadedFile, ProviderError> ToUploaded(JsonElement item, long fallbackSize, string hash)
     {
-        var size = item.TryGetProperty("size", out var length) && length.ValueKind is JsonValueKind.Number ? length.GetInt64() : fallbackSize;
+        long size = item.TryGetProperty("size", out var length) && length.ValueKind is JsonValueKind.Number ? length.GetInt64() : fallbackSize;
 
         return RemoteItemIdFactory.Create(TextOf(item, "id")).Match(
             id => ContentTagFactory.Create(TextOf(item, "cTag")).Match(

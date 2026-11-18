@@ -15,7 +15,7 @@ public sealed class GivenAReclassifyFreshnessCheck
     [Fact]
     public async Task when_no_run_has_completed_then_it_is_stale()
     {
-        var freshness = await CheckAsync(new InMemoryReclassifyRunStore(), new SeedingStateStore { Version = "v1" });
+        object freshness = await CheckAsync(new InMemoryReclassifyRunStore(), new SeedingStateStore { Version = "v1" });
 
         freshness.ShouldBe(ReclassifyFreshnessFactory.CreateStale());
     }
@@ -25,7 +25,7 @@ public sealed class GivenAReclassifyFreshnessCheck
     {
         var runs = new InMemoryReclassifyRunStore { Last = Option.Some(Run(ClassificationEngineVersion.Current, "v1")) };
 
-        var freshness = await CheckAsync(runs, new SeedingStateStore { Version = "v1" });
+        object freshness = await CheckAsync(runs, new SeedingStateStore { Version = "v1" });
 
         freshness.ShouldBe(ReclassifyFreshnessFactory.CreateUpToDate());
     }
@@ -35,7 +35,7 @@ public sealed class GivenAReclassifyFreshnessCheck
     {
         var runs = new InMemoryReclassifyRunStore { Last = Option.Some(Run(ClassificationEngineVersion.Current + "-old", "v1")) };
 
-        var freshness = await CheckAsync(runs, new SeedingStateStore { Version = "v1" });
+        object freshness = await CheckAsync(runs, new SeedingStateStore { Version = "v1" });
 
         freshness.ShouldBe(ReclassifyFreshnessFactory.CreateStale());
     }
@@ -45,7 +45,7 @@ public sealed class GivenAReclassifyFreshnessCheck
     {
         var runs = new InMemoryReclassifyRunStore { Last = Option.Some(Run(ClassificationEngineVersion.Current, "v1")) };
 
-        var freshness = await CheckAsync(runs, new SeedingStateStore { Version = "v2" });
+        object freshness = await CheckAsync(runs, new SeedingStateStore { Version = "v2" });
 
         freshness.ShouldBe(ReclassifyFreshnessFactory.CreateStale());
     }
@@ -55,7 +55,7 @@ public sealed class GivenAReclassifyFreshnessCheck
     {
         var runs = new InMemoryReclassifyRunStore { Last = Option.Some(Run(ClassificationEngineVersion.Current, "v1")) };
 
-        var freshness = await CheckAsync(runs, new SeedingStateStore { Version = "V1" });
+        object freshness = await CheckAsync(runs, new SeedingStateStore { Version = "V1" });
 
         freshness.ShouldBe(ReclassifyFreshnessFactory.CreateStale());
     }
@@ -65,7 +65,7 @@ public sealed class GivenAReclassifyFreshnessCheck
     {
         var runs = new InMemoryReclassifyRunStore { Last = Option.Some(Run(ClassificationEngineVersion.Current, null)) };
 
-        var freshness = await CheckAsync(runs, new SeedingStateStore { Version = "v1" });
+        object freshness = await CheckAsync(runs, new SeedingStateStore { Version = "v1" });
 
         freshness.ShouldBe(ReclassifyFreshnessFactory.CreateStale());
     }
@@ -75,7 +75,7 @@ public sealed class GivenAReclassifyFreshnessCheck
     {
         var runs = new InMemoryReclassifyRunStore { Last = Option.Some(Run(ClassificationEngineVersion.Current, null)) };
 
-        var freshness = await CheckAsync(runs, new SeedingStateStore());
+        object freshness = await CheckAsync(runs, new SeedingStateStore());
 
         freshness.ShouldBe(ReclassifyFreshnessFactory.CreateUpToDate());
     }
@@ -83,7 +83,7 @@ public sealed class GivenAReclassifyFreshnessCheck
     [Fact]
     public async Task when_the_run_record_cannot_be_read_then_the_failure_is_returned()
     {
-        var freshness = await CheckAsync(new InMemoryReclassifyRunStore { FailReads = true }, new SeedingStateStore { Version = "v1" });
+        object freshness = await CheckAsync(new InMemoryReclassifyRunStore { FailReads = true }, new SeedingStateStore { Version = "v1" });
 
         freshness.ShouldBeOfType<ClassificationFailure.Unavailable>();
     }
@@ -93,7 +93,7 @@ public sealed class GivenAReclassifyFreshnessCheck
     {
         var runs = new InMemoryReclassifyRunStore { Last = Option.Some(Run(ClassificationEngineVersion.Current, "v1")) };
 
-        var freshness = await CheckAsync(runs, new SeedingStateStore { FailReads = true });
+        object freshness = await CheckAsync(runs, new SeedingStateStore { FailReads = true });
 
         freshness.ShouldBeOfType<ClassificationFailure.Unavailable>();
     }

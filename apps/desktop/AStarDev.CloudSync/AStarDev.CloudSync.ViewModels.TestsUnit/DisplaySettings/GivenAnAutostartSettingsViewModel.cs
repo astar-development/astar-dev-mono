@@ -96,7 +96,7 @@ public class GivenAnAutostartSettingsViewModel
         var model = await LoadedAsync();
 
         await model.ToggleCommand.ExecuteAsync(null);
-        var afterOn = model.IsEnabled;
+        bool afterOn = model.IsEnabled;
         await model.ToggleCommand.ExecuteAsync(null);
 
         (afterOn, model.IsEnabled).ShouldBe((true, false));

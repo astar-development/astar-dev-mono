@@ -13,13 +13,13 @@ public sealed class RemoteTreeIndex : IRemoteIndexReader
 
     public void Folder(string path, string id)
     {
-        var segments = path.Split('/');
+        string[] segments = path.Split('/');
         items.Add(RemoteItemSnapshotFactory.Create(UploadPlanFixture.Id(id), ParentOf(segments), segments[^1], RemoteItemKindFactory.CreateFolder(), Stamp, new EntityTag("fe")));
     }
 
     public void File(string path, string id, string cTag, long size = 10, string? hash = null)
     {
-        var segments = path.Split('/');
+        string[] segments = path.Split('/');
         items.Add(RemoteItemSnapshotFactory.Create(UploadPlanFixture.Id(id), ParentOf(segments), segments[^1], RemoteItemKindFactory.CreateFile(size, hash is null ? Option.None<ContentHash>() : Option.Some(UploadPlanFixture.Hash(hash)), new ContentTag(cTag)), Stamp, new EntityTag("e")));
     }
 

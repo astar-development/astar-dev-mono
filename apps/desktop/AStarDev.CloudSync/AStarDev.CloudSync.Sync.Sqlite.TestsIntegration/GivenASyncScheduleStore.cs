@@ -31,7 +31,7 @@ public sealed class GivenASyncScheduleStore : IAsyncLifetime
     [Fact]
     public async Task when_an_interval_is_saved_then_it_is_returned_and_read_back()
     {
-        var saved = await SetAsync(SyncScheduleFactory.CreateEvery(TimeSpan.FromMinutes(30)));
+        object saved = await SetAsync(SyncScheduleFactory.CreateEvery(TimeSpan.FromMinutes(30)));
 
         saved.ShouldBe(SyncScheduleFactory.CreateEvery(TimeSpan.FromMinutes(30)));
         (await GetAsync()).ShouldBe(SyncScheduleFactory.CreateEvery(TimeSpan.FromMinutes(30)));
@@ -61,7 +61,7 @@ public sealed class GivenASyncScheduleStore : IAsyncLifetime
         var choices = SyncScheduleFactory.Intervals.Select(SyncScheduleFactory.CreateEvery).ToList();
         var racing = Enumerable.Range(0, 20).Select(index => Task.Run(() => SetAsync(choices[index % choices.Count]), CancellationToken));
 
-        var outcomes = await Task.WhenAll(racing);
+        object[] outcomes = await Task.WhenAll(racing);
 
         outcomes.ShouldAllBe(outcome => outcome is SyncSchedule);
         choices.ShouldContain((SyncSchedule)await GetAsync());

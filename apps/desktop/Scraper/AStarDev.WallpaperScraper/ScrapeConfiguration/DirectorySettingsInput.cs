@@ -50,7 +50,7 @@ public sealed record DirectorySettingsInput(string RootDirectory, string RootDir
 
     private static void AddWhenMissing(string label, string value, IFileSystem fileSystem, List<string> missing)
     {
-        var path = value.Trim();
+        string path = value.Trim();
         if (path.Length > 0 && !fileSystem.Directory.Exists(path)) missing.Add($"{label} does not exist: {path}");
     }
 }

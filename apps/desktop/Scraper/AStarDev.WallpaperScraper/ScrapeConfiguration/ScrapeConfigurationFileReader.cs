@@ -31,7 +31,7 @@ public sealed class ScrapeConfigurationFileReader(IFileSystem fileSystem) : IScr
 
     private static void RequireApplicationSettings(JsonElement settings)
     {
-        var prefix = $"{ApplicationSettingsSection}.";
+        string prefix = $"{ApplicationSettingsSection}.";
         List<string> missing = [.. MissingFrom(settings, prefix, "userConfiguration", "searchConfiguration", "scrapeDirectories")];
         if (Find(settings, "searchConfiguration") is Option<JsonElement>.Some search) missing.AddRange(MissingFrom(search.Value, $"{prefix}searchConfiguration.", "baseUrl", "loginUrl"));
 

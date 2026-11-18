@@ -9,9 +9,7 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
     public partial class AddUploadSessions : Migration
     {
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.CreateTable(
+        protected override void Up(MigrationBuilder migrationBuilder) => migrationBuilder.CreateTable(
                 name: "UploadSessions",
                 columns: table => new
                 {
@@ -28,13 +26,9 @@ namespace AStarDev.CloudSync.Sync.Sqlite.Migrations
                 {
                     table.PrimaryKey("PK_UploadSessions", x => new { x.AccountId, x.PathKey });
                 });
-        }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
+        protected override void Down(MigrationBuilder migrationBuilder) => migrationBuilder.DropTable(
                 name: "UploadSessions");
-        }
     }
 }

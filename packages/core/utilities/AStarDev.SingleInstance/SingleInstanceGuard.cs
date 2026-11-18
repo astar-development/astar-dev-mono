@@ -26,7 +26,7 @@ internal sealed class SingleInstanceGuard(ILogger<SingleInstanceGuard> logger) :
     {
         cancellationToken.ThrowIfCancellationRequested();
         var fileSystem = options.DataFolder.FileSystem;
-        var lockPath = fileSystem.Path.Join(options.DataFolder.FullName, options.Name + ".lock");
+        string lockPath = fileSystem.Path.Join(options.DataFolder.FullName, options.Name + ".lock");
         var socketFile = fileSystem.FileInfo.New(fileSystem.Path.Join(options.DataFolder.FullName, options.Name + ".sock"));
 
         return Try.Run(() => CreateFolder(options.DataFolder))

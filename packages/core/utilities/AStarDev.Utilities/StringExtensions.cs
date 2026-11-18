@@ -110,7 +110,7 @@ public static class StringExtensions
 
             if (value.Length <= truncateLength) return value;
 
-            var length = char.IsHighSurrogate(value[truncateLength - 1]) ? truncateLength - 1 : truncateLength;
+            int length = char.IsHighSurrogate(value[truncateLength - 1]) ? truncateLength - 1 : truncateLength;
 
             return value[..length];
         }

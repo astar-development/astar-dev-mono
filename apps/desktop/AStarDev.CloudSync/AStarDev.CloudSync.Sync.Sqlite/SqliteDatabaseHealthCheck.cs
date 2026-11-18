@@ -38,7 +38,7 @@ internal sealed class SqliteDatabaseHealthCheck(IFileInfo databaseFile, ILogger<
 
     private async Task<IReadOnlyList<string>> QuickCheckAsync(CancellationToken cancellationToken)
     {
-        var connectionString = new SqliteConnectionStringBuilder { DataSource = databaseFile.FullName, Mode = SqliteOpenMode.ReadOnly, Pooling = false }.ToString();
+        string connectionString = new SqliteConnectionStringBuilder { DataSource = databaseFile.FullName, Mode = SqliteOpenMode.ReadOnly, Pooling = false }.ToString();
         await using var connection = new SqliteConnection(connectionString);
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
         await using var command = connection.CreateCommand();

@@ -24,7 +24,7 @@ public sealed class FakeTermStore : ITermStore
     public Task<Result<ClassificationTerm, ClassificationFailure>> SetStatusAsync(TermId termId, TermStatus status, CancellationToken cancellationToken)
     {
         statusCalls.Add((termId, status));
-        var index = terms.FindIndex(term => term.Id == termId);
+        int index = terms.FindIndex(term => term.Id == termId);
         if (FailSetStatus || index < 0)
             return Task.FromResult(Result.Failure<ClassificationTerm, ClassificationFailure>(ClassificationFailureFactory.CreateUnavailable()));
 

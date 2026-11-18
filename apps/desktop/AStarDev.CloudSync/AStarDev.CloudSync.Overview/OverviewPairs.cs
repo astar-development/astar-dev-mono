@@ -31,15 +31,15 @@ internal sealed class OverviewPairs(ISyncBaselineCounter counter, ILogger<Overvi
         if (accountStatus is not (SyncStatus.UpToDate or SyncStatus.HasConflicts))
             return accountStatus;
 
-        var inside = conflicts.Count(conflict => IsInside(conflict.Path.Value, pair.LocalFolder.Value));
+        int inside = conflicts.Count(conflict => IsInside(conflict.Path.Value, pair.LocalFolder.Value));
 
         return inside > 0 ? SyncStatusFactory.CreateHasConflicts(inside) : SyncStatusFactory.CreateUpToDate();
     }
 
     private static bool IsInside(string? path, string? folder)
     {
-        var inner = path ?? string.Empty;
-        var outer = folder ?? string.Empty;
+        string inner = path ?? string.Empty;
+        string outer = folder ?? string.Empty;
 
         return outer.Length == 0 || string.Equals(inner, outer, StringComparison.OrdinalIgnoreCase) || inner.StartsWith(outer + "/", StringComparison.OrdinalIgnoreCase);
     }

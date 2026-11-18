@@ -13,6 +13,7 @@
 
   <PropertyGroup>
     <PackageReleaseNotes>
+        v0.1.1 fix(sonar): pass CancellationToken and fix new-code issues (#1938)
         v0.1.0 feat(cloudsync): single instance via new AStarDev.SingleInstance package (#1461)
     </PackageReleaseNotes>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>

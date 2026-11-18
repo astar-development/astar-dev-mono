@@ -104,7 +104,7 @@ internal sealed class SqliteTermStore(IDbContextFactory<ClassificationDbContext>
         var resolvedByKey = new Dictionary<(Guid CategoryId, string Text), ClassificationTerm>(chunk.Length);
         var added = new List<TermEntity>();
         var resolved = new ClassificationTerm[chunk.Length];
-        for (var index = 0; index < chunk.Length; index++)
+        for (int index = 0; index < chunk.Length; index++)
         {
             var key = (chunk[index].CategoryId.Value, chunk[index].Text);
             if (!resolvedByKey.TryGetValue(key, out var term))

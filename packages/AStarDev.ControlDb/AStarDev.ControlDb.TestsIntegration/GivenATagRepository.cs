@@ -47,7 +47,7 @@ public sealed class GivenATagRepository : IDisposable
 
         var result = await repository.TryFindAsync(TagId.Create(), TestContext.Current.CancellationToken);
 
-        var found = result.Match(option => option, exception => throw exception).Match(_ => true, () => false);
+        bool found = result.Match(option => option, exception => throw exception).Match(_ => true, () => false);
 
         found.ShouldBeFalse();
     }
@@ -75,7 +75,7 @@ public sealed class GivenATagRepository : IDisposable
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var result = await repository.TryFindAsync(tagEntity.Id, TestContext.Current.CancellationToken);
-        var found = result.Match(option => option, exception => throw exception).Match(_ => true, () => false);
+        bool found = result.Match(option => option, exception => throw exception).Match(_ => true, () => false);
 
         found.ShouldBeFalse();
     }

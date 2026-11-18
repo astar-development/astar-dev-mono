@@ -53,14 +53,14 @@ public sealed class ScriptedDownloader : IRemoteFileDownloader
             if (Failures.TryGetValue(fileId.Value, out var failure))
                 return Result.Failure<DownloadedFile, ProviderError>(failure);
 
-            var bytes = Content.TryGetValue(fileId.Value, out var found) ? found : [];
-            var written = Truncate.TryGetValue(fileId.Value, out var length) ? bytes[..(int)length] : bytes;
+            byte[] bytes = Content.TryGetValue(fileId.Value, out byte[]? found) ? found : [];
+            byte[] written = Truncate.TryGetValue(fileId.Value, out long length) ? bytes[..(int)length] : bytes;
             target.FileSystem.File.WriteAllBytes(target.FullName, written);
             if (OnDownload is not null)
                 await OnDownload(fileId.Value, target);
 
             cancellationToken.ThrowIfCancellationRequested();
-            foreach (var done in Reports)
+            foreach (long done in Reports)
             {
                 BeforeEachReport();
                 progress.Report(TransferProgressFactory.Create(done, written.Length));

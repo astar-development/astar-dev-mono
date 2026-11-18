@@ -12,7 +12,7 @@ public sealed class ControlDbContextFactory : IDesignTimeDbContextFactory<Contro
     /// <inheritdoc/>
     public ControlDbContext CreateDbContext(string[] args)
     {
-        var tempDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        string tempDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         var options = new DbContextOptionsBuilder<ControlDbContext>()
             .UseSqlite($"Data Source={tempDir}/Scraper/files.db")
             .Options;

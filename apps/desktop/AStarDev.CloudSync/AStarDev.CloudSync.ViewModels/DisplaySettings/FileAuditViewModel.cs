@@ -118,7 +118,7 @@ public sealed class FileAuditViewModel : LocalizedObservableObject
 
     private void Refresh()
     {
-        var stillThere = selected.Match(current => overview.Accounts.Any(account => account.Id == current), () => false);
+        bool stillThere = selected.Match(current => overview.Accounts.Any(account => account.Id == current), () => false);
         if (!stillThere)
             selected = Option.None<AccountId>();
 

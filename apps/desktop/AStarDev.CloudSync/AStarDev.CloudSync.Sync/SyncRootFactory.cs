@@ -15,7 +15,7 @@ public static class SyncRootFactory
             return Result.Failure<SyncRoot, SyncRootRejection>(SyncRootRejectionFactory.CreateNotAbsolute());
 
         var path = directory.FileSystem.Path;
-        var trimmed = SyncRootPaths.Trim(path, path.GetFullPath(directory.FullName));
+        string trimmed = SyncRootPaths.Trim(path, path.GetFullPath(directory.FullName));
 
         return Result.Success<SyncRoot, SyncRootRejection>(new SyncRoot(directory.FileSystem.DirectoryInfo.New(trimmed.Length == 0 ? path.GetPathRoot(directory.FullName) ?? string.Empty : trimmed)));
     }

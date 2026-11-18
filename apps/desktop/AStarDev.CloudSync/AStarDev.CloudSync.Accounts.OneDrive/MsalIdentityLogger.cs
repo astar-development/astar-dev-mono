@@ -20,7 +20,7 @@ internal sealed partial class MsalIdentityLogger(ILogger<MsalIdentityLogger> log
             return;
 
         var level = ToLogLevel(entry.EventLogLevel);
-        var message = Redact(entry.Message ?? string.Empty);
+        string message = Redact(entry.Message ?? string.Empty);
         AccountAddLog.MsalMessage(logger, level, message);
     }
 

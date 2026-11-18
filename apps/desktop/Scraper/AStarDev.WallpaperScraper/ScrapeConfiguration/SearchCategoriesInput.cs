@@ -38,10 +38,10 @@ public sealed record SearchCategoriesInput(IReadOnlyList<SearchCategoryInput> Ca
     {
         List<ValidationError> errors = [];
         HashSet<string> seenIds = new(StringComparer.OrdinalIgnoreCase);
-        for (var i = 0; i < Categories.Count; i++)
+        for (int i = 0; i < Categories.Count; i++)
         {
             var category = Categories[i];
-            var id = category.Id.Trim();
+            string id = category.Id.Trim();
             if (id.Length == 0) errors.Add(ValidationErrorFactory.Create($"SearchCategories[{i}].Id", "Must not be blank."));
             else if (!seenIds.Add(id)) errors.Add(ValidationErrorFactory.Create($"SearchCategories[{i}].Id", $"Duplicate id '{id}'."));
 

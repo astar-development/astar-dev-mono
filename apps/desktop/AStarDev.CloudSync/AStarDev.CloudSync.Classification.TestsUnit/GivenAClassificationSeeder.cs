@@ -75,7 +75,7 @@ public sealed class GivenAClassificationSeeder
         var terms = new SeedingTermStore();
         var seeder = Create(DefaultSeed(), state, categories, terms);
         _ = await seeder.SeedAsync(CancellationToken);
-        var termCalls = terms.BatchCalls;
+        int termCalls = terms.BatchCalls;
 
         var outcome = await seeder.SeedAsync(CancellationToken);
 

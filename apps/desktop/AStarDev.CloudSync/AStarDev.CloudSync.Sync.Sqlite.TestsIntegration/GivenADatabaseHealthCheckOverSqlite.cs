@@ -40,7 +40,7 @@ public sealed class GivenADatabaseHealthCheckOverSqlite : IAsyncLifetime
     {
         await Database.RestartAsync();
         Database.ClearOwnPool();
-        var bytes = await File.ReadAllBytesAsync(Database.DatabasePath, CancellationToken);
+        byte[] bytes = await File.ReadAllBytesAsync(Database.DatabasePath, CancellationToken);
         Array.Fill(bytes, (byte)0xFF, from, bytes.Length - from);
         await File.WriteAllBytesAsync(Database.DatabasePath, bytes, CancellationToken);
     }
@@ -56,7 +56,7 @@ public sealed class GivenADatabaseHealthCheckOverSqlite : IAsyncLifetime
     {
         await using var fresh = TemporarySyncDatabase.CreateUnmigrated();
 
-        var result = await fresh.Health.CheckAsync(CancellationToken).MatchAsync(_ => (object)"sound", failure => failure);
+        object result = await fresh.Health.CheckAsync(CancellationToken).MatchAsync(_ => (object)"sound", failure => failure);
 
         (result, File.Exists(fresh.DatabasePath)).ShouldBe(("sound", false));
     }
@@ -68,7 +68,7 @@ public sealed class GivenADatabaseHealthCheckOverSqlite : IAsyncLifetime
         Database.ClearOwnPool();
         await File.WriteAllBytesAsync(Database.DatabasePath, "this is not a sqlite database, not even close"u8.ToArray(), CancellationToken);
 
-        var result = await CheckAsync();
+        object result = await CheckAsync();
 
         result.ShouldBeAssignableTo<DatabaseHealthFailure>();
     }
@@ -78,7 +78,7 @@ public sealed class GivenADatabaseHealthCheckOverSqlite : IAsyncLifetime
     {
         await CorruptAsync();
 
-        var result = await CheckAsync();
+        object result = await CheckAsync();
 
         result.ShouldBeAssignableTo<DatabaseHealthFailure>();
     }
@@ -87,12 +87,12 @@ public sealed class GivenADatabaseHealthCheckOverSqlite : IAsyncLifetime
     public async Task when_only_an_index_page_is_corrupted_then_the_integrity_check_reports_damage()
     {
         await Database.RestartAsync();
-        var rootPage = await AddProbeIndexAsync();
-        var bytes = await File.ReadAllBytesAsync(Database.DatabasePath, CancellationToken);
+        int rootPage = await AddProbeIndexAsync();
+        byte[] bytes = await File.ReadAllBytesAsync(Database.DatabasePath, CancellationToken);
         Array.Fill(bytes, (byte)0xFF, ((rootPage - 1) * ProbePageSize) + 8, 32);
         await File.WriteAllBytesAsync(Database.DatabasePath, bytes, CancellationToken);
 
-        var result = await CheckAsync();
+        object result = await CheckAsync();
 
         result.ShouldBe(DatabaseHealthFailureFactory.CreateDamaged());
     }
@@ -105,7 +105,7 @@ public sealed class GivenADatabaseHealthCheckOverSqlite : IAsyncLifetime
         command.CommandText = "CREATE TABLE probe(id INTEGER PRIMARY KEY, v TEXT); CREATE INDEX probe_v ON probe(v); WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i < 2000) INSERT INTO probe(v) SELECT 'value ' || i FROM n; PRAGMA journal_mode = DELETE;";
         _ = await command.ExecuteNonQueryAsync(CancellationToken);
         command.CommandText = "SELECT rootpage FROM sqlite_master WHERE name = 'probe_v'";
-        var rootPage = Convert.ToInt32(await command.ExecuteScalarAsync(CancellationToken));
+        int rootPage = Convert.ToInt32(await command.ExecuteScalarAsync(CancellationToken));
         command.CommandText = "PRAGMA page_size";
         ProbePageSize = Convert.ToInt32(await command.ExecuteScalarAsync(CancellationToken));
 
@@ -128,11 +128,11 @@ public sealed class GivenADatabaseHealthCheckOverSqlite : IAsyncLifetime
     public async Task when_the_database_is_corrupted_then_the_check_does_not_change_the_file()
     {
         await CorruptAsync();
-        var before = await File.ReadAllBytesAsync(Database.DatabasePath, CancellationToken);
+        byte[] before = await File.ReadAllBytesAsync(Database.DatabasePath, CancellationToken);
 
         _ = await CheckAsync();
         Database.ClearOwnPool();
-        var after = await File.ReadAllBytesAsync(Database.DatabasePath, CancellationToken);
+        byte[] after = await File.ReadAllBytesAsync(Database.DatabasePath, CancellationToken);
 
         after.ShouldBe(before);
     }

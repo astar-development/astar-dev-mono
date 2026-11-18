@@ -56,14 +56,14 @@ public class GivenTheClassificationSuggestionsContent
     public async Task when_the_picker_is_open_then_the_filter_and_category_buttons_are_shown_and_hidden_again_on_close()
     {
         var (window, list) = await ShownAsync(3);
-        var closedBefore = window.GetVisualDescendants().OfType<TextBox>().Count(box => box.Name == "CategoryFilterBox" && box.IsEffectivelyVisible);
+        int closedBefore = window.GetVisualDescendants().OfType<TextBox>().Count(box => box.Name == "CategoryFilterBox" && box.IsEffectivelyVisible);
 
         await list.PromoteCommand.ExecuteAsync(list.Rows[0]);
         window.UpdateLayout();
-        var open = window.GetVisualDescendants().OfType<TextBox>().Count(box => box.Name == "CategoryFilterBox" && box.IsEffectivelyVisible);
+        int open = window.GetVisualDescendants().OfType<TextBox>().Count(box => box.Name == "CategoryFilterBox" && box.IsEffectivelyVisible);
         list.ClosePickerCommand.Execute(null);
         window.UpdateLayout();
-        var closedAfter = window.GetVisualDescendants().OfType<TextBox>().Count(box => box.Name == "CategoryFilterBox" && box.IsEffectivelyVisible);
+        int closedAfter = window.GetVisualDescendants().OfType<TextBox>().Count(box => box.Name == "CategoryFilterBox" && box.IsEffectivelyVisible);
 
         (closedBefore, open, closedAfter).ShouldBe((0, 1, 0));
     }

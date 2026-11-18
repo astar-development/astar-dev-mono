@@ -10,7 +10,7 @@ public sealed class GivenUnsavedEdits
     {
         var baseline = ConfigurationEditInputs.From(GivenAConfigurationEditInputs.CreateEntity());
 
-        var hasEdits = UnsavedEdits.Exist(baseline, () => baseline with { SearchCategories = new([.. baseline.SearchCategories.Categories]), PersonCategories = new([.. baseline.PersonCategories.Categories]) });
+        bool hasEdits = UnsavedEdits.Exist(baseline, () => baseline with { SearchCategories = new([.. baseline.SearchCategories.Categories]), PersonCategories = new([.. baseline.PersonCategories.Categories]) });
 
         hasEdits.ShouldBeFalse();
     }
@@ -20,7 +20,7 @@ public sealed class GivenUnsavedEdits
     {
         var baseline = ConfigurationEditInputs.From(GivenAConfigurationEditInputs.CreateEntity());
 
-        var hasEdits = UnsavedEdits.Exist(baseline, () => baseline with { User = baseline.User with { Username = "changed" } });
+        bool hasEdits = UnsavedEdits.Exist(baseline, () => baseline with { User = baseline.User with { Username = "changed" } });
 
         hasEdits.ShouldBeTrue();
     }
@@ -30,7 +30,7 @@ public sealed class GivenUnsavedEdits
     {
         var baseline = ConfigurationEditInputs.From(GivenAConfigurationEditInputs.CreateEntity());
 
-        var hasEdits = UnsavedEdits.Exist(baseline, () => baseline with { PersonCategories = new([.. baseline.PersonCategories.Categories, new PersonCategoryInput(Option.None<Guid>(), "new")]) });
+        bool hasEdits = UnsavedEdits.Exist(baseline, () => baseline with { PersonCategories = new([.. baseline.PersonCategories.Categories, new PersonCategoryInput(Option.None<Guid>(), "new")]) });
 
         hasEdits.ShouldBeTrue();
     }
@@ -40,7 +40,7 @@ public sealed class GivenUnsavedEdits
     {
         var baseline = ConfigurationEditInputs.From(GivenAConfigurationEditInputs.CreateEntity());
 
-        var hasEdits = UnsavedEdits.Exist(baseline, () => throw new OverflowException("not a number"));
+        bool hasEdits = UnsavedEdits.Exist(baseline, () => throw new OverflowException("not a number"));
 
         hasEdits.ShouldBeTrue();
     }

@@ -85,7 +85,7 @@ public sealed class GivenAWallhavenRateLimitingHandler : IDisposable
     [Fact]
     public async Task when_the_request_is_not_rate_limited_then_no_back_off_is_announced()
     {
-        var announced = 0;
+        int announced = 0;
         notifier.BackingOff += (_, _) => announced++;
         inner.Enqueue(HttpStatusCode.OK);
         using var client = CreateClient();
@@ -128,7 +128,7 @@ public sealed class GivenAWallhavenRateLimitingHandler : IDisposable
     [Fact]
     public async Task when_every_attempt_is_a_429_then_the_final_429_is_returned_after_the_maximum_retries()
     {
-        for (var attempt = 0; attempt <= WallhavenRateLimitingHandler.MaximumRetries; attempt++)
+        for (int attempt = 0; attempt <= WallhavenRateLimitingHandler.MaximumRetries; attempt++)
         {
             inner.Enqueue(HttpStatusCode.TooManyRequests);
         }
@@ -136,7 +136,7 @@ public sealed class GivenAWallhavenRateLimitingHandler : IDisposable
         using var client = CreateClient();
 
         var request = client.GetAsync(ApiUrl, CancellationToken.None);
-        for (var retry = 1; retry <= WallhavenRateLimitingHandler.MaximumRetries; retry++)
+        for (int retry = 1; retry <= WallhavenRateLimitingHandler.MaximumRetries; retry++)
         {
             await timeProvider.WaitForDelaysAsync(retry);
             timeProvider.FireAll();
@@ -248,7 +248,7 @@ public sealed class GivenAWallhavenRateLimitingHandler : IDisposable
 
         public async Task WaitForDelaysAsync(int count)
         {
-            for (var attempt = 0; attempt < 1000 && Delays.Count < count; attempt++)
+            for (int attempt = 0; attempt < 1000 && Delays.Count < count; attempt++)
             {
                 await Task.Delay(1);
             }

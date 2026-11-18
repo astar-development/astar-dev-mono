@@ -56,7 +56,7 @@ public sealed class GivenARecoveryAfterTransfersOverSqlite : IAsyncLifetime
 
     private IFileInfo WriteLocalFile(string name)
     {
-        var path = $"{Root}/Docs/{name}";
+        string path = $"{Root}/Docs/{name}";
         Database.FileSystem.File.WriteAllText(path, RemoteContent.Text);
         Database.FileSystem.File.SetLastWriteTimeUtc(path, Written);
 

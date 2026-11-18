@@ -34,7 +34,7 @@ internal sealed class OneDriveFileDownloader(OneDriveGraphAccess graphAccess, IH
     private static Result<DownloadedFile, ProviderError> Failed(ProviderError error) => Result.Failure<DownloadedFile, ProviderError>(error);
 
     private static Result<(DriveItem Item, string Url), ProviderError> UrlOf(DriveItem? item) =>
-        item?.AdditionalData is { } data && data.TryGetValue(DownloadUrlKey, out var url) && url is string text && text.Length > 0
+        item?.AdditionalData is { } data && data.TryGetValue(DownloadUrlKey, out object? url) && url is string text && text.Length > 0
             ? SecureUrl(item, text)
             : Result.Failure<(DriveItem, string), ProviderError>(ProviderErrorFactory.CreateNotFound());
 
@@ -69,7 +69,7 @@ internal sealed class OneDriveFileDownloader(OneDriveGraphAccess graphAccess, IH
     private async Task<Result<long, ProviderError>> CopyAsync(AccountId accountId, string url, IFileInfo target, IProgress<TransferProgress> progress, CancellationToken cancellationToken)
     {
         target.Refresh();
-        var start = target.Exists ? target.Length : 0;
+        long start = target.Exists ? target.Length : 0;
         using var http = httpClients.CreateClient(OneDriveSyncHttp.ClientName);
         using var request = new HttpRequestMessage(HttpMethod.Get, url);
         request.Options.Set(OneDriveSyncHttp.AccountOption, accountId);
@@ -90,14 +90,14 @@ internal sealed class OneDriveFileDownloader(OneDriveGraphAccess graphAccess, IH
         if (!response.IsSuccessStatusCode)
             return Result.Failure<long, ProviderError>(StatusError(response));
 
-        var resumed = response.StatusCode is HttpStatusCode.PartialContent;
-        var offset = resumed ? start : 0;
-        var total = offset + (response.Content.Headers.ContentLength ?? 0);
+        bool resumed = response.StatusCode is HttpStatusCode.PartialContent;
+        long offset = resumed ? start : 0;
+        long total = offset + (response.Content.Headers.ContentLength ?? 0);
         await using var source = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         await using var destination = target.Open(resumed ? FileMode.OpenOrCreate : FileMode.Create, FileAccess.Write, FileShare.Read);
         _ = destination.Seek(offset, SeekOrigin.Begin);
-        var buffer = new byte[BufferSize];
-        var done = offset;
+        byte[] buffer = new byte[BufferSize];
+        long done = offset;
         int read;
         while ((read = await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) > 0)
         {

@@ -18,8 +18,8 @@ public sealed class ConflictClassifier : IConflictClassifier
 
     private static Option<ConflictKind> AgainstBaseline(ConflictEvidence evidence, ConflictBaseline baseline)
     {
-        var localModified = evidence.Local is SideSnapshot.Present local && !SameHash(local, baseline);
-        var remoteModified = evidence.Remote is SideSnapshot.Present remote && !SameTag(remote, baseline);
+        bool localModified = evidence.Local is SideSnapshot.Present local && !SameHash(local, baseline);
+        bool remoteModified = evidence.Remote is SideSnapshot.Present remote && !SameTag(remote, baseline);
 
         if (localModified && remoteModified)
             return Option.Some(ConflictKindFactory.CreateBothModified());

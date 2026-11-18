@@ -183,8 +183,8 @@ public sealed class GivenAClassificationStartup
 
         var run = startup.RunAsync(shutdown.Token);
         await Task.WhenAny(reclassifier.Started.Task, run);
-        var startedBeforeShutdown = reclassifier.Started.Task.IsCompleted;
-        var receivedShutdownToken = reclassifier.ReceivedToken == shutdown.Token;
+        bool startedBeforeShutdown = reclassifier.Started.Task.IsCompleted;
+        bool receivedShutdownToken = reclassifier.ReceivedToken == shutdown.Token;
         await shutdown.CancelAsync();
         _ = reclassifier.Gate.TrySetResult();
         await run.WaitAsync(CancellationToken);

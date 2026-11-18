@@ -29,7 +29,7 @@ internal abstract class ProcessNotificationSender : INotificationSender
     private static ProcessStartInfo StartInfoFor(NotificationCommand command)
     {
         var start = new ProcessStartInfo(command.Program) { UseShellExecute = false, CreateNoWindow = true };
-        foreach (var argument in command.Arguments)
+        foreach (string argument in command.Arguments)
             start.ArgumentList.Add(argument);
 
         foreach (var variable in command.Environment)

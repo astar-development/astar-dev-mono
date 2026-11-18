@@ -16,7 +16,7 @@ public class GivenAnAccountUnionFactory
     [Fact]
     public void when_each_sign_in_state_is_created_then_it_is_that_case()
     {
-        var states = new object[] { AccountSignInStateFactory.CreateSignedIn(), AccountSignInStateFactory.CreateSignInRequired(), ReauthFailureFactory.CreateSyncStillRunning() };
+        object[] states = new object[] { AccountSignInStateFactory.CreateSignedIn(), AccountSignInStateFactory.CreateSignInRequired(), ReauthFailureFactory.CreateSyncStillRunning() };
 
         states.Select(state => state.GetType().Name).ShouldBe(["SignedIn", "SignInRequired", "SyncStillRunning"]);
     }

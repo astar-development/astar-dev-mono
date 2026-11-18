@@ -121,7 +121,7 @@ public sealed class SyncNotifier : IDisposable
 
     private Task<Unit> SendAsync(string accountName, SyncNotification notification, CancellationToken cancellationToken)
     {
-        var body = localization.GetLocal(BodyKey(notification), accountName, CountOf(notification).ToString("N0", localization.CurrentCulture));
+        string body = localization.GetLocal(BodyKey(notification), accountName, CountOf(notification).ToString("N0", localization.CurrentCulture));
 
         return SendTextAsync(body, cancellationToken);
     }

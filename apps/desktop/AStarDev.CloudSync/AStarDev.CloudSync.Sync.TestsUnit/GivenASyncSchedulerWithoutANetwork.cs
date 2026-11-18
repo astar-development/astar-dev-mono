@@ -31,7 +31,7 @@ public sealed class GivenASyncSchedulerWithoutANetwork : IDisposable
         services.Network.Set(NetworkAvailabilityFactory.CreateUnavailable());
         await services.TickAtAsync(Minutes(2));
         await ScheduleServices.NothingElseHappensAsync();
-        var runsWhileOffline = services.Runner.Runs.Count;
+        int runsWhileOffline = services.Runner.Runs.Count;
 
         services.Network.Set(NetworkAvailabilityFactory.CreateAvailable());
         await services.WaitForRunsAsync(1);
@@ -51,7 +51,7 @@ public sealed class GivenASyncSchedulerWithoutANetwork : IDisposable
         await services.TickAtAsync(Minutes(70));
         await services.TickAtAsync(Minutes(140));
         await ScheduleServices.NothingElseHappensAsync();
-        var runsWhileOffline = services.Runner.Runs.Count;
+        int runsWhileOffline = services.Runner.Runs.Count;
 
         services.Network.Set(NetworkAvailabilityFactory.CreateAvailable());
         await services.WaitForRunsAsync(1);

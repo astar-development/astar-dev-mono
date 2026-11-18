@@ -48,8 +48,8 @@ internal sealed class SqliteSyncBaselineStore(IDbContextFactory<SyncDbContext> d
         var query = dbContext.SyncBaseline.AsNoTracking().Where(item => item.AccountId == accountId.Value && !item.IsFolder);
         if (under.Length > 0)
         {
-            var underKey = Key(under);
-            var prefix = underKey + Separator;
+            string underKey = Key(under);
+            string prefix = underKey + Separator;
             query = query.Where(item => item.PathKey == underKey || item.PathKey.StartsWith(prefix));
         }
 
@@ -131,7 +131,7 @@ internal sealed class SqliteSyncBaselineStore(IDbContextFactory<SyncDbContext> d
     private async Task<Option<SyncBaselineEntry>> ReadOneAsync(AccountId accountId, RelativeSyncPath path, CancellationToken cancellationToken)
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        var key = Key(path.Value);
+        string key = Key(path.Value);
         var entity = await dbContext.SyncBaseline.AsNoTracking().Where(item => item.AccountId == accountId.Value && item.PathKey == key).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
 
         return entity is null ? Option.None<SyncBaselineEntry>() : Option.Some(ToEntry(entity));
@@ -151,14 +151,14 @@ internal sealed class SqliteSyncBaselineStore(IDbContextFactory<SyncDbContext> d
         var query = dbContext.SyncBaseline.AsNoTracking().Where(item => item.AccountId == accountId.Value);
         if (under.Length > 0)
         {
-            var underKey = Key(under);
-            var prefix = underKey + Separator;
+            string underKey = Key(under);
+            string prefix = underKey + Separator;
             query = query.Where(item => item.PathKey == underKey || item.PathKey.StartsWith(prefix));
         }
 
         if (after is not null)
         {
-            var afterKey = Key(after);
+            string afterKey = Key(after);
             query = query.Where(item => item.PathKey.CompareTo(afterKey) > 0);
         }
 
@@ -206,7 +206,7 @@ internal sealed class SqliteSyncBaselineStore(IDbContextFactory<SyncDbContext> d
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         await using var transaction = await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken).ConfigureAwait(false);
-        foreach (var chunk in paths.Select(path => Key(path.Value)).Chunk(ChunkSize))
+        foreach (string[] chunk in paths.Select(path => Key(path.Value)).Chunk(ChunkSize))
         {
             var keys = chunk.ToList();
             _ = await dbContext.SyncBaseline.Where(item => item.AccountId == accountId.Value && keys.Contains(item.PathKey)).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);

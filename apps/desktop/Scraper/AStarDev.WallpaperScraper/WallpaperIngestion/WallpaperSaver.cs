@@ -16,7 +16,7 @@ public sealed class WallpaperSaver(IImageDownloader imageDownloader, IWallpaperF
     /// <returns>The recorded <see cref="FileEntity"/> with the details to announce; a recording failure is thrown.</returns>
     public async Task<SavedWallpaper> SaveAsync(WallpaperFileRequest request, WallpaperIngestionContext context, IProgress<string> progress, CancellationToken cancellationToken)
     {
-        var savedPath = await imageDownloader.DownloadAsync(request, progress, context.Client, cancellationToken);
+        string savedPath = await imageDownloader.DownloadAsync(request, progress, context.Client, cancellationToken);
         progress.Report($"Downloaded image data for wallpaper {request.Wallpaper.Id}");
         cancellationToken.ThrowIfCancellationRequested();
 

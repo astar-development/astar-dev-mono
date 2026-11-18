@@ -137,7 +137,7 @@ public sealed class GivenAWallpaperIngestionService
 
         var ingestion = Ingest(first, second);
         await WaitUntilAsync(() => newWallpaperIngestor.Fetched.Contains("second"));
-        var secondFetchedWhileFirstStillIngesting = newWallpaperIngestor.Ingested.Count == 0;
+        bool secondFetchedWhileFirstStillIngesting = newWallpaperIngestor.Ingested.Count == 0;
         releaseFirst.SetResult();
         await ingestion;
 
@@ -247,7 +247,7 @@ public sealed class GivenAWallpaperIngestionService
 
     private static async Task WaitUntilAsync(Func<bool> condition)
     {
-        for (var attempt = 0; attempt < 2000 && !condition(); attempt++)
+        for (int attempt = 0; attempt < 2000 && !condition(); attempt++)
         {
             await Task.Delay(1, TestContext.Current.CancellationToken);
         }

@@ -53,8 +53,8 @@ public sealed class InMemorySyncBaseline : ISyncBaselineReader, ISyncBaselineWri
     public Task<Result<IReadOnlyList<SyncBaselineEntry>, ErrorResponse>> GetUnderAsync(AccountId accountId, RelativeSyncPath under, Option<RelativeSyncPath> after, int limit, CancellationToken cancellationToken)
     {
         Pages++;
-        var prefix = under.Value is { Length: > 0 } folder ? folder + "/" : string.Empty;
-        var cursor = after.Match(path => (string?)path.Value, () => null);
+        string prefix = under.Value is { Length: > 0 } folder ? folder + "/" : string.Empty;
+        string? cursor = after.Match(path => (string?)path.Value, () => null);
         IReadOnlyList<SyncBaselineEntry> page;
         lock (gate)
             page = [.. stored.Values.Where(entry => prefix.Length == 0 || entry.Path.Value!.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) || string.Equals(entry.Path.Value, under.Value, StringComparison.OrdinalIgnoreCase)).Where(entry => cursor is null || StringComparer.OrdinalIgnoreCase.Compare(entry.Path.Value, cursor) > 0).Take(limit)];

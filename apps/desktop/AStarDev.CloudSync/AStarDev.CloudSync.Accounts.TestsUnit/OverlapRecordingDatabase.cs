@@ -17,8 +17,8 @@ internal sealed class OverlapRecordingDatabase : ICloudSyncDatabase
 
     public async Task<Result<Unit, ErrorResponse>> MigrateAsync(CancellationToken cancellationToken)
     {
-        var call = Interlocked.Increment(ref calls);
-        var now = Interlocked.Increment(ref running);
+        int call = Interlocked.Increment(ref calls);
+        int now = Interlocked.Increment(ref running);
         RecordPeak(now);
         await Task.Delay(5, cancellationToken);
         Interlocked.Decrement(ref running);
@@ -31,7 +31,7 @@ internal sealed class OverlapRecordingDatabase : ICloudSyncDatabase
 
     private void RecordPeak(int now)
     {
-        var peak = Volatile.Read(ref mostAtOnce);
+        int peak = Volatile.Read(ref mostAtOnce);
         while (now > peak && Interlocked.CompareExchange(ref mostAtOnce, now, peak) != peak)
             peak = Volatile.Read(ref mostAtOnce);
     }

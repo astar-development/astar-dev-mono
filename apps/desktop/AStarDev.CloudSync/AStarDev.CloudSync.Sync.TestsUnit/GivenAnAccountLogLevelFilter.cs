@@ -55,9 +55,9 @@ public sealed class GivenAnAccountLogLevelFilter
         var scope = ScopeOf(Photos);
 
         levels.Apply(Photos, AccountLogLevelFactory.CreateVerbose());
-        var whileVerbose = AccountLogLevelFilter.Admits(levels, LogLevel.Debug, scope);
+        bool whileVerbose = AccountLogLevelFilter.Admits(levels, LogLevel.Debug, scope);
         levels.Apply(Photos, AccountLogLevelFactory.CreateStandard());
-        var afterwards = AccountLogLevelFilter.Admits(levels, LogLevel.Debug, scope);
+        bool afterwards = AccountLogLevelFilter.Admits(levels, LogLevel.Debug, scope);
 
         (whileVerbose, afterwards).ShouldBe((true, false));
     }

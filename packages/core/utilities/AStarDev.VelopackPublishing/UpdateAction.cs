@@ -3,7 +3,7 @@ namespace AStar.Dev.Velopack.Publishing;
 /// <summary>What to do about an update check result (#1412).</summary>
 public abstract record UpdateAction
 {
-    internal UpdateAction()
+    private protected UpdateAction()
     {
     }
 }

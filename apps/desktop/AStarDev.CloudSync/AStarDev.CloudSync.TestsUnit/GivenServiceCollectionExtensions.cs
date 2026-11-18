@@ -606,7 +606,7 @@ public class GivenServiceCollectionExtensions
         using var provider = services.BuildServiceProvider();
         var executorType = services.Single(descriptor => descriptor.ServiceType.Name == "UploadItemExecutor").ServiceType;
 
-        var executor = provider.GetRequiredService(executorType);
+        object executor = provider.GetRequiredService(executorType);
 
         var recorders = executorType.GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).Where(field => field.FieldType == typeof(IUploadRecorder)).Select(field => field.GetValue(executor)).ToList();
         recorders.ShouldHaveSingleItem().ShouldBeOfType<ClassifyingUploadRecorder>();
@@ -623,7 +623,7 @@ public class GivenServiceCollectionExtensions
         using var provider = services.BuildServiceProvider();
         var registered = services.First(descriptor => descriptor.ServiceType.Name == consumerName || descriptor.ImplementationType?.Name == consumerName).ServiceType;
 
-        var consumer = provider.GetRequiredService(registered);
+        object consumer = provider.GetRequiredService(registered);
 
         var writers = consumer.GetType().GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).Where(field => field.FieldType == typeof(ISyncBaselineWriter)).Select(field => field.GetValue(consumer)).ToList();
         writers.ShouldNotBeEmpty();

@@ -16,7 +16,7 @@ public sealed class GivenATokenCacheInitialiser : IDisposable
         var storage = new FakeMsalTokenCacheStorage();
         var consent = new FakeTokenCacheConsent();
 
-        var attached = await CreateModule(storage, consent).EnsureTokenCacheAsync(TestContext.Current.CancellationToken).MatchAsync(_ => true, _ => false);
+        bool attached = await CreateModule(storage, consent).EnsureTokenCacheAsync(TestContext.Current.CancellationToken).MatchAsync(_ => true, _ => false);
 
         (attached, consent.QuestionsAsked, storage.PlaintextFileAttempts).ShouldBe((true, 0, 0));
     }
@@ -27,7 +27,7 @@ public sealed class GivenATokenCacheInitialiser : IDisposable
         var storage = new FakeMsalTokenCacheStorage { SecureStoreFails = true };
         var consent = new FakeTokenCacheConsent { Answer = PlaintextCacheConsentFactory.CreateGranted() };
 
-        var attached = await CreateModule(storage, consent).EnsureTokenCacheAsync(TestContext.Current.CancellationToken).MatchAsync(_ => true, _ => false);
+        bool attached = await CreateModule(storage, consent).EnsureTokenCacheAsync(TestContext.Current.CancellationToken).MatchAsync(_ => true, _ => false);
 
         (attached, consent.QuestionsAsked, storage.PlaintextFileAttempts).ShouldBe((true, 1, 1));
     }
@@ -38,7 +38,7 @@ public sealed class GivenATokenCacheInitialiser : IDisposable
         var storage = new FakeMsalTokenCacheStorage { SecureStoreFails = true };
         var consent = new FakeTokenCacheConsent { Answer = PlaintextCacheConsentFactory.CreateDeclined() };
 
-        var failure = await CreateModule(storage, consent).EnsureTokenCacheAsync(TestContext.Current.CancellationToken).MatchAsync(attached => (object)attached, failure => failure);
+        object failure = await CreateModule(storage, consent).EnsureTokenCacheAsync(TestContext.Current.CancellationToken).MatchAsync(attached => (object)attached, failure => failure);
 
         (failure, storage.PlaintextFileAttempts).ShouldBe((AccountAddFailureFactory.CreateTokenCacheUnavailable(), 0));
     }
@@ -49,7 +49,7 @@ public sealed class GivenATokenCacheInitialiser : IDisposable
         var storage = new FakeMsalTokenCacheStorage { SecureStoreFails = true, PlaintextFileFails = true };
         var consent = new FakeTokenCacheConsent { Answer = PlaintextCacheConsentFactory.CreateGranted() };
 
-        var failure = await CreateModule(storage, consent).EnsureTokenCacheAsync(TestContext.Current.CancellationToken).MatchAsync(attached => (object)attached, failure => failure);
+        object failure = await CreateModule(storage, consent).EnsureTokenCacheAsync(TestContext.Current.CancellationToken).MatchAsync(attached => (object)attached, failure => failure);
 
         failure.ShouldBe(AccountAddFailureFactory.CreateTokenCacheUnavailable());
         logs.Logger.Entries.Count(entry => entry.Level >= LogLevel.Warning).ShouldBeGreaterThanOrEqualTo(2);
@@ -76,7 +76,7 @@ public sealed class GivenATokenCacheInitialiser : IDisposable
 
         _ = await initialiser.EnsureTokenCacheAsync(TestContext.Current.CancellationToken);
         consent.Answer = PlaintextCacheConsentFactory.CreateGranted();
-        var attached = await initialiser.EnsureTokenCacheAsync(TestContext.Current.CancellationToken).MatchAsync(_ => true, _ => false);
+        bool attached = await initialiser.EnsureTokenCacheAsync(TestContext.Current.CancellationToken).MatchAsync(_ => true, _ => false);
 
         (attached, consent.QuestionsAsked, storage.PlaintextFileAttempts).ShouldBe((true, 2, 1));
     }
@@ -112,7 +112,7 @@ public sealed class GivenATokenCacheInitialiser : IDisposable
         var initialiser = CreateModule(storage, consent);
 
         await Should.ThrowAsync<OperationCanceledException>(() => initialiser.EnsureTokenCacheAsync(cancellation.Token));
-        var attached = await initialiser.EnsureTokenCacheAsync(TestContext.Current.CancellationToken).MatchAsync(_ => true, _ => false);
+        bool attached = await initialiser.EnsureTokenCacheAsync(TestContext.Current.CancellationToken).MatchAsync(_ => true, _ => false);
 
         (attached, consent.QuestionsAsked).ShouldBe((true, 2));
     }
@@ -122,7 +122,7 @@ public sealed class GivenATokenCacheInitialiser : IDisposable
     {
         var storage = new FakeMsalTokenCacheStorage { SecureStoreFails = true };
 
-        var failure = await CreateModule(storage, new FakeTokenCacheConsent { Fails = true }).EnsureTokenCacheAsync(TestContext.Current.CancellationToken).MatchAsync(attached => (object)attached, failure => failure);
+        object failure = await CreateModule(storage, new FakeTokenCacheConsent { Fails = true }).EnsureTokenCacheAsync(TestContext.Current.CancellationToken).MatchAsync(attached => (object)attached, failure => failure);
 
         (failure, storage.PlaintextFileAttempts).ShouldBe((AccountAddFailureFactory.CreateTokenCacheUnavailable(), 0));
         logs.Logger.Messages.ShouldAllBe(message => !message.Contains("could not open"));
@@ -151,7 +151,7 @@ public sealed class GivenATokenCacheInitialiser : IDisposable
         var storage = new FakeMsalTokenCacheStorage { SecureStoreFails = true };
         var consent = new FakeTokenCacheConsent();
 
-        var attached = await CreateModule(storage, consent).EnsureTokenCacheAsync(TestContext.Current.CancellationToken).MatchAsync(_ => true, _ => false);
+        bool attached = await CreateModule(storage, consent).EnsureTokenCacheAsync(TestContext.Current.CancellationToken).MatchAsync(_ => true, _ => false);
 
         (attached, consent.QuestionsAsked, storage.PlaintextFileAttempts).ShouldBe((true, 0, 1));
     }
@@ -173,7 +173,7 @@ public sealed class GivenATokenCacheInitialiser : IDisposable
         consentFile.Remembered = Option.Some(PlaintextCacheConsentFactory.CreateGranted());
         var storage = new FakeMsalTokenCacheStorage { PlaintextFileOnDisk = true };
 
-        var attached = await CreateModule(storage, new FakeTokenCacheConsent()).EnsureTokenCacheAsync(TestContext.Current.CancellationToken).MatchAsync(_ => true, _ => false);
+        bool attached = await CreateModule(storage, new FakeTokenCacheConsent()).EnsureTokenCacheAsync(TestContext.Current.CancellationToken).MatchAsync(_ => true, _ => false);
 
         (attached, storage.Moves, storage.PlaintextFileOnDisk, consentFile.Remembered.Match(_ => true, () => false)).ShouldBe((true, 1, false, false));
         logs.Logger.EventNames.ShouldContain("PlaintextTokensMoved");
@@ -196,7 +196,7 @@ public sealed class GivenATokenCacheInitialiser : IDisposable
         consentFile.Remembered = Option.Some(PlaintextCacheConsentFactory.CreateGranted());
         var storage = new FakeMsalTokenCacheStorage { PlaintextFileOnDisk = true, MoveFails = true };
 
-        var attached = await CreateModule(storage, new FakeTokenCacheConsent()).EnsureTokenCacheAsync(TestContext.Current.CancellationToken).MatchAsync(_ => true, _ => false);
+        bool attached = await CreateModule(storage, new FakeTokenCacheConsent()).EnsureTokenCacheAsync(TestContext.Current.CancellationToken).MatchAsync(_ => true, _ => false);
 
         (attached, consentFile.Remembered.Match(_ => true, () => false)).ShouldBe((true, true));
         logs.Logger.ValuesOf("PlaintextTokenMoveFailed")["ExceptionType"].ShouldBe(nameof(IOException));
@@ -233,7 +233,7 @@ public sealed class GivenATokenCacheInitialiser : IDisposable
         var storage = new FakeMsalTokenCacheStorage { PlaintextFileOnDisk = true };
         var initialiser = CreateModule(storage, new FakeTokenCacheConsent());
 
-        var withdrawn = await initialiser.WithdrawAsync().MatchAsync(_ => true, _ => false);
+        bool withdrawn = await initialiser.WithdrawAsync().MatchAsync(_ => true, _ => false);
 
         (withdrawn, storage.Detaches, storage.PlaintextFileOnDisk).ShouldBe((true, 1, false));
         initialiser.Current().ShouldBeOfType<PlaintextCacheConsent.Declined>();
@@ -260,7 +260,7 @@ public sealed class GivenATokenCacheInitialiser : IDisposable
         consentFile.Remembered = Option.Some(PlaintextCacheConsentFactory.CreateGranted());
         var initialiser = CreateModule(new FakeMsalTokenCacheStorage { DetachFails = true }, new FakeTokenCacheConsent());
 
-        var withdrawn = await initialiser.WithdrawAsync().MatchAsync(_ => true, _ => false);
+        bool withdrawn = await initialiser.WithdrawAsync().MatchAsync(_ => true, _ => false);
 
         withdrawn.ShouldBeFalse();
         initialiser.Current().ShouldBeOfType<PlaintextCacheConsent.Granted>();
@@ -287,7 +287,7 @@ public sealed class GivenATokenCacheInitialiser : IDisposable
 
         _ = await initialiser.WithdrawAsync();
         answer.SetResult(PlaintextCacheConsentFactory.CreateGranted());
-        var failure = await attempt.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken).MatchAsync(attached => (object)attached, failure => failure);
+        object failure = await attempt.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken).MatchAsync(attached => (object)attached, failure => failure);
 
         (failure, storage.PlaintextFileAttempts, consentFile.Remembered.Match(_ => true, () => false)).ShouldBe((AccountAddFailureFactory.CreateTokenCacheUnavailable(), 0, false));
     }
@@ -300,7 +300,7 @@ public sealed class GivenATokenCacheInitialiser : IDisposable
         var initialiser = CreateModule(storage, new FakeTokenCacheConsent());
         storage.DuringPlaintextAttach = async () => _ = await initialiser.WithdrawAsync();
 
-        var failure = await initialiser.EnsureTokenCacheAsync(TestContext.Current.CancellationToken).MatchAsync(attached => (object)attached, failure => failure);
+        object failure = await initialiser.EnsureTokenCacheAsync(TestContext.Current.CancellationToken).MatchAsync(attached => (object)attached, failure => failure);
 
         (failure, storage.Detaches, consentFile.Remembered.Match(_ => true, () => false)).ShouldBe((AccountAddFailureFactory.CreateTokenCacheUnavailable(), 2, false));
     }
@@ -312,7 +312,7 @@ public sealed class GivenATokenCacheInitialiser : IDisposable
         consentFile.RefuseDeletion();
         var initialiser = CreateModule(new FakeMsalTokenCacheStorage(), new FakeTokenCacheConsent());
 
-        var withdrawn = await initialiser.WithdrawAsync().MatchAsync(_ => true, _ => false);
+        bool withdrawn = await initialiser.WithdrawAsync().MatchAsync(_ => true, _ => false);
 
         withdrawn.ShouldBeFalse();
         logs.Logger.EventNames.ShouldContain("PlaintextConsentNotForgotten");

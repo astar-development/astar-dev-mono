@@ -193,7 +193,7 @@ public sealed class ConflictListViewModel : LocalizedObservableObject
     /// <param name="cancellationToken">Cancels the read.</param>
     public async Task LoadAsync(CancellationToken cancellationToken)
     {
-        var load = Interlocked.Increment(ref loadsStarted);
+        int load = Interlocked.Increment(ref loadsStarted);
         _ = await UiResumingTry.RunTreatingTimeoutAsFailureAsync(() => ReadAsync(cancellationToken), result => IsLatest(load) ? result.Match(Show, NotRead) : Unit.Instance, exception => IsLatest(load) ? ReadThrew(exception) : Unit.Instance, cancellationToken);
     }
 

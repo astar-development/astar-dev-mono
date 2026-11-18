@@ -130,7 +130,7 @@ public sealed class GivenAnOneDriveFileDownloader : IDisposable
     [Fact]
     public async Task when_the_connection_drops_mid_file_then_the_download_resumes_with_a_range_from_the_bytes_already_written()
     {
-        var attempt = 0;
+        int attempt = 0;
         Serve(
             request =>
             {
@@ -257,7 +257,7 @@ public sealed class GivenAnOneDriveFileDownloader : IDisposable
     [Fact]
     public async Task when_the_download_url_answers_with_a_server_error_then_it_is_retried_and_then_succeeds()
     {
-        var attempt = 0;
+        int attempt = 0;
         Serve(_ => ++attempt == 1 ? new HttpResponseMessage(HttpStatusCode.InternalServerError) : Bytes(HttpStatusCode.OK, Content), ItemJson());
         var (downloader, account) = await StartAsync();
 

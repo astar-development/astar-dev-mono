@@ -191,7 +191,7 @@ public sealed class GivenAnOptionsBindingGenerator
         var result = RunGenerator(input);
 
         result.Diagnostics.ShouldContain(diagnostic => diagnostic.Id == "ASTAROPT002");
-        var generated = GeneratorRunHelpers.GeneratedSources(result).ShouldHaveSingleItem().SourceText.ToString();
+        string generated = GeneratorRunHelpers.GeneratedSources(result).ShouldHaveSingleItem().SourceText.ToString();
         generated.ShouldContain("TestNamespace.PlainOptions");
         generated.ShouldNotContain("GenericOptions");
     }

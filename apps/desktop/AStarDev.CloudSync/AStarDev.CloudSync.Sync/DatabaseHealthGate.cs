@@ -29,7 +29,7 @@ internal sealed class DatabaseHealthGate(IDatabaseHealthCheck check, TimeProvide
         if (!entering.IsCompletedSuccessfully)
             return Status;
 
-        var ran = Status is DatabaseHealthStatus.NotChecked && await RunCheckAsync(cancellationToken).ConfigureAwait(false);
+        bool ran = Status is DatabaseHealthStatus.NotChecked && await RunCheckAsync(cancellationToken).ConfigureAwait(false);
         _ = Try.Run(() => turn.Release());
         if (ran)
             Changed?.Invoke(this, EventArgs.Empty);

@@ -102,7 +102,7 @@ internal static class Snapshot
         using var converted = new WriteableBitmap(bitmap.PixelSize, dpi, PixelFormat.Bgra8888, AlphaFormat.Premul);
         using var framebuffer = converted.Lock();
         bitmap.CopyPixels(framebuffer);
-        var bytes = new byte[framebuffer.RowBytes * bitmap.PixelSize.Height];
+        byte[] bytes = new byte[framebuffer.RowBytes * bitmap.PixelSize.Height];
         Marshal.Copy(framebuffer.Address, bytes, 0, bytes.Length);
 
         return new PixelBuffer(bytes, framebuffer.RowBytes);
@@ -144,7 +144,7 @@ internal static class Snapshot
         using var diff = new WriteableBitmap(actualSize, dpi, PixelFormat.Bgra8888, AlphaFormat.Premul);
         using (var framebuffer = diff.Lock())
         {
-            var bytes = new byte[framebuffer.RowBytes * actualSize.Height];
+            byte[] bytes = new byte[framebuffer.RowBytes * actualSize.Height];
             bool sameSize = actualSize == baselineSize;
             for (int row = 0; row < actualSize.Height; row++)
             {

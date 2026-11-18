@@ -63,7 +63,7 @@ public sealed class GivenAFileRepository : IDisposable
 
         var result = await repository.TryFindAsync(FileId.Create(), TestContext.Current.CancellationToken);
 
-        var found = result.Match(option => option, exception => throw exception).Match(_ => true, () => false);
+        bool found = result.Match(option => option, exception => throw exception).Match(_ => true, () => false);
 
         found.ShouldBeFalse();
     }
@@ -80,7 +80,7 @@ public sealed class GivenAFileRepository : IDisposable
         await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var result = await repository.TryFindAsync(fileEntity.Id, TestContext.Current.CancellationToken);
-        var found = result.Match(option => option, exception => throw exception).Match(_ => true, () => false);
+        bool found = result.Match(option => option, exception => throw exception).Match(_ => true, () => false);
 
         found.ShouldBeFalse();
     }

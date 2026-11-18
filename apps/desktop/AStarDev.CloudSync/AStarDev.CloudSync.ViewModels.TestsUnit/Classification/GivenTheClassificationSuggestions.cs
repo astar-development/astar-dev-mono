@@ -216,7 +216,7 @@ public class GivenTheClassificationSuggestions
         await list.PromoteCommand.ExecuteAsync(list.Rows.Single(row => row.Word == "alice"));
         await list.ChooseCategoryCommand.ExecuteAsync(list.Categories[1]);
 
-        var filtered = string.Join(',', list.Rows.Select(row => row.Word));
+        string filtered = string.Join(',', list.Rows.Select(row => row.Word));
         list.FilterText = string.Empty;
 
         (filtered, string.Join(',', list.Rows.Select(row => row.Word))).ShouldBe(("harbour", "sunset,harbour"));
@@ -237,7 +237,7 @@ public class GivenTheClassificationSuggestions
     public async Task when_a_word_is_promoted_then_terms_changed_is_raised_once()
     {
         var list = await LoadedAsync(SomeSuggestions());
-        var raised = 0;
+        int raised = 0;
         list.TermsChanged += (_, _) => raised++;
         await list.PromoteCommand.ExecuteAsync(list.Rows[0]);
 
@@ -252,7 +252,7 @@ public class GivenTheClassificationSuggestions
         var service = SomeSuggestions();
         service.FailPromote = true;
         var list = await LoadedAsync(service);
-        var raised = 0;
+        int raised = 0;
         list.TermsChanged += (_, _) => raised++;
         var row = list.Rows[0];
         await list.PromoteCommand.ExecuteAsync(row);
@@ -282,7 +282,7 @@ public class GivenTheClassificationSuggestions
     {
         var service = SomeSuggestions();
         var list = await LoadedAsync(service);
-        var raised = 0;
+        int raised = 0;
         list.TermsChanged += (_, _) => raised++;
 
         await list.IgnoreCommand.ExecuteAsync(list.Rows[0]);

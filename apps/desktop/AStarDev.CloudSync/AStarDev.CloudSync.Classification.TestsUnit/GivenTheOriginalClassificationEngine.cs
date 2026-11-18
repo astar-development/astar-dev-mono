@@ -16,7 +16,7 @@ public sealed class GivenTheOriginalClassificationEngine
     [Fact]
     public void when_random_text_is_tokenised_then_the_tokens_equal_the_original()
     {
-        foreach (var text in EquivalenceCorpus.Texts(1889, []).Append(null))
+        foreach (string? text in EquivalenceCorpus.Texts(1889, []).Append(null))
         {
             ClassificationTokeniser.Tokenise(text).ShouldBe(OriginalClassificationTokeniser.Tokenise(text), $"text: {text}");
         }
@@ -30,7 +30,7 @@ public sealed class GivenTheOriginalClassificationEngine
         var vocabularyTokens = HandPickedTerms.SelectMany(term => ClassificationTokeniser.Tokenise(term.Text)).Distinct().ToList();
         var random = new Random(1889);
 
-        for (var attempt = 0; attempt < EquivalenceCorpus.Cases; attempt++)
+        for (int attempt = 0; attempt < EquivalenceCorpus.Cases; attempt++)
         {
             var tokens = EquivalenceCorpus.Tokens(random, vocabularyTokens);
 

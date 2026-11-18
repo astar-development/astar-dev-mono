@@ -81,7 +81,7 @@ internal sealed class OverlayBehavior<TViewModel> where TViewModel : class, INot
             return;
         }
 
-        var open = observed is not null && isOpen(observed);
+        bool open = observed is not null && isOpen(observed);
         if (open && !wasOpen)
         {
             opener = FocusedOutsideView();

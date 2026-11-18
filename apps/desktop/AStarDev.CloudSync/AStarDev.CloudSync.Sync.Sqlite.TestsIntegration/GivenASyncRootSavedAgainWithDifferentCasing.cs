@@ -22,7 +22,7 @@ public sealed class GivenASyncRootSavedAgainWithDifferentCasing
         _ = await SetRootAsync(database, OneDrive);
         await SeedBaselineAsync(database, 3);
 
-        var saved = await SetRootAsync(database, OneDriveLowerCase);
+        string saved = await SetRootAsync(database, OneDriveLowerCase);
 
         (saved, await StoredRootAsync(database), await BaselineCountAsync(database), recording.Calls.Count).ShouldBe((OneDriveLowerCase, OneDriveLowerCase, 3, 0));
     }
@@ -34,7 +34,7 @@ public sealed class GivenASyncRootSavedAgainWithDifferentCasing
         _ = await SetRootAsync(database, OneDrive);
         await SeedBaselineAsync(database, 3);
 
-        var saved = await SetRootAsync(database, OneDriveLowerCase);
+        string saved = await SetRootAsync(database, OneDriveLowerCase);
 
         (saved, await BaselineCountAsync(database)).ShouldBe((OneDriveLowerCase, 0));
         recording.Calls.ShouldBe([FirstAccount]);
@@ -47,7 +47,7 @@ public sealed class GivenASyncRootSavedAgainWithDifferentCasing
         _ = await SetRootAsync(database, OneDrive);
         await SeedBaselineAsync(database, 3);
 
-        var saved = await SetRootAsync(database, Elsewhere);
+        string saved = await SetRootAsync(database, Elsewhere);
 
         (saved, await BaselineCountAsync(database)).ShouldBe((Elsewhere, 0));
         recording.Calls.ShouldBe([FirstAccount]);

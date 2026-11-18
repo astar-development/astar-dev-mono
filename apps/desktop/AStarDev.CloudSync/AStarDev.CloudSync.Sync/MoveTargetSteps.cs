@@ -49,7 +49,7 @@ internal sealed class MoveTargetSteps(ResolutionTransfers transfers, IProviderCa
 
     private async Task<Result<Unit, ResolutionFailure>> RenameNamedAsync(ResolutionContext context, RelativeSyncPath path, RemoteItemSnapshot item, IReadOnlyCollection<string> names, CancellationToken cancellationToken)
     {
-        var newName = naming.NameNow(item.Name, names);
+        string newName = naming.NameNow(item.Name, names);
         var forgotten = await ForgetOtherAsync(context, path, item.Id, cancellationToken).ConfigureAwait(false);
 
         return await forgotten.BindAsync(_ => renamers.ForAccountAsync(context.AccountId, cancellationToken)

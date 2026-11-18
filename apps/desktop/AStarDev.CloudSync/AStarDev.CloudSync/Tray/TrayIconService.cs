@@ -58,7 +58,7 @@ internal sealed class TrayIconService(TrayMenuModel model, IMainWindowVisibility
 
     private WindowIcon IconFor(TrayIconState state)
     {
-        var file = IconFile(state);
+        string file = IconFile(state);
         if (!icons.TryGetValue(file, out var cached))
             icons[file] = cached = new WindowIcon(AssetLoader.Open(new Uri($"{IconFolder}{file}")));
 

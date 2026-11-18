@@ -135,7 +135,7 @@ public sealed class ClassificationReclassifier(IClassifiableFileSource fileSourc
         if (writable.Count == 0)
             return true;
 
-        var written = await store.ReplaceAutoLinksAsync(writable, cancellationToken).MatchAsync(_ => true, WriteFailed).ConfigureAwait(false);
+        bool written = await store.ReplaceAutoLinksAsync(writable, cancellationToken).MatchAsync(_ => true, WriteFailed).ConfigureAwait(false);
         if (written)
             state.CommitBatch(writable.Count);
 

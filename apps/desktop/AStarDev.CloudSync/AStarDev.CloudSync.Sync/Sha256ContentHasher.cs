@@ -21,7 +21,7 @@ public sealed class Sha256ContentHasher : IContentHasher
     private static async Task<string> ComputeAsync(IFileInfo file, CancellationToken cancellationToken)
     {
         await using var stream = file.OpenRead();
-        var hash = await SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false);
+        byte[] hash = await SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false);
 
         return Convert.ToHexStringLower(hash);
     }

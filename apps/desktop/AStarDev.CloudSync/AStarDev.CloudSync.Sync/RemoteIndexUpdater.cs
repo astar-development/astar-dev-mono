@@ -46,7 +46,7 @@ internal sealed class RemoteIndexUpdater(IProviderCapability<IRemoteChangeFeed> 
 
     private async Task<Result<RemoteUpdateSummary, ProviderError>> RunAsync(IRemoteChangeFeed feed, AccountId accountId, CancellationToken cancellationToken)
     {
-        var started = Stopwatch.GetTimestamp();
+        long started = Stopwatch.GetTimestamp();
         var cursor = (await indexReader.GetCursorAsync(accountId, cancellationToken).ConfigureAwait(false)).OrThrow();
         var running = (await indexReader.GetResyncPassAsync(accountId, cancellationToken).ConfigureAwait(false)).OrThrow();
         var run = new RemoteUpdateRun(accountId, cursor, running.Match(_ => Option.Some(ResyncKindFactory.CreateUnknown()), () => Option.None<ResyncKind>()));
@@ -68,8 +68,8 @@ internal sealed class RemoteIndexUpdater(IProviderCapability<IRemoteChangeFeed> 
 
         await FinishResyncAsync(run, cancellationToken).ConfigureAwait(false);
         var summary = run.ToSummary();
-        var elapsedMilliseconds = (long)Stopwatch.GetElapsedTime(started).TotalMilliseconds;
-        var message = $"The remote index was updated: {summary.PagesRead} pages, {summary.Changes.Added} added, {summary.Changes.Modified} modified, {summary.Changes.Moved} moved, {summary.Changes.Deleted} deleted, {elapsedMilliseconds} ms.";
+        long elapsedMilliseconds = (long)Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+        string message = $"The remote index was updated: {summary.PagesRead} pages, {summary.Changes.Added} added, {summary.Changes.Modified} modified, {summary.Changes.Moved} moved, {summary.Changes.Deleted} deleted, {elapsedMilliseconds} ms.";
         LogMessage.Information(logger, Location, message);
 
         return Succeeded(summary);

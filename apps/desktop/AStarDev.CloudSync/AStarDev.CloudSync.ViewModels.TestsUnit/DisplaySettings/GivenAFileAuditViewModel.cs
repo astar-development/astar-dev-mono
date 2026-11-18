@@ -250,7 +250,7 @@ public sealed class GivenAFileAuditViewModel
     {
         var viewModel = await ConfirmingAsync();
         await viewModel.ConfirmCommand.ExecuteAsync(null);
-        var first = viewModel.RunIndicators.Single();
+        object first = viewModel.RunIndicators.Single();
         viewModel.AuditCommand.Execute(null);
 
         await viewModel.ConfirmCommand.ExecuteAsync(null);

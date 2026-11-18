@@ -38,7 +38,7 @@ public sealed class GivenALinuxAutostartRegistration
     {
         var state = Of(await Create().EnableAsync(TestContext.Current.CancellationToken));
 
-        var entry = fileSystem.File.ReadAllText(EntryPath);
+        string entry = fileSystem.File.ReadAllText(EntryPath);
         state.ShouldBe(AutostartStateFactory.CreateEnabled());
         entry.ShouldContain("[Desktop Entry]");
         entry.ShouldContain("Type=Application");
@@ -109,7 +109,7 @@ public sealed class GivenALinuxAutostartRegistration
 
         var state = Of(await Create(Option.Some("/home/test/Apps/CloudSync.AppImage")).GetAsync(TestContext.Current.CancellationToken));
 
-        var entry = fileSystem.File.ReadAllText(EntryPath);
+        string entry = fileSystem.File.ReadAllText(EntryPath);
         state.ShouldBe(AutostartStateFactory.CreateEnabled());
         entry.ShouldContain("Exec=\"/home/test/Apps/CloudSync.AppImage\" --minimized");
         entry.ShouldNotContain(".mount_");

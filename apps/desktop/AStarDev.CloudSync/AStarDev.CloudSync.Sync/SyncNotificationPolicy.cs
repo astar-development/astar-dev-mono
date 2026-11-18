@@ -17,7 +17,7 @@ internal sealed class SyncNotificationPolicy : ISyncNotificationPolicy
         if (summary.HeldDeletions > 0)
             return Option.Some(SyncNotificationFactory.CreateDeletionsHeld(summary.HeldDeletions));
 
-        var files = summary.Download.Downloaded + summary.Download.DeletedLocally + summary.Upload.Uploaded + summary.Upload.Removed;
+        int files = summary.Download.Downloaded + summary.Download.DeletedLocally + summary.Upload.Uploaded + summary.Upload.Removed;
 
         return files > 0 ? Option.Some(SyncNotificationFactory.CreateSynced(files)) : Option.None<SyncNotification>();
     }

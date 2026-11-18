@@ -41,7 +41,7 @@ public sealed class GivenTheLocalisationScanners
     [Fact]
     public void when_a_log_message_or_a_key_is_assigned_then_the_scan_ignores_it()
     {
-        var source = """
+        string source = """
             [LoggerMessage(EventId = 5310, Level = LogLevel.Error, Message = "The add-account attempt failed unexpectedly.")]
             public string Name => localization.GetLocal("Provider.OneDrive");
             public const string Label = "dev";

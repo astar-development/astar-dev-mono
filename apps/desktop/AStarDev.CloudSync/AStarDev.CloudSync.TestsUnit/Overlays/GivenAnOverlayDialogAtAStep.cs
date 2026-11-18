@@ -32,7 +32,7 @@ public class GivenAnOverlayDialogAtAStep
         var window = Show(new AddAccountView(), dialog);
         var shown = dialog.ShowAsync(CancellationToken);
         Dispatcher.UIThread.RunJobs();
-        var signingIn = dialog.IsSigningIn;
+        bool signingIn = dialog.IsSigningIn;
 
         window.KeyPressQwerty(PhysicalKey.Escape, RawInputModifiers.None);
         await shown.WaitAsync(TimeSpan.FromSeconds(5), CancellationToken);
@@ -49,7 +49,7 @@ public class GivenAnOverlayDialogAtAStep
         var window = Show(new AddAccountView(), dialog);
         var shown = dialog.ShowAsync(CancellationToken);
         Dispatcher.UIThread.RunJobs();
-        var asking = dialog.IsAskingConsent;
+        bool asking = dialog.IsAskingConsent;
 
         window.KeyPressQwerty(PhysicalKey.Escape, RawInputModifiers.None);
         await shown.WaitAsync(TimeSpan.FromSeconds(5), CancellationToken);
@@ -71,7 +71,7 @@ public class GivenAnOverlayDialogAtAStep
         dialog.Roots.Single().ToggleCommand.Execute(null);
         await dialog.ApplyCommand.ExecuteAsync(null);
         Dispatcher.UIThread.RunJobs();
-        var confirming = dialog.IsConfirming;
+        bool confirming = dialog.IsConfirming;
 
         window.KeyPressQwerty(PhysicalKey.Escape, RawInputModifiers.None);
 
@@ -94,7 +94,7 @@ public class GivenAnOverlayDialogAtAStep
         _ = dialog.ChangeSyncFolderAsync(account, CancellationToken);
         await dialog.ChooseSyncFolderCommand.ExecuteAsync(null);
         Dispatcher.UIThread.RunJobs();
-        var confirming = dialog.IsConfirmingSyncFolderChange;
+        bool confirming = dialog.IsConfirmingSyncFolderChange;
 
         window.KeyPressQwerty(PhysicalKey.Escape, RawInputModifiers.None);
 

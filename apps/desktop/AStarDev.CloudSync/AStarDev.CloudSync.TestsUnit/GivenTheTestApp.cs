@@ -10,7 +10,7 @@ public class GivenTheTestApp
     {
         var application = Application.Current.ShouldNotBeNull();
 
-        var found = application.TryGetResource("CloudSyncAccentBrush", application.ActualThemeVariant, out var accentBrush);
+        bool found = application.TryGetResource("CloudSyncAccentBrush", application.ActualThemeVariant, out object? accentBrush);
 
         found.ShouldBeTrue();
         accentBrush.ShouldNotBeNull();

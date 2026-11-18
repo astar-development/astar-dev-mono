@@ -37,7 +37,7 @@ namespace AStarDev.ControlDb.Migrations
                 table: "PersonCategoryEntity",
                 column: "SearchConfigurationId");
 
-            foreach (var name in new[] { "Celebrities", "Models", "Pornstars", "Other Figures", "Actress" })
+            foreach (string name in new[] { "Celebrities", "Models", "Pornstars", "Other Figures", "Actress" })
             {
                 migrationBuilder.Sql($@"INSERT INTO ""PersonCategoryEntity"" (""Id"", ""SearchConfigurationId"", ""Name"", ""CreatedAt_Ticks"", ""UpdatedAt_Ticks"")
 SELECT randomblob(16), ""Id"", '{name}', 0, 0 FROM ""SearchConfigurations"";");
@@ -45,10 +45,7 @@ SELECT randomblob(16), ""Id"", '{name}', 0, 0 FROM ""SearchConfigurations"";");
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
+        protected override void Down(MigrationBuilder migrationBuilder) => migrationBuilder.DropTable(
                 name: "PersonCategoryEntity");
-        }
     }
 }

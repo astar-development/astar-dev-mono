@@ -63,7 +63,7 @@ public sealed class AccountLogLevelsViewModel : LocalizedObservableObject
 
     private async Task RebuildAsync(CancellationToken cancellationToken)
     {
-        var unreadable = false;
+        bool unreadable = false;
         var rows = new List<AccountLogLevelRowViewModel>();
         foreach (var account in overview.Accounts)
         {

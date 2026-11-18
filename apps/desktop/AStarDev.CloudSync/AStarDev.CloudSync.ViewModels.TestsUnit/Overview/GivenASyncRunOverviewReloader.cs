@@ -39,7 +39,7 @@ public class GivenASyncRunOverviewReloader
         _ = new SyncRunOverviewReloader(new FakeSyncActivitySource(), feed, overview, new ImmediateUiDispatcher(), time);
 
         feed.Raise(Personal, SyncProgressFactory.Create(SyncPhaseFactory.CreateDownloading(), 50, 100));
-        var before = source.Reads;
+        int before = source.Reads;
         time.Advance(TimeSpan.FromSeconds(2));
 
         (before, source.Reads).ShouldBe((0, 1));
@@ -54,7 +54,7 @@ public class GivenASyncRunOverviewReloader
         var overview = new SyncOverviewViewModel(source, TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
         _ = new SyncRunOverviewReloader(new FakeSyncActivitySource(), feed, overview, new ImmediateUiDispatcher(), time);
 
-        foreach (var percent in Enumerable.Range(1, 20))
+        foreach (int percent in Enumerable.Range(1, 20))
         {
             feed.Raise(Personal, SyncProgressFactory.Create(SyncPhaseFactory.CreateDownloading(), percent, 100));
             time.Advance(TimeSpan.FromMilliseconds(50));

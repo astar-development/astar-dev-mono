@@ -18,6 +18,7 @@
 
   <PropertyGroup>
         <PackageReleaseNotes>
+        v1.2.1 fix(sonar): pass CancellationToken and fix new-code issues (#1938)
         v1.2.0 feat(velopack,cloudsync): scheduled update check, deferral store and forced update (#1681)
         v1.1.0 feat(velopack,cloudsync): update apply gate, so an update waits for running syncs (#1679, #1680)
         v1.0.0 fix(logging)!: log exception type names only, remove exception-taking templates (#1371)

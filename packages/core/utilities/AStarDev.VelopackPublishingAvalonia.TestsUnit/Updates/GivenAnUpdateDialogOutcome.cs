@@ -28,7 +28,7 @@ public sealed class GivenAnUpdateDialogOutcome
     public void when_later_is_chosen_then_the_outcome_is_defer_and_the_dialog_closes()
     {
         using var viewModel = CreateFactory(Substitute.For<IVelopackUpdateService>()).Create(CreateUpdateInfo());
-        var closed = false;
+        bool closed = false;
         viewModel.CloseRequested += (_, _) => closed = true;
 
         viewModel.LaterCommand.Execute(null);

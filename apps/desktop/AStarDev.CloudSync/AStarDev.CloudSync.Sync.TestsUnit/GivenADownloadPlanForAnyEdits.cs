@@ -11,7 +11,7 @@ public sealed class GivenADownloadPlanForAnyEdits
     private static DownloadScenario ScenarioOf((int Remote, int Baseline, int Local)[] edits)
     {
         var scenario = new DownloadScenario().RemoteFolder("Docs", "docs");
-        for (var index = 0; index < Names.Length; index++)
+        for (int index = 0; index < Names.Length; index++)
             scenario = Apply(scenario, Names[index], $"id{index}", edits[index]);
 
         return scenario;

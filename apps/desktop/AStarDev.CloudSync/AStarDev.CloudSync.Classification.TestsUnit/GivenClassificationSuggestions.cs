@@ -268,7 +268,7 @@ public sealed class GivenClassificationSuggestions
     {
         var store = new SuggestionTermStore();
         var suggestions = Service([], store: store);
-        var variants = new[] { "lion", "Lion", "LION", " lion " };
+        string[] variants = new[] { "lion", "Lion", "LION", " lion " };
 
         await Task.WhenAll(Enumerable.Range(0, 20).Select(index => Task.Run(() => suggestions.PromoteAsync(variants[index % variants.Length], Colour, Token), Token)));
 

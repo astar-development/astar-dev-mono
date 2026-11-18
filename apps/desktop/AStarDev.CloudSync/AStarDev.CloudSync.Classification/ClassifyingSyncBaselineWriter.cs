@@ -43,9 +43,9 @@ public sealed class ClassifyingSyncBaselineWriter(ISyncBaselineWriter inner, IFi
 
     private async Task<Unit> ClassifyAsync(AccountId accountId, IReadOnlyList<SyncBaselineEntry> entries, CancellationToken cancellationToken)
     {
-        for (var attempt = 1; attempt < MaxAttempts; attempt++)
+        for (int attempt = 1; attempt < MaxAttempts; attempt++)
         {
-            var generation = vocabulary.Generation;
+            long generation = vocabulary.Generation;
             _ = await ClassifyOnceAsync(accountId, entries, cancellationToken).ConfigureAwait(false);
             if (vocabulary.Generation == generation)
                 return Unit.Instance;
@@ -76,7 +76,7 @@ public sealed class ClassifyingSyncBaselineWriter(ISyncBaselineWriter inner, IFi
     {
         var seen = new HashSet<RelativeSyncPath>();
         var paths = new List<RelativeSyncPath>();
-        for (var index = entries.Count - 1; index >= 0; index--)
+        for (int index = entries.Count - 1; index >= 0; index--)
             if (entries[index].Kind is SyncBaselineKind.File && seen.Add(entries[index].Path))
                 paths.Add(entries[index].Path);
 

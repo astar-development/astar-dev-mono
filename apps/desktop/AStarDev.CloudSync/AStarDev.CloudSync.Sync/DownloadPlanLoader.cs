@@ -64,7 +64,7 @@ internal sealed class DownloadPlanLoader(IRemoteIndexReader remoteIndex, ISyncBa
         List<RemoteIndexEntry> all = [];
         foreach (var child in children.Where(candidate => candidate.Kind is not RemoteItemKind.Deleted))
         {
-            var path = Join(parentPath, child.Name);
+            string path = Join(parentPath, child.Name);
             var valid = RelativeSyncPathFactory.Create(path).Match(Option.Some, _ => Option.None<RelativeSyncPath>());
             if (valid.Match(found => { all.Add(RemoteIndexEntryFactory.Create(found, child)); return false; }, () => true) || child.Kind is not RemoteItemKind.Folder)
                 continue;

@@ -26,7 +26,7 @@ public sealed class RecordingGraphHandler : HttpMessageHandler
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var body = request.Content is null ? [] : await request.Content.ReadAsByteArrayAsync(cancellationToken);
+        byte[] body = request.Content is null ? [] : await request.Content.ReadAsByteArrayAsync(cancellationToken);
         var headers = request.Headers.Concat(request.Content?.Headers ?? Enumerable.Empty<KeyValuePair<string, IEnumerable<string>>>()).ToDictionary(pair => pair.Key, pair => string.Join(',', pair.Value), StringComparer.OrdinalIgnoreCase);
         var recorded = new RecordedRequest(request.Method, request.RequestUri!, request.Headers.Authorization?.ToString(), headers, body.Length < 4096 ? Encoding.UTF8.GetString(body) : string.Empty, body.Length, request.Content?.Headers.ContentRange?.ToString());
         lock (gate)

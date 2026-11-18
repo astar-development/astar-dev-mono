@@ -34,8 +34,8 @@ public static class TimeSpanExtensions
 
     private static string FormatUnit(double value, string unit)
     {
-        var rounded = Math.Round(value, 2);
+        double rounded = Math.Round(value, 2);
 
-        return $"{rounded:0.##} {unit}{(rounded == 1 ? string.Empty : "s")}";
+        return $"{rounded:0.##} {unit}{(Math.Abs(rounded - 1) < 0.005 ? string.Empty : "s")}";
     }
 }

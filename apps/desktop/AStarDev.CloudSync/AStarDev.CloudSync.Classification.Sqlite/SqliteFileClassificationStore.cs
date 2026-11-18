@@ -86,8 +86,8 @@ internal sealed class SqliteFileClassificationStore(IDbContextFactory<Classifica
     /// <summary>Two statements per account, keys and rows passed as one JSON parameter each, so no SQLite parameter limit applies. The delete drops the automatic links of the batch's baseline paths; the insert skips rows that already exist, which after the delete are only user links. Paths not in the baseline are skipped by both.</summary>
     private static async Task ReplaceForAccountAsync(ClassificationDbContext dbContext, Guid accountId, IReadOnlyList<FileTermLinks> updates, CancellationToken cancellationToken)
     {
-        var keys = JsonSerializer.Serialize(updates.Select(update => Key(update.Path)).ToArray());
-        var rows = JsonSerializer.Serialize(updates.SelectMany(update => update.TermIds.Select(termId => new[] { Key(update.Path), update.Path.Value ?? string.Empty, GuidText(termId.Value) })).ToArray());
+        string keys = JsonSerializer.Serialize(updates.Select(update => Key(update.Path)).ToArray());
+        string rows = JsonSerializer.Serialize(updates.SelectMany(update => update.TermIds.Select(termId => new[] { Key(update.Path), update.Path.Value ?? string.Empty, GuidText(termId.Value) })).ToArray());
         _ = await dbContext.Database.ExecuteSqlAsync(
             $"""
             DELETE FROM "FileLinks"
@@ -113,7 +113,7 @@ internal sealed class SqliteFileClassificationStore(IDbContextFactory<Classifica
             return Result.Failure<Unit, ClassificationFailure>(ClassificationFailureFactory.CreateNotFound());
 
         var account = accountId.Value;
-        var key = Key(path);
+        string key = Key(path);
         if (!await InBaselineAsync(dbContext, account, key, cancellationToken).ConfigureAwait(false))
             return Result.Failure<Unit, ClassificationFailure>(ClassificationFailureFactory.CreateFileNotFound());
 
@@ -133,7 +133,7 @@ internal sealed class SqliteFileClassificationStore(IDbContextFactory<Classifica
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         var account = accountId.Value;
-        var key = Key(path);
+        string key = Key(path);
         var termIds = await dbContext.FileLinks.AsNoTracking().Where(link => link.AccountId == account && link.PathKey == key).Select(link => link.TermId).ToListAsync(cancellationToken).ConfigureAwait(false);
 
         return Result.Success<IReadOnlyList<TermId>, ClassificationFailure>([.. termIds.Select(TermIdFactory.Create)]);
@@ -155,7 +155,7 @@ internal sealed class SqliteFileClassificationStore(IDbContextFactory<Classifica
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
         var account = accountId.Value;
-        var key = Key(path);
+        string key = Key(path);
         _ = await dbContext.FileLinks.Where(link => link.AccountId == account && link.PathKey == key).ExecuteDeleteAsync(cancellationToken).ConfigureAwait(false);
 
         return Result.Success<Unit, ClassificationFailure>(Unit.Instance);

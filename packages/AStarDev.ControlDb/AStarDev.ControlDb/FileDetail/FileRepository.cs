@@ -10,11 +10,11 @@ internal sealed class FileRepository(ControlDbContext context, IQuery<FileEntity
 {
     /// <inheritdoc/>
     public Task<Exceptional<Option<FileEntity>>> TryFindAsync(FileId key, CancellationToken cancellationToken = default) =>
-        Try.RunAsync(async () => (Option<FileEntity>)await query.Apply(context.Files).FirstOrDefaultAsync(file => file.Id == key, cancellationToken).ConfigureAwait(false));
+        Try.RunAsync(async () => (Option<FileEntity>)await query.Apply(context.Files).FirstOrDefaultAsync(file => file.Id == key, cancellationToken).ConfigureAwait(false), cancellationToken);
 
     /// <inheritdoc/>
     public Task<Exceptional<Option<FileEntity>>> TryGetFirstAsync(CancellationToken cancellationToken = default)
-    => Try.RunAsync(async () => (Option<FileEntity>)await query.Apply(context.Files).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false));
+    => Try.RunAsync(async () => (Option<FileEntity>)await query.Apply(context.Files).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false), cancellationToken);
 
     /// <inheritdoc/>
     public Exceptional<FileEntity> Add(FileEntity aggregate) =>

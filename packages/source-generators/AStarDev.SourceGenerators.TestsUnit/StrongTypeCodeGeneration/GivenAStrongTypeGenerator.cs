@@ -467,7 +467,7 @@ public sealed class GivenAStrongTypeGenerator
         var result = RunGenerator(input);
 
         result.Diagnostics.ShouldContain(diagnostic => diagnostic.Id == "ASTARST001");
-        var generated = GeneratorRunHelpers.GeneratedSources(result).ShouldHaveSingleItem().SourceText.ToString();
+        string generated = GeneratorRunHelpers.GeneratedSources(result).ShouldHaveSingleItem().SourceText.ToString();
         generated.ShouldContain("TopLevelId");
         generated.ShouldNotContain("InnerId");
     }

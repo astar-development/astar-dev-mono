@@ -32,8 +32,8 @@ internal sealed class LocalDeletionFinder(ISyncBaselineReader baselineReader, IS
 
     private void Classify(SyncBaselineEntry entry, IDirectoryInfo root, IReadOnlyList<SelectionRule> rules, IReadOnlySet<string> blocked, ScanState state)
     {
-        var path = entry.Path.Value ?? string.Empty;
-        var folder = entry.Kind is SyncBaselineKind.Folder ? path : ParentOf(path);
+        string path = entry.Path.Value ?? string.Empty;
+        string folder = entry.Kind is SyncBaselineKind.Folder ? path : ParentOf(path);
         if (SyncSkipFilter.IsSkipped(entry.Path) || !LocalRelativePathFactory.Create(folder).Match(valid => evaluator.IsIncluded(valid, rules), _ => false))
             return;
 
@@ -49,7 +49,7 @@ internal sealed class LocalDeletionFinder(ISyncBaselineReader baselineReader, IS
 
     private static IEnumerable<string> Prefixes(string path)
     {
-        for (var cut = path.IndexOf(Separator); cut >= 0; cut = path.IndexOf(Separator, cut + 1))
+        for (int cut = path.IndexOf(Separator); cut >= 0; cut = path.IndexOf(Separator, cut + 1))
             yield return path[..cut];
 
         yield return path;
@@ -67,9 +67,9 @@ internal sealed class LocalDeletionFinder(ISyncBaselineReader baselineReader, IS
 
     private static bool IsPresent(IFileSystem fileSystem, string current, string[] segments, bool isFolder, Dictionary<string, Dictionary<string, string>> listings)
     {
-        foreach (var segment in segments)
+        foreach (string segment in segments)
         {
-            var exact = fileSystem.Path.Join(current, segment);
+            string exact = fileSystem.Path.Join(current, segment);
             if (fileSystem.Directory.Exists(exact) || fileSystem.File.Exists(exact))
             {
                 current = exact;
@@ -77,7 +77,7 @@ internal sealed class LocalDeletionFinder(ISyncBaselineReader baselineReader, IS
                 continue;
             }
 
-            if (!ListingOf(fileSystem, current, listings).TryGetValue(segment, out var match))
+            if (!ListingOf(fileSystem, current, listings).TryGetValue(segment, out string? match))
                 return false;
 
             current = fileSystem.Path.Join(current, match);
@@ -94,7 +94,7 @@ internal sealed class LocalDeletionFinder(ISyncBaselineReader baselineReader, IS
         var names = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         if (fileSystem.Directory.Exists(folder))
         {
-            foreach (var name in fileSystem.Directory.EnumerateFileSystemEntries(folder).Select(fileSystem.Path.GetFileName).OfType<string>())
+            foreach (string name in fileSystem.Directory.EnumerateFileSystemEntries(folder).Select(fileSystem.Path.GetFileName).OfType<string>())
                 _ = names.TryAdd(name, name);
         }
 

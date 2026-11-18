@@ -49,7 +49,7 @@ public sealed class GivenALocalTrash : IDisposable
 
         Outcome(result).ShouldBe("ok");
         fileSystem.File.Exists("/root/Docs/a.txt").ShouldBeFalse();
-        var trashed = TrashedFiles(fileSystem, "/root").ShouldHaveSingleItem();
+        string trashed = TrashedFiles(fileSystem, "/root").ShouldHaveSingleItem();
         trashed.ShouldEndWith("/Docs/a.txt");
         fileSystem.File.ReadAllText(trashed).ShouldBe("hello");
     }

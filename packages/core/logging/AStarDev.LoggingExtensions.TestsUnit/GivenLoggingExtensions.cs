@@ -26,7 +26,7 @@ public sealed class GivenLoggingExtensions
     public void when_add_o_tel_logging_is_called_with_a_connection_string_then_the_resource_carries_the_entry_assembly_version_without_build_metadata()
     {
         using var app = BuildWebApplicationWithConnectionString();
-        var expectedVersion = Assembly.GetEntryAssembly()!.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion.Split('+')[0];
+        string expectedVersion = Assembly.GetEntryAssembly()!.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion.Split('+')[0];
 
         ResourceAttribute(app.Services, "service.version").ShouldBe(expectedVersion);
     }

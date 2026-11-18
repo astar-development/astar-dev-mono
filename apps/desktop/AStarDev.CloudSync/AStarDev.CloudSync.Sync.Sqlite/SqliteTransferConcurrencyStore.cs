@@ -31,7 +31,7 @@ internal sealed class SqliteTransferConcurrencyStore(IDbContextFactory<SyncDbCon
     private async Task<TransferConcurrency> ReadAsync(AccountId accountId, CancellationToken cancellationToken)
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        var stored = await dbContext.TransferConcurrencies.AsNoTracking().Where(row => row.AccountId == accountId.Value).Select(row => (int?)row.MaxConcurrentTransfers).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+        int? stored = await dbContext.TransferConcurrencies.AsNoTracking().Where(row => row.AccountId == accountId.Value).Select(row => (int?)row.MaxConcurrentTransfers).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
 
         return stored is { } value ? TransferConcurrencyFactory.Create(value) : TransferConcurrencyFactory.CreateDefault();
     }
@@ -39,7 +39,7 @@ internal sealed class SqliteTransferConcurrencyStore(IDbContextFactory<SyncDbCon
     private async Task<Unit> SaveAsync(AccountId accountId, TransferConcurrency concurrency, CancellationToken cancellationToken)
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        var updated = await dbContext.TransferConcurrencies.Where(row => row.AccountId == accountId.Value).ExecuteUpdateAsync(setters => setters.SetProperty(row => row.MaxConcurrentTransfers, concurrency.Value), cancellationToken).ConfigureAwait(false);
+        int updated = await dbContext.TransferConcurrencies.Where(row => row.AccountId == accountId.Value).ExecuteUpdateAsync(setters => setters.SetProperty(row => row.MaxConcurrentTransfers, concurrency.Value), cancellationToken).ConfigureAwait(false);
         if (updated == 0)
         {
             _ = dbContext.TransferConcurrencies.Add(new TransferConcurrencyEntity { AccountId = accountId.Value, MaxConcurrentTransfers = concurrency.Value });

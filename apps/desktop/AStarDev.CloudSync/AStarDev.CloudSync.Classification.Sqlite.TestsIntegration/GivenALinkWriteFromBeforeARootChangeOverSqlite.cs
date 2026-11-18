@@ -108,7 +108,7 @@ public sealed class GivenALinkWriteFromBeforeARootChangeOverSqlite : MigratedDat
         await InBaselineAsync(changedAccount, "old.jpg");
         var red = await AddTermAsync("red");
 
-        var outcomes = await InParallelAsync(21, async index => index == 10
+        string[] outcomes = await InParallelAsync(21, async index => index == 10
             ? await SetRootAsync(changedAccount, SecondRoot)
             : (await Database.Links.ReplaceAutoLinksAsync(changedAccount, Path(index % 2 == 0 ? "old.jpg" : "OLD.jpg"), [red], CancellationToken)).Match(_ => "written", failure => failure.GetType().Name));
 

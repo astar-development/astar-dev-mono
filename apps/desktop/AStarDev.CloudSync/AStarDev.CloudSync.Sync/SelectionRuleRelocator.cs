@@ -34,7 +34,7 @@ internal sealed class SelectionRuleRelocator(IRemoteIndexReader indexReader, ISe
             moves.Add(FolderMoveFactory.Create(rule.Path, target));
         }
 
-        var dropped = RuleRelocations.Apply(rules, moves).Dropped;
+        int dropped = RuleRelocations.Apply(rules, moves).Dropped;
 
         if (moves.Count > 0)
             _ = (await ruleWriter.ApplyAsync(accountId, [SelectionChangeFactory.CreateRelocateFolders(moves)], cancellationToken).ConfigureAwait(false)).OrThrow();

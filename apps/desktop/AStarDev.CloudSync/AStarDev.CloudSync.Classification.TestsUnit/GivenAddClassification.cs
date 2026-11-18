@@ -28,7 +28,7 @@ public sealed class GivenAddClassification
         var vocabulary = provider.GetRequiredService<IClassificationVocabularyProvider>();
         await vocabulary.GetAsync(CancellationToken);
         await vocabulary.GetAsync(CancellationToken);
-        var cached = terms.GetAllCalls;
+        int cached = terms.GetAllCalls;
 
         await provider.GetRequiredService<ITermStore>().UpsertAsync(Term("blue", Colour), CancellationToken);
         await vocabulary.GetAsync(CancellationToken);
@@ -44,7 +44,7 @@ public sealed class GivenAddClassification
         var vocabulary = provider.GetRequiredService<IClassificationVocabularyProvider>();
         await vocabulary.GetAsync(CancellationToken);
         await vocabulary.GetAsync(CancellationToken);
-        var cached = categories.GetAllCalls;
+        int cached = categories.GetAllCalls;
 
         await provider.GetRequiredService<ICategoryStore>().UpsertAsync(ClassificationCategoryFactory.Create(Place, "Place"), CancellationToken);
         await vocabulary.GetAsync(CancellationToken);
@@ -80,7 +80,7 @@ public sealed class GivenAddClassification
     {
         var services = Persistence();
         services.AddClassification();
-        var count = services.Count;
+        int count = services.Count;
 
         var exception = Should.Throw<InvalidOperationException>(() => services.AddClassification());
 

@@ -13,7 +13,7 @@ public sealed class ScrapeConfigurationFileWriter(IFileSystem fileSystem) : IScr
 
     public async Task WriteAsync(ScrapeConfigurationImportDocument document, string filePath, CancellationToken cancellationToken = default)
     {
-        var partialPath = $"{filePath}{PartialFileExtension}";
+        string partialPath = $"{filePath}{PartialFileExtension}";
         try
         {
             await using (var stream = fileSystem.FileStream.New(partialPath, ownerOnlyOptions))

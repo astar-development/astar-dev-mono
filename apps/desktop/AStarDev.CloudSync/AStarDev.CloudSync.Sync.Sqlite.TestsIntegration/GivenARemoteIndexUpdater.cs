@@ -197,8 +197,8 @@ public sealed class GivenARemoteIndexUpdater : IAsyncLifetime
 
         var summary = await Updater.UpdateAsync(account, CancellationToken);
 
-        var gone = (await Database.IndexReader.GetAsync(account, Id("gone"), CancellationToken)).Match(found => found.Match(item => item.Kind is RemoteItemKind.Deleted, () => false), _ => false);
-        var pass = (await Database.IndexReader.GetResyncPassAsync(account, CancellationToken)).Match(found => found.Match(_ => true, () => false), _ => true);
+        bool gone = (await Database.IndexReader.GetAsync(account, Id("gone"), CancellationToken)).Match(found => found.Match(item => item.Kind is RemoteItemKind.Deleted, () => false), _ => false);
+        bool pass = (await Database.IndexReader.GetResyncPassAsync(account, CancellationToken)).Match(found => found.Match(_ => true, () => false), _ => true);
         (Describe(summary), string.Join(',', feed.Requested), gone, pass, await CursorOf()).ShouldBe(("0/0/0/1 pages=1 resync=ApplyDifferences rules=0/0", "none,c1,r1", true, false, "c2"));
     }
 
@@ -277,7 +277,7 @@ public sealed class GivenARemoteIndexUpdater : IAsyncLifetime
     [Fact]
     public async Task when_updates_for_one_account_run_at_once_then_only_one_reads_the_feed_at_a_time()
     {
-        foreach (var number in Enumerable.Range(0, 6))
+        foreach (int number in Enumerable.Range(0, 6))
             feed.Enqueue(Caught($"c{number}"));
         var start = new TaskCompletionSource();
         var pending = Enumerable.Range(0, 6).Select(_ => Task.Run(async () => await start.Task.ContinueWith(_ => Updater.UpdateAsync(account, CancellationToken), CancellationToken).Unwrap(), CancellationToken)).ToList();
@@ -296,7 +296,7 @@ public sealed class GivenARemoteIndexUpdater : IAsyncLifetime
 
         _ = await Updater.UpdateAsync(account, CancellationToken);
 
-        var everything = string.Join('\n', Database.Logs.Logger.Messages.Concat(Database.Logs.Logger.Scopes.SelectMany(scope => scope.Values.Select(value => value?.ToString() ?? string.Empty))));
+        string everything = string.Join('\n', Database.Logs.Logger.Messages.Concat(Database.Logs.Logger.Scopes.SelectMany(scope => scope.Values.Select(value => value?.ToString() ?? string.Empty))));
         (everything.Contains("Taxes", StringComparison.Ordinal), everything.Contains("secret-cursor", StringComparison.Ordinal), everything.Contains(account.Value.ToString(), StringComparison.OrdinalIgnoreCase), everything.Contains("pages", StringComparison.OrdinalIgnoreCase)).ShouldBe((false, false, false, true));
     }
 

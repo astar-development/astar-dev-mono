@@ -16,6 +16,13 @@ public static class ConfigurationTransferMessages
     /// <param name="outcome">Some(true) when a configuration was written, some(false) when there was none to export, none when the user did not pick a file.</param>
     /// <param name="apiKeys">Whether the file was asked to carry the API keys.</param>
     public static string ForExport(Option<bool> outcome, ApiKeyExport apiKeys) => outcome.Match(
-        exported => exported ? $"Scrape configuration exported {(apiKeys == ApiKeyExport.Include ? "including its API keys" : "without its API keys")}." : "No scrape configuration was found to export.",
+        exported => exported ? ExportedMessage(apiKeys) : "No scrape configuration was found to export.",
         () => "Scrape configuration export cancelled.");
+
+    private static string ExportedMessage(ApiKeyExport apiKeys)
+    {
+        string keys = apiKeys == ApiKeyExport.Include ? "including its API keys" : "without its API keys";
+
+        return $"Scrape configuration exported {keys}.";
+    }
 }

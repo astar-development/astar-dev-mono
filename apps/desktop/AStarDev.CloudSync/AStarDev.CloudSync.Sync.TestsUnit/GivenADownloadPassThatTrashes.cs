@@ -82,7 +82,7 @@ public sealed class GivenADownloadPassThatTrashes
         var now = fixture.Time.GetUtcNow();
         fixture.FileSystem.Directory.CreateDirectory($"{Trash}/{Stamp(now.AddDays(-10))}-aaaa");
         _ = await fixture.RunAsync(CancellationToken);
-        var keptAtThirtyDays = fixture.FileSystem.Directory.GetDirectories(Trash).Length;
+        int keptAtThirtyDays = fixture.FileSystem.Directory.GetDirectories(Trash).Length;
 
         _ = await fixture.TrashRetention.SetAsync(LocalTrashOptionsFactory.CreateFromDays(7), CancellationToken);
         _ = await fixture.RunAsync(CancellationToken);

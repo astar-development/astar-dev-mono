@@ -50,7 +50,7 @@ public sealed class GivenAnAccountAddAttemptLog : IDisposable
         var values = logs.Logger.ValuesOf("AuthSucceeded");
         values["DurationMs"].ShouldBe(2000d);
         values["Scopes"].ShouldBe("User.Read Files.ReadWrite.All");
-        var keyHash = values["AccountKeyHash"].ShouldBeOfType<string>();
+        string keyHash = values["AccountKeyHash"].ShouldBeOfType<string>();
         keyHash.Length.ShouldBe(16);
         keyHash.ShouldAllBe(character => Uri.IsHexDigit(character));
         TestSignIns.AccountKey.ShouldNotContain(keyHash);

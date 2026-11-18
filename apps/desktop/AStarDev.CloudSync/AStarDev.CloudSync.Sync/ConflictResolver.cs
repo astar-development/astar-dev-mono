@@ -48,7 +48,7 @@ internal sealed class ConflictResolver(IAccountSyncLock syncLock, ISyncAttention
             await ResolvePathAsync(accountId, selected.First(conflict => conflict.Path == path), [.. open.Where(conflict => conflict.Path == path)], strategy, tally, cancellationToken).ConfigureAwait(false);
 
         var summary = ResolutionSummaryFactory.Create(tally.Resolved, tally.Failed, tally.Skipped);
-        var message = $"Conflict resolution finished: {summary.Resolved} resolved, {summary.Failed.Count} failed, {summary.Skipped} skipped.";
+        string message = $"Conflict resolution finished: {summary.Resolved} resolved, {summary.Failed.Count} failed, {summary.Skipped} skipped.";
         LogMessage.Information(logger, Location, message);
 
         return Result.Success<ResolutionSummary, ConflictRefusal>(summary);

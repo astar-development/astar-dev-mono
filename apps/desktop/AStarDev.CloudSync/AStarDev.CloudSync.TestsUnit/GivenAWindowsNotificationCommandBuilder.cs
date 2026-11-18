@@ -42,7 +42,7 @@ public sealed class GivenAWindowsNotificationCommandBuilder
     [Fact]
     public void when_the_script_is_read_then_it_takes_the_text_from_the_environment_as_text_nodes()
     {
-        var script = WindowsNotificationCommandBuilder.Script;
+        string script = WindowsNotificationCommandBuilder.Script;
 
         (script.Contains($"$env:{WindowsNotificationCommandBuilder.TitleVariable}", StringComparison.Ordinal), script.Contains($"$env:{WindowsNotificationCommandBuilder.BodyVariable}", StringComparison.Ordinal), script.Contains("CreateTextNode", StringComparison.Ordinal)).ShouldBe((true, true, true));
     }

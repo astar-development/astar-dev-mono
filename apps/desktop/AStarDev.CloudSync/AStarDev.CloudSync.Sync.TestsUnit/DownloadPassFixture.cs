@@ -119,7 +119,7 @@ public sealed class DownloadPassFixture : IDisposable
 
     public IFileInfo Write(string relative, string content)
     {
-        var full = $"{Root}/{relative}";
+        string full = $"{Root}/{relative}";
         _ = FileSystem.Directory.CreateDirectory(FileSystem.Path.GetDirectoryName(full)!);
         FileSystem.File.WriteAllText(full, content);
         FileSystem.File.SetLastWriteTimeUtc(full, Start.AddMinutes(-10).UtcDateTime);

@@ -35,7 +35,7 @@ public sealed class GivenAnAccountPauseStore : IAsyncLifetime
     [Fact]
     public async Task when_an_active_account_is_toggled_then_it_is_paused_and_listed()
     {
-        var state = await ToggleAsync(FirstAccount);
+        object state = await ToggleAsync(FirstAccount);
 
         state.ShouldBe(PauseStateFactory.CreatePaused());
         (await PausedAsync()).ShouldBe([FirstAccount]);
@@ -46,7 +46,7 @@ public sealed class GivenAnAccountPauseStore : IAsyncLifetime
     {
         _ = await ToggleAsync(FirstAccount);
 
-        var state = await ToggleAsync(FirstAccount);
+        object state = await ToggleAsync(FirstAccount);
 
         state.ShouldBe(PauseStateFactory.CreateActive());
         (await PausedAsync()).ShouldBeEmpty();
@@ -57,7 +57,7 @@ public sealed class GivenAnAccountPauseStore : IAsyncLifetime
     {
         _ = await ToggleAsync(FirstAccount);
 
-        var state = await ToggleAsync(SecondAccount);
+        object state = await ToggleAsync(SecondAccount);
 
         state.ShouldBe(PauseStateFactory.CreatePaused());
         (await PausedAsync()).ShouldBe([FirstAccount, SecondAccount], ignoreOrder: true);
@@ -88,7 +88,7 @@ public sealed class GivenAnAccountPauseStore : IAsyncLifetime
     {
         var racing = Enumerable.Range(0, 20).Select(_ => Task.Run(() => ToggleAsync(FirstAccount), CancellationToken));
 
-        var outcomes = await Task.WhenAll(racing);
+        object[] outcomes = await Task.WhenAll(racing);
 
         outcomes.ShouldAllBe(outcome => outcome is PauseState);
         (await PausedAsync()).ShouldBeEmpty();

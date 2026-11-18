@@ -9,11 +9,11 @@ internal sealed class TagRepository(ControlDbContext context) : IRepository<TagE
 {
     /// <inheritdoc/>
     public Task<Exceptional<Option<TagEntity>>> TryFindAsync(TagId key, CancellationToken cancellationToken = default) =>
-        Try.RunAsync(async () => (Option<TagEntity>)await context.Tags.FirstOrDefaultAsync(tag => tag.Id == key, cancellationToken).ConfigureAwait(false));
+        Try.RunAsync(async () => (Option<TagEntity>)await context.Tags.FirstOrDefaultAsync(tag => tag.Id == key, cancellationToken).ConfigureAwait(false), cancellationToken);
 
     /// <inheritdoc/>
     public Task<Exceptional<Option<TagEntity>>> TryGetFirstAsync(CancellationToken cancellationToken = default)
-    => Try.RunAsync(async () => (Option<TagEntity>)await context.Tags.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false));
+    => Try.RunAsync(async () => (Option<TagEntity>)await context.Tags.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false), cancellationToken);
 
     /// <inheritdoc/>
     public Exceptional<TagEntity> Add(TagEntity aggregate) =>

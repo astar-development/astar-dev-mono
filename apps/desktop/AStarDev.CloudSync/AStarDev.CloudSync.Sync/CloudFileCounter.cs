@@ -55,13 +55,13 @@ internal sealed class CloudFileCounter(ISyncSelectionEvaluator evaluator, ILogge
 
     private bool IsCounted(string folder, string name, IReadOnlyList<SelectionRule> rules, Dictionary<string, bool> included)
     {
-        if (!included.TryGetValue(folder, out var folderIncluded))
+        if (!included.TryGetValue(folder, out bool folderIncluded))
         {
             folderIncluded = LocalRelativePathFactory.Create(folder).Match(path => evaluator.IsIncluded(path, rules), _ => false);
             included[folder] = folderIncluded;
         }
 
-        var full = folder.Length == 0 ? name : $"{folder}{Separator}{name}";
+        string full = folder.Length == 0 ? name : $"{folder}{Separator}{name}";
 
         return folderIncluded && RelativeSyncPathFactory.Create(full).Match(path => !SyncSkipFilter.IsSkipped(path), _ => false);
     }

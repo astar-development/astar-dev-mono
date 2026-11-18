@@ -52,7 +52,7 @@ internal sealed class SqliteSyncRunJournal(IDbContextFactory<SyncDbContext> dbCo
 
     private static async Task PruneAsync(SyncDbContext dbContext, Guid accountId, CancellationToken cancellationToken)
     {
-        var oldestKept = await dbContext.SyncRuns
+        long? oldestKept = await dbContext.SyncRuns
             .Where(run => run.AccountId == accountId)
             .OrderByDescending(run => run.StartedAtUtcTicks)
             .Skip(SyncRunJournalLimits.RunsPerAccount - 1)
@@ -63,7 +63,7 @@ internal sealed class SqliteSyncRunJournal(IDbContextFactory<SyncDbContext> dbCo
         if (oldestKept is not { } ticks)
             return;
 
-        var completed = nameof(SyncRunOutcome.Completed);
+        string completed = nameof(SyncRunOutcome.Completed);
         var lastCompleted = await dbContext.SyncRuns
             .Where(run => run.AccountId == accountId && run.Outcome == completed)
             .OrderByDescending(run => run.FinishedAtUtcTicks)
@@ -113,8 +113,8 @@ internal sealed class SqliteSyncRunJournal(IDbContextFactory<SyncDbContext> dbCo
     private async Task<Option<DateTimeOffset>> ReadLastSyncAsync(AccountId accountId, CancellationToken cancellationToken)
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        var completed = nameof(SyncRunOutcome.Completed);
-        var ticks = await dbContext.SyncRuns.AsNoTracking()
+        string completed = nameof(SyncRunOutcome.Completed);
+        long? ticks = await dbContext.SyncRuns.AsNoTracking()
             .Where(run => run.AccountId == accountId.Value && run.Outcome == completed)
             .OrderByDescending(run => run.FinishedAtUtcTicks)
             .Select(run => run.FinishedAtUtcTicks)

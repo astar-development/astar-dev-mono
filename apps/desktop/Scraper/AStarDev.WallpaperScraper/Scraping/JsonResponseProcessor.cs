@@ -17,7 +17,7 @@ public sealed class JsonResponseProcessor : IJsonResponseProcessor
             using var response = await client.SendAsync(request, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
-                var responseBody = await ReadErrorBodyAsync(response.Content, cancellationToken);
+                string responseBody = await ReadErrorBodyAsync(response.Content, cancellationToken);
 
                 throw new HttpRequestException(
                     $"Wallhaven returned {(int)response.StatusCode} ({response.StatusCode}) for {url}. " +
@@ -38,11 +38,11 @@ public sealed class JsonResponseProcessor : IJsonResponseProcessor
     {
         await using var stream = await content.ReadAsStreamAsync(cancellationToken);
         using var reader = new StreamReader(stream);
-        var buffer = new char[MaximumErrorBodyLength + 1];
-        var read = await reader.ReadBlockAsync(buffer.AsMemory(), cancellationToken);
+        char[] buffer = new char[MaximumErrorBodyLength + 1];
+        int read = await reader.ReadBlockAsync(buffer.AsMemory(), cancellationToken);
         if (read <= MaximumErrorBodyLength) return new string(buffer, 0, read);
 
-        var length = char.IsHighSurrogate(buffer[MaximumErrorBodyLength - 1]) ? MaximumErrorBodyLength - 1 : MaximumErrorBodyLength;
+        int length = char.IsHighSurrogate(buffer[MaximumErrorBodyLength - 1]) ? MaximumErrorBodyLength - 1 : MaximumErrorBodyLength;
 
         return $"{new string(buffer, 0, length)}…";
     }

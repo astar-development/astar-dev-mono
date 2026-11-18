@@ -54,7 +54,7 @@ public sealed class GivenAFileClassifier
         var terms = new CountingTermStore { Terms = new Ok<IReadOnlyList<ClassificationTerm>, ClassificationFailure>([Term("red", Colour)]) };
         var classifier = new FileClassifier(Signals, new ClassificationVocabularyProvider(terms, new CountingCategoryStore()));
 
-        for (var file = 0; file < 10; file++)
+        for (int file = 0; file < 10; file++)
         {
             await classifier.ClassifyAsync(PathOf($"red{file}.jpg"), TestContext.Current.CancellationToken);
         }

@@ -27,7 +27,7 @@ public sealed class PagesProcessor(IWallpaperIngestionContextFactory contextFact
     private async Task<FetchedPage> ResolveStartPageAsync(IngestionRun run)
     {
         var previousProgress = run.Request.PreviousProgress;
-        var resumePage = resumePolicy.ResumePage(previousProgress);
+        int resumePage = resumePolicy.ResumePage(previousProgress);
         var fetched = await FetchPageAsync(run, resumePage);
         if (resumePage > 1 && !ScrapeResumePolicy.IsSameCategoryAsPreviousScrape(previousProgress, fetched.Response.Meta)) fetched = await FetchPageAsync(run, 1);
 
@@ -39,7 +39,7 @@ public sealed class PagesProcessor(IWallpaperIngestionContextFactory contextFact
     {
         var current = startPage;
         run.Tally.RecordSkipped((startPage.Number - 1) * startPage.Response.Data.Count);
-        var progressWithheld = false;
+        bool progressWithheld = false;
         while (true)
         {
             var outcome = await ingestionStep.IngestPageAsync(run, current, !progressWithheld);

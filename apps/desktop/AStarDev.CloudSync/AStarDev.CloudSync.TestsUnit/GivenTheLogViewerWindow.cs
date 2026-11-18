@@ -73,7 +73,7 @@ public sealed class GivenTheLogViewerWindow
         window.UpdateLayout();
         var visited = new List<string>();
 
-        for (var press = 0; press < 6; press++)
+        for (int press = 0; press < 6; press++)
         {
             window.KeyPressQwerty(PhysicalKey.Tab, RawInputModifiers.None);
             visited.Add(window.FocusManager?.GetFocusedElement()?.GetType().Name ?? "none");
@@ -125,7 +125,7 @@ public sealed class GivenTheLogViewerWindow
         public async IAsyncEnumerable<LogLine> ReadAsync(LogQuery query, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             await Task.Yield();
-            for (var index = 0; index < count; index++)
+            for (int index = 0; index < count; index++)
                 yield return LogLineFactory.Create(DateTimeOffset.UnixEpoch.AddSeconds(index), LogLevel.Information, Option.None<string>(), "Cat", $"line {index}");
         }
     }

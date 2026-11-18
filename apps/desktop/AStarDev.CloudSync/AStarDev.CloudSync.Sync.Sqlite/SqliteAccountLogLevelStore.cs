@@ -37,7 +37,7 @@ internal sealed class SqliteAccountLogLevelStore(IDbContextFactory<SyncDbContext
     private async Task<AccountLogLevel> ReadAsync(AccountId accountId, CancellationToken cancellationToken)
     {
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        var stored = await dbContext.AccountLogLevels.AsNoTracking().Where(row => row.AccountId == accountId.Value).Select(row => (bool?)row.Verbose).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+        bool? stored = await dbContext.AccountLogLevels.AsNoTracking().Where(row => row.AccountId == accountId.Value).Select(row => (bool?)row.Verbose).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
 
         return stored is true ? AccountLogLevelFactory.CreateVerbose() : AccountLogLevelFactory.CreateStandard();
     }
@@ -52,9 +52,9 @@ internal sealed class SqliteAccountLogLevelStore(IDbContextFactory<SyncDbContext
 
     private async Task<Unit> SaveAsync(AccountId accountId, AccountLogLevel level, CancellationToken cancellationToken)
     {
-        var verbose = level is AccountLogLevel.Verbose;
+        bool verbose = level is AccountLogLevel.Verbose;
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
-        var updated = await dbContext.AccountLogLevels.Where(row => row.AccountId == accountId.Value).ExecuteUpdateAsync(setters => setters.SetProperty(row => row.Verbose, verbose), cancellationToken).ConfigureAwait(false);
+        int updated = await dbContext.AccountLogLevels.Where(row => row.AccountId == accountId.Value).ExecuteUpdateAsync(setters => setters.SetProperty(row => row.Verbose, verbose), cancellationToken).ConfigureAwait(false);
         if (updated == 0)
         {
             _ = dbContext.AccountLogLevels.Add(new AccountLogLevelEntity { AccountId = accountId.Value, Verbose = verbose });

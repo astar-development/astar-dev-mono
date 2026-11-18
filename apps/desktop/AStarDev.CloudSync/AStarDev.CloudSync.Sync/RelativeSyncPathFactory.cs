@@ -13,8 +13,8 @@ public static class RelativeSyncPathFactory
     /// <returns>The path, or an error when it is empty or contains a <c>.</c> or <c>..</c> segment.</returns>
     public static Result<RelativeSyncPath, ErrorResponse> Create(string? value)
     {
-        var trimmed = (value ?? string.Empty).Trim().Replace('\\', Separator).Trim(Separator);
-        var normalised = UnicodeText.Compose(trimmed);
+        string trimmed = (value ?? string.Empty).Trim().Replace('\\', Separator).Trim(Separator);
+        string normalised = UnicodeText.Compose(trimmed);
 
         return normalised.Length == 0 || normalised.Split(Separator).Any(IsInvalidSegment)
             ? new Fail<RelativeSyncPath, ErrorResponse>(new ErrorResponse(InvalidPathError))

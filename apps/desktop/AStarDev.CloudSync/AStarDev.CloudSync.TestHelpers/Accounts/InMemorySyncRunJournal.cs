@@ -57,7 +57,7 @@ public sealed class InMemorySyncRunJournal(TimeProvider? timeProvider = null) : 
 
         lock (gate)
         {
-            var index = runs.FindIndex(run => run.Id == runId && run.Outcome is Option<SyncRunOutcome>.None);
+            int index = runs.FindIndex(run => run.Id == runId && run.Outcome is Option<SyncRunOutcome>.None);
             if (index >= 0)
                 runs[index] = runs[index] with { Finished = Option.Some(clock.GetUtcNow()), Outcome = Option.Some(outcome) };
         }

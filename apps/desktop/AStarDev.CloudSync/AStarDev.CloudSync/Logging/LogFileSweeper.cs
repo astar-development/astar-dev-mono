@@ -28,18 +28,18 @@ public sealed class LogFileSweeper(TimeProvider timeProvider)
     /// <param name="fileNamePrefix">The prefix of the app's log file names.</param>
     /// <param name="maxTotalBytes">The most the log files may take up together.</param>
     /// <returns>How many files were deleted.</returns>
-    public static int DeleteBeyondTotalSize(IDirectoryInfo folder, string fileNamePrefix, long maxTotalBytes) 
+    public static int DeleteBeyondTotalSize(IDirectoryInfo folder, string fileNamePrefix, long maxTotalBytes)
     {
         folder.Refresh();
         if (!folder.Exists)
             return 0;
 
         var files = folder.EnumerateFiles($"{fileNamePrefix}-*.log").OrderBy(file => file.LastWriteTimeUtc).ThenBy(file => file.Name, StringComparer.Ordinal).ToList();
-        var total = files.Sum(file => file.Length);
-        var deleted = 0;
+        long total = files.Sum(file => file.Length);
+        int deleted = 0;
         foreach (var file in files.TakeWhile(_ => total > maxTotalBytes))
         {
-            var size = file.Length;
+            long size = file.Length;
             if (!DeleteQuietly(file))
                 continue;
 

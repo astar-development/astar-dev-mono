@@ -32,8 +32,8 @@ public sealed class ImageDownloader(IFileSystem fileSystem, TimeProvider timePro
         using Stream downloadStream = await response.Content.ReadAsStreamAsync(cancellationToken);
 
         _ = fileSystem.Directory.CreateDirectory(request.Directory);
-        var savedPath = fileSystem.Path.Combine(request.Directory, request.FileName.Value);
-        var partialPath = $"{savedPath}{PartialFileExtension}";
+        string savedPath = fileSystem.Path.Combine(request.Directory, request.FileName.Value);
+        string partialPath = $"{savedPath}{PartialFileExtension}";
         try
         {
             using var bodyTimeout = new CancellationTokenSource(timeouts.ImageBody, timeProvider);
@@ -61,7 +61,7 @@ public sealed class ImageDownloader(IFileSystem fileSystem, TimeProvider timePro
         var heartbeat = ReportProgressPeriodicallyAsync(() => Interlocked.Read(ref received), wallpaper, progress, heartbeatStop.Token);
         try
         {
-            var buffer = new byte[BufferSize];
+            byte[] buffer = new byte[BufferSize];
             int read;
             while ((read = await source.ReadAsync(buffer, cancellationToken)) > 0)
             {
@@ -83,7 +83,7 @@ public sealed class ImageDownloader(IFileSystem fileSystem, TimeProvider timePro
         {
             while (await timer.WaitForNextTickAsync(cancellationToken))
             {
-                var total = wallpaper.FileSize > 0 ? $" of {wallpaper.FileSize / 1024} KB" : string.Empty;
+                string total = wallpaper.FileSize > 0 ? $" of {wallpaper.FileSize / 1024} KB" : string.Empty;
                 progress.Report($"Still downloading wallpaper {wallpaper.Id} - {bytesReceived() / 1024} KB{total} received so far.");
             }
         }

@@ -26,19 +26,19 @@ public class TagsQuery(ControlDbContext context) : ITagsQuery
             => Try.RunAsync<IReadOnlyList<TagEntity>>(async () => await context.Tags
                             .Where(tag => wallhavenTagIds.Contains(tag.WallhavenTagId))
                             .ToListAsync(cancellationToken)
-                            .ConfigureAwait(false));
+                            .ConfigureAwait(false), cancellationToken);
 
     public Task<Exceptional<IReadOnlyList<TagEntity>>> ListAsync(CancellationToken cancellationToken = default)
             => Try.RunAsync<IReadOnlyList<TagEntity>>(async () => await context.Tags
                             .AsNoTracking()
                             .OrderBy(tag => tag.Name)
                             .ToListAsync(cancellationToken)
-                            .ConfigureAwait(false));
+                            .ConfigureAwait(false), cancellationToken);
 
     public Task<Exceptional<IReadOnlyList<TagFlagProjection>>> GetFlagsAsync(CancellationToken cancellationToken = default)
             => Try.RunAsync<IReadOnlyList<TagFlagProjection>>(async () => await context.Tags
                             .AsNoTracking()
                             .Select(tag => new TagFlagProjection(tag.WallhavenTagId, tag.IgnoreImage, tag.IsName, tag.IsFamous))
                             .ToListAsync(cancellationToken)
-                            .ConfigureAwait(false));
+                            .ConfigureAwait(false), cancellationToken);
 }

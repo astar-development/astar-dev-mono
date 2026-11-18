@@ -50,7 +50,7 @@ public sealed class StatusMessageLog(int maximumMessages)
             }
 
             isTextStale = true;
-            var refreshRequired = !isRefreshPending;
+            bool refreshRequired = !isRefreshPending;
             isRefreshPending = true;
 
             return refreshRequired;

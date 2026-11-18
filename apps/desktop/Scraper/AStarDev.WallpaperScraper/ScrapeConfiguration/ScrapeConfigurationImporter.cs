@@ -12,22 +12,19 @@ namespace AStarDev.WallpaperScraper.ScrapeConfiguration;
 public sealed class ScrapeConfigurationImporter(IScopedRunner scopedRunner, TimeProvider timeProvider) : IScrapeConfigurationImporter
 {
     /// <inheritdoc/>
-    public async Task<Exceptional<Unit>> ImportScrapeConfigurationAsync(ScrapeConfigurationImportDocument document, CancellationToken cancellationToken = default)
-    {
-        return await scopedRunner.RunAsync<IUnitOfWork, Exceptional<Unit>>(unitOfWork => Try.RunAsync(async () =>
-        {
-            var dbContext = unitOfWork.GetRepository<ScrapeConfigurationEntity, ScrapeConfigurationId>();
+    public async Task<Exceptional<Unit>> ImportScrapeConfigurationAsync(ScrapeConfigurationImportDocument document, CancellationToken cancellationToken = default) => await scopedRunner.RunAsync<IUnitOfWork, Exceptional<Unit>>(unitOfWork => Try.RunAsync(async () =>
+                                                                                                                                                                           {
+                                                                                                                                                                               var dbContext = unitOfWork.GetRepository<ScrapeConfigurationEntity, ScrapeConfigurationId>();
 
-            // Map first: an unmappable document must not cost the user their current configuration.
-            var replacement = document.ToEntity(timeProvider.GetUtcNow());
-            var current = (await dbContext.TryGetFirstAsync(cancellationToken)).GetOrThrow();
+                                                                                                                                                                               // Map first: an unmappable document must not cost the user their current configuration.
+                                                                                                                                                                               var replacement = document.ToEntity(timeProvider.GetUtcNow());
+                                                                                                                                                                               var current = (await dbContext.TryGetFirstAsync(cancellationToken)).GetOrThrow();
 
-            // Exports leave the API keys out by default, so a file without them must not blank the keys already stored.
-            _ = current.Match(existing => KeepStoredApiKeysWhereFileHasNone(replacement, existing), () => Unit.Instance);
+                                                                                                                                                                               // Exports leave the API keys out by default, so a file without them must not blank the keys already stored.
+                                                                                                                                                                               _ = current.Match(existing => KeepStoredApiKeysWhereFileHasNone(replacement, existing), () => Unit.Instance);
 
-            return await ReplaceAsync(new ImportTransaction(unitOfWork, dbContext, cancellationToken), current, replacement);
-        }));
-    }
+                                                                                                                                                                               return await ReplaceAsync(new ImportTransaction(unitOfWork, dbContext, cancellationToken), current, replacement);
+                                                                                                                                                                           }, cancellationToken));
 
     // Delete and add commit together, so a failure while saving the replacement leaves the current configuration in place.
     private static Task<Unit> ReplaceAsync(ImportTransaction transaction, Option<ScrapeConfigurationEntity> current, ScrapeConfigurationEntity replacement)
