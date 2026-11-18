@@ -23,6 +23,8 @@ on:
       - '.github/workflows/sonarcloud.yml'
   # No paths filter: "Build and analyze" is a required check, and a required
   # check that a filter skips never reports, which blocks the PR forever.
+  # The `changes` job skips the build via a job-level `if` instead: a job
+  # skipped that way reports as skipped, which satisfies the required check.
   pull_request:
     branches:
       - main
@@ -43,8 +45,39 @@ env:
   SONAR_ORG: 'astar-development'
 
 jobs:
+  changes:
+    name: Detect code changes
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Keep this pattern in step with the push `paths:` list above.
+      # Non-PR events always analyze (the push trigger is already path-filtered).
+      - name: Filter changed paths
+        id: filter
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          PATTERN='^(apps|packages|tests)/.*\.(cs|csproj|axaml|razor)$|^(Directory\.Build\.props|Directory\.Build\.targets|Directory\.Packages\.props|global\.json|NuGet\.Config)$|^[^/]*\.slnx$|^\.github/workflows/sonarcloud\.yml$|^\.github/scripts/'
+          if [ "$EVENT_NAME" != "pull_request" ] || git diff --name-only "$BASE_SHA" HEAD | grep -Eq "$PATTERN"; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "code=false" >> "$GITHUB_OUTPUT"
+            echo "No code changes - skipping analysis"
+          fi
+
   build-and-analyze:
     name: Build and analyze
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
 
     steps:
