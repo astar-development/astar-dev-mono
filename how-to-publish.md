@@ -33,6 +33,18 @@ AStarDev.SourceGeneratorAttributes/v1.0.0
 AStar.Dev.SomePackage/v2.1.0-beta.1     # prerelease: hyphen suffix
 ```
 
+Or use the helper script, which validates the package name against
+`packages/**/{PackageName}.csproj` and the version format before creating and pushing the tag:
+
+```bash
+./publish-tag.sh AStarDev.Utilities 0.1.0
+```
+
+- Pass the package name only. A trailing `.csproj` and a leading `v` on the version are stripped.
+- It refuses to continue if the tag already exists locally or on `origin`. Add `--replace` to
+  delete the existing local and remote tag and recreate it:
+  `./publish-tag.sh AStarDev.Utilities 0.1.0 --replace`.
+
 What happens: `nuget-publish.yml` extracts package name + version from the tag, locates
 `packages/**/{PackageName}.csproj`, restores/builds/tests (if a matching
 `{PackageName}.TestsUnit` project exists), packs, then pushes to GitHub Packages and
