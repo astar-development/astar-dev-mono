@@ -34,10 +34,7 @@ public abstract record FolderSelectionStep
     /// <summary>Asking the user to confirm that already synced folders stop syncing.</summary>
     public sealed record ConfirmingUntick : FolderSelectionStep
     {
-        internal ConfirmingUntick(int count)
-        {
-            Count = count;
-        }
+        internal ConfirmingUntick(int count) => Count = count;
 
         /// <summary>How many already synced folders are being unticked.</summary>
         public int Count { get; }

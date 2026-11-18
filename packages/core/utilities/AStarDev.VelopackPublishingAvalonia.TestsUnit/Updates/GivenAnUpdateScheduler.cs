@@ -1,8 +1,8 @@
+using System.Threading.Channels;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Time.Testing;
-using System.Threading.Channels;
 using Velopack;
 
 namespace AStar.Dev.Velopack.Publishing.Avalonia.TestsUnit.Updates;

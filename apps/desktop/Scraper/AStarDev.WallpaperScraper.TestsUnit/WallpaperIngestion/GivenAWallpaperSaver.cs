@@ -15,10 +15,7 @@ public sealed class GivenAWallpaperSaver
     private readonly CapturingProgress progress = new();
     private readonly WallpaperSaver saver;
 
-    public GivenAWallpaperSaver()
-    {
-        saver = new(downloader, recorder);
-    }
+    public GivenAWallpaperSaver() => saver = new(downloader, recorder);
 
     [Fact]
     public async Task when_a_wallpaper_is_saved_then_the_recorded_entity_is_returned_with_the_details_to_announce()

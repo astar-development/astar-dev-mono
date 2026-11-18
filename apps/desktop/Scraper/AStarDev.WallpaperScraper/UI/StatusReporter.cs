@@ -1,7 +1,7 @@
 using System.Globalization;
 using AStarDev.LoggingExtensions;
-using AStarDev.WallpaperScraper.Scraping;
 using AStarDev.Utilities;
+using AStarDev.WallpaperScraper.Scraping;
 using Microsoft.Extensions.Logging;
 
 namespace AStarDev.WallpaperScraper.UI;

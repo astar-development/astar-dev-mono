@@ -1,8 +1,8 @@
-using AStarDev.FunctionalParadigm;
 using AStarDev.CloudSync.DisplaySettings;
 using AStarDev.CloudSync.TestHelpers.DisplaySettings;
 using AStarDev.CloudSync.TestHelpers.Ui;
 using AStarDev.CloudSync.ViewModels.DisplaySettings;
+using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.ViewModels.TestsUnit;
 

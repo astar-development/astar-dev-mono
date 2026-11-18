@@ -1,7 +1,7 @@
-using Microsoft.Data.Sqlite;
-using Microsoft.Extensions.DependencyInjection;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.FunctionalParadigm;
+using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.DependencyInjection;
 using static AStarDev.CloudSync.Sync.Sqlite.TestsIntegration.RemoteIndexData;
 
 namespace AStarDev.CloudSync.Sync.Sqlite.TestsIntegration;

@@ -1,6 +1,6 @@
 using AStarDev.CloudSync.Sync;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace AStarDev.CloudSync.Overview;
 

@@ -2,10 +2,10 @@ using AStarDev.ControlDb;
 using AStarDev.ControlDb.FileDetail;
 using AStarDev.FunctionalParadigm;
 using AStarDev.WallpaperScraper.Scraping;
-using Tag = AStarDev.WallpaperScraper.Scraping.WallhavenResponses.DetailResponse.Tag;
 using AStarDev.WallpaperScraper.Scraping.WallhavenResponses.SearchResponse;
 using AStarDev.WallpaperScraper.TestsUnit.Fakes;
 using AStarDev.WallpaperScraper.WallpaperIngestion;
+using Tag = AStarDev.WallpaperScraper.Scraping.WallhavenResponses.DetailResponse.Tag;
 
 namespace AStarDev.WallpaperScraper.TestsUnit.WallpaperIngestion;
 

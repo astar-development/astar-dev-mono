@@ -47,7 +47,7 @@ public sealed partial class Resource : ComponentBase
         }
 
         LogMessage.NotFound(Logger, $"/{subject}/resource/{fileId}");
-        if (HttpContext is not null) HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+        HttpContext?.Response.StatusCode = StatusCodes.Status404NotFound;
     }
 
     private string SubjectColor => accent?.Color ?? "var(--color-primary)";

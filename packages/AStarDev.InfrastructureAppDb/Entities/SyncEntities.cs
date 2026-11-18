@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
-using AStarDev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Domain;
+using AStarDev.FunctionalParadigm;
 
 namespace AStar.Dev.Infrastructure.AppDb.Entities;
 

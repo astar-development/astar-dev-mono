@@ -1,5 +1,5 @@
-using AStarDev.FunctionalParadigm;
 using AStar.Dev.Infrastructure.AppDb.Entities;
+using AStarDev.FunctionalParadigm;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace AStar.Dev.Infrastructure.AppDb;

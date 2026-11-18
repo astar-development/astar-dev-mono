@@ -182,7 +182,7 @@ public sealed class GivenAnAccountThrottleGate : IDisposable
     [Fact]
     public void when_retry_after_is_zero_or_negative_then_the_account_is_not_paused()
     {
-        int[] pauses = new[] { PauseAfterThrottle(Option.Some(TimeSpan.Zero)), PauseAfterThrottle(Option.Some(TimeSpan.FromSeconds(-30))) };
+        int[] pauses = [PauseAfterThrottle(Option.Some(TimeSpan.Zero)), PauseAfterThrottle(Option.Some(TimeSpan.FromSeconds(-30)))];
 
         pauses.ShouldBe([0, 0]);
     }

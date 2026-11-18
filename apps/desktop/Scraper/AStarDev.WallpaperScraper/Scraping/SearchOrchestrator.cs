@@ -2,8 +2,8 @@ using AStarDev.ControlDb;
 using AStarDev.ControlDb.ScrapeConfiguration;
 using AStarDev.FunctionalParadigm;
 using AStarDev.LoggingExtensions;
-using AStarDev.WallpaperScraper.ScrapeConfiguration;
 using AStarDev.Utilities;
+using AStarDev.WallpaperScraper.ScrapeConfiguration;
 using Microsoft.Extensions.Logging;
 
 namespace AStarDev.WallpaperScraper.Scraping;

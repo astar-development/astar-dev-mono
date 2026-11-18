@@ -1,14 +1,14 @@
 using System.Collections.Concurrent;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Overview;
+using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.TestHelpers.Accounts;
 using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.CloudSync.TestHelpers.Overview;
 using AStarDev.CloudSync.TestHelpers.Ui;
-using AStarDev.CloudSync.Sync;
-using AStarDev.CloudSync.ViewModels.TestsUnit.Conflicts;
 using AStarDev.CloudSync.ViewModels.DisplaySettings;
 using AStarDev.CloudSync.ViewModels.Overview;
+using AStarDev.CloudSync.ViewModels.TestsUnit.Conflicts;
 using AStarDev.FunctionalParadigm;
 using Microsoft.Extensions.Logging.Abstractions;
 

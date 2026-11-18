@@ -1,8 +1,8 @@
+using System.Runtime.Versioning;
+using System.Text.Json;
 using AStarDev.ControlDb.ScrapeConfiguration;
 using AStarDev.FunctionalParadigm;
 using AStarDev.WallpaperScraper.ScrapeConfiguration;
-using System.Runtime.Versioning;
-using System.Text.Json;
 using Testably.Abstractions.Testing;
 
 namespace AStarDev.WallpaperScraper.TestsUnit.ScrapeConfiguration;

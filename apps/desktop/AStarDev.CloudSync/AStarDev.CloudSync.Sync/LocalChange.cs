@@ -77,10 +77,7 @@ public abstract record LocalChange
     /// <summary>A file that changed within the last two seconds, so it may still be written; it is picked up on the next pass.</summary>
     public sealed record Deferred : LocalChange
     {
-        internal Deferred(RelativeSyncPath path)
-        {
-            Path = path;
-        }
+        internal Deferred(RelativeSyncPath path) => Path = path;
 
         /// <inheritdoc />
         public override RelativeSyncPath Path { get; }
@@ -89,10 +86,7 @@ public abstract record LocalChange
     /// <summary>An item the scan could not read or that clashes with a sibling that differs only in case: the path is then ambiguous and nothing is transferred for it. It is never reported as deleted.</summary>
     public sealed record Unreadable : LocalChange
     {
-        internal Unreadable(RelativeSyncPath path)
-        {
-            Path = path;
-        }
+        internal Unreadable(RelativeSyncPath path) => Path = path;
 
         /// <inheritdoc />
         public override RelativeSyncPath Path { get; }

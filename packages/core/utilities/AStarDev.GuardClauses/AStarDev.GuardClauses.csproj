@@ -10,7 +10,6 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <DocumentationFile>$(AssemblyName).xml</DocumentationFile>
-        <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
         <AnalysisLevel>latest-recommended</AnalysisLevel>
         <PackageTags>AStar</PackageTags>
         <NoWarn>$(NoWarn);NU5050</NoWarn>

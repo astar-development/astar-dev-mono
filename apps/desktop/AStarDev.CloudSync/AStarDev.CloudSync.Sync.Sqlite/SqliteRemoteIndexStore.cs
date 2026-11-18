@@ -74,8 +74,8 @@ internal sealed class SqliteRemoteIndexStore(IDbContextFactory<SyncDbContext> db
 
     private static RemoteItemSnapshot[] ToSnapshot(RemoteItemEntity entity) =>
         RemoteItemIdFactory.Create(entity.RemoteItemId).Match(
-            id => EntityTagFactory.Create(entity.ETag).Match(eTag => new[] { RemoteItemSnapshotFactory.Create(id, ParentOf(entity), entity.Name, KindOf(entity), entity.LastModified, eTag) }, _ => Array.Empty<RemoteItemSnapshot>()),
-            _ => Array.Empty<RemoteItemSnapshot>());
+            id => EntityTagFactory.Create(entity.ETag).Match(eTag => [RemoteItemSnapshotFactory.Create(id, ParentOf(entity), entity.Name, KindOf(entity), entity.LastModified, eTag)], _ => Array.Empty<RemoteItemSnapshot>()),
+            _ => []);
 
     private static Option<RemoteItemId> ParentOf(RemoteItemEntity entity) =>
         RemoteItemIdFactory.Create(entity.ParentId).Match(parent => Option.Some(parent), _ => Option.None<RemoteItemId>());
@@ -309,7 +309,7 @@ internal sealed class SqliteRemoteIndexStore(IDbContextFactory<SyncDbContext> db
     {
         entity.IsDeleted = true;
         entity.LastSeenPass = pass;
-        changes.AddRange(RemoteItemIdFactory.Create(entity.RemoteItemId).Match(id => new[] { RemoteChangeFactory.CreateDeleted(id) }, _ => Array.Empty<RemoteChange>()));
+        changes.AddRange(RemoteItemIdFactory.Create(entity.RemoteItemId).Match(id => [RemoteChangeFactory.CreateDeleted(id)], _ => Array.Empty<RemoteChange>()));
     }
 
     private static void SaveCursor(SyncDbContext dbContext, AccountId accountId, RemoteCursorEntity? row, PageContinuation next, DateTimeOffset now)
@@ -372,7 +372,7 @@ internal sealed class SqliteRemoteIndexStore(IDbContextFactory<SyncDbContext> db
         _ = await dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
 
-        return RemoteIndexDeltaFactory.Create(missingIds.SelectMany(id => RemoteItemIdFactory.Create(id).Match(found => new[] { RemoteChangeFactory.CreateDeleted(found) }, _ => Array.Empty<RemoteChange>())));
+        return RemoteIndexDeltaFactory.Create(missingIds.SelectMany(id => RemoteItemIdFactory.Create(id).Match(found => [RemoteChangeFactory.CreateDeleted(found)], _ => Array.Empty<RemoteChange>())));
     }
 
     private async Task<Unit> DeleteAsync(AccountId accountId, CancellationToken cancellationToken)

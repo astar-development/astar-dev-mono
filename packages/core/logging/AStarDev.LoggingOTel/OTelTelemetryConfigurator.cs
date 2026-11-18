@@ -1,10 +1,10 @@
+using System.Reflection;
 using Azure.Monitor.OpenTelemetry.Exporter;
 using Microsoft.Extensions.Configuration;
 using OpenTelemetry;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
-using System.Reflection;
 
 namespace AStarDev.LoggingOTel;
 
@@ -27,7 +27,7 @@ public static class OTelTelemetryConfigurator
         var resource = OTelLoggingConfigurator.CreateResourceBuilder(configuration, serviceName, Assembly.GetEntryAssembly(), Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT"));
         string? connectionString = configuration[connectionStringConfigurationKey];
         bool hasConnectionString = !string.IsNullOrWhiteSpace(connectionString);
-        bool hasEndpoint = Uri.TryCreate(configuration[OTelLoggingConfigurator.OtlpEndpointConfigurationKey], UriKind.Absolute, out Uri? endpoint) && (endpoint.Scheme == Uri.UriSchemeHttp || endpoint.Scheme == Uri.UriSchemeHttps);
+        bool hasEndpoint = Uri.TryCreate(configuration[OTelLoggingConfigurator.OtlpEndpointConfigurationKey], UriKind.Absolute, out var endpoint) && (endpoint.Scheme == Uri.UriSchemeHttp || endpoint.Scheme == Uri.UriSchemeHttps);
 
         var metrics = Sdk.CreateMeterProviderBuilder().SetResourceBuilder(resource).AddMeter(meterName);
         var traces = Sdk.CreateTracerProviderBuilder().SetResourceBuilder(resource).AddSource(activitySourceName);

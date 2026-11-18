@@ -1,5 +1,6 @@
 using System.Net;
 using AStarDev.CloudSync.Accounts;
+using AStarDev.CloudSync.Accounts.OneDrive;
 using AStarDev.CloudSync.TestHelpers.Accounts;
 using AStarDev.CloudSync.TestHelpers.Common;
 using AStarDev.FunctionalParadigm;
@@ -8,7 +9,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.Kiota.Http.HttpClientLibrary.Middleware.Options;
 using NSubstitute;
-using AStarDev.CloudSync.Accounts.OneDrive;
 
 namespace AStarDev.CloudSync.Sync.OneDrive.TestsUnit;
 

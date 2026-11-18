@@ -34,10 +34,7 @@ public abstract record ReauthFailure
     /// <summary>The provider failed.</summary>
     public sealed record Provider : ReauthFailure
     {
-        internal Provider(ProviderError error)
-        {
-            Error = error;
-        }
+        internal Provider(ProviderError error) => Error = error;
 
         /// <summary>The provider's error.</summary>
         public ProviderError Error { get; }

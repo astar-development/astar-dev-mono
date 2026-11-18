@@ -1,5 +1,5 @@
-using AStarDev.WallpaperScraper.Scraping;
 using AStarDev.WallpaperScraper.ScrapeConfiguration;
+using AStarDev.WallpaperScraper.Scraping;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;

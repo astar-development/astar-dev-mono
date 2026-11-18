@@ -29,7 +29,7 @@ internal static class UiResumingTry
     public static async Task<TResult> RunTreatingTimeoutAsFailureAsync<T, TResult>(Func<Task<T>> operation, Func<T, TResult> onResult, Func<Exception, TResult> onThrown, CancellationToken cancellationToken)
     {
         var attempt = await SettledAsync(operation, cancellationToken);
-        Exceptional<T> settled = attempt.IsCanceled && !cancellationToken.IsCancellationRequested ? new Failure<T>(new TimeoutException()) : await attempt;
+        var settled = attempt.IsCanceled && !cancellationToken.IsCancellationRequested ? new Failure<T>(new TimeoutException()) : await attempt;
 
         return settled.Match(onResult, onThrown);
     }

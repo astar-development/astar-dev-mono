@@ -26,10 +26,7 @@ public abstract record FileAuditFailure
     /// <summary>The provider could not be read; <see cref="Error"/> says why.</summary>
     public sealed record CloudUnavailable : FileAuditFailure
     {
-        internal CloudUnavailable(ProviderError error)
-        {
-            Error = error;
-        }
+        internal CloudUnavailable(ProviderError error) => Error = error;
 
         /// <summary>The provider error.</summary>
         public ProviderError Error { get; }

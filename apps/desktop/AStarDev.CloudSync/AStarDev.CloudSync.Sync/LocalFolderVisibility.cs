@@ -18,10 +18,7 @@ public abstract record LocalFolderVisibility
     /// <summary>The folder is left out.</summary>
     public sealed record Skipped : LocalFolderVisibility
     {
-        internal Skipped(SkipReason reason)
-        {
-            Reason = reason;
-        }
+        internal Skipped(SkipReason reason) => Reason = reason;
 
         /// <summary>The Reason.</summary>
         public SkipReason Reason { get; }

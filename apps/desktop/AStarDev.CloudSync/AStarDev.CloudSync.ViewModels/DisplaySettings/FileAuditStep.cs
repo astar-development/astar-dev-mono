@@ -21,10 +21,7 @@ public abstract record FileAuditStep
     /// <summary>The audit finished.</summary>
     public sealed record Completed : FileAuditStep
     {
-        internal Completed(FileAuditCounts counts)
-        {
-            Counts = counts;
-        }
+        internal Completed(FileAuditCounts counts) => Counts = counts;
 
         /// <summary>What the audit found.</summary>
         public FileAuditCounts Counts { get; }
@@ -33,10 +30,7 @@ public abstract record FileAuditStep
     /// <summary>The audit could not count.</summary>
     public sealed record Failed : FileAuditStep
     {
-        internal Failed(FileAuditFailure failure)
-        {
-            Failure = failure;
-        }
+        internal Failed(FileAuditFailure failure) => Failure = failure;
 
         /// <summary>Why.</summary>
         public FileAuditFailure Failure { get; }

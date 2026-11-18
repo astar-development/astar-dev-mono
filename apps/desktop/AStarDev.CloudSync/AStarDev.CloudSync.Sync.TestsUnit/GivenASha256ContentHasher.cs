@@ -33,7 +33,7 @@ public class GivenASha256ContentHasher
     [Fact]
     public async Task when_the_file_is_larger_than_one_megabyte_then_the_hash_is_the_known_vector()
     {
-        string hash = await Hash(Write("/root/large.bin", Enumerable.Repeat((byte)'a', (1024 * 1024) + 1).ToArray()));
+        string hash = await Hash(Write("/root/large.bin", [.. Enumerable.Repeat((byte)'a', (1024 * 1024) + 1)]));
 
         hash.ShouldBe(LargeFileHash);
     }

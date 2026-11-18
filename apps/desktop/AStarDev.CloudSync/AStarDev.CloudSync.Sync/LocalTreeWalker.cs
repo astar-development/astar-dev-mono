@@ -1,5 +1,5 @@
-using AStarDev.FunctionalParadigm;
 using System.IO.Abstractions;
+using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.Sync;
 

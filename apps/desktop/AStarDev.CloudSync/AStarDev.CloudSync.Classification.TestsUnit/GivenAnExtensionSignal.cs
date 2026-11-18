@@ -43,11 +43,11 @@ public sealed class GivenAnExtensionSignal
         _ = signal.Evaluate(path, vocabulary);
         _ = LinearScanCount(vocabulary, "jpg");
         var watch = System.Diagnostics.Stopwatch.StartNew();
-        int[] scanCounts = Enumerable.Range(0, 200).Select(_ => LinearScanCount(vocabulary, "jpg")).ToArray();
+        int[] scanCounts = [.. Enumerable.Range(0, 200).Select(_ => LinearScanCount(vocabulary, "jpg"))];
         var linearScanElapsed = watch.Elapsed;
         watch.Restart();
 
-        int[] counts = Enumerable.Range(0, 2000).Select(_ => signal.Evaluate(path, vocabulary).Count).ToArray();
+        int[] counts = [.. Enumerable.Range(0, 2000).Select(_ => signal.Evaluate(path, vocabulary).Count)];
 
         var lookupElapsed = watch.Elapsed;
         counts.ShouldAllBe(count => count == 1);

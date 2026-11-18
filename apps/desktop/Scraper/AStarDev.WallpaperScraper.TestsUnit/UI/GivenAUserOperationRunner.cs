@@ -1,5 +1,5 @@
-using AStarDev.WallpaperScraper.Operations;
 using System.Text.Json;
+using AStarDev.WallpaperScraper.Operations;
 using AStarDev.WallpaperScraper.UI;
 using Microsoft.Extensions.Logging.Abstractions;
 

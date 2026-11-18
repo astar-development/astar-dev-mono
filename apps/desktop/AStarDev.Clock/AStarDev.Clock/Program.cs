@@ -1,6 +1,6 @@
+using System.Diagnostics.CodeAnalysis;
 using Avalonia;
 using Velopack;
-using System.Diagnostics.CodeAnalysis;
 
 namespace AStarDev.Clock;
 

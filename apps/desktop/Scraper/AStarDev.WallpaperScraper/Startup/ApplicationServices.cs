@@ -1,15 +1,15 @@
-using AStarDev.WallpaperScraper.Operations;
 using System.Net.Http.Headers;
 using System.Threading.RateLimiting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using AStarDev.WallpaperScraper.Downloads;
-using AStarDev.WallpaperScraper.ScrapeConfiguration;
+using AStarDev.WallpaperScraper.Operations;
 using AStarDev.WallpaperScraper.Scoping;
+using AStarDev.WallpaperScraper.ScrapeConfiguration;
 using AStarDev.WallpaperScraper.Scraping;
 using AStarDev.WallpaperScraper.Tags;
 using AStarDev.WallpaperScraper.UI;
 using AStarDev.WallpaperScraper.WallpaperIngestion;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AStarDev.WallpaperScraper.Startup;
 

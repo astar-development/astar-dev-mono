@@ -1,6 +1,6 @@
 using System.Globalization;
-using AStarDev.Localization;
 using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
+using AStarDev.Localization;
 
 namespace AStar.Dev.Velopack.Publishing.Avalonia.TestsUnit.Updates;
 

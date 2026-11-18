@@ -24,9 +24,10 @@ public class GivenSearchResults
     [Fact]
     public async Task when_a_folder_name_is_searched_then_only_the_matching_folders_are_listed_and_no_accounts()
     {
-        var results = new SearchResultsViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), _ => { }, _ => { }, TestData.CreateLocalization());
-
-        results.SearchText = "  recipes ";
+        var results = new SearchResultsViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), _ => { }, _ => { }, TestData.CreateLocalization())
+        {
+            SearchText = "  recipes "
+        };
 
         results.Accounts.ShouldBeEmpty();
         results.Folders.Select(folder => folder.Name).ShouldBe(["Recipes"]);
@@ -35,9 +36,10 @@ public class GivenSearchResults
     [Fact]
     public async Task when_an_account_email_is_searched_then_only_that_account_is_listed()
     {
-        var results = new SearchResultsViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), _ => { }, _ => { }, TestData.CreateLocalization());
-
-        results.SearchText = "ARCHIVE@";
+        var results = new SearchResultsViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), _ => { }, _ => { }, TestData.CreateLocalization())
+        {
+            SearchText = "ARCHIVE@"
+        };
 
         results.Accounts.Select(account => account.Name).ShouldBe(["Archive"]);
         results.Folders.ShouldBeEmpty();
@@ -46,9 +48,10 @@ public class GivenSearchResults
     [Fact]
     public async Task when_nothing_matches_then_the_results_are_empty_with_the_no_results_text()
     {
-        var results = new SearchResultsViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), _ => { }, _ => { }, TestData.CreateLocalization());
-
-        results.SearchText = "zzz-no-such-thing";
+        var results = new SearchResultsViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), _ => { }, _ => { }, TestData.CreateLocalization())
+        {
+            SearchText = "zzz-no-such-thing"
+        };
 
         (results.IsEmpty, results.NoResultsText).ShouldBe((true, "Nothing matches your search"));
     }
@@ -71,8 +74,10 @@ public class GivenSearchResults
     public async Task when_the_overview_loads_again_then_the_results_follow_the_search_text()
     {
         var overview = new SyncOverviewViewModel(new CountingSyncOverviewSource(await TestData.CreateOverviewAsync()), TestData.CreateLocalization(), TestData.CreateTime(), NullLogger<SyncOverviewViewModel>.Instance);
-        var results = new SearchResultsViewModel(overview, _ => { }, _ => { }, TestData.CreateLocalization());
-        results.SearchText = "recipes";
+        var results = new SearchResultsViewModel(overview, _ => { }, _ => { }, TestData.CreateLocalization())
+        {
+            SearchText = "recipes"
+        };
 
         await overview.LoadAsync(TestContext.Current.CancellationToken);
 
@@ -82,9 +87,10 @@ public class GivenSearchResults
     [Fact]
     public async Task when_the_search_is_given_a_null_then_it_is_treated_as_blank()
     {
-        var results = new SearchResultsViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), _ => { }, _ => { }, TestData.CreateLocalization());
-
-        results.SearchText = null!;
+        var results = new SearchResultsViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), _ => { }, _ => { }, TestData.CreateLocalization())
+        {
+            SearchText = null!
+        };
 
         (results.SearchText, results.Folders.Count).ShouldBe((string.Empty, 7));
     }

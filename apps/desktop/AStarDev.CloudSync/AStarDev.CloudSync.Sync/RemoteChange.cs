@@ -12,10 +12,7 @@ public abstract record RemoteChange
     /// <summary>A new item.</summary>
     public sealed record Added : RemoteChange
     {
-        internal Added(RemoteItemSnapshot item)
-        {
-            Item = item;
-        }
+        internal Added(RemoteItemSnapshot item) => Item = item;
 
         /// <summary>The item as reported.</summary>
         public RemoteItemSnapshot Item { get; }
@@ -27,10 +24,7 @@ public abstract record RemoteChange
     /// <summary>The content changed (cTag or hash differs); eTag-only changes are ignored.</summary>
     public sealed record Modified : RemoteChange
     {
-        internal Modified(RemoteItemSnapshot item)
-        {
-            Item = item;
-        }
+        internal Modified(RemoteItemSnapshot item) => Item = item;
 
         /// <summary>The item as reported.</summary>
         public RemoteItemSnapshot Item { get; }
@@ -65,10 +59,7 @@ public abstract record RemoteChange
     /// <summary>The item was deleted.</summary>
     public sealed record Deleted : RemoteChange
     {
-        internal Deleted(RemoteItemId id)
-        {
-            Id = id;
-        }
+        internal Deleted(RemoteItemId id) => Id = id;
 
         /// <summary>The deleted item.</summary>
         public RemoteItemId Id { get; }

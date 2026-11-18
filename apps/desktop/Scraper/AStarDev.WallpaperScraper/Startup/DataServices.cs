@@ -1,10 +1,10 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.EntityFrameworkCore;
 using AStarDev.ControlDb;
 using AStarDev.ControlDb.FileDetail;
 using AStarDev.ControlDb.ScrapeConfiguration;
 using AStarDev.Utilities;
 using AStarDev.WallpaperScraper.ScrapeConfiguration;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AStarDev.WallpaperScraper.Startup;
 

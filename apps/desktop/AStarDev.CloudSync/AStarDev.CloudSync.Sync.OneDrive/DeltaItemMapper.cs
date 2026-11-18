@@ -10,12 +10,12 @@ internal static class DeltaItemMapper
 
     private static RemoteItemSnapshot[] ToSnapshot(DriveItem item) =>
         RemoteItemIdFactory.Create(item.Id).Match(
-            id => KindOf(item).Match(kind => ToSnapshot(item, id, kind), () => Array.Empty<RemoteItemSnapshot>()),
+            id => KindOf(item).Match(kind => ToSnapshot(item, id, kind), () => []),
             _ => []);
 
     private static RemoteItemSnapshot[] ToSnapshot(DriveItem item, RemoteItemId id, RemoteItemKind kind) =>
         EntityTagFactory.Create(item.ETag ?? item.CTag ?? id.Value).Match(
-            eTag => new[] { RemoteItemSnapshotFactory.Create(id, ParentOf(item), item.Name, kind, item.LastModifiedDateTime ?? DateTimeOffset.UnixEpoch, eTag) },
+            eTag => [RemoteItemSnapshotFactory.Create(id, ParentOf(item), item.Name, kind, item.LastModifiedDateTime ?? DateTimeOffset.UnixEpoch, eTag)],
             _ => Array.Empty<RemoteItemSnapshot>());
 
     private static Option<RemoteItemId> ParentOf(DriveItem item) =>

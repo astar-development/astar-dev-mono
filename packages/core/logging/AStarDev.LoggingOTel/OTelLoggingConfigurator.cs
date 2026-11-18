@@ -73,7 +73,7 @@ public static class OTelLoggingConfigurator
         if (!string.IsNullOrWhiteSpace(connectionString))
             _ = options.AddAzureMonitorLogExporter(exporterOptions => exporterOptions.ConnectionString = connectionString);
 
-        if (Uri.TryCreate(configuration[OtlpEndpointConfigurationKey], UriKind.Absolute, out Uri? otlpEndpoint) && (otlpEndpoint.Scheme == Uri.UriSchemeHttp || otlpEndpoint.Scheme == Uri.UriSchemeHttps))
+        if (Uri.TryCreate(configuration[OtlpEndpointConfigurationKey], UriKind.Absolute, out var otlpEndpoint) && (otlpEndpoint.Scheme == Uri.UriSchemeHttp || otlpEndpoint.Scheme == Uri.UriSchemeHttps))
             _ = options.AddOtlpExporter(exporterOptions => exporterOptions.Endpoint = otlpEndpoint);
     }
 

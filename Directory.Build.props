@@ -59,6 +59,9 @@
          pedantry on new projects. -->
     <AnalysisLevel>latest-recommended</AnalysisLevel>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
+
+    <!-- Run .editorconfig IDE* style rules during dotnet build and CI, not only in the IDE. -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
   <!-- ── NuGet package metadata (applies to all published packages) ──────── -->

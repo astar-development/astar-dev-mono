@@ -1,5 +1,5 @@
-using AStarDev.FunctionalParadigm;
 using AStarDev.CloudSync.Accounts;
+using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.Sync.TestsUnit;
 

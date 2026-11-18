@@ -18,10 +18,7 @@ public abstract record LocalFileVisibility
     /// <summary>The file is left out.</summary>
     public sealed record Skipped : LocalFileVisibility
     {
-        internal Skipped(FileSkipReason reason)
-        {
-            Reason = reason;
-        }
+        internal Skipped(FileSkipReason reason) => Reason = reason;
 
         /// <summary>Why it is left out.</summary>
         public FileSkipReason Reason { get; }

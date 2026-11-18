@@ -1,5 +1,5 @@
-using AStarDev.WallpaperScraper.WallpaperIngestion;
 using AStarDev.Utilities;
+using AStarDev.WallpaperScraper.WallpaperIngestion;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media.Imaging;

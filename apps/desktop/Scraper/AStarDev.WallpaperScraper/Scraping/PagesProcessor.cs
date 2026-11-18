@@ -1,8 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using AStarDev.FunctionalParadigm;
+using AStarDev.Utilities;
 using AStarDev.WallpaperScraper.ScrapeConfiguration;
 using AStarDev.WallpaperScraper.WallpaperIngestion;
-using AStarDev.Utilities;
 
 namespace AStarDev.WallpaperScraper.Scraping;
 

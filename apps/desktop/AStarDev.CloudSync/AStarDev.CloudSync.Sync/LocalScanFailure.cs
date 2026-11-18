@@ -28,10 +28,7 @@ public abstract record LocalScanFailure
     /// <summary>Something else went wrong.</summary>
     public sealed record Unexpected : LocalScanFailure
     {
-        internal Unexpected(ErrorResponse error)
-        {
-            Error = error;
-        }
+        internal Unexpected(ErrorResponse error) => Error = error;
 
         /// <summary>The error.</summary>
         public ErrorResponse Error { get; }

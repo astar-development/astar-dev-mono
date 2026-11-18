@@ -1,5 +1,5 @@
-using AStarDev.WallpaperScraper.Operations;
 using System.Diagnostics.CodeAnalysis;
+using AStarDev.WallpaperScraper.Operations;
 using AStarDev.WallpaperScraper.ScrapeConfiguration;
 using AStarDev.WallpaperScraper.Startup;
 

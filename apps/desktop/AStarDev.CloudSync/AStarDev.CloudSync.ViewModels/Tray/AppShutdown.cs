@@ -35,7 +35,7 @@ public sealed class AppShutdown(IAccountStore accounts, ISyncActivitySource acti
     }
 
     private Task<QuitChoice> ConfirmAndCancelAsync(CancellationToken cancellationToken) =>
-        accounts.GetAllAsync(cancellationToken).MatchAsync(all => ConfirmAsync(all.Where(account => activity.ActivityOf(account.Id) is AccountSyncActivity.Running).ToList(), cancellationToken), _ => Task.FromResult(QuitDespite("The accounts could not be read, so no running sync was cancelled before quitting.")));
+        accounts.GetAllAsync(cancellationToken).MatchAsync(all => ConfirmAsync([.. all.Where(account => activity.ActivityOf(account.Id) is AccountSyncActivity.Running)], cancellationToken), _ => Task.FromResult(QuitDespite("The accounts could not be read, so no running sync was cancelled before quitting.")));
 
     private async Task<QuitChoice> ConfirmAsync(List<StoredAccount> running, CancellationToken cancellationToken)
     {

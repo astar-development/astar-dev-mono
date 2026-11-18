@@ -1,5 +1,5 @@
-using AStarDev.FunctionalParadigm;
 using AStarDev.CloudSync.Sync;
+using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.Classification;
 

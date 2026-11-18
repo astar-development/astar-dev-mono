@@ -12,10 +12,7 @@ public abstract record FolderTreeFailure
     /// <summary>The cloud listing failed.</summary>
     public sealed record RemoteFailed : FolderTreeFailure
     {
-        internal RemoteFailed(ProviderError error)
-        {
-            Error = error;
-        }
+        internal RemoteFailed(ProviderError error) => Error = error;
 
         /// <summary>The Error.</summary>
         public ProviderError Error { get; }
@@ -24,10 +21,7 @@ public abstract record FolderTreeFailure
     /// <summary>The listing on disk failed.</summary>
     public sealed record LocalFailed : FolderTreeFailure
     {
-        internal LocalFailed(LocalFolderError error)
-        {
-            Error = error;
-        }
+        internal LocalFailed(LocalFolderError error) => Error = error;
 
         /// <summary>The Error.</summary>
         public LocalFolderError Error { get; }
@@ -52,10 +46,7 @@ public abstract record FolderTreeFailure
     /// <summary>The stored selection rules could not be read.</summary>
     public sealed record RulesFailed : FolderTreeFailure
     {
-        internal RulesFailed(ErrorResponse error)
-        {
-            Error = error;
-        }
+        internal RulesFailed(ErrorResponse error) => Error = error;
 
         /// <summary>The Error.</summary>
         public ErrorResponse Error { get; }

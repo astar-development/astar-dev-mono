@@ -97,13 +97,11 @@ internal sealed class OverlayBehavior<TViewModel> where TViewModel : class, INot
 
     private void Observe(TViewModel? viewModel)
     {
-        if (observed is not null)
-            observed.PropertyChanged -= OnViewModelChanged;
+        observed?.PropertyChanged -= OnViewModelChanged;
 
         observed = viewModel;
         wasOpen = observed is not null && isOpen(observed);
-        if (observed is not null)
-            observed.PropertyChanged += OnViewModelChanged;
+        observed?.PropertyChanged += OnViewModelChanged;
     }
 
     private IInputElement? FocusedOutsideView() => FocusedElement() is Visual focused && !IsInside(focused) ? (IInputElement)focused : null;
