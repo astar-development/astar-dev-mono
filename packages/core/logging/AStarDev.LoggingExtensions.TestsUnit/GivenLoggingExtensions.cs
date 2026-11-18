@@ -1,10 +1,10 @@
+using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenTelemetry;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Trace;
-using System.Reflection;
 
 namespace AStarDev.LoggingExtensions.TestsUnit;
 

@@ -29,7 +29,7 @@ public sealed class ImageDownloader(IFileSystem fileSystem, TimeProvider timePro
         using var response = await client.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
         _ = response.EnsureSuccessStatusCode();
         progress.Report($"Downloading image for wallpaper {request.Wallpaper.Id} from {request.Wallpaper.Path}");
-        using Stream downloadStream = await response.Content.ReadAsStreamAsync(cancellationToken);
+        using var downloadStream = await response.Content.ReadAsStreamAsync(cancellationToken);
 
         _ = fileSystem.Directory.CreateDirectory(request.Directory);
         string savedPath = fileSystem.Path.Combine(request.Directory, request.FileName.Value);

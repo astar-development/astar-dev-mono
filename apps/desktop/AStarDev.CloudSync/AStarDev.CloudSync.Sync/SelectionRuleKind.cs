@@ -10,10 +10,7 @@ public abstract record SelectionRuleKind
     /// <summary>The folder syncs in the given direction.</summary>
     public sealed record Include : SelectionRuleKind
     {
-        internal Include(SyncDirection direction)
-        {
-            Direction = direction;
-        }
+        internal Include(SyncDirection direction) => Direction = direction;
 
         /// <summary>The Direction.</summary>
         public SyncDirection Direction { get; }

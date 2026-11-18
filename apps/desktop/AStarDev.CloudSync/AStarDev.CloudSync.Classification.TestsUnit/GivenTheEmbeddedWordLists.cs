@@ -9,7 +9,7 @@ public sealed class GivenTheEmbeddedWordLists
 
     private static readonly Assembly ClassificationAssembly = typeof(ClassificationSeed).Assembly;
 
-    public static TheoryData<string> ListResources => new() { WordsResource, NamesResource };
+    public static TheoryData<string> ListResources => [WordsResource, NamesResource];
 
     [Theory]
     [MemberData(nameof(ListResources))]

@@ -19,7 +19,7 @@ public sealed class GivenAnImageDownloader
     [Fact]
     public async Task when_downloading_an_image_succeeds_then_it_is_written_to_the_directory_and_the_saved_path_and_progress_are_reported()
     {
-        byte[] imageBytes = new byte[] { 1, 2, 3, 4, 5 };
+        byte[] imageBytes = [1, 2, 3, 4, 5];
         using var client = CreateClient(_ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(imageBytes) });
         var progress = new CapturingProgress();
         string directory = fileSystem.Path.Combine("root-directory", "top-wallpapers");

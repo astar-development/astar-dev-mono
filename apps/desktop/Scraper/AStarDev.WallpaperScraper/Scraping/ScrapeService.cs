@@ -3,10 +3,10 @@ using System.Diagnostics.CodeAnalysis;
 using AStarDev.ControlDb;
 using AStarDev.FunctionalParadigm;
 using AStarDev.LoggingExtensions;
-using AStarDev.WallpaperScraper.Operations;
-using AStarDev.WallpaperScraper.ScrapeConfiguration;
 using AStarDev.Utilities;
+using AStarDev.WallpaperScraper.Operations;
 using AStarDev.WallpaperScraper.Scoping;
+using AStarDev.WallpaperScraper.ScrapeConfiguration;
 using Microsoft.Extensions.Logging;
 
 namespace AStarDev.WallpaperScraper.Scraping;

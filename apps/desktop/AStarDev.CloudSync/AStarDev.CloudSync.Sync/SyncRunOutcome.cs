@@ -26,10 +26,7 @@ public abstract record SyncRunOutcome
     /// <summary>The run stopped on a failure.</summary>
     public sealed record Failed : SyncRunOutcome
     {
-        internal Failed(SyncFailureReason reason)
-        {
-            Reason = reason;
-        }
+        internal Failed(SyncFailureReason reason) => Reason = reason;
 
         /// <summary>Why the run failed.</summary>
         public SyncFailureReason Reason { get; }

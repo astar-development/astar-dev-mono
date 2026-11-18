@@ -1,5 +1,5 @@
-using AStarDev.WallpaperScraper.Scraping.WallhavenResponses.DetailResponse;
 using AStarDev.Utilities;
+using AStarDev.WallpaperScraper.Scraping.WallhavenResponses.DetailResponse;
 
 namespace AStarDev.WallpaperScraper.WallpaperIngestion;
 

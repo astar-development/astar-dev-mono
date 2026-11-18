@@ -18,7 +18,7 @@ internal sealed class UploadPlanner(ISyncSelectionEvaluator evaluator) : IUpload
         var present = remote.Where(pair => pair.Value.Kind is not RemoteItemKind.Deleted).ToDictionary(pair => pair.Key, pair => pair.Value);
         var items = changes.Changes
             .Where(change => IsUploadable(change, baseline, rules))
-            .SelectMany(change => PlanOne(change, baseline, present, names).Match(item => new[] { item }, Array.Empty<UploadPlanItem>))
+            .SelectMany(change => PlanOne(change, baseline, present, names).Match(item => [item], Array.Empty<UploadPlanItem>))
             .OrderBy(GroupOf)
             .ThenBy(item => GroupOf(item) == RemovalGroup ? -Depth(item.Path) : Depth(item.Path))
             .ThenBy(item => item.Path.Value, StringComparer.OrdinalIgnoreCase);

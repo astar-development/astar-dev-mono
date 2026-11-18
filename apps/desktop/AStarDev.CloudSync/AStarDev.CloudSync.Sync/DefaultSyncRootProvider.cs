@@ -1,6 +1,6 @@
+using System.IO.Abstractions;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.FunctionalParadigm;
-using System.IO.Abstractions;
 
 namespace AStarDev.CloudSync.Sync;
 

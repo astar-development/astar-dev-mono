@@ -92,7 +92,7 @@ public sealed class GivenASyncRootStore : IAsyncLifetime
     [Fact]
     public async Task when_a_folder_and_its_sub_folders_are_set_for_different_accounts_at_once_then_no_two_stored_roots_cross()
     {
-        string[] folders = new[] { OneDrive, OneDrive + "/A", OneDrive + "/A/B", OneDrive + "/C", OneDrive + "/A", OneDrive };
+        string[] folders = [OneDrive, OneDrive + "/A", OneDrive + "/A/B", OneDrive + "/C", OneDrive + "/A", OneDrive];
         var accounts = folders.Select(_ => AccountIdFactory.Create(Guid.NewGuid())).ToList();
 
         var results = await Task.WhenAll(folders.Select((folder, index) => Task.Run(() => Database.Writer.SetAsync(accounts[index], Database.Folder(folder), CancellationToken), CancellationToken)));

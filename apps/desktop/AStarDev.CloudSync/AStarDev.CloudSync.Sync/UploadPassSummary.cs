@@ -3,10 +3,7 @@ namespace AStarDev.CloudSync.Sync;
 /// <summary>What an upload pass did, as counts. Deletions are counted, so a deletion-only pass never reads as "no changes" (#1155).</summary>
 public sealed record UploadPassSummary
 {
-    internal UploadPassSummary(IReadOnlyList<UploadItemOutcome> outcomes)
-    {
-        Outcomes = outcomes;
-    }
+    internal UploadPassSummary(IReadOnlyList<UploadItemOutcome> outcomes) => Outcomes = outcomes;
 
     /// <summary>What happened to each planned path.</summary>
     public IReadOnlyList<UploadItemOutcome> Outcomes { get; }

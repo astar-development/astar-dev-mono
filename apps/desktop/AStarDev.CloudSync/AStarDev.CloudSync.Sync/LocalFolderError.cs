@@ -44,10 +44,7 @@ public abstract record LocalFolderError
     /// <summary>The listing failed for another reason.</summary>
     public sealed record Unexpected : LocalFolderError
     {
-        internal Unexpected(ErrorResponse error)
-        {
-            Error = error;
-        }
+        internal Unexpected(ErrorResponse error) => Error = error;
 
         /// <summary>The Error.</summary>
         public ErrorResponse Error { get; }

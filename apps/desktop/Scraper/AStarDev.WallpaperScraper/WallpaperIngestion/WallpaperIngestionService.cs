@@ -2,9 +2,9 @@ using System.Diagnostics.CodeAnalysis;
 using AStarDev.ControlDb;
 using AStarDev.ControlDb.FileDetail;
 using AStarDev.FunctionalParadigm;
+using AStarDev.Utilities;
 using AStarDev.WallpaperScraper.Scraping;
 using AStarDev.WallpaperScraper.Scraping.WallhavenResponses.SearchResponse;
-using AStarDev.Utilities;
 using Tag = AStarDev.WallpaperScraper.Scraping.WallhavenResponses.DetailResponse.Tag;
 
 namespace AStarDev.WallpaperScraper.WallpaperIngestion;

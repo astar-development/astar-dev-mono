@@ -485,14 +485,14 @@ public sealed class GivenAPagesProcessor
 
         public Task<Exceptional<Option<T>>> GetFromJsonAsync<T>(Uri url, HttpClient client, CancellationToken cancellationToken)
         {
-            Exceptional<Option<SearchResponse>> result = PageResponses.TryGetValue(url, out var page) ? (Option<SearchResponse>)page : Response;
+            var result = PageResponses.TryGetValue(url, out var page) ? (Option<SearchResponse>)page : Response;
 
             return Task.FromResult((Exceptional<Option<T>>)(object)result);
         }
 
         public SearchResponse Fetch(Uri url)
         {
-            Exceptional<Option<SearchResponse>> result = PageResponses.TryGetValue(url, out var page) ? (Option<SearchResponse>)page : Response;
+            var result = PageResponses.TryGetValue(url, out var page) ? (Option<SearchResponse>)page : Response;
 
             return result.Match(
                 option => option.Match(value => value, () => throw new InvalidOperationException($"No response body received for {url}.")),

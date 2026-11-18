@@ -13,10 +13,7 @@ public abstract record SyncRootRejection
     /// <summary>The folder is the same folder as another account's sync root.</summary>
     public sealed record SameAs : SyncRootRejection
     {
-        internal SameAs(AccountId other)
-        {
-            Other = other;
-        }
+        internal SameAs(AccountId other) => Other = other;
 
         /// <summary>The account whose root clashes.</summary>
         public AccountId Other { get; }
@@ -25,10 +22,7 @@ public abstract record SyncRootRejection
     /// <summary>The folder is inside another account's sync root.</summary>
     public sealed record InsideOf : SyncRootRejection
     {
-        internal InsideOf(AccountId other)
-        {
-            Other = other;
-        }
+        internal InsideOf(AccountId other) => Other = other;
 
         /// <summary>The account whose root clashes.</summary>
         public AccountId Other { get; }
@@ -37,10 +31,7 @@ public abstract record SyncRootRejection
     /// <summary>The folder contains another account's sync root.</summary>
     public sealed record Contains : SyncRootRejection
     {
-        internal Contains(AccountId other)
-        {
-            Other = other;
-        }
+        internal Contains(AccountId other) => Other = other;
 
         /// <summary>The account whose root clashes.</summary>
         public AccountId Other { get; }
@@ -89,10 +80,7 @@ public abstract record SyncRootRejection
     /// <summary>The store failed to read or save the root.</summary>
     public sealed record Store : SyncRootRejection
     {
-        internal Store(ErrorResponse error)
-        {
-            Error = error;
-        }
+        internal Store(ErrorResponse error) => Error = error;
 
         /// <summary>The store's error.</summary>
         public ErrorResponse Error { get; }

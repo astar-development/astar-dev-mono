@@ -111,7 +111,7 @@ public sealed class GivenASelectionRuleStore : IAsyncLifetime
     [Fact]
     public async Task when_saves_that_toggle_one_folder_in_different_casings_run_at_once_then_one_rule_remains_and_none_fails()
     {
-        string[] casings = new[] { "Docs", "docs", "DOCS", "dOcS" };
+        string[] casings = ["Docs", "docs", "DOCS", "dOcS"];
         var start = new TaskCompletionSource();
         var pending = Enumerable.Range(0, 20).Select(number => Task.Run(async () => await start.Task.ContinueWith(_ => Apply(FirstAccount, number % 2 == 0 ? Include(casings[number % 4]) : Exclude(casings[number % 4])), CancellationToken).Unwrap(), CancellationToken)).ToList();
 

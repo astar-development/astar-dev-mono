@@ -201,3 +201,5 @@ end_of_line = crlf
 [{.gitignore,.gitattributes}]
 indent_size = 4
 
+[**/Migrations/*.cs]
+generated_code = true

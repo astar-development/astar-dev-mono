@@ -18,6 +18,6 @@ internal sealed class CapturingLogger<T> : ILogger<T>
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
         Entries.Add((logLevel, formatter(state, exception)));
-        Events.Add((eventId.Name, state is IEnumerable<KeyValuePair<string, object?>> pairs ? pairs.ToDictionary(pair => pair.Key, pair => pair.Value) : new Dictionary<string, object?>()));
+        Events.Add((eventId.Name, state is IEnumerable<KeyValuePair<string, object?>> pairs ? pairs.ToDictionary(pair => pair.Key, pair => pair.Value) : []));
     }
 }

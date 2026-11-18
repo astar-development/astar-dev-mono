@@ -1,6 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <PackageReleaseNotes>
+        v0.1.0 build: enable EnforceCodeStyleInBuild centrally (#1941)
+        </PackageReleaseNotes>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <ApplicationIcon>AStar.ico</ApplicationIcon>
@@ -10,7 +13,6 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <DocumentationFile>$(AssemblyName).xml</DocumentationFile>
-        <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
         <AnalysisLevel>latest-recommended</AnalysisLevel>
         <PackageTags>AStar</PackageTags>
         <NoWarn>$(NoWarn);NU5050</NoWarn>

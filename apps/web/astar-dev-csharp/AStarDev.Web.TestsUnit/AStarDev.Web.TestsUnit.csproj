@@ -2,7 +2,6 @@
 
     <PropertyGroup>
         <RootNamespace>AStarDev.Web</RootNamespace>
-        <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
     </PropertyGroup>
 
     <ItemGroup>

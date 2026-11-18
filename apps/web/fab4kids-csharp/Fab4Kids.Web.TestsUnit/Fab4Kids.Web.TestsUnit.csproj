@@ -2,7 +2,6 @@
 
     <PropertyGroup>
         <RootNamespace>Fab4Kids.Web</RootNamespace>
-        <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
     </PropertyGroup>
 
     <ItemGroup>

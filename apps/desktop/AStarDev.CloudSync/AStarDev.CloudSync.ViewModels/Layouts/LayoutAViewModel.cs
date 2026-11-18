@@ -3,13 +3,13 @@ using System.Windows.Input;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Sync;
 using AStarDev.CloudSync.ViewModels.Accounts;
-using AStarDev.CloudSync.ViewModels.SyncPairs;
 using AStarDev.CloudSync.ViewModels.Activity;
 using AStarDev.CloudSync.ViewModels.Classification;
 using AStarDev.CloudSync.ViewModels.Conflicts;
 using AStarDev.CloudSync.ViewModels.FolderSelection;
 using AStarDev.CloudSync.ViewModels.Overview;
 using AStarDev.CloudSync.ViewModels.Search;
+using AStarDev.CloudSync.ViewModels.SyncPairs;
 using AStarDev.FunctionalParadigm;
 using AStarDev.Localization;
 using CommunityToolkit.Mvvm.Input;
@@ -226,7 +226,7 @@ public sealed class LayoutAViewModel : LocalizedObservableObject
 
     private void Rebuild()
     {
-        AccountId? previous = allCards.FirstOrDefault(card => card.IsSelected)?.Account.Id;
+        var previous = allCards.FirstOrDefault(card => card.IsSelected)?.Account.Id;
         allCards = [.. Overview.Accounts.Select(account => new LayoutAAccountCardViewModel(account, SelectAccount, syncActions, Localization) { IsSelected = account.Id == previous })];
         var allChip = new LayoutAProviderChipViewModel(() => Localization.GetLocal("LayoutA.Filter.All"), _ => true, Select, Localization);
         var providerChips = Overview.Accounts.Select(account => account.Provider).DistinctBy(provider => provider.Name, StringComparer.Ordinal).Select(provider => new LayoutAProviderChipViewModel(() => provider.Name, account => string.Equals(account.Provider.Name, provider.Name, StringComparison.Ordinal), Select, Localization));

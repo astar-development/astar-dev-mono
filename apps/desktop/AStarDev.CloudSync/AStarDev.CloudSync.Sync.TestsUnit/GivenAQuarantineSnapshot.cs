@@ -210,7 +210,7 @@ public class GivenAQuarantineSnapshot
     {
         var random = new Random(1459);
         var stored = new[] { PathQuarantineStateFactory.CreateConflicted(), PathQuarantineStateFactory.CreateHeldByGuard(), PathQuarantineStateFactory.CreateResyncInProgress(), PathQuarantineStateFactory.CreateClear() };
-        string[] folders = new[] { "Documents", "documents", ".config", "Photos/2024", "PHOTOS/2024" };
+        string[] folders = ["Documents", "documents", ".config", "Photos/2024", "PHOTOS/2024"];
         var candidates = Enumerable.Range(0, 500).Select(index => SyncPaths.Of($"{folders[random.Next(folders.Length)]}/file{random.Next(60)}.txt")).ToList();
         var snapshot = QuarantineSnapshotFactory.Create(candidates.Where(_ => random.Next(2) == 0).Select(path => KeyValuePair.Create(path, stored[random.Next(stored.Length)])));
 

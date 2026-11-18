@@ -552,10 +552,7 @@ public class GivenAConflictList
         {
         }
 
-        private Fixture(Microsoft.Extensions.Logging.ILogger<ConflictListViewModel> logger, AStarDev.CloudSync.Overview.ISyncOverviewSource accounts)
-        {
-            List = TestData.CreateConflictList(accounts, Reader, Resolver, logger);
-        }
+        private Fixture(Microsoft.Extensions.Logging.ILogger<ConflictListViewModel> logger, AStarDev.CloudSync.Overview.ISyncOverviewSource accounts) => List = TestData.CreateConflictList(accounts, Reader, Resolver, logger);
 
         public FakeAttentionReader Reader { get; } = new();
 

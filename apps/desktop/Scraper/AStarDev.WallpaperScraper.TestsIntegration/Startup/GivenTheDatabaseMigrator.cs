@@ -1,6 +1,6 @@
+using System.Diagnostics.CodeAnalysis;
 using AStarDev.ControlDb;
 using AStarDev.WallpaperScraper.Startup;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;

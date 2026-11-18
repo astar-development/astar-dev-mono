@@ -1,9 +1,9 @@
 using System.Collections.Concurrent;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.CloudSync.Sync;
+using AStarDev.CloudSync.ViewModels.Common;
 using AStarDev.FunctionalParadigm;
 using AStarDev.LoggingExtensions;
-using AStarDev.CloudSync.ViewModels.Common;
 using Microsoft.Extensions.Logging;
 
 namespace AStarDev.CloudSync.ViewModels.Conflicts;

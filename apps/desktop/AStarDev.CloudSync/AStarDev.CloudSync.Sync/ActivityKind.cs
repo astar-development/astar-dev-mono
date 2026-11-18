@@ -34,10 +34,7 @@ public abstract record ActivityKind
     /// <summary>Files were downloaded.</summary>
     public sealed record Downloaded : ActivityKind
     {
-        internal Downloaded(int fileCount)
-        {
-            FileCount = fileCount;
-        }
+        internal Downloaded(int fileCount) => FileCount = fileCount;
 
         /// <summary>The number of files downloaded.</summary>
         public int FileCount { get; }
@@ -46,10 +43,7 @@ public abstract record ActivityKind
     /// <summary>Files were deleted, locally or remotely.</summary>
     public sealed record Deleted : ActivityKind
     {
-        internal Deleted(int fileCount)
-        {
-            FileCount = fileCount;
-        }
+        internal Deleted(int fileCount) => FileCount = fileCount;
 
         /// <summary>The number of files deleted.</summary>
         public int FileCount { get; }
@@ -58,10 +52,7 @@ public abstract record ActivityKind
     /// <summary>A file changed on both sides.</summary>
     public sealed record ConflictDetected : ActivityKind
     {
-        internal ConflictDetected(string fileName)
-        {
-            FileName = fileName;
-        }
+        internal ConflictDetected(string fileName) => FileName = fileName;
 
         /// <summary>The name of the file in conflict.</summary>
         public string FileName { get; }
@@ -86,10 +77,7 @@ public abstract record ActivityKind
     /// <summary>The interrupted sync could not be resumed until the user fixes <see cref="Blocker"/> (#1612).</summary>
     public sealed record RecoveryBlocked : ActivityKind
     {
-        internal RecoveryBlocked(RecoveryBlocker blocker)
-        {
-            Blocker = blocker;
-        }
+        internal RecoveryBlocked(RecoveryBlocker blocker) => Blocker = blocker;
 
         /// <summary>What has to be fixed first.</summary>
         public RecoveryBlocker Blocker { get; }

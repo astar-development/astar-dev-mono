@@ -1,6 +1,6 @@
+using AStarDev.CloudSync.ViewModels.DisplaySettings;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using AStarDev.CloudSync.ViewModels.DisplaySettings;
 
 namespace AStarDev.CloudSync.DisplaySettings;
 

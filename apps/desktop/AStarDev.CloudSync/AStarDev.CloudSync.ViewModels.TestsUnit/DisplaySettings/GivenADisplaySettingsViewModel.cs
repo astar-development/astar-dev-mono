@@ -1,7 +1,7 @@
+using System.Globalization;
 using AStarDev.CloudSync.DisplaySettings;
 using AStarDev.CloudSync.TestHelpers.DisplaySettings;
 using AStarDev.CloudSync.TestHelpers.Ui;
-using System.Globalization;
 using AStarDev.CloudSync.ViewModels.DisplaySettings;
 using AStarDev.Localization;
 

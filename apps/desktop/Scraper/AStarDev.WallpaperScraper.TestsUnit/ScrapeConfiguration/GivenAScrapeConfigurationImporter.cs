@@ -1,10 +1,10 @@
-using AStarDev.WallpaperScraper.Scoping;
 using AStarDev.ControlDb;
 using AStarDev.ControlDb.ScrapeConfiguration;
-using Microsoft.Extensions.DependencyInjection;
 using AStarDev.FunctionalParadigm;
+using AStarDev.WallpaperScraper.Scoping;
 using AStarDev.WallpaperScraper.ScrapeConfiguration;
 using AStarDev.WallpaperScraper.TestsUnit.Fakes;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
 
 namespace AStarDev.WallpaperScraper.TestsUnit.ScrapeConfiguration;

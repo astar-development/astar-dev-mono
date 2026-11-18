@@ -1,6 +1,6 @@
 using System.Net;
-using System.Reflection;
 using System.Net.Sockets;
+using System.Reflection;
 using AStarDev.LoggingOTel.LogViewer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

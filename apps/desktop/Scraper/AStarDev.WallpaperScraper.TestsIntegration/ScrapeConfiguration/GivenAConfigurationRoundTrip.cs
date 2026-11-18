@@ -1,7 +1,7 @@
-using AStarDev.WallpaperScraper.Scoping;
 using AStarDev.ControlDb;
 using AStarDev.ControlDb.ScrapeConfiguration;
 using AStarDev.FunctionalParadigm;
+using AStarDev.WallpaperScraper.Scoping;
 using AStarDev.WallpaperScraper.ScrapeConfiguration;
 using AStarDev.WallpaperScraper.Startup;
 using Microsoft.EntityFrameworkCore;

@@ -56,7 +56,7 @@ public sealed partial class Subject : ComponentBase
         }
 
         LogMessage.NotFound(Logger, $"/{subject}");
-        if (HttpContext is not null) HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+        HttpContext?.Response.StatusCode = StatusCodes.Status404NotFound;
     }
 
     private void SelectFilter(string filter)

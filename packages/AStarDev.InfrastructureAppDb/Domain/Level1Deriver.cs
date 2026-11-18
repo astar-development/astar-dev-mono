@@ -39,7 +39,5 @@ public static class Level1Deriver
     }
 
     private static bool HasColourToken(IReadOnlyList<string> filenameTokens)
-    {
-        return filenameTokens.Any(token => TokenAnalyser.ColourWords.Contains(token));
-    }
+        => filenameTokens.Any(token => TokenAnalyser.ColourWords.Contains(token));
 }

@@ -10,10 +10,7 @@ public sealed class GivenAnIgnoredWallpaperRecorder
     private readonly CapturingProgress progress = new();
     private readonly IgnoredWallpaperRecorder recorder;
 
-    public GivenAnIgnoredWallpaperRecorder()
-    {
-        recorder = new(ignoredWallpapers);
-    }
+    public GivenAnIgnoredWallpaperRecorder() => recorder = new(ignoredWallpapers);
 
     [Fact]
     public void when_a_wallpaper_is_remembered_then_its_handle_is_recorded()

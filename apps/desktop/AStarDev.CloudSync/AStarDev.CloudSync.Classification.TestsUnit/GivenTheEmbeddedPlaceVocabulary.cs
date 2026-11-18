@@ -1,6 +1,6 @@
-using AStarDev.FunctionalParadigm;
 using System.IO.Compression;
 using System.Text.RegularExpressions;
+using AStarDev.FunctionalParadigm;
 
 namespace AStarDev.CloudSync.Classification.TestsUnit;
 

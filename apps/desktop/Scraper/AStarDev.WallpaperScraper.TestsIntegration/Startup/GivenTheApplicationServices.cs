@@ -1,8 +1,8 @@
 using System.Net;
+using AStarDev.ControlDb;
 using AStarDev.WallpaperScraper.Scraping;
 using AStarDev.WallpaperScraper.Startup;
 using AStarDev.WallpaperScraper.UI;
-using AStarDev.ControlDb;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -85,8 +85,8 @@ public sealed class GivenTheApplicationServices : IDisposable
     [Fact]
     public void when_the_main_window_collaborators_are_resolved_then_each_is_a_single_shared_instance()
     {
-        object[] resolved = new object[]
-        {
+        object[] resolved =
+        [
             serviceProvider.GetRequiredService<StatusReporter>(),
             serviceProvider.GetRequiredService<ApplicationReadiness>(),
             serviceProvider.GetRequiredService<UserOperationRunner>(),
@@ -95,7 +95,7 @@ public sealed class GivenTheApplicationServices : IDisposable
             serviceProvider.GetRequiredService<ScrapeRunner>(),
             serviceProvider.GetRequiredService<MainWindowActions>(),
             serviceProvider.GetRequiredService<ImageDisplayCoordinator>()
-        };
+        ];
 
         resolved.ShouldBe(
         [

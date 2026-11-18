@@ -15,10 +15,7 @@ public abstract record UploadPlanItem
     /// <summary>Create the folder on the provider, or find it when it already exists.</summary>
     public sealed record EnsureRemoteFolder : UploadPlanItem
     {
-        internal EnsureRemoteFolder(RelativeSyncPath path)
-        {
-            Path = path;
-        }
+        internal EnsureRemoteFolder(RelativeSyncPath path) => Path = path;
 
         /// <inheritdoc />
         public override RelativeSyncPath Path { get; }
@@ -115,10 +112,7 @@ public abstract record UploadPlanItem
     /// <summary>The remote item is already gone: drop the baseline row only.</summary>
     public sealed record ForgetBaseline : UploadPlanItem
     {
-        internal ForgetBaseline(RelativeSyncPath path)
-        {
-            Path = path;
-        }
+        internal ForgetBaseline(RelativeSyncPath path) => Path = path;
 
         /// <inheritdoc />
         public override RelativeSyncPath Path { get; }

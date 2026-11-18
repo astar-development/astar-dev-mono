@@ -24,7 +24,7 @@ internal sealed class DownloadPlanState
         Remote = [.. request.Remote.Where(entry => entry.Item.Kind is not RemoteItemKind.Deleted && !LocalTrash.Contains(entry.Path)).GroupBy(entry => entry.Item.Id).Select(group => group.OrderBy(entry => entry.Path.Value, StringComparer.OrdinalIgnoreCase).First())];
         remoteById = Remote.ToDictionary(entry => entry.Item.Id);
         remoteByPath = Remote.GroupBy(entry => entry.Path).ToDictionary(group => group.Key, group => group.First());
-        missing = request.MissingLocally.ToHashSet();
+        missing = [.. request.MissingLocally];
     }
 
     internal DownloadPlanRequest Request { get; }

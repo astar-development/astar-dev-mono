@@ -10,10 +10,7 @@ public abstract record SyncStatus
     /// <summary>Syncing, with the percentage of the current pass completed.</summary>
     public sealed record Syncing : SyncStatus
     {
-        internal Syncing(int percentComplete)
-        {
-            PercentComplete = percentComplete;
-        }
+        internal Syncing(int percentComplete) => PercentComplete = percentComplete;
 
         /// <summary>The percentage of the current pass completed.</summary>
         public int PercentComplete { get; }
@@ -30,10 +27,7 @@ public abstract record SyncStatus
     /// <summary>In sync apart from conflicts that need the user's decision.</summary>
     public sealed record HasConflicts : SyncStatus
     {
-        internal HasConflicts(int count)
-        {
-            Count = count;
-        }
+        internal HasConflicts(int count) => Count = count;
 
         /// <summary>The number of conflicts waiting for a decision.</summary>
         public int Count { get; }
@@ -50,10 +44,7 @@ public abstract record SyncStatus
     /// <summary>The last run failed.</summary>
     public sealed record Failed : SyncStatus
     {
-        internal Failed(SyncFailureReason reason)
-        {
-            Reason = reason;
-        }
+        internal Failed(SyncFailureReason reason) => Reason = reason;
 
         /// <summary>Why the run failed.</summary>
         public SyncFailureReason Reason { get; }

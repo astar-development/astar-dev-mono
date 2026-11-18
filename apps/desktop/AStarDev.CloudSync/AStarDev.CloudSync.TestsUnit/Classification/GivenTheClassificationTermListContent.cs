@@ -37,7 +37,7 @@ public class GivenTheClassificationTermListContent
         var window = await ShownAsync(8000);
 
         var scroll = window.GetVisualDescendants().OfType<ScrollViewer>().Single(viewer => viewer.Name == "TermScroll");
-        (scroll.Extent.Height > scroll.Viewport.Height, scroll.Viewport.Height > 0 && scroll.Viewport.Height < 600).ShouldBe((true, true));
+        (scroll.Extent.Height > scroll.Viewport.Height, scroll.Viewport.Height is > 0 and < 600).ShouldBe((true, true));
     }
 
     [AvaloniaFact]

@@ -1,12 +1,12 @@
-using AStarDev.WallpaperScraper.Scoping;
 using AStarDev.ControlDb;
 using AStarDev.ControlDb.ScrapeConfiguration;
 using AStarDev.FunctionalParadigm;
 using AStarDev.WallpaperScraper.Operations;
+using AStarDev.WallpaperScraper.Scoping;
 using AStarDev.WallpaperScraper.Scraping;
 using AStarDev.WallpaperScraper.TestsUnit.Fakes;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace AStarDev.WallpaperScraper.TestsUnit.Scraping;
 

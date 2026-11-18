@@ -10,10 +10,7 @@ public abstract record SyncSchedule
     /// <summary>Every account syncs once per interval; the accounts' starts are staggered across it (SE-05).</summary>
     public sealed record Every : SyncSchedule
     {
-        internal Every(TimeSpan interval)
-        {
-            Interval = interval;
-        }
+        internal Every(TimeSpan interval) => Interval = interval;
 
         /// <summary>The time between two syncs of one account.</summary>
         public TimeSpan Interval { get; }

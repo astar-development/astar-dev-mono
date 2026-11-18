@@ -1,8 +1,8 @@
+using System.IO.Abstractions;
 using AStarDev.CloudSync.Accounts;
 using AStarDev.FunctionalParadigm;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
-using System.IO.Abstractions;
 
 namespace AStarDev.CloudSync.Sync.TestsUnit;
 

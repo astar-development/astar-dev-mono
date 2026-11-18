@@ -20,10 +20,10 @@ internal static class ServiceCollectionCodeGenerator
     {
         var result = new List<(Layer, string[])>();
 
-        foreach (Layer layer in Enum.GetValues(typeof(Layer)).Cast<Layer>())
+        foreach (var layer in Enum.GetValues(typeof(Layer)).Cast<Layer>())
         {
             var forLayer = items.Where(i => i.Layer == layer).ToArray();
-            string[] registrations = BuildServiceRegistrations(forLayer).ToArray();
+            string[] registrations = [.. BuildServiceRegistrations(forLayer)];
 
             if (registrations.Length > 0)
                 result.Add((layer, registrations));

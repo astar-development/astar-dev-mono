@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using AStarDev.ControlDb;
-using AStarDev.WallpaperScraper.WallpaperIngestion;
 using AStarDev.Utilities;
+using AStarDev.WallpaperScraper.WallpaperIngestion;
 
 namespace AStarDev.WallpaperScraper.Scraping;
 

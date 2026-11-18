@@ -39,6 +39,6 @@ public sealed partial class KeyStage : ComponentBase
         }
 
         LogMessage.NotFound(Logger, $"/{subject}/{ks}");
-        if (HttpContext is not null) HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+        HttpContext?.Response.StatusCode = StatusCodes.Status404NotFound;
     }
 }

@@ -10,10 +10,7 @@ public abstract record ResolutionFailure
     /// <summary>The strategy does not apply to the item.</summary>
     public sealed record NotAllowed : ResolutionFailure
     {
-        internal NotAllowed(ResolutionNotAllowed reason)
-        {
-            Reason = reason;
-        }
+        internal NotAllowed(ResolutionNotAllowed reason) => Reason = reason;
 
         /// <summary>The reason.</summary>
         public ResolutionNotAllowed Reason { get; }
@@ -70,10 +67,7 @@ public abstract record ResolutionFailure
     /// <summary>A provider call failed.</summary>
     public sealed record Transfer : ResolutionFailure
     {
-        internal Transfer(ProviderError error)
-        {
-            Error = error;
-        }
+        internal Transfer(ProviderError error) => Error = error;
 
         /// <summary>What the provider reported.</summary>
         public ProviderError Error { get; }
@@ -82,10 +76,7 @@ public abstract record ResolutionFailure
     /// <summary>A local file operation failed.</summary>
     public sealed record Local : ResolutionFailure
     {
-        internal Local(LocalOperationFailure failure)
-        {
-            Failure = failure;
-        }
+        internal Local(LocalOperationFailure failure) => Failure = failure;
 
         /// <summary>What the file system reported.</summary>
         public LocalOperationFailure Failure { get; }

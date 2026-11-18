@@ -26,10 +26,7 @@ public abstract record DatabaseHealthStatus
     /// <summary>The database failed the check, so nothing syncs this session.</summary>
     public sealed record Failed : DatabaseHealthStatus
     {
-        internal Failed(DatabaseHealthFailure failure)
-        {
-            Failure = failure;
-        }
+        internal Failed(DatabaseHealthFailure failure) => Failure = failure;
 
         /// <summary>Why the check failed.</summary>
         public DatabaseHealthFailure Failure { get; }

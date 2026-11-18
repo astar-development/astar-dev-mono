@@ -298,9 +298,10 @@ public class GivenALayoutCViewModel
     [Fact]
     public async Task when_the_search_text_matches_a_pair_then_only_matching_pairs_are_shown()
     {
-        var viewModel = new LayoutCViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateLocalization());
-
-        viewModel.SearchText = "  RECIPES ";
+        var viewModel = new LayoutCViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateLocalization())
+        {
+            SearchText = "  RECIPES "
+        };
 
         viewModel.SyncPairs.Select(pair => pair.Name).ShouldBe(["Recipes"]);
     }
@@ -321,8 +322,10 @@ public class GivenALayoutCViewModel
     [Fact]
     public async Task when_the_search_text_is_blank_again_then_every_pair_and_account_card_is_shown()
     {
-        var viewModel = new LayoutCViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateLocalization());
-        viewModel.SearchText = "recipes";
+        var viewModel = new LayoutCViewModel(await TestData.CreateLoadedOverviewViewModelAsync(), new RecordingSyncActions(), TestData.CreateLocalization())
+        {
+            SearchText = "recipes"
+        };
 
         viewModel.SearchText = "   ";
 

@@ -1,8 +1,8 @@
-using System.IO.Abstractions;
 using System.Diagnostics.CodeAnalysis;
+using System.IO.Abstractions;
+using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using AStarDev.Clock.Theming;
 using AStarDev.Clock.Updates;
-using AStar.Dev.Velopack.Publishing.Avalonia.Updates;
 using AStarDev.LoggingOTel;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;

@@ -20,10 +20,7 @@ public abstract record ProviderError
     /// <summary>The provider throttled the account (429, 503) after the SDK used its retries.</summary>
     public sealed record Throttled : ProviderError
     {
-        internal Throttled(Option<TimeSpan> retryAfter)
-        {
-            RetryAfter = retryAfter;
-        }
+        internal Throttled(Option<TimeSpan> retryAfter) => RetryAfter = retryAfter;
 
         /// <summary>The provider's Retry-After, when it sent one.</summary>
         public Option<TimeSpan> RetryAfter { get; }

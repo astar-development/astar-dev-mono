@@ -78,7 +78,7 @@ public sealed class GivenAStatusMessageLog
     {
         var log = new StatusMessageLog(maximumMessages: 100);
 
-        bool[] required = new[] { log.Append("first message"), log.Append("second message"), log.Append("third message") };
+        bool[] required = [log.Append("first message"), log.Append("second message"), log.Append("third message")];
 
         required.ShouldBe([true, false, false]);
     }

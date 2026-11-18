@@ -29,10 +29,7 @@ public abstract record UploadItemOutcome
     /// <summary>The remote folder was created or found.</summary>
     public sealed record FolderCreated : UploadItemOutcome
     {
-        internal FolderCreated(RelativeSyncPath path)
-        {
-            Path = path;
-        }
+        internal FolderCreated(RelativeSyncPath path) => Path = path;
 
         /// <inheritdoc />
         public override RelativeSyncPath Path { get; }
@@ -41,10 +38,7 @@ public abstract record UploadItemOutcome
     /// <summary>The remote folder already existed and was linked.</summary>
     public sealed record Linked : UploadItemOutcome
     {
-        internal Linked(RelativeSyncPath path)
-        {
-            Path = path;
-        }
+        internal Linked(RelativeSyncPath path) => Path = path;
 
         /// <inheritdoc />
         public override RelativeSyncPath Path { get; }
@@ -53,10 +47,7 @@ public abstract record UploadItemOutcome
     /// <summary>The remote item was deleted, or was already gone.</summary>
     public sealed record RemovedRemotely : UploadItemOutcome
     {
-        internal RemovedRemotely(RelativeSyncPath path)
-        {
-            Path = path;
-        }
+        internal RemovedRemotely(RelativeSyncPath path) => Path = path;
 
         /// <inheritdoc />
         public override RelativeSyncPath Path { get; }
@@ -80,10 +71,7 @@ public abstract record UploadItemOutcome
     /// <summary>The file changed while it was read, so it waits for the next pass.</summary>
     public sealed record Deferred : UploadItemOutcome
     {
-        internal Deferred(RelativeSyncPath path)
-        {
-            Path = path;
-        }
+        internal Deferred(RelativeSyncPath path) => Path = path;
 
         /// <inheritdoc />
         public override RelativeSyncPath Path { get; }
