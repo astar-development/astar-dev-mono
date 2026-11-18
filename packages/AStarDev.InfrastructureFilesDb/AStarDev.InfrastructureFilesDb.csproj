@@ -1,6 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <PackageReleaseNotes>
+        v0.1.0 fix(sonar): pass CancellationToken and fix new-code issues (#1938)
+        </PackageReleaseNotes>
         <ApplicationIcon>astar.ico</ApplicationIcon>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Authors>AStar Development, Jason Barden</Authors>

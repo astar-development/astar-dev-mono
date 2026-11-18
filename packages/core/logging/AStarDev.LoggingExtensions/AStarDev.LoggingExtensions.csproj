@@ -9,6 +9,7 @@
         <PackageId>AStarDev.LoggingExtensions</PackageId>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageReleaseNotes>
+        v4.3.4 fix(sonar): pass CancellationToken and fix new-code issues (#1938)
         v4.3.3 perf(cloudsync): span-based tokenising and phrase lookup for the path signals (#1889)
         v0.7.1 fix(cloudsync): classification wiring review leftovers (#1856)
         v0.7.0 feat(cloudsync): log files roll at 10 MB, keep 7 days and 100 MB in total (slice 5 of #1411)
